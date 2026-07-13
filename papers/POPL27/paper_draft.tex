@@ -3145,8 +3145,14 @@ equality and has the Lean kernel certify that their rational entries agree.
 The lemma then casts these two verified facts from $\mathbb{Q}$ to
 $\mathbb{R}$ and concludes that the entrywise real cast of $M_t$ is positive
 semidefinite.  No eigenvalue or floating-point calculation enters this check.
-A wrong reconstruction or factorization therefore makes the generated proof
-fail.
+These checks certify the positive semidefiniteness of the matrix $M_t$ emitted
+in the Lean file.  Lean does not separately compare $M_t$ with the original
+$Q'_t$ and $R_t$ fields of the certificate; that reconstruction is performed
+by the unverified translator.  An incorrect $LDL^\top$ witness is therefore
+rejected, while fidelity to the source certificate is a separate concern
+discussed in \Cref{sec:flagmatic-trust}.  In either case, the emitted matrix can
+contribute to the final theorem only if both its PSD proof and the subsequent
+algebraic calculation are accepted by Lean.
 
 \paragraph{Lifting the objective (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
@@ -3207,18 +3213,14 @@ The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
 vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
 semidefiniteness generated in Part~2.  
-The first step starts with applying this
-theorem with 
-the reflexive inequality $[P]\leq_H[P]$, 
-and repeatedly applying the theorem 
-to the result once per each SDP
-block.  After all blocks have been added, its conclusion is precisely
+The proof starts from the reflexive inequality $[P]\leq_H[P]$ and applies this
+lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
 $[P]\leq_H[P]+\sum_tQ_t$.
 
 It remains to prove $[P]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
 this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
 flags.  When necessary, the Part~3 lemma first expands $[P]$ to host size.
-Expanding each quadratic form produces downward images of products of basis algebra
+Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
 and downward identities generated in Part~1.  The appropriate
 \lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf 1$ in the same
@@ -3232,112 +3234,84 @@ exactly the remainder $r$ from the certificate calculation.  The tactic
 the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
 the normalization and the final non-negativity check together verify the
 conceptual equality $[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
-$c\cdot\mathbf 1-r\leq_Hc\cdot\mathbf 1$.
+$c\cdot\mathbf 1-r\leq_H c\cdot\mathbf 1$.
 
 \paragraph{The translator.}
-The four parts above describe the Lean output.  The external script that
-produces this output is not verified; instead, every mathematical claim it
-emits must be accepted by Lean.  A certificate names its flags as short strings
-like \texttt{3:121323} (a triangle: three vertices with edges $12$, $13$, $23$),
-so the script parses each one and isomorphism-matches it against a canonical
-enumeration that reproduces the order of Lean's flag generators.  The index it
-computes is then already the $i$ in \lean{Flag\_n\_k\_m\_i}, with no separate
-table to keep in sync.  With the indices in hand, it emits the four parts.  Most
-of the output comes from templates keyed to the sizes; the substantial
-translation step reconstructs and factors the certificate matrices, producing
-the witness consumed by Part~2's kernel check.  The generator also chooses the
-branch, the per-block parameters, and the order of the additions.  Why errors in
-any of these choices cannot silently establish a false theorem is the subject
-of \Cref{sec:flagmatic-trust}.
+The translator connects the certificate's external representation to the four
+parts above.  Flagmatic represents a graph or flag by a compact string, so the
+translator parses each string and searches the canonical enumeration used by
+the reflection generators for the same graph or flag after a relabeling of
+vertices that preserves the flag labels.  The selected entry determines the
+corresponding Lean basis element and hence the entries of each flag vector.
+The translator then reads the objective and bound, the forbidden graph, the
+host size, and the SDP blocks; reconstructs the rational matrices; computes the
+$LDL^\top$ witnesses; and selects the appropriate objective-lifting and
+forbidden-subgraph routes.
 
-Assembled, the file the script emits for Mantel ($K_3$-free, $N=3$, Branch~B) is,
-abridged:
-\begin{lstlisting}
-def K3 : Sym2Graph 3 := completeSym2Graph 3              -- Part 1: flags + data
-generate_pruned_forbid_free_empty_typed_flags 2 K3
-generate_pruned_forbid_free_empty_typed_flags 3 K3
-generate_pruned_forbid_free_flags 2 1 0 K3
-generate_pruned_forbid_free_flags 3 1 0 K3
-generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
-generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
-  (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+For each certificate, the translator writes one Lean source file containing all
+four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
+proof, and one addition of a non-negative quadratic form.  Branch~B additionally
+contributes the Part~3 objective expansion, while Branch~A omits it.  A
+non-complete forbidden graph selects the subgraph-free variants of the same
+generation and normalization steps.  Thus the translator varies the data and
+the required route, but the argument assembled in Part~4 has the same structure
+in every generated file.
 
-def M  : Matrix (Fin 2) (Fin 2) Q := !![1/2, -1/2; -1/2, 1/2]  -- Part 2: matrix + PSD
-def dM : Fin 2 -> Q := ![1/2, 0]
-def LM : Matrix (Fin 2) (Fin 2) Q := !![1, 0; -1, 1]
-noncomputable def M_real := ratMatrixToReal M
-theorem M_real_posSemidef : M_real.PosSemidef := by psd_real_ldlt M LM dM
-def sigma : FlagType (Fin 1) := FlagType_1_0
-noncomputable def v : FlagAlgebraVec sigma 2 := ![FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1]
-
-lemma mantel_expand_under_forbid                         -- Part 3: objective lift (Branch B)
-    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] ... := by
-  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
-
-theorem mantel_flagAlgebra                               -- Part 4: main theorem
-    : FlagAlgebra_2_0_0_1 <=[completeGraph (Fin 3)] (1/2 : R) (*@$\bullet$@*) 1 := by
-  have quadraticForm_trans : ... := by                   -- add the block's PSD form
-    apply forbidLEWith_add_QuadraticForm M_real M_real_posSemidef v; ...
-  apply forbidLEWith_trans quadraticForm_trans
-  ...                                                     -- rewrite the unit expansion
-  rw [forbidLEWith_rw_left_add_right mantel_expand_under_forbid]
-  simp [...]                                              -- expand the quadratic form
-  reduce_downward_flagmul                                 -- reduce downward products
-  expand_one_hfree_at 3 K3                                -- expand the unit to host size
-  flagsum_ac_sort_rhs_pipeline                            -- normalize the reordered sum
-  apply forbidLEWith_of_le; flag_nonneg                  -- close by non-negativity
-\end{lstlisting}
-Here \lean{K3} is the concrete \lean{Sym2Graph} consumed by the generators,
-whereas the theorem is stated using the specification-level graph
-\lean{completeGraph (Fin 3)}.  The final membership argument in the generation
-and expansion calls supplies the bridge required by the ordinary
-forbidden-graph framework.  A Branch~A certificate drops the Part~3 lemma;
-extra SDP blocks add one matrix and one
-\lean{forbidLEWith\_add\_QuadraticForm} call each.
+The translator itself determines which Lean basis element corresponds to each
+certificate flag and converts the objective, bound, forbidden graph, and matrix
+data into Lean declarations.  These choices are made in Python.  Lean
+typechecks the generated file and verifies its propositions, including the
+final bound, but it does not compare the file with the source JSON.  This
+distinction between validity of the generated theorem and fidelity of the
+translation is central to the following trust model.
 
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
 
-The translator computes a great deal, from flag indices to matrix
-factorizations, but neither it nor the SDP solver must be trusted: their output
-is accepted only through proof obligations generated in Lean.  Those
-obligations are closed by \lean{decide +kernel}, by
-\lean{native\_decide}, or by tactics that construct proof terms checked by the
-kernel.  A mistake in the certificate or translator therefore causes a failed
-check rather than silently establishing a false theorem.  The important
-trust distinction lies between the two evaluators used for those checks.
+There are two distinct questions of trust.  First, the complete generated
+files used here introduce neither axiom declarations nor \lean{sorry}.
+Within this output discipline, neither the SDP solver nor the Python translator
+is trusted for the logical validity of a theorem that Lean accepts.  The
+emitted matrices must be proved positive semidefinite, the certificate
+calculation must normalize to non-negative coefficients, and the final theorem
+must typecheck.  Subject to Lean's trusted base, erroneous data cannot make an
+invalid proof term valid.
 
-Those two checkers do not carry the same trust.  Because \lean{native\_decide}
-evaluates outside the kernel, the proof obligations it closes also rest on the
-Lean compiler and runtime, not the kernel alone.  We keep the load-bearing PSD
-step inside the kernel and discharge the bulk density bookkeeping with
-\lean{native\_decide}, and report this split as a fact about the development
-rather than a chosen design: we would keep the density obligations in the
-kernel as well if it could check them, but it cannot yet on the encoding the
-specification uses.
+Second, the translator is trusted for \emph{translation fidelity}: it parses the
+certificate, chooses the corresponding entry in Lean's canonical enumeration
+for each certificate flag, reconstructs $M_t=R_tQ'_tR_t^\top$, and selects the
+objective, bound, and forbidden graph.
+These choices are visible in the generated declarations and theorem statement,
+but Lean does not prove that they faithfully reproduce the source certificate.
+A translation error could therefore produce a valid theorem different from
+the one intended.  This is an auditability boundary, rather than a soundness
+gap in the generated Lean theorem.
 
-The tactics are themselves unverified metaprograms, and the same discipline
-applies to them.  They traverse elaborated expressions, recover flag constants
-through the naming convention, and decompose the normalized forms of sums,
-scalar multiples, products, and downward operators.  This machinery is among
-the least portable parts of the development because it depends on the shapes
-produced by Lean's elaborator.  Nevertheless, a tactic that mishandles such a
-shape can only fail or construct a term that the kernel rejects; it cannot make
-an invalid proof term valid.
+The proof obligations also use two evaluation mechanisms.  Exact matrix
+equalities in the PSD proof are discharged by \lean{decide +kernel}, so their
+computation is checked by the kernel.  The much larger finite enumerations and
+density calculations use \lean{native\_decide}; these checks additionally trust
+Lean's native compiler and runtime.  Direct kernel reduction of those
+computations is impractical at the sizes considered here.  Finally, the custom
+tactics are unverified metaprograms whose dependence on elaborated expression
+shapes affects robustness and portability.  They construct proof terms that
+Lean checks, so a tactic failure leaves the proof incomplete rather than
+establishing an invalid theorem; any premises proved by \lean{native\_decide}
+retain the trust boundary just described.
 
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
-To evaluate the compiler, we ran
-\lean{gen-skeleton} on seven certificates chosen to span the cases it must
-handle: both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$,
-and four forbidden graphs ($K_3$, $K_4$, $K_5$, and the cycle $C_5$).  Every
-generated file compiles with no \lean{sorry}
-(Table~\ref{tab:flagmatic-scenarios}), and no certificate coefficients had to
-be copied into Lean by hand.  Three are classical extremal results, whose upper
-bounds we describe below; the remaining cases appear in the table.
+We evaluated the translator on seven certificates spanning both objective
+branches, host sizes $N\in\{3,4,5\}$, between one and four SDP blocks, and four
+forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
+\lean{gen-skeleton} produces a complete Lean source file.  All seven files compile
+and contain neither \lean{sorry} nor generated axiom declarations.  No
+certificate coefficient is transcribed into Lean by hand.
+Table~\ref{tab:flagmatic-scenarios} reports the mathematical cases rather than
+the implementation filenames.
 
-\begin{table}[b]
+\begin{table}[h]
   \centering
   \caption{Certificates carried end-to-end through the translator.  ``Branch''
   is A when $n_{\mathit{obj}}=N$ and B when $n_{\mathit{obj}}<N$; $T$ is the
@@ -3345,59 +3319,34 @@ bounds we describe below; the remaining cases appear in the table.
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lcccccc}
     \toprule
-    Certificate & Forbid & $N$ & $n_{\mathit{obj}}$ & Branch & $T$ & Bound \\
+    Case & Forbid & $N$ & $n_{\mathit{obj}}$ & Branch & $T$ & Bound \\
     \midrule
-    Mantel         & $K_3$ & 3 & 2 & B & 1 & $1/2$    \\
-    K3forbidP3     & $K_3$ & 3 & 3 & A & 1 & $3/4$    \\
-    K3forbidC4     & $K_3$ & 4 & 4 & A & 2 & $3/8$    \\
-    K4turan        & $K_4$ & 4 & 2 & B & 2 & $2/3$    \\
-    ErdosPentagon  & $K_3$ & 5 & 5 & A & 3 & $24/625$ \\
-    K5turan        & $K_5$ & 5 & 2 & B & 4 & $3/4$    \\
-    C5turan        & $C_5$ & 5 & 2 & B & 4 & $1/2$    \\
+    Mantel ($K_2$)              & $K_3$ & 3 & 2 & B & 1 & $1/2$    \\
+    $P_3$ density               & $K_3$ & 3 & 3 & A & 1 & $3/4$    \\
+    $C_4$ density               & $K_3$ & 4 & 4 & A & 2 & $3/8$    \\
+    Edge density                & $K_4$ & 4 & 2 & B & 2 & $2/3$    \\
+    Erd\H{o}s pentagon ($C_5$)  & $K_3$ & 5 & 5 & A & 3 & $24/625$ \\
+    Edge density                & $K_5$ & 5 & 2 & B & 4 & $3/4$    \\
+    Edge density                & $C_5$ & 5 & 2 & B & 4 & $1/2$    \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\paragraph{Mantel's theorem.}
-This is the smallest and most transparent case.  Its single block is small
-enough to write the certificate by hand.  As explained in
-\Cref{sec:flagmatic-background}, the PSD block is the explicit square
-$\llbracket
-  \tfrac12(\fKtwobull-\fbarKtwobull)^2
-\rrbracket_\sigma$; together with the non-negative
-remainder $\tfrac13\fbarPthree$, it proves
-$K_2 \leq \tfrac12\cdot\mathbf{1}$ without an external solver.  It therefore
-serves as the simplest validation of the compiler.
+The cases play complementary roles.  Mantel is a hand-checkable baseline: its
+single $2\times2$ block is the explicit square from
+\Cref{sec:flagmatic-background}.  The $C_4$-density certificate combines blocks
+of sizes $4$ and $3$, while the Erd\H{o}s pentagon certificate combines blocks
+of sizes $8$, $6$, and $5$.  The $K_5$- and $C_5$-free edge-density cases each
+use four blocks of size $8$.  Together, these examples exercise both objective
+branches and increasingly large multi-block normalizations.
 
-\paragraph{A $C_4$-density bound.}
-This certificate is a sum of two PSD forms, one per size-$2$ type
-($4\times4$ and $3\times3$ over $\mathbb{Q}$), again with no externally
-generated SDP.  It proves a
-$\tfrac38\cdot\mathbf{1}$ bound on $C_4$ density, and is the first example to
-require the compiler to combine multiple independently certified PSD blocks into
-a single proof.
-
-\paragraph{The Erd\H{o}s pentagon theorem.}
-This is the most demanding of the three, with PSD blocks of sizes $8$, $6$,
-and $5$ that the tactics must add, expand, and normalize in a single pass.  It proves
-$C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$, demonstrating that the same proof
-skeleton scales to substantially larger certificates without modification.
-
-Together with the remaining scenarios in
-Table~\ref{tab:flagmatic-scenarios}, these examples exercise every structural
-variation of the compiler described in
-\Cref{sec:flagmatic-pipeline}, from a single hand-checkable certificate to
-multi-block SDP certificates requiring substantial symbolic normalization.
-
-\paragraph{A non-complete forbid.}
-The \lean{C5turan} certificate forbids a non-complete graph: it bounds edge
-density at $\tfrac12$ in graphs with no $C_5$ subgraph.  For a complete
-forbidden graph, forbidding an induced copy
-and forbidding a subgraph coincide, and the generators take a faster induced
-path.  The $C_5$ case is the first evaluated certificate in which the two
-notions differ, so it instead uses the subgraph-forbidding route.  The four-part
-skeleton is otherwise unchanged; the compiler does not assume that the
-forbidden graph is complete.
+The $C_5$-free edge-density case also tests the route for a non-complete
+forbidden graph.  For a complete forbidden graph, induced containment and ordinary subgraph
+containment coincide, so the compiler may use the induced-graph filter.  They
+do not coincide for $C_5$, and this example therefore uses the
+subgraph-forbidding generators and expansion tactics.  The certificate still
+proves the ordinary statement that graphs containing no $C_5$ subgraph have
+edge density at most $1/2$.
 
 The generated certificate argument establishes only the upper-bound direction.
 For Mantel and the pentagon,
@@ -3407,20 +3356,22 @@ and~\ref{ex:pentagon}.
 
 \paragraph{A limitation.}
 \label{sec:flagmatic-open}
-One limitation remains: the Branch~B host-size expansion
-(\lean{flag\_expand\_hfree}) ends in a \lean{ring\_nf} normalization that we
-have not formally characterized; it closes every case we have met, but we have
-not proved that it normalizes every form a future certificate might produce.
-This is a limitation of automation rather than soundness: if normalization
-fails, the generated proof remains incomplete.  We list the issue alongside
-the open questions of Section~\ref{sec:unsure} rather than presenting the
-automation as complete.
+This evaluation establishes coverage of the seven cases above, not
+completeness of the translator.  The current input language assumes the
+supported simple-graph certificate format, a parseable objective and singleton
+forbidden graph, and one of the currently supported finite block sizes.
+Malformed inputs are rejected; an otherwise well-formed certificate outside
+this proof fragment produces an explicitly incomplete skeleton containing
+\lean{sorry}.  Within the fragment, a future certificate may still expose a
+normalization shape not handled by the custom tactics.  Each situation is
+visible as the absence of a complete Lean proof, not as an unchecked theorem.
 
 \medskip
-Taken together, the construction of this section turns a Flagmatic certificate
-into a verified theorem with no manual intervention: the proof follows a fixed
-skeleton, the translator reconstructs it from the certificate alone, and Lean
-checks the result under the trust model stated above.
+For the seven evaluated certificates, the translator therefore carries all
+coefficients and structural choices into the fixed proof skeleton without
+manual editing.  Lean checks the resulting theorem under the trust model above;
+the separate question of whether the generated file faithfully transcribes
+the source certificate remains at the translator boundary.
 
 
 \section{Lower Bounds and Other Inequalities}
