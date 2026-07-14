@@ -3773,57 +3773,83 @@ later algebraic argument.
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
 
-A recurring proof obligation in the specification layer was to establish
-identities involving subflag densities.  Although these identities take
-several forms, unfolding and simplifying their definitions reveals a common structure: the two sides of the identity are cardinalities of finite sets of configurations
-presented in different ways.  We adopted a uniform proof strategy for such
-identities: identify the two sets, construct an explicit bijection between
-them, and use the bijection to prove equality of their cardinalities. The bijection here carries the main mathematical content of the proof.
+Explicit bijections became an unexpectedly prevalent proof pattern in the
+specification layer, especially for establishing identities involving subflag
+densities.  We did not set out to make bijective arguments the default: we
+expected many of these equalities to follow from existing counting lemmas or
+symbolic simplification, with explicit equivalences needed only occasionally.
+In practice, however, unfolding and simplifying the definitions repeatedly
+exposed the same structure: the two sides are cardinalities of finite sets of
+configurations presented in different ways.  Our most reliable proof method
+is to identify the two sets, construct an explicit bijection between them, and
+use the bijection to prove equality of their cardinalities.  The bijection
+carries the main mathematical content of the proof.
 
-The \lean{Fintype}-instance ambiguity from \Cref{sec:fintype} enters when Lean
-turns that bijection into a cardinality equality.  Both
-\lean{Fintype.card\_congr}, which transfers cardinality across a bijection, and
-the cardinalities already occurring in the density definition carry implicit
-\lean{Fintype} instances.  If those instances are synthesized independently,
-the equality obtained from the bijection may not rewrite the cardinality in
-the density expression.  We therefore follow the discipline of the preceding
-subsection: first name the two finite collections, then bind the
-\lean{Fintype} instance used for each, construct the bijection, and finally
-derive and use the cardinality equality.  The connection is formal rather
-than combinatorial: the bijection is the mathematical proof, while explicit
-instance control ensures that its conclusion matches the density expression.
-A typical proof has the following shape:
+Our experience proving the density chain rules made this pattern particularly
+clear.  A chain rule identifies two sampling procedures: choosing the required
+subflags directly in the host, or making the same choice in stages through an
+intermediate flag.  On paper, these procedures are readily seen as two
+descriptions of the same experiment.  In Lean, after unfolding the
+definitions, the proof came down to a bijection between the finite sets of
+choices made by the two procedures.  This bijection yielded equality of the
+corresponding counts and hence the chain rule.
+
+The same proof pattern recurs across several formally different obligations.
+In \lean{flagDensity\_permute}, the bijection reindexes a tuple of
+pairwise-disjoint induced copies.  In \lean{flagDensity\_insert\_empty}, it
+inserts or deletes the unique empty component.  In the adequacy proof for
+\lean{Sym2InducedSubgraph}, it relates the concrete enumeration used for
+computation to the abstract \lean{LabeledSubgraph} enumeration used in the
+specification.  Although these statements serve different purposes, each
+proof identifies the two finite sets being counted and gives an explicit
+correspondence between their elements.
+
+This use of bijections interacts with the \lean{Fintype}-instance ambiguity
+from \Cref{sec:fintype}.  The theorem \lean{Fintype.card\_congr}, which
+transfers cardinality across a bijection, takes an implicit \lean{Fintype}
+instance for each of the two types.  The corresponding counts in an unfolded
+density goal have the form \lean{S0.toFinset.card} and
+\lean{S1.toFinset.card}; constructing each \lean{toFinset} likewise depends on
+an implicit \lean{Fintype} instance.  Lean normally fills in these hidden
+arguments automatically.  If the instances used by
+\lean{Fintype.card\_congr} differ from those used to construct the two
+\lean{toFinset} terms, the cardinality equality obtained from the bijection
+may not rewrite the counts already present in the goal.  This is not an
+additional combinatorial obligation: the bijection is already the
+mathematical proof.  We therefore first name the two finite sets and bind one
+local \lean{Fintype} instance for each.  The \lean{toFinset} counts and the
+cardinality equality from the bijection then use these same instances.  A
+typical proof has the following shape:
 \begin{lstlisting}
+-- Hl0 and Hl1 are lists of labeled graphs.
+-- S0 and S1 contain the labeled-subgraph lists of G
+-- that realize Hl0 and Hl1, respectively.
 let S0 := setOfLabeledSubgraphListIsoHl G Hl0
 let S1 := setOfLabeledSubgraphListIsoHl G Hl1
-let hS0 : Fintype S0 := Fintype.ofFinite S0
-let hS1 : Fintype S1 := Fintype.ofFinite S1
+-- Fix the Fintype instance used to count each set.
+letI hS0 : Fintype S0 := Fintype.ofFinite S0
+letI hS1 : Fintype S1 := Fintype.ofFinite S1
+-- The combinatorial proof is a bijection between the two sets.
 let h_iso : Equiv S0 S1 := ...
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso
-simp_all only [Set.toFinset_card]
+-- The bijection gives equality of their Fintype cardinalities.
+have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr h_iso
+-- Rewrite the two counts as Fintype cardinalities, then use card_eq.
+have count_eq : S0.toFinset.card = S1.toFinset.card := by
+  rw [Set.toFinset_card, Set.toFinset_card]
+  exact card_eq
 \end{lstlisting}
 
-This is the pattern used in \lean{flagDensity\_permute} to show that
-reordering the prescribed tuple $(F_1,\ldots,F_t)$ does not change its
-multi-flag density, and in \lean{flagDensity\_insert\_empty} to show that
-inserting an empty flag leaves the density unchanged.  It also appears in the adequacy proof that the
-concrete \lean{Sym2InducedSubgraph} enumeration has the same count as the
-abstract \lean{LabeledSubgraph} enumeration.  The invariant enforced by the
-pattern is that a numerical equality is justified by an explicit isomorphism
-between the finite sets being counted; arithmetic simplification is the last
-step, not the proof idea.
-
-We initially expected to use Mathlib's existing counting tactics for these
-identities and reach for explicit equivalences only as a fallback.  The
-opposite happened.  Generic counting tactics often fail to elaborate because
-they pick up the ``wrong'' enumeration term for one of the two sets.
-Constructing the equivalence makes the intended enumeration explicit and
-turns the cardinality equality into a one-line application of
-\lean{Fintype.card\_congr}.  The pattern resembles the familiar
-combinatorial search for an interpretation of an algebraic identity: here the
-equivalence is that interpretation, and the formalization makes it mandatory
-rather than optional.
+The broader lesson is that explicit bijections provide a common interface
+between combinatorial reasoning and Lean's handling of finite cardinalities.
+The bijection isolates the mathematical step---exhibiting a one-to-one
+correspondence between the objects counted on the two sides---while the
+subsequent code handles \lean{Fintype} instances and rewrites the resulting
+counts.  We do not claim that explicit bijections are the only possible
+approach.  What surprised us is that the same pattern worked across chain
+rules, permutation invariance, empty-flag insertion, and adequacy, and
+therefore became our default for finite counting identities.  The
+methodological observation is the unexpected prevalence of this proof
+pattern, rather than a claim that no alternative exists.
 
 
 
