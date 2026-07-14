@@ -12,21 +12,27 @@ application chapter on **Mantel's theorem** (the Turán density of the triangle)
   `\lean{}` tags were machine-checked to exist in the compiled library
   (checkdecls-equivalent, 0 missing).
 
-## View the dependency graph (no toolchain needed)
+## View the dependency graph
 
-The generated site is committed under `blueprint/web/`. The interactive graph is
-rendered client-side (WebAssembly graphviz), so it must be served over HTTP —
-opening the file directly will not render it. From the repository root:
+**Online:** <https://taeyool.github.io/lean-flag-algebras/dep_graph_document.html>
+(blueprint text at <https://taeyool.github.io/lean-flag-algebras/>). The site is
+deployed automatically from `blueprint/web/` by
+`.github/workflows/blueprint.yml` on every push to `main`.
+
+**Locally** (no toolchain needed; the generated site is committed under
+`blueprint/web/`): the interactive graph is rendered client-side (WebAssembly
+graphviz), so it must be served over HTTP — opening the file directly will not
+render it. From the repository root:
 
 ```bash
 cd blueprint/web
-python -m http.server 8000
+python3 -m http.server 8000
 ```
 
 Then open **http://localhost:8000/dep_graph_document.html** (the dependency
 graph) or **http://localhost:8000/** (the blueprint text). Any static file server
-works; `python -m http.server` is the simplest. Only rendering of the LaTeX math
-needs internet (MathJax CDN); the graph itself works offline.
+works. Only rendering of the LaTeX math needs internet (MathJax CDN); the graph
+itself works offline.
 
 Node colors: **box** = definition, **ellipse** = theorem/lemma; green border =
 statement formalized; light-green fill = definition done, green fill = proof
