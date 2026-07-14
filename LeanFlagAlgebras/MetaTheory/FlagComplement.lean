@@ -269,8 +269,7 @@ theorem inducedLabeledSubgraph_coe_compl_graph (G : LabeledGraph σ V)
   rw [LabeledSubgraph.coe_adj_iff, LabeledSubgraph.coe_adj_iff]
   show (LabeledSubgraph.inducedLabeledSubgraph G.compl S h').subgraph.Adj u.val v.val
     ↔ u ≠ v ∧ ¬ (LabeledSubgraph.inducedLabeledSubgraph G S h).subgraph.Adj u.val v.val
-  simp only [LabeledSubgraph.inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, LabeledGraph.compl_graph,
-    SimpleGraph.compl_adj]
+  simp only [LabeledSubgraph.inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, LabeledGraph.compl_graph]
   constructor
   · rintro ⟨_, _, hne, hadj⟩
     refine ⟨fun h => hne (congrArg Subtype.val h), ?_⟩

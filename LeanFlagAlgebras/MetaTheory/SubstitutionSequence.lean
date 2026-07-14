@@ -157,7 +157,7 @@ noncomputable def plantedIso_sub {n : ℕ} {σ : FlagType (Fin n₀)} {Γ : Simp
   show ((⊤ : B.Subgraph).induce S).Adj (f i).1 (f j).1 ↔ σ.Adj i j
   by_cases hij : i = j
   · subst hij
-    simp only [Subgraph.induce_adj, Subgraph.top_adj, SimpleGraph.irrefl, and_false, false_and, SimpleGraph.irrefl]
+    simp only [Subgraph.induce_adj, Subgraph.top_adj, SimpleGraph.irrefl, and_false]
   · have hθ : (θ j) ≠ (θ i) := fun h => hij (θ.injective h.symm)
     simp only [Subgraph.induce_adj, Subgraph.top_adj]
     constructor

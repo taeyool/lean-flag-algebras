@@ -544,8 +544,8 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
       have := @φ.graph_iso.map_rel_iff _ _ _ _ u.val v.val
       rw [←this, ←h_image_V₀_type_verts_eq_W₀_type_verts]
       simp only [LabeledSubgraph.coe_graph, Set.mem_image, Set.mem_union,
-        exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Subgraph.top_adj,
-        Subtype.coe_prop, and_self, and_true, true_and]
+        exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj,
+        Subtype.coe_prop, true_and]
       constructor
       . intro ⟨_, _, h_adj⟩
         rw [h_G₀_ind.adj]

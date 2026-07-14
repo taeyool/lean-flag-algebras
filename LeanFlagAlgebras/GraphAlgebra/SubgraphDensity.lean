@@ -945,7 +945,7 @@ lemma subgraphPairCount_eq_sum_count_prods
               rw [h_G₃_card]
               exact (Nat.add_sub_of_le hℓ₃_lb)
     have h_G₁_G₂_G₃' : G₁.verts ∪ G₂.verts ⊆ G₃'.verts := by
-      simp only [Subgraph.induce_verts,Set.mem_union, Set.subset_union_left, G₃']
+      simp only [Subgraph.induce_verts, Set.subset_union_left, G₃']
     ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃'⟩, h_G₃'_ind, h_G₃'_card, h_G₁_G₂_G₃'⟩
 
   have h_inj_S₀_S₁ : Function.Injective f_S₀_S₁_fwd := by
@@ -974,7 +974,7 @@ lemma subgraphPairCount_eq_sum_count_prods
     let G₃' := (⊤ : G.Subgraph).induce (G₃.verts \ (G₁.verts ∪ G₂.verts))
     have h_G₃'_ind : G₃'.IsInduced := Subgraph.induce_top_isInduced G (G₃.verts \ (G₁.verts ∪ G₂.verts))
     have h_G₃'_verts : G₃'.verts = G₃.verts \ (G₁.verts ∪ G₂.verts) := by
-      simp only [Subgraph.induce_verts,Set.mem_diff, Set.mem_union, not_or, G₃']
+      simp only [Subgraph.induce_verts, G₃']
     have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ - (ℓ₁ + ℓ₂) :=
       calc
         Fintype.card G₃'.verts
@@ -1056,7 +1056,7 @@ lemma subgraphPairCount_eq_sum_count_prods
           let G₃ := (⊤ : G.Subgraph).induce V₀
           have h_G₃_ind : G₃.IsInduced := Subgraph.induce_top_isInduced G V₀
           have h_G₃_verts : G₃.verts = V₀ := by
-            simp only [Subgraph.induce_verts,mem_coe, G₃]
+            simp only [Subgraph.induce_verts, G₃]
           have h_G₃_card : Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) := by
             simp [h_G₃_verts, h_V₀_card]
           have h_G₁_G₂_G₃ : (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ := by

@@ -77,7 +77,7 @@ noncomputable def blowupGoodIso (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, 
         intro u v
         rw [coe_adj_iff, coe_adj_iff]
         simp only [hBsub, hGsub, inducedLabeledSubgraph, SimpleGraph.Subgraph.induce,
-          independentBlowup_adj, baseLabeledGraph, blowupLabeledGraph]
+          baseLabeledGraph, blowupLabeledGraph]
         have hu : (↑u : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ u.property
         have hv : (↑v : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ v.property
         rw [he u, he v]

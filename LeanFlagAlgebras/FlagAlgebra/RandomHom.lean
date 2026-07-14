@@ -122,7 +122,7 @@ theorem flagDensity₁_flagType_asEmptyType_pos
                 subst hvi hwi
                 simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff, SimpleGraph.Subgraph.top_adj]
             · rintro ⟨hmv, hmw, h⟩
-              simp only [Set.image_univ, Set.mem_range] at hmv hmw
+              simp only [Set.mem_range] at hmv hmw
               obtain ⟨vi, hvi⟩ := hmv
               obtain ⟨wi, hwi⟩ := hmw
               subst hvi hwi
