@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The computational layer</title>
+<link rel="next" href="chap-mantel.html" title="Application: Mantel’s theorem" />
+<link rel="prev" href="chap-limits.html" title="Limit semantics and random homomorphisms" />
+<link rel="up" href="index.html" title="Lean Flag Algebras — Blueprint" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Lean Flag Algebras — Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="chap-overview.html"><span class="toc_ref">1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="chap-flags.html"><span class="toc_ref">2</span> <span class="toc_entry">Flags and labeled graphs</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-flags.html#a0000000002"><span class="toc_ref">2.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-density.html"><span class="toc_ref">3</span> <span class="toc_entry">Subflag densities</span></a>
+ </li>
+<li class="">
+  <a href="chap-algebra.html"><span class="toc_ref">4</span> <span class="toc_entry">The flag algebra \(\mathcal{A}^\sigma \)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-algebra.html#a0000000003"><span class="toc_ref">4.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-downward.html"><span class="toc_ref">5</span> <span class="toc_entry">The unlabeling operator</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-downward.html#a0000000004"><span class="toc_ref">5.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-positivity.html"><span class="toc_ref">6</span> <span class="toc_entry">Positivity and sum-of-squares</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-positivity.html#a0000000005"><span class="toc_ref">6.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-limits.html"><span class="toc_ref">7</span> <span class="toc_entry">Limit semantics and random homomorphisms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-limits.html#a0000000006"><span class="toc_ref">7.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="chap-compute.html"><span class="toc_ref">8</span> <span class="toc_entry">The computational layer</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="chap-compute.html#a0000000007"><span class="toc_ref">8.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-mantel.html"><span class="toc_ref">9</span> <span class="toc_entry">Application: Mantel’s theorem</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="chap:compute">8 The computational layer</h1>
+
+<p>To actually run flag-algebra computations (enumerate flags, compute densities) at elaboration time, the abstract objects are mirrored by executable ones: graphs encoded as explicit edge sets \(\mathrm{Finset}(\mathrm{Sym}_2(\mathrm{Fin}\, n))\). Every computable definition is paired with a theorem proving it equals its abstract counterpart, so computed results are provably correct. (Source: <span class="ttfamily">FlagAlgebra/Compute/</span>; all names in the <span class="ttfamily">FlagAlgebras.Compute</span> namespace.) </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-graph">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">98</span>
+    <span class="definition_thmtitle">Edge-set graph</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-graph">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2Graph" class="lean_decl">FlagAlgebras.Compute.Sym2Graph</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>   A computable simple graph on \(\mathrm{Fin}\, n\): a finite set of non-loop edges in \(\mathrm{Sym}_2(\mathrm{Fin}\, n)\). It decodes to an abstract (empty-type) labeled graph. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-labeled-graph">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">99</span>
+    <span class="definition_thmtitle">Edge-set labeled graph</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-labeled-graph">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2LabeledGraph" class="lean_decl">FlagAlgebras.Compute.Sym2LabeledGraph</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The typed version: an edge set together with a graph embedding of a decoded type \(\sigma \); decodes to an abstract \(\mathrm{LabeledGraph}\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-flag">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">100</span>
+    <span class="definition_thmtitle">Computable flag</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-flag">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-labeled-graph">Definition 99</a></li>
+          
+          <li><a href="chap-flags.html#def:flag">Definition 5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2Flag" class="lean_decl">FlagAlgebras.Compute.Sym2Flag</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The computable counterpart of \(\mathrm{Flag}\, \sigma \): edge-set labeled graphs modulo a computable flag equivalence, carrying effective \(\mathrm{Fintype}\)/\(\mathrm{DecidableEq}\) instances. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:deg-key">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">101</span>
+    <span class="definition_thmtitle">Cheap iso invariant</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:deg-key">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+          <li><a href="chap-compute.html#def:deg-seq">Definition 112</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degKey" class="lean_decl">FlagAlgebras.Compute.degKey</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    A cheap \(O(n)\) isomorphism invariant — edge count paired with the sorted degree sequence — used to prefilter before the expensive isomorphism test. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:deg-key-iso-invariant">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">102</span>
+    <span class="theorem_thmtitle">The key is an invariant</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#thm:deg-key-iso-invariant">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:deg-key">Definition 101</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degKey_iso_invariant" class="lean_decl">FlagAlgebras.Compute.degKey_iso_invariant</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    Equivalent graphs share the cheap key, justifying its use as a deduplication prefilter. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:fast-iso">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">103</span>
+    <span class="definition_thmtitle">Fast isomorphism test</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:fast-iso">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-labeled-graph">Definition 99</a></li>
+          
+          <li><a href="chap-compute.html#def:build-full-map">Definition 113</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.isEmptyIsoFast_bool" class="lean_decl">FlagAlgebras.Compute.isEmptyIsoFast_bool</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.isIsoFast_bool" class="lean_decl">FlagAlgebras.Compute.isIsoFast_bool</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Permutation-search isomorphism decision procedures for edge-set graphs (empty and \(\sigma \)-typed), early-exiting on unequal keys; each is proved sound and complete against flag equivalence. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:fast-iso-decidable">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">104</span>
+    <span class="definition_thmtitle">Fast decidability instance</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:fast-iso-decidable">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:fast-iso">Definition 103</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.fastDecidableSym2LabeledGraphEqv" class="lean_decl">FlagAlgebras.Compute.fastDecidableSym2LabeledGraphEqv</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The high-priority \(\mathrm{Decidable}\) instance for flag equivalence backed by the fast test; it makes \(\mathrm{Fintype}\)-based flag enumeration tractable. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:downward-compute">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">105</span>
+    <span class="theorem_thmtitle">Computable normalizing factor, certified</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#thm:downward-compute">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-flag">Definition 100</a></li>
+          
+          <li><a href="chap-downward.html#def:downward-factor">Definition 46</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag" class="lean_decl">FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.downwardNormalizingFactor_eq" class="lean_decl">FlagAlgebras.Compute.downwardNormalizingFactor_eq</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    A computable downward normalizing factor on edge-set flags, proved equal to the abstract \(\mathrm{downwardNormalizingFactor}\) on the decoded flag. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:density-compute">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">106</span>
+    <span class="theorem_thmtitle">Computable densities, certified</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#thm:density-compute">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-flag">Definition 100</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-compute.html#def:sym2-density1">Definition 110</a></li>
+          
+          <li><a href="chap-compute.html#def:sym2-density2">Definition 111</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.flagDensity₁_eq_sym2EmptyTypeFlagDensity₁" class="lean_decl">FlagAlgebras.Compute.flagDensity₁_eq_sym2EmptyTypeFlagDensity₁</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.flagDensity₂_eq_sym2FlagDensity₂" class="lean_decl">FlagAlgebras.Compute.flagDensity₂_eq_sym2FlagDensity₂</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    Computable single- and pair-densities on edge-set flags, each proved equal to the abstract \(d_1\), \(d_2\) — so a density computed in the edge-set representation is provably the abstract value. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:flag-enumeration">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">107</span>
+    <span class="theorem_thmtitle">Flag enumeration, complete</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#thm:flag-enumeration">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+          <li><a href="chap-compute.html#def:fast-iso">Definition 103</a></li>
+          
+          <li><a href="chap-compute.html#def:deg-key">Definition 101</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.genSym2Graphs" class="lean_decl">FlagAlgebras.Compute.genSym2Graphs</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.genFlagSet_eq_univ" class="lean_decl">FlagAlgebras.Compute.genFlagSet_eq_univ</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    Orderly (McKay-style) augmentation with cheap-key dedup generates one representative per isomorphism class; the generated set is proved to exhaust \(\mathrm{Finset.univ}\), so enumeration is complete. </p>
+
+  </div>
+</div>
+<h1 id="a0000000007">8.1 Supporting constructions</h1>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-empty-flag">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">108</span>
+    <span class="definition_thmtitle">Computable empty-typed flag</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-empty-flag">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2EmptyTypedFlag" class="lean_decl">FlagAlgebras.Compute.Sym2EmptyTypedFlag</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The computable counterpart of \(\mathrm{Flag}\, \emptyset \, (\mathrm{Fin}\, n)\): edge-set graphs modulo computable flag equivalence. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-count">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">109</span>
+    <span class="definition_thmtitle">Placement counts</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-count">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+          <li><a href="chap-compute.html#def:sym2-labeled-graph">Definition 99</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2InducedSubgraphListCount" class="lean_decl">FlagAlgebras.Compute.sym2InducedSubgraphListCount</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2InducedLabeledSubgraphListCount" class="lean_decl">FlagAlgebras.Compute.sym2InducedLabeledSubgraphListCount</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The computable numerators of the densities: the number of vertex-disjoint placements of a flag list inside a host, empty-typed and \(\sigma \)-typed. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-density1">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">110</span>
+    <span class="definition_thmtitle">Computable single density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-density1">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-empty-flag">Definition 108</a></li>
+          
+          <li><a href="chap-compute.html#def:sym2-count">Definition 109</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁" class="lean_decl">FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The computable single subflag density on empty-typed edge-set flags. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:sym2-density2">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">111</span>
+    <span class="definition_thmtitle">Computable pair density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:sym2-density2">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-flag">Definition 100</a></li>
+          
+          <li><a href="chap-compute.html#def:sym2-count">Definition 109</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2FlagDensity₂" class="lean_decl">FlagAlgebras.Compute.sym2FlagDensity₂</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The computable pair (multiplication) density on \(\sigma \)-typed edge-set flags. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:deg-seq">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">112</span>
+    <span class="definition_thmtitle">Degree sequence</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:deg-seq">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-compute.html#def:sym2-graph">Definition 98</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degSeq" class="lean_decl">FlagAlgebras.Compute.degSeq</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The sorted degree sequence of an edge-set graph, the main part of the cheap isomorphism key. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:build-full-map">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">113</span>
+    <span class="definition_thmtitle">Permutation builder</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-compute.html#def:build-full-map">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.buildFullMap" class="lean_decl">FlagAlgebras.Compute.buildFullMap</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>   Assembles a full vertex permutation that fixes the type embedding and routes the remaining vertices through a chosen permutation — the inner loop of the fast isomorphism search. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="chap-limits.html" title="Limit semantics and random homomorphisms"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Lean Flag Algebras — Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="chap-mantel.html" title="Application: Mantel’s theorem"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

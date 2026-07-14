@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Application: Mantel’s theorem</title>
+<link rel="prev" href="chap-compute.html" title="The computational layer" />
+<link rel="up" href="index.html" title="Lean Flag Algebras — Blueprint" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Lean Flag Algebras — Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="chap-overview.html"><span class="toc_ref">1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="chap-flags.html"><span class="toc_ref">2</span> <span class="toc_entry">Flags and labeled graphs</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-flags.html#a0000000002"><span class="toc_ref">2.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-density.html"><span class="toc_ref">3</span> <span class="toc_entry">Subflag densities</span></a>
+ </li>
+<li class="">
+  <a href="chap-algebra.html"><span class="toc_ref">4</span> <span class="toc_entry">The flag algebra \(\mathcal{A}^\sigma \)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-algebra.html#a0000000003"><span class="toc_ref">4.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-downward.html"><span class="toc_ref">5</span> <span class="toc_entry">The unlabeling operator</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-downward.html#a0000000004"><span class="toc_ref">5.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-positivity.html"><span class="toc_ref">6</span> <span class="toc_entry">Positivity and sum-of-squares</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-positivity.html#a0000000005"><span class="toc_ref">6.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-limits.html"><span class="toc_ref">7</span> <span class="toc_entry">Limit semantics and random homomorphisms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-limits.html#a0000000006"><span class="toc_ref">7.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-compute.html"><span class="toc_ref">8</span> <span class="toc_entry">The computational layer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-compute.html#a0000000007"><span class="toc_ref">8.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="chap-mantel.html"><span class="toc_ref">9</span> <span class="toc_entry">Application: Mantel’s theorem</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="chap:mantel">9 Application: Mantel’s theorem</h1>
+
+<p>As a worked application of the whole framework, we prove <em>Mantel’s theorem</em> — the Turán density of the triangle \(K_3\) is \(\tfrac 12\). The flag-algebra <em>upper</em> bound (a sum-of-squares certificate, Chapter&#160;<a href="chap-positivity.html">6</a>) and the extremal <em>lower</em> bound meet in Theorem&#160;<a href="chap-mantel.html#thm:turan-k3">120</a>. (Source: <span class="ttfamily">LeanFlagAlgebras/MantelTheorem/</span>.) </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:densities">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">114</span>
+    <span class="definition_thmtitle">Edge and triangle densities</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#def:densities">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:fin-flag">Definition 26</a></li>
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.K2" class="lean_decl">MantelTheorem.K2</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.K3" class="lean_decl">MantelTheorem.K3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(K_2, K_3 \in \mathcal{A}^\emptyset \) are the edge- and triangle-density basis elements. For a positive homomorphism \(\varphi \), \(\varphi (K_2)\) is the edge density and \(\varphi (K_3)\) the triangle density. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:expand-k2">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">115</span>
+    <span class="lemma_thmtitle">Expansion of the edge density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#lem:expand-k2">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-mantel.html#def:densities">Definition 114</a></li>
+          
+          <li><a href="chap-density.html#thm:density-chain-rules">Theorem 24</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.expand_K2_on_three_vertex_graphs" class="lean_decl">MantelTheorem.expand_K2_on_three_vertex_graphs</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    Expanding onto three vertices, \(K_2 = \tfrac 13 E_3 + \tfrac 23 P_3 + K_3\), where \(E_3, P_3, K_3\) are the one-edge, path, and triangle densities. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:square-cert">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">116</span>
+    <span class="lemma_thmtitle">Square-positivity certificate</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#lem:square-cert">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-downward.html#def:downward">Definition 50</a></li>
+          
+          <li><a href="chap-limits.html#thm:square-downward-nonneg">Theorem 85</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.FlagAlgebra_2_1_0_0_minus_FlagAlgebra_2_1_0_1_square_downward" class="lean_decl">MantelTheorem.FlagAlgebra_2_1_0_0_minus_FlagAlgebra_2_1_0_1_square_downward</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    Unlabelling the square of the difference of the two rooted two-vertex flags, </p>
+<div class="displaymath" id="a0000000034">
+  \[  [\! [\, (O_2^{1} - K_2^{1})^2\, ]\! ]_0 = O_3 - \tfrac 13 E_3 - \tfrac 13 P_3 + K_3 \; \ge \;  0,  \]
+</div>
+<p> a sum-of-squares certificate: the left side is a downward-of-square, hence nonnegative by Theorem&#160;<a href="chap-limits.html#thm:square-downward-nonneg">85</a>. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:mantel-flag">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">117</span>
+    <span class="theorem_thmtitle">Mantel, flag-algebra form</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#thm:mantel-flag">#</a>
+    
+    <a class="icon proof" href="chap-mantel.html#a0000000035"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-mantel.html#def:densities">Definition 114</a></li>
+          
+          <li><a href="chap-mantel.html#lem:expand-k2">Lemma 115</a></li>
+          
+          <li><a href="chap-mantel.html#lem:square-cert">Lemma 116</a></li>
+          
+          <li><a href="chap-positivity.html#lem:order-monotone">Lemma 65</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Mantel_theorem" class="lean_decl">MantelTheorem.Mantel_theorem</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    In \(\mathcal{A}^\emptyset \), \(K_2 \le \tfrac 12\cdot 1 + K_3\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000035">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Substitute the expansion of Lemma&#160;<a href="chap-mantel.html#lem:expand-k2">115</a>, add the certificate of Lemma&#160;<a href="chap-mantel.html#lem:square-cert">116</a> and the nonnegativity of the three-vertex densities, and collect terms using the order arithmetic of Lemma&#160;<a href="chap-positivity.html#lem:order-monotone">65</a>. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:mantel-hom">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">118</span>
+    <span class="theorem_thmtitle">Mantel, homomorphism form</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#thm:mantel-hom">#</a>
+    
+    <a class="icon proof" href="chap-mantel.html#a0000000036"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-mantel.html#thm:mantel-flag">Theorem 117</a></li>
+          
+          <li><a href="chap-positivity.html#def:positive-hom">Definition 61</a></li>
+          
+          <li><a href="chap-mantel.html#thm:mantel-flag">Theorem 117</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Mantel_theorem'" class="lean_decl">MantelTheorem.Mantel_theorem'</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    For every positive homomorphism \(\varphi \) with \(\varphi (K_3) = 0\) (a triangle-free limit), \(\varphi (K_2) \le \tfrac 12\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000036">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Apply \(\varphi \) to Theorem&#160;<a href="chap-mantel.html#thm:mantel-flag">117</a>; positivity and \(\varphi (K_3)=0\) give \(\varphi (K_2) \le \tfrac 12\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:lower-bound">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">119</span>
+    <span class="lemma_thmtitle">Complete-bipartite lower bound</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#lem:lower-bound">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.extremal_density_K3_ge" class="lean_decl">MantelTheorem.extremal_density_K3_ge</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   For \(n \ge 2\), the maximal edge density of a triangle-free graph on \(n\) vertices is at least \(\tfrac 12\), witnessed by the balanced complete bipartite graph: \(\operatorname {ex}(n,K_3)/\binom {n}{2} \ge \tfrac 12\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:turan-k3">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">120</span>
+    <span class="theorem_thmtitle">Turán density of the triangle</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-mantel.html#thm:turan-k3">#</a>
+    
+    <a class="icon proof" href="chap-mantel.html#a0000000037"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-mantel.html#thm:mantel-hom">Theorem 118</a></li>
+          
+          <li><a href="chap-mantel.html#lem:lower-bound">Lemma 119</a></li>
+          
+          <li><a href="chap-mantel.html#thm:mantel-hom">Theorem 118</a></li>
+          
+          <li><a href="chap-mantel.html#lem:lower-bound">Lemma 119</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Turan_density_K3" class="lean_decl">MantelTheorem.Turan_density_K3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    \(\pi (K_3) = \tfrac 12\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000037">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The homomorphism form gives the upper bound \(\pi (K_3) \le \tfrac 12\); the complete-bipartite construction gives the matching lower bound. They meet at \(\tfrac 12\). </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="chap-compute.html" title="The computational layer"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Lean Flag Algebras — Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

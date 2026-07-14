@@ -1,0 +1,224 @@
+\chapter{The flag algebra $\mathcal{A}^\sigma$}
+\label{chap:algebra}
+
+Formal real combinations of flags form a free module; a product defined through
+pair densities and a quotient by Razborov's averaging relations turn it into a
+commutative $\mathbb{R}$-algebra, the flag algebra $\mathcal{A}^\sigma$.
+(Source: \texttt{FlagAlgebra/FlagAlgebra.lean}.)
+
+\begin{definition}[Size-tagged flag]
+  \label{def:fin-flag}
+  \lean{FlagAlgebras.FinFlag}
+  \uses{def:flag-with-size}
+  \leanok
+  A \emph{size-tagged flag} is a dependent pair $\langle n, F\rangle$ of a vertex
+  count $n$ and a flag $F$ on $\mathrm{Fin}\,n$. These are the basis indices of
+  the algebra.
+\end{definition}
+
+\begin{definition}[Flag vector]
+  \label{def:flag-vector}
+  \lean{FlagAlgebras.FlagVector}
+  \uses{def:fin-flag}
+  \leanok
+  A \emph{flag vector} is a finitely supported real combination of size-tagged
+  flags, i.e.\ an element of $\mathrm{FinFlag}\,\sigma \to_{0} \mathbb{R}$: the
+  underlying module before quotienting.
+\end{definition}
+
+\begin{definition}[Basis vector]
+  \label{def:basis-vector}
+  \lean{FlagAlgebras.basisVector}
+  \uses{def:flag-vector}
+  \leanok
+  $\mathrm{basisVector}\,F$ is the unit vector supported on the single flag $F$;
+  every construction reduces to these.
+\end{definition}
+
+\begin{definition}[Flag multiplication]
+  \label{def:flag-mul}
+  \lean{FlagAlgebras.flagMul, FlagAlgebras.flagMulWithSize}
+  \uses{def:basis-vector, def:flag-density-n, def:flag-with-size}
+  \leanok
+  The product of two flags is expanded onto flags $G$ of a target size $\ell$,
+  weighted by the pair density:
+  \[ F \cdot F' \;=\; \sum_{G} d_2(F,F';G)\,\cdot G, \]
+  taken at the minimal size $\ell = |F| + |F'| - |\sigma|$
+  ($\mathrm{flagMul}$); the choice of $\ell$ is irrelevant modulo the averaging
+  relations.
+\end{definition}
+
+\begin{definition}[Zero space]
+  \label{def:zero-space}
+  \lean{FlagAlgebras.ZeroSpace}
+  \uses{def:zero-set, def:flag-vector}
+  \leanok
+  The \emph{zero space} $\mathrm{ZeroSpace}\,\sigma$ is the $\mathbb{R}$-submodule
+  spanned by all of Razborov's averaging relations (the set
+  $\mathrm{zeroSet}\,\sigma$). Quotienting by it identifies each flag with its
+  density expansion.
+\end{definition}
+
+\begin{definition}[The flag algebra]
+  \label{def:flag-algebra}
+  \lean{FlagAlgebras.FlagAlgebra}
+  \uses{def:flag-vector, def:zero-space, def:flag-vector-eqv}
+  \leanok
+  $\mathcal{A}^\sigma = \mathrm{FlagVector}\,\sigma / {\sim_v}$, flag vectors
+  modulo the zero space. It carries a commutative $\mathbb{R}$-algebra structure
+  (built below), with quotient map written $[\![\,\cdot\,]\!]$.
+\end{definition}
+
+\begin{theorem}[The zero space is an ideal]
+  \label{thm:zero-space-ideal}
+  \lean{FlagAlgebras.flagVector_mul_zeroSpace}
+  \uses{def:zero-space, def:flag-mul}
+  \leanok
+  Multiplying any flag vector by an averaging relation gives another element of
+  the zero space. Hence multiplication descends to a well-defined operation on
+  the quotient.
+\end{theorem}
+\begin{proof}\leanok
+  Reduce to a basis vector times a generator $\mathrm{zeroElement}\,F\,\ell$ and
+  apply the chain rule (Theorem~\ref{thm:density-chain-rules}), which is exactly
+  the statement that the product of the relation is again a telescoping sum of
+  relations.
+\end{proof}
+
+\begin{theorem}[Associativity modulo $\sim_v$]
+  \label{thm:mul-assoc}
+  \lean{FlagAlgebras.flagVector_mul_assoc}
+  \uses{def:flag-mul, def:flag-density-n}
+  \leanok
+  $(f\cdot g)\cdot h \sim_v f\cdot(g\cdot h)$. Associativity fails on the nose on
+  flag vectors but holds modulo the zero space, so it lifts to genuine
+  associativity on $\mathcal{A}^\sigma$.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{thm:triple-mul-density}
+  Both sides expand, via the triple-density identity
+  (Theorem~\ref{thm:triple-mul-density}), to the same sum
+  $\sum_{G} d_3(F_1,F_2,F_3;G)\cdot G$.
+\end{proof}
+
+\begin{theorem}[Product equals density expansion]
+  \label{thm:quot-mul-density}
+  \lean{FlagAlgebras.basisVector_quot_mul_eq_flagMul_quot}
+  \uses{def:flag-algebra, def:flag-mul}
+  \leanok
+  In $\mathcal{A}^\sigma$, $[\![F]\!]\cdot[\![G]\!] = [\![\,\mathrm{flagMul}\,F\,G\,]\!]$:
+  the ring product of two flags is the class of their density expansion.
+\end{theorem}
+\begin{proof}\leanok
+  Unfold the multiplication on the quotient, which is defined by
+  $\mathrm{flagMul}$ and well-defined by Theorem~\ref{thm:zero-space-ideal}.
+\end{proof}
+
+\begin{theorem}[Same-size flags sum to one]
+  \label{thm:sum-flags-eq-one}
+  \lean{FlagAlgebras.sum_flagWithSize_eq_one}
+  \uses{def:flag-algebra, def:basis-vector}
+  \leanok
+  For every $\ell \ge |\sigma|$, $\sum_{F : |F|=\ell} [\![F]\!] = 1$ in
+  $\mathcal{A}^\sigma$: the sum over all flags of a fixed size is the unit. This
+  normalization is used pervasively in density proofs.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{thm:basis-quot-eq-sum}
+  Specialize the density-expansion identity
+  (Theorem~\ref{thm:basis-quot-eq-sum}) to the empty flag, whose density in every
+  size-$\ell$ flag is $1$.
+\end{proof}
+
+\section{Supporting constructions}
+
+\begin{definition}[Flag of fixed size]
+  \label{def:flag-with-size}
+  \lean{FlagAlgebras.FlagWithSize}
+  \uses{def:flag}
+  \leanok
+  $\mathrm{FlagWithSize}\,\sigma\,n = \mathrm{Flag}\,\sigma\,(\mathrm{Fin}\,n)$:
+  a flag on the fixed $n$-element carrier.
+\end{definition}
+
+\begin{definition}[Density expansion]
+  \label{def:flag-expansion}
+  \lean{FlagAlgebras.flagExpansion}
+  \uses{def:basis-vector, def:flag-density-n, def:flag-with-size}
+  \leanok
+  $\mathrm{flagExpansion}\,F\,\ell = \sum_{F'} d_1(F;F')\,\cdot F'$, the averaged
+  expansion of $F$ onto size-$\ell$ flags.
+\end{definition}
+
+\begin{definition}[Averaging relation]
+  \label{def:zero-element}
+  \lean{FlagAlgebras.zeroElement}
+  \uses{def:basis-vector, def:flag-expansion}
+  \leanok
+  Razborov's generating relation
+  $\mathrm{zeroElement}\,F\,\ell = F - \mathrm{flagExpansion}\,F\,\ell$,
+  identified with $0$ in the algebra.
+\end{definition}
+
+\begin{definition}[Relation set]
+  \label{def:zero-set}
+  \lean{FlagAlgebras.zeroSet}
+  \uses{def:zero-element}
+  \leanok
+  The set of all averaging relations $\mathrm{zeroElement}\,F\,\ell$ (with
+  $|F| \le \ell$); its span is the zero space.
+\end{definition}
+
+\begin{definition}[Flag equivalence of vectors]
+  \label{def:flag-vector-eqv}
+  \lean{FlagAlgebras.flagVectorEqv}
+  \uses{def:zero-space}
+  \leanok
+  $f \sim_v g$ iff $f - g \in \mathrm{ZeroSpace}\,\sigma$: the two vectors
+  represent the same flag-algebra element.
+\end{definition}
+
+\begin{theorem}[Quotient map is a homomorphism]
+  \label{thm:quot-hom}
+  \lean{FlagAlgebras.add_quot, FlagAlgebras.mul_quot, FlagAlgebras.smul_quot, FlagAlgebras.sum_quot}
+  \uses{def:flag-vector, def:flag-algebra}
+  \leanok
+  The quotient map $[\![\,\cdot\,]\!]$ commutes with addition, multiplication,
+  scalar multiplication, and finite sums.
+\end{theorem}
+
+\begin{theorem}[Triple product expansion]
+  \label{thm:triple-mul-density}
+  \lean{FlagAlgebras.three_flag_mul_eqv_sum_tripleDensity}
+  \uses{def:basis-vector, def:flag-vector-eqv, def:flag-with-size, def:flag-density-n, def:flag-mul, thm:density-chain-rules}
+  \leanok
+  The product of three flags is, modulo $\sim_v$, the size-$\ell$ sum weighted by
+  the triple density $d_3$. This is the engine behind associativity
+  (Theorem~\ref{thm:mul-assoc}).
+\end{theorem}
+
+\begin{theorem}[Flag class as density expansion]
+  \label{thm:basis-quot-eq-sum}
+  \lean{FlagAlgebras.basisVector_quot_eq_sum}
+  \uses{def:basis-vector, def:flag-with-size, def:flag-density-n, def:flag-algebra, thm:quot-hom, def:flag-expansion}
+  \leanok
+  In the algebra, $[\![F]\!] = \sum_{F'} d_1(F;F')\,[\![F']\!]$ over size-$\ell$
+  flags: the averaging relation written as a $[\![\,\cdot\,]\!]$ identity.
+\end{theorem}
+
+\begin{theorem}[Nontriviality]
+  \label{thm:flag-algebra-nontrivial}
+  \lean{FlagAlgebras.flagAlgebra_zero_ne_one}
+  \uses{def:flag-algebra, def:zero-space, def:basis-vector, def:flag-density-n, thm:density-chain-rules}
+  \leanok
+  $0 \ne 1$ in $\mathcal{A}^\sigma$: the flag algebra is nontrivial (so its
+  $\mathrm{CommRing}$ structure is not the zero ring).
+\end{theorem}
+\begin{proof}\leanok
+  If $1$ lay in $\mathrm{ZeroSpace}\,\sigma$ it would be a finite combination of
+  averaging relations. But the linear functional $\varphi(G') = d_1(G';F)$
+  (density into a fixed large flag $F$) sends every generator
+  $\mathrm{zeroElement}\,G\,\ell$ to $0$ by the chain rule
+  (Theorem~\ref{thm:density-chain-rules}), while $\varphi(1) = 1$ --- a
+  contradiction.
+\end{proof}

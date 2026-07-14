@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The flag algebra \(\mathcal{A}^\sigma \)</title>
+<link rel="next" href="chap-downward.html" title="The unlabeling operator" />
+<link rel="prev" href="chap-density.html" title="Subflag densities" />
+<link rel="up" href="index.html" title="Lean Flag Algebras — Blueprint" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Lean Flag Algebras — Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="chap-overview.html"><span class="toc_ref">1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="chap-flags.html"><span class="toc_ref">2</span> <span class="toc_entry">Flags and labeled graphs</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-flags.html#a0000000002"><span class="toc_ref">2.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-density.html"><span class="toc_ref">3</span> <span class="toc_entry">Subflag densities</span></a>
+ </li>
+<li class=" active current">
+  <a href="chap-algebra.html"><span class="toc_ref">4</span> <span class="toc_entry">The flag algebra \(\mathcal{A}^\sigma \)</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="chap-algebra.html#a0000000003"><span class="toc_ref">4.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-downward.html"><span class="toc_ref">5</span> <span class="toc_entry">The unlabeling operator</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-downward.html#a0000000004"><span class="toc_ref">5.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-positivity.html"><span class="toc_ref">6</span> <span class="toc_entry">Positivity and sum-of-squares</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-positivity.html#a0000000005"><span class="toc_ref">6.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-limits.html"><span class="toc_ref">7</span> <span class="toc_entry">Limit semantics and random homomorphisms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-limits.html#a0000000006"><span class="toc_ref">7.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-compute.html"><span class="toc_ref">8</span> <span class="toc_entry">The computational layer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-compute.html#a0000000007"><span class="toc_ref">8.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-mantel.html"><span class="toc_ref">9</span> <span class="toc_entry">Application: Mantel’s theorem</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="chap:algebra">4 The flag algebra \(\mathcal{A}^\sigma \)</h1>
+
+<p>Formal real combinations of flags form a free module; a product defined through pair densities and a quotient by Razborov’s averaging relations turn it into a commutative \(\mathbb {R}\)-algebra, the flag algebra \(\mathcal{A}^\sigma \). (Source: <span class="ttfamily">FlagAlgebra/FlagAlgebra.lean</span>.) </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:fin-flag">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">26</span>
+    <span class="definition_thmtitle">Size-tagged flag</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:fin-flag">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-with-size">Definition 36</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FinFlag" class="lean_decl">FlagAlgebras.FinFlag</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    A <em>size-tagged flag</em> is a dependent pair \(\langle n, F\rangle \) of a vertex count \(n\) and a flag \(F\) on \(\mathrm{Fin}\, n\). These are the basis indices of the algebra. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-vector">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">27</span>
+    <span class="definition_thmtitle">Flag vector</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-vector">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:fin-flag">Definition 26</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagVector" class="lean_decl">FlagAlgebras.FlagVector</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    A <em>flag vector</em> is a finitely supported real combination of size-tagged flags, i.e. an element of \(\mathrm{FinFlag}\, \sigma \to _{0} \mathbb {R}\): the underlying module before quotienting. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:basis-vector">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">28</span>
+    <span class="definition_thmtitle">Basis vector</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:basis-vector">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-vector">Definition 27</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector" class="lean_decl">FlagAlgebras.basisVector</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{basisVector}\, F\) is the unit vector supported on the single flag \(F\); every construction reduces to these. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-mul">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">29</span>
+    <span class="definition_thmtitle">Flag multiplication</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-mul">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-with-size">Definition 36</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagMul" class="lean_decl">FlagAlgebras.flagMul</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagMulWithSize" class="lean_decl">FlagAlgebras.flagMulWithSize</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The product of two flags is expanded onto flags \(G\) of a target size \(\ell \), weighted by the pair density: </p>
+<div class="displaymath" id="a0000000014">
+  \[  F \cdot F' \; =\;  \sum _{G} d_2(F,F';G)\, \cdot G,  \]
+</div>
+<p> taken at the minimal size \(\ell = |F| + |F'| - |\sigma |\) (\(\mathrm{flagMul}\)); the choice of \(\ell \) is irrelevant modulo the averaging relations. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:zero-space">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">30</span>
+    <span class="definition_thmtitle">Zero space</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:zero-space">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:zero-set">Definition 39</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-vector">Definition 27</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.ZeroSpace" class="lean_decl">FlagAlgebras.ZeroSpace</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The <em>zero space</em> \(\mathrm{ZeroSpace}\, \sigma \) is the \(\mathbb {R}\)-submodule spanned by all of Razborov’s averaging relations (the set \(\mathrm{zeroSet}\, \sigma \)). Quotienting by it identifies each flag with its density expansion. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-algebra">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">31</span>
+    <span class="definition_thmtitle">The flag algebra</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-algebra">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-vector">Definition 27</a></li>
+          
+          <li><a href="chap-algebra.html#def:zero-space">Definition 30</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-vector-eqv">Definition 40</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagAlgebra" class="lean_decl">FlagAlgebras.FlagAlgebra</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathcal{A}^\sigma = \mathrm{FlagVector}\, \sigma / {\sim _v}\), flag vectors modulo the zero space. It carries a commutative \(\mathbb {R}\)-algebra structure (built below), with quotient map written \([\! [\, \cdot \, ]\! ]\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:zero-space-ideal">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">32</span>
+    <span class="theorem_thmtitle">The zero space is an ideal</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:zero-space-ideal">#</a>
+    
+    <a class="icon proof" href="chap-algebra.html#a0000000015"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:zero-space">Definition 30</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-mul">Definition 29</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVector_mul_zeroSpace" class="lean_decl">FlagAlgebras.flagVector_mul_zeroSpace</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    Multiplying any flag vector by an averaging relation gives another element of the zero space. Hence multiplication descends to a well-defined operation on the quotient. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000015">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Reduce to a basis vector times a generator \(\mathrm{zeroElement}\, F\, \ell \) and apply the chain rule (Theorem&#160;<a href="chap-density.html#thm:density-chain-rules">24</a>), which is exactly the statement that the product of the relation is again a telescoping sum of relations. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:mul-assoc">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">33</span>
+    <span class="theorem_thmtitle">Associativity modulo \(\sim _v\)</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:mul-assoc">#</a>
+    
+    <a class="icon proof" href="chap-algebra.html#a0000000016"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-mul">Definition 29</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-algebra.html#thm:triple-mul-density">Theorem 42</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVector_mul_assoc" class="lean_decl">FlagAlgebras.flagVector_mul_assoc</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    \((f\cdot g)\cdot h \sim _v f\cdot (g\cdot h)\). Associativity fails on the nose on flag vectors but holds modulo the zero space, so it lifts to genuine associativity on \(\mathcal{A}^\sigma \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000016">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Both sides expand, via the triple-density identity (Theorem&#160;<a href="chap-algebra.html#thm:triple-mul-density">42</a>), to the same sum \(\sum _{G} d_3(F_1,F_2,F_3;G)\cdot G\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:quot-mul-density">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">34</span>
+    <span class="theorem_thmtitle">Product equals density expansion</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:quot-mul-density">#</a>
+    
+    <a class="icon proof" href="chap-algebra.html#a0000000017"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-mul">Definition 29</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector_quot_mul_eq_flagMul_quot" class="lean_decl">FlagAlgebras.basisVector_quot_mul_eq_flagMul_quot</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    In \(\mathcal{A}^\sigma \), \([\! [F]\! ]\cdot [\! [G]\! ] = [\! [\, \mathrm{flagMul}\, F\, G\, ]\! ]\): the ring product of two flags is the class of their density expansion. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000017">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Unfold the multiplication on the quotient, which is defined by \(\mathrm{flagMul}\) and well-defined by Theorem&#160;<a href="chap-algebra.html#thm:zero-space-ideal">32</a>. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:sum-flags-eq-one">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">35</span>
+    <span class="theorem_thmtitle">Same-size flags sum to one</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:sum-flags-eq-one">#</a>
+    
+    <a class="icon proof" href="chap-algebra.html#a0000000018"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-algebra.html#thm:basis-quot-eq-sum">Theorem 43</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.sum_flagWithSize_eq_one" class="lean_decl">FlagAlgebras.sum_flagWithSize_eq_one</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    For every \(\ell \ge |\sigma |\), \(\sum _{F : |F|=\ell } [\! [F]\! ] = 1\) in \(\mathcal{A}^\sigma \): the sum over all flags of a fixed size is the unit. This normalization is used pervasively in density proofs. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000018">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> Specialize the density-expansion identity (Theorem&#160;<a href="chap-algebra.html#thm:basis-quot-eq-sum">43</a>) to the empty flag, whose density in every size-\(\ell \) flag is \(1\). </p>
+
+  </div>
+</div>
+<h1 id="a0000000003">4.1 Supporting constructions</h1>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-with-size">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">36</span>
+    <span class="definition_thmtitle">Flag of fixed size</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-with-size">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-flags.html#def:flag">Definition 5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagWithSize" class="lean_decl">FlagAlgebras.FlagWithSize</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{FlagWithSize}\, \sigma \, n = \mathrm{Flag}\, \sigma \, (\mathrm{Fin}\, n)\): a flag on the fixed \(n\)-element carrier. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-expansion">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">37</span>
+    <span class="definition_thmtitle">Density expansion</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-expansion">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-with-size">Definition 36</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagExpansion" class="lean_decl">FlagAlgebras.flagExpansion</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{flagExpansion}\, F\, \ell = \sum _{F'} d_1(F;F')\, \cdot F'\), the averaged expansion of \(F\) onto size-\(\ell \) flags. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:zero-element">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">38</span>
+    <span class="definition_thmtitle">Averaging relation</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:zero-element">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-expansion">Definition 37</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.zeroElement" class="lean_decl">FlagAlgebras.zeroElement</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Razborov’s generating relation \(\mathrm{zeroElement}\, F\, \ell = F - \mathrm{flagExpansion}\, F\, \ell \), identified with \(0\) in the algebra. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:zero-set">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">39</span>
+    <span class="definition_thmtitle">Relation set</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:zero-set">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:zero-element">Definition 38</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.zeroSet" class="lean_decl">FlagAlgebras.zeroSet</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The set of all averaging relations \(\mathrm{zeroElement}\, F\, \ell \) (with \(|F| \le \ell \)); its span is the zero space. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-vector-eqv">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">40</span>
+    <span class="definition_thmtitle">Flag equivalence of vectors</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#def:flag-vector-eqv">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:zero-space">Definition 30</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVectorEqv" class="lean_decl">FlagAlgebras.flagVectorEqv</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(f \sim _v g\) iff \(f - g \in \mathrm{ZeroSpace}\, \sigma \): the two vectors represent the same flag-algebra element. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:quot-hom">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">41</span>
+    <span class="theorem_thmtitle">Quotient map is a homomorphism</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:quot-hom">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-vector">Definition 27</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.add_quot" class="lean_decl">FlagAlgebras.add_quot</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.mul_quot" class="lean_decl">FlagAlgebras.mul_quot</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.smul_quot" class="lean_decl">FlagAlgebras.smul_quot</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.sum_quot" class="lean_decl">FlagAlgebras.sum_quot</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    The quotient map \([\! [\, \cdot \, ]\! ]\) commutes with addition, multiplication, scalar multiplication, and finite sums. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:triple-mul-density">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">42</span>
+    <span class="theorem_thmtitle">Triple product expansion</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:triple-mul-density">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-vector-eqv">Definition 40</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-with-size">Definition 36</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-mul">Definition 29</a></li>
+          
+          <li><a href="chap-density.html#thm:density-chain-rules">Theorem 24</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.three_flag_mul_eqv_sum_tripleDensity" class="lean_decl">FlagAlgebras.three_flag_mul_eqv_sum_tripleDensity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    The product of three flags is, modulo \(\sim _v\), the size-\(\ell \) sum weighted by the triple density \(d_3\). This is the engine behind associativity (Theorem&#160;<a href="chap-algebra.html#thm:mul-assoc">33</a>). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:basis-quot-eq-sum">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">43</span>
+    <span class="theorem_thmtitle">Flag class as density expansion</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:basis-quot-eq-sum">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-with-size">Definition 36</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-algebra.html#thm:quot-hom">Theorem 41</a></li>
+          
+          <li><a href="chap-algebra.html#def:flag-expansion">Definition 37</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector_quot_eq_sum" class="lean_decl">FlagAlgebras.basisVector_quot_eq_sum</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    In the algebra, \([\! [F]\! ] = \sum _{F'} d_1(F;F')\, [\! [F']\! ]\) over size-\(\ell \) flags: the averaging relation written as a \([\! [\, \cdot \, ]\! ]\) identity. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:flag-algebra-nontrivial">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">44</span>
+    <span class="theorem_thmtitle">Nontriviality</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-algebra.html#thm:flag-algebra-nontrivial">#</a>
+    
+    <a class="icon proof" href="chap-algebra.html#a0000000019"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-algebra.html#def:zero-space">Definition 30</a></li>
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-density.html#thm:density-chain-rules">Theorem 24</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagAlgebra_zero_ne_one" class="lean_decl">FlagAlgebras.flagAlgebra_zero_ne_one</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    \(0 \ne 1\) in \(\mathcal{A}^\sigma \): the flag algebra is nontrivial (so its \(\mathrm{CommRing}\) structure is not the zero ring). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000019">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>If \(1\) lay in \(\mathrm{ZeroSpace}\, \sigma \) it would be a finite combination of averaging relations. But the linear functional \(\varphi (G') = d_1(G';F)\) (density into a fixed large flag \(F\)) sends every generator \(\mathrm{zeroElement}\, G\, \ell \) to \(0\) by the chain rule (Theorem&#160;<a href="chap-density.html#thm:density-chain-rules">24</a>), while \(\varphi (1) = 1\) — a contradiction. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="chap-density.html" title="Subflag densities"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Lean Flag Algebras — Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="chap-downward.html" title="The unlabeling operator"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

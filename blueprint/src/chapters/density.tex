@@ -1,0 +1,138 @@
+\chapter{Subflag densities}
+\label{chap:density}
+
+The density of one flag inside another is the typed analogue of induced-subgraph
+density. This chapter defines it, lifts it through the flag quotient, generalizes
+it to lists of disjoint flags, and proves the \emph{chain rules} that make the
+whole flag algebra tick. (Source: \texttt{FlagAlgebra/SubflagDensity.lean},
+\texttt{SubflagListDensity.lean}, \texttt{SubflagListDensityProp.lean}.)
+
+\begin{definition}[Labeled-graph count]
+  \label{def:labeled-graph-count}
+  \lean{FlagAlgebras.labeledGraphCount}
+  \uses{def:labeled-graph}
+  \leanok
+  $\mathrm{labeledGraphCount}\,H\,G$ is the number of induced labeled subgraphs
+  of the host $G$ that are labeled-isomorphic to $H$.
+\end{definition}
+
+\begin{definition}[Labeled-graph density]
+  \label{def:labeled-graph-density}
+  \lean{FlagAlgebras.labeledGraphDensity}
+  \uses{def:labeled-graph-count}
+  \leanok
+  $\mathrm{labeledGraphDensity}\,H\,G$ normalizes the count by the number of ways
+  to choose the non-type vertices of an $H$-sized induced subgraph, i.e.\ by
+  $\binom{|G|-|\sigma|}{|H|-|\sigma|}$, giving a rational in $[0,1]$.
+\end{definition}
+
+\begin{lemma}[Isomorphism invariance]
+  \label{lem:density-iso-invariant}
+  \lean{FlagAlgebras.labeledGraphDensity_respect_eqv}
+  \uses{def:labeled-graph-density, def:labeled-graph-iso}
+  \leanok
+  Labeled-graph density is invariant under $\simeq_f$ in both arguments. This is
+  the well-definedness fact that lets density descend to flags.
+\end{lemma}
+\begin{proof}\leanok
+  Transport induced copies along the given isomorphisms; the counts, and hence
+  the normalized densities, agree.
+\end{proof}
+
+\begin{definition}[Subflag density]
+  \label{def:subflag-density}
+  \lean{FlagAlgebras.subflagDensity}
+  \uses{def:labeled-graph-density, lem:density-iso-invariant, def:flag}
+  \leanok
+  $\mathrm{subflagDensity} : \mathrm{Flag}\,\sigma\,V \to \mathrm{Flag}\,\sigma\,W
+  \to \mathbb{Q}$ is $\mathrm{labeledGraphDensity}$ lifted through the flag
+  quotient in both arguments: the density of one flag inside another.
+\end{definition}
+
+\begin{lemma}[Boundary values]
+  \label{lem:subflag-density-values}
+  \lean{FlagAlgebras.subflagDensity_empty, FlagAlgebras.subflagDensity_self, FlagAlgebras.subflagDensity_other}
+  \uses{def:subflag-density, def:empty-flag}
+  \leanok
+  The empty flag has density $1$ in every flag; a flag has density $1$ in
+  itself; two distinct flags of the same size have density $0$ in each other.
+\end{lemma}
+
+\begin{definition}[List density and fixed arities]
+  \label{def:flag-list-density}
+  \lean{FlagAlgebras.flagListDensity}
+  \uses{def:flag-list}
+  \leanok
+  $\mathrm{flagListDensity}$ counts the induced subgraph-lists of $G$ that
+  simultaneously realize a whole disjoint list of prescribed flags (normalized by
+  the multinomial coefficient distributing the non-type vertices), lifted through
+  the quotient. It generalizes $\mathrm{labeledGraphListDensity}$ on carriers.
+\end{definition}
+
+\begin{definition}[Single, pair, and triple densities]
+  \label{def:flag-density-n}
+  \lean{FlagAlgebras.flagDensity₁, FlagAlgebras.flagDensity₂, FlagAlgebras.flagDensity₃}
+  \uses{def:flag-list-density}
+  \leanok
+  The fixed-arity specializations
+  $d_1(F;G)$, $d_2(F_1,F_2;G)$, $d_3(F_1,F_2,F_3;G)$ are list densities of the
+  singleton, pair, and triple lists. $d_2$ is the factor multiplication is built
+  from; $d_1$ is the ordinary subflag density.
+\end{definition}
+
+\begin{theorem}[Single density is subflag density]
+  \label{thm:subflag-eq-list}
+  \lean{FlagAlgebras.subflagDensity_eq_flagListDensity}
+  \uses{def:subflag-density, def:flag-density-n}
+  \leanok
+  $\mathrm{subflagDensity}\,F\,G = d_1(F;G)$: the single-flag list density
+  coincides with the subflag density of Chapter start, linking the two
+  developments.
+\end{theorem}
+\begin{proof}\leanok
+  Both count the same induced copies; unfold the singleton list.
+\end{proof}
+
+\begin{lemma}[Permutation and empty-insertion invariance]
+  \label{lem:density-invariance}
+  \lean{FlagAlgebras.flagDensity_permute, FlagAlgebras.flagDensity_insert_empty}
+  \uses{def:flag-list-density}
+  \leanok
+  List density is unchanged by permuting the list, and by inserting an empty
+  flag. These symmetries reduce the fixed-arity densities to one another in the
+  chain-rule proofs.
+\end{lemma}
+
+\begin{theorem}[Density chain rules]
+  \label{thm:density-chain-rules}
+  \lean{FlagAlgebras.flagDensity_eq_sum_density_prods, FlagAlgebras.flagPairDensity_eq_sum_density_prods, FlagAlgebras.flagPairDensity_eq_sum_density_prods', FlagAlgebras.flagTripleDensity_eq_sum_density_prods}
+  \uses{def:flag-density-n, lem:density-invariance}
+  \leanok
+  A product-flag density expands as a sum over intermediate flags $G'$ of size
+  $\ell'$ of products of densities, e.g.
+  \[ d_1(F;G) = \sum_{G'} d_1(F;G')\, d_1(G';G), \qquad
+     d_2(F_1,F_2;G) = \sum_{G'} d_1(F_1;G')\, d_2(G',F_2;G). \]
+  The triple rule is foundational; the pair and single rules descend from it.
+  These are the identities the quotient algebra is defined to respect.
+\end{theorem}
+\begin{proof}\leanok
+  Partition the induced copies of the product by the intermediate flag they span
+  on a size-$\ell'$ vertex set, then count each part with the appropriate
+  density.
+\end{proof}
+
+\begin{theorem}[Asymptotic independence]
+  \label{thm:density-prod-approx}
+  \lean{FlagAlgebras.flagListDensity₂_prod_approx}
+  \uses{def:flag-density-n, thm:subflag-eq-list}
+  \leanok
+  There is a constant $c = 2(|F|+|F'|)^2$, independent of $G$, with
+  \[ \bigl| d_2(F,F';G) - d_1(F;G)\, d_1(F';G) \bigr| \le \frac{c}{|G|}. \]
+  Distinct subflag densities are thus asymptotically multiplicative --- the
+  probabilistic heart of the ``product of densities'' reasoning.
+\end{theorem}
+\begin{proof}\leanok
+  Model the choice of two vertex subsets as a finite probability space; the
+  discrepancy is the probability that the subsets overlap off the type, which is
+  $O(1/|G|)$ by a union bound.
+\end{proof}

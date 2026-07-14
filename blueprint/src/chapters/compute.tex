@@ -1,0 +1,158 @@
+\chapter{The computational layer}
+\label{chap:compute}
+
+To actually run flag-algebra computations (enumerate flags, compute densities) at
+elaboration time, the abstract objects are mirrored by executable ones: graphs
+encoded as explicit edge sets $\mathrm{Finset}(\mathrm{Sym}_2(\mathrm{Fin}\,n))$.
+Every computable definition is paired with a theorem proving it equals its
+abstract counterpart, so computed results are provably correct. (Source:
+\texttt{FlagAlgebra/Compute/}; all names in the \texttt{FlagAlgebras.Compute}
+namespace.)
+
+\begin{definition}[Edge-set graph]
+  \label{def:sym2-graph}
+  \lean{FlagAlgebras.Compute.Sym2Graph}
+  \leanok
+  A computable simple graph on $\mathrm{Fin}\,n$: a finite set of non-loop edges
+  in $\mathrm{Sym}_2(\mathrm{Fin}\,n)$. It decodes to an abstract
+  (empty-type) labeled graph.
+\end{definition}
+
+\begin{definition}[Edge-set labeled graph]
+  \label{def:sym2-labeled-graph}
+  \lean{FlagAlgebras.Compute.Sym2LabeledGraph}
+  \uses{def:sym2-graph}
+  \leanok
+  The typed version: an edge set together with a graph embedding of a decoded
+  type $\sigma$; decodes to an abstract $\mathrm{LabeledGraph}$.
+\end{definition}
+
+\begin{definition}[Computable flag]
+  \label{def:sym2-flag}
+  \lean{FlagAlgebras.Compute.Sym2Flag}
+  \uses{def:sym2-labeled-graph, def:flag}
+  \leanok
+  The computable counterpart of $\mathrm{Flag}\,\sigma$: edge-set labeled graphs
+  modulo a computable flag equivalence, carrying effective
+  $\mathrm{Fintype}$/$\mathrm{DecidableEq}$ instances.
+\end{definition}
+
+\begin{definition}[Cheap iso invariant]
+  \label{def:deg-key}
+  \lean{FlagAlgebras.Compute.degKey}
+  \uses{def:sym2-graph, def:deg-seq}
+  \leanok
+  A cheap $O(n)$ isomorphism invariant --- edge count paired with the sorted
+  degree sequence --- used to prefilter before the expensive isomorphism test.
+\end{definition}
+
+\begin{theorem}[The key is an invariant]
+  \label{thm:deg-key-iso-invariant}
+  \lean{FlagAlgebras.Compute.degKey_iso_invariant}
+  \uses{def:deg-key}
+  \leanok
+  Equivalent graphs share the cheap key, justifying its use as a deduplication
+  prefilter.
+\end{theorem}
+
+\begin{definition}[Fast isomorphism test]
+  \label{def:fast-iso}
+  \lean{FlagAlgebras.Compute.isEmptyIsoFast_bool, FlagAlgebras.Compute.isIsoFast_bool}
+  \uses{def:sym2-labeled-graph, def:build-full-map}
+  \leanok
+  Permutation-search isomorphism decision procedures for edge-set graphs (empty
+  and $\sigma$-typed), early-exiting on unequal keys; each is proved sound and
+  complete against flag equivalence.
+\end{definition}
+
+\begin{definition}[Fast decidability instance]
+  \label{def:fast-iso-decidable}
+  \lean{FlagAlgebras.Compute.fastDecidableSym2LabeledGraphEqv}
+  \uses{def:fast-iso}
+  \leanok
+  The high-priority $\mathrm{Decidable}$ instance for flag equivalence backed by
+  the fast test; it makes $\mathrm{Fintype}$-based flag enumeration tractable.
+\end{definition}
+
+\begin{theorem}[Computable normalizing factor, certified]
+  \label{thm:downward-compute}
+  \lean{FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag, FlagAlgebras.Compute.downwardNormalizingFactor_eq}
+  \uses{def:sym2-flag, def:downward-factor}
+  \leanok
+  A computable downward normalizing factor on edge-set flags, proved equal to the
+  abstract $\mathrm{downwardNormalizingFactor}$ on the decoded flag.
+\end{theorem}
+
+\begin{theorem}[Computable densities, certified]
+  \label{thm:density-compute}
+  \lean{FlagAlgebras.Compute.flagDensity₁_eq_sym2EmptyTypeFlagDensity₁, FlagAlgebras.Compute.flagDensity₂_eq_sym2FlagDensity₂}
+  \uses{def:sym2-flag, def:flag-density-n, def:sym2-density1, def:sym2-density2}
+  \leanok
+  Computable single- and pair-densities on edge-set flags, each proved equal to
+  the abstract $d_1$, $d_2$ --- so a density computed in the edge-set
+  representation is provably the abstract value.
+\end{theorem}
+
+\begin{theorem}[Flag enumeration, complete]
+  \label{thm:flag-enumeration}
+  \lean{FlagAlgebras.Compute.genSym2Graphs, FlagAlgebras.Compute.genFlagSet_eq_univ}
+  \uses{def:sym2-graph, def:fast-iso, def:deg-key}
+  \leanok
+  Orderly (McKay-style) augmentation with cheap-key dedup generates one
+  representative per isomorphism class; the generated set is proved to exhaust
+  $\mathrm{Finset.univ}$, so enumeration is complete.
+\end{theorem}
+
+\section{Supporting constructions}
+
+\begin{definition}[Computable empty-typed flag]
+  \label{def:sym2-empty-flag}
+  \lean{FlagAlgebras.Compute.Sym2EmptyTypedFlag}
+  \uses{def:sym2-graph}
+  \leanok
+  The computable counterpart of $\mathrm{Flag}\,\emptyset\,(\mathrm{Fin}\,n)$:
+  edge-set graphs modulo computable flag equivalence.
+\end{definition}
+
+\begin{definition}[Placement counts]
+  \label{def:sym2-count}
+  \lean{FlagAlgebras.Compute.sym2InducedSubgraphListCount, FlagAlgebras.Compute.sym2InducedLabeledSubgraphListCount}
+  \uses{def:sym2-graph, def:sym2-labeled-graph}
+  \leanok
+  The computable numerators of the densities: the number of vertex-disjoint
+  placements of a flag list inside a host, empty-typed and $\sigma$-typed.
+\end{definition}
+
+\begin{definition}[Computable single density]
+  \label{def:sym2-density1}
+  \lean{FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁}
+  \uses{def:sym2-empty-flag, def:sym2-count}
+  \leanok
+  The computable single subflag density on empty-typed edge-set flags.
+\end{definition}
+
+\begin{definition}[Computable pair density]
+  \label{def:sym2-density2}
+  \lean{FlagAlgebras.Compute.sym2FlagDensity₂}
+  \uses{def:sym2-flag, def:sym2-count}
+  \leanok
+  The computable pair (multiplication) density on $\sigma$-typed edge-set flags.
+\end{definition}
+
+\begin{definition}[Degree sequence]
+  \label{def:deg-seq}
+  \lean{FlagAlgebras.Compute.degSeq}
+  \uses{def:sym2-graph}
+  \leanok
+  The sorted degree sequence of an edge-set graph, the main part of the cheap
+  isomorphism key.
+\end{definition}
+
+\begin{definition}[Permutation builder]
+  \label{def:build-full-map}
+  \lean{FlagAlgebras.Compute.buildFullMap}
+  \leanok
+  Assembles a full vertex permutation that fixes the type embedding and routes the
+  remaining vertices through a chosen permutation --- the inner loop of the fast
+  isomorphism search.
+\end{definition}

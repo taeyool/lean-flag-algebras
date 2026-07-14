@@ -1,0 +1,23 @@
+% This file makes a printable version of the blueprint
+% It assumes a modern TeX compiler such as xeLaTeX or luaLaTeX.
+\documentclass[a4paper]{report}
+
+\usepackage{geometry}
+
+\usepackage{expl3}
+
+\usepackage{amssymb, amsthm, mathtools}
+\usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta, citecolor=blue]{hyperref}
+
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+
+\input{macros/common}
+\input{macros/print}
+
+\title{Lean Flag Algebras --- Blueprint}
+\author{taeyool}
+
+\begin{document}
+\maketitle
+\input{content}
+\end{document}

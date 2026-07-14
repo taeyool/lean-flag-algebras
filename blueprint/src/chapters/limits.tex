@@ -1,0 +1,278 @@
+\chapter{Limit semantics and random homomorphisms}
+\label{chap:limits}
+
+The analytic half of the theory identifies the algebraic positive homomorphisms
+with genuine limits of subgraph densities (Razborov's Theorem~3.3), then builds a
+probability measure on them (Theorem~3.5) that yields the Cauchy--Schwarz
+inequality powering SDP-style bounds. (Source:
+\texttt{FlagAlgebra/FlagSequence.lean}, \texttt{RandomHom.lean}.)
+
+\begin{definition}[Flag sequence]
+  \label{def:flag-seq}
+  \lean{FlagAlgebras.FlagSeq}
+  \uses{def:fin-flag}
+  \leanok
+  A \emph{flag sequence} is a sequence $\mathbb{N} \to \mathrm{FinFlag}\,\sigma$
+  of flags, typically of growing size.
+\end{definition}
+
+\begin{definition}[Density space]
+  \label{def:flag-density-space}
+  \lean{FlagAlgebras.FlagDensitySpace}
+  \uses{def:fin-flag}
+  \leanok
+  The compact, metrizable space of density profiles $\mathrm{FinFlag}\,\sigma \to
+  [0,1]$ (a Tychonoff cube); the ambient space of the limit semantics.
+\end{definition}
+
+\begin{definition}[Convergence]
+  \label{def:converges-to}
+  \lean{FlagAlgebras.ConvergesTo}
+  \uses{def:flag-seq, def:flag-density-space, def:increases, def:flag-density-seq}
+  \leanok
+  $\mathrm{ConvergesTo}\,s\,a$ says the flag sequence $s$ has strictly increasing
+  sizes and its subgraph-density profile converges pointwise to the limit $a$.
+\end{definition}
+
+\begin{definition}[Density profile of a homomorphism]
+  \label{def:positive-hom-coe}
+  \lean{FlagAlgebras.PositiveHom.coe}
+  \uses{def:positive-hom, def:flag-density-space}
+  \leanok
+  Each positive homomorphism $\varphi$ has a density profile
+  $F \mapsto \varphi[\![F]\!]$; this is the injective bridge from the algebraic
+  to the analytic side.
+\end{definition}
+
+\begin{definition}[Positive homomorphism space]
+  \label{def:positive-hom-space}
+  \lean{FlagAlgebras.PositiveHomSpace}
+  \uses{def:positive-hom-coe}
+  \leanok
+  The range of the profile map; shown to be closed, hence compact and
+  measurable.
+\end{definition}
+
+\begin{theorem}[Algebraic characterization]
+  \label{thm:positive-hom-space-char}
+  \lean{FlagAlgebras.positiveHomSpace_eq, FlagAlgebras.zeroSpaceProp, FlagAlgebras.oneProp, FlagAlgebras.mulProp}
+  \uses{def:positive-hom-space, def:flag-density-n}
+  \leanok
+  A density profile arises from a positive homomorphism iff it satisfies the
+  chain rule (\texttt{zeroSpaceProp}), normalization $a(1)=1$ (\texttt{oneProp}),
+  and multiplicativity through pair densities (\texttt{mulProp}).
+\end{theorem}
+
+\begin{theorem}[Every limit is a homomorphism (Razborov 3.3a)]
+  \label{thm:limit-is-hom}
+  \lean{FlagAlgebras.flagSeq_limit_mem_positiveHom}
+  \uses{def:converges-to, def:positive-hom-coe, thm:positive-hom-space-char}
+  \leanok
+  Any convergent flag-sequence density limit is the profile of some positive
+  homomorphism.
+\end{theorem}
+\begin{proof}\leanok
+  The limit inherits the three structural properties of
+  Theorem~\ref{thm:positive-hom-space-char} from the finite densities, so it lies
+  in the positive-homomorphism space.
+\end{proof}
+
+\begin{theorem}[Every homomorphism is a limit (Razborov 3.3b)]
+  \label{thm:hom-is-limit}
+  \lean{FlagAlgebras.positiveHom_as_flagSeq_limit}
+  \uses{def:converges-to, def:positive-hom-coe, def:flagseq-measure}
+  \leanok
+  Conversely every positive homomorphism arises as a convergent flag-sequence
+  limit.
+\end{theorem}
+\begin{proof}\leanok
+  Sample random flags from the profile and apply a Chebyshev / Borel--Cantelli
+  second-moment argument to get almost-sure convergence to $\varphi$.
+\end{proof}
+
+\begin{definition}[Random flag distribution]
+  \label{def:finflag-pmf}
+  \lean{FlagAlgebras.FinFlag.toPMF}
+  \uses{def:flag-density-space}
+  \leanok
+  Turns a large unlabeled flag of positive $\sigma$-density into a distribution
+  on density profiles: draw a random labelling extension weighted by its
+  normalizing factor and read off its density vector.
+\end{definition}
+
+\begin{theorem}[Random homomorphism measure (Razborov 3.5)]
+  \label{thm:random-hom-measure}
+  \lean{FlagAlgebras.exists_probMeasure_extend_emptyType_positiveHom}
+  \uses{def:finflag-pmf, def:positive-hom-space, thm:positive-hom-space-char, thm:hom-is-limit, def:downward, thm:lemma-3-11, lem:measure-support}
+  \leanok
+  For a base homomorphism $\varphi_0$ on the empty type with
+  $\varphi_0\langle\sigma\rangle_0 > 0$, there is a probability measure
+  $\mathbb{P}[\varphi_0]$ on the positive-homomorphism space whose expectation
+  recovers the normalized downward operator:
+  \[ \int \varphi(f)\, d\mathbb{P}[\varphi_0]
+     \;=\; \frac{\varphi_0[\![f]\!]_0}{\varphi_0[\![1]\!]_0}. \]
+\end{theorem}
+\begin{proof}\leanok
+  Build $\mathbb{P}[\varphi_0]$ as a Prokhorov weak limit of the finite
+  distributions of Definition~\ref{def:finflag-pmf} along a converging flag
+  sequence; its support lies in the positive-homomorphism space, and the integral
+  is computed on the dense finite level.
+\end{proof}
+
+\begin{theorem}[Downward preserves the semantic cone]
+  \label{thm:downward-preserve-cone}
+  \lean{FlagAlgebras.downward_preserve_semanticCone}
+  \uses{thm:random-hom-measure, def:semantic-cone, def:downward}
+  \leanok
+  If $f$ is semantically nonnegative in the typed algebra then so is its
+  unlabeling in the empty-type algebra:
+  \[ f \in \mathrm{semanticCone}\,\sigma \;\Longrightarrow\;
+     [\![f]\!]_0 \in \mathrm{semanticCone}\,\emptyset. \]
+  This is the bridge that turns typed nonnegativity into unlabeled
+  nonnegativity, and it is what the sum-of-squares certificates
+  (Theorem~\ref{thm:sos-downward-nonneg}) and the square/Cauchy--Schwarz results
+  below rest on.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{lem:downward-zero-at-hom, lem:positivehom-one-downward-pos, thm:prob-measure-spec}
+  Fix a base homomorphism $\varphi_0$. If $\varphi_0\langle\sigma\rangle_0 = 0$
+  then $\varphi_0[\![f]\!]_0 = 0$ (Lemma~\ref{lem:downward-zero-at-hom}).
+  Otherwise it is positive, and Theorem~\ref{thm:prob-measure-spec} expresses
+  $\varphi_0[\![f]\!]_0$ as the positive multiple
+  $\varphi_0[\![1]\!]_0 \cdot \int \varphi(f)\, d\mathbb{P}[\varphi_0]$
+  (Lemma~\ref{lem:positivehom-one-downward-pos}) of the integral of a nonnegative
+  integrand, hence $\ge 0$.
+\end{proof}
+
+\begin{theorem}[Squares have nonnegative average]
+  \label{thm:square-downward-nonneg}
+  \lean{FlagAlgebras.square_downward_nonneg}
+  \uses{def:downward}
+  \leanok
+  $[\![f\cdot f]\!]_0 \ge 0$ for every $f$: the downward image of a square is
+  nonnegative.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{thm:downward-preserve-cone}
+  Every homomorphism sends $f\cdot f$ to $\varphi(f)^2 \ge 0$, so $f\cdot f$ is in
+  the semantic cone; apply Theorem~\ref{thm:downward-preserve-cone}.
+\end{proof}
+
+\begin{theorem}[Cauchy--Schwarz for downward]
+  \label{thm:cauchy-schwarz}
+  \lean{FlagAlgebras.square_downward_mul_ge_mul_downward_square}
+  \uses{thm:random-hom-measure, def:positive-hom-space}
+  \leanok
+  $[\![f\cdot f]\!]_0 \cdot [\![g\cdot g]\!]_0 \ge [\![f\cdot g]\!]_0^2$, the key
+  inequality behind semidefinite flag-algebra density bounds.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{thm:prob-measure-spec, lem:downward-zero-at-hom}
+  Apply the $L^2$ Cauchy--Schwarz (Hölder) inequality to the evaluation functions
+  $\varphi \mapsto \varphi(f), \varphi(g)$ under $\mathbb{P}[\varphi_0]$
+  (Theorem~\ref{thm:prob-measure-spec}), handling the degenerate base case with
+  Lemma~\ref{lem:downward-zero-at-hom}.
+\end{proof}
+
+\section{Supporting constructions}
+
+\begin{definition}[Increasing sizes]
+  \label{def:increases}
+  \lean{FlagAlgebras.Increases}
+  \uses{def:flag-seq}
+  \leanok
+  A flag sequence has strictly increasing flag sizes.
+\end{definition}
+
+\begin{definition}[Density profile of a sequence]
+  \label{def:flag-density-seq}
+  \lean{FlagAlgebras.flagDensitySeq}
+  \uses{def:flag-seq, def:flag-density-n}
+  \leanok
+  $n \mapsto (F \mapsto d_1(F; s_n))$, the profile whose limit defines the
+  semantics.
+\end{definition}
+
+\begin{definition}[Homomorphism as a PMF]
+  \label{def:positivehom-topmf}
+  \lean{FlagAlgebras.PositiveHom.toPMF}
+  \uses{def:positive-hom, def:flag-with-size, def:basis-vector, lem:positivehom-basisvector-nonneg}
+  \leanok
+  The distribution on size-$\ell$ flags whose mass at $F$ is $\varphi[\![F]\!]$;
+  $\varphi$'s random model at scale $\ell$.
+\end{definition}
+
+\begin{definition}[Flag-sequence measure]
+  \label{def:flagseq-measure}
+  \lean{FlagAlgebras.flagSeqMeasure}
+  \uses{def:positive-hom, def:positivehom-topmf, def:flag-with-size}
+  \leanok
+  The independent product measure $\mu\{\varphi\}$ on sequences of flags, each
+  component drawn from $\varphi$'s PMF; the source of the random flag sequence in
+  Theorem~\ref{thm:hom-is-limit}.
+\end{definition}
+
+\begin{lemma}[Expected density is the downward ratio]
+  \label{lem:integral-density-div}
+  \lean{FlagAlgebras.integral_flagDensitySpace_eq_flagVectorDensity_div}
+  \uses{def:finflag-pmf, def:flag-density-space, def:downward-factor, def:unlabel, def:label-extensions, thm:counting-identity, def:flag-density-n}
+  \leanok
+  The expected $F$-density under a large flag's measure equals the normalized
+  downward density ratio; the finite-level identity behind Lemma~3.11.
+\end{lemma}
+
+\begin{theorem}[Lemma 3.11: convergence of expected densities]
+  \label{thm:lemma-3-11}
+  \lean{FlagAlgebras.tendsto_integral_flagDensitySpace_of_converge_flagSeq}
+  \uses{def:converges-to, def:positive-hom-coe, lem:integral-density-div, def:downward}
+  \leanok
+  Along a flag sequence converging to $\varphi$, the expected $F$-densities tend
+  to the normalized downward value
+  $\varphi[\![\,[\![F]\!]\,]\!]_0 / \varphi[\![1]\!]_0$.
+\end{theorem}
+
+\begin{lemma}[Limit measure is supported on homomorphisms]
+  \label{lem:measure-support}
+  \lean{FlagAlgebras.flagSeq_limit_measure_support_positiveHomSpace}
+  \uses{def:increases, def:positive-hom-space, thm:positive-hom-space-char}
+  \leanok
+  The weak limit of a convergent flag sequence's probability measures is
+  concentrated on the positive-homomorphism space.
+\end{lemma}
+
+\begin{definition}[The measure $\mathbb{P}[\varphi_0]$]
+  \label{def:prob-measure-witness}
+  \lean{FlagAlgebras.probMeasure_extend_emptyType_positiveHom}
+  \uses{thm:random-hom-measure, def:positive-hom-space}
+  \leanok
+  The chosen random-extension measure $\mathbb{P}[\varphi_0]$, the witness of
+  Theorem~\ref{thm:random-hom-measure}.
+\end{definition}
+
+\begin{theorem}[Defining property of $\mathbb{P}[\varphi_0]$]
+  \label{thm:prob-measure-spec}
+  \lean{FlagAlgebras.probMeasure_extend_emptyType_positiveHom_spec}
+  \uses{def:prob-measure-witness, thm:random-hom-measure, def:downward}
+  \leanok
+  Integrating $\varphi \mapsto \varphi(f)$ against $\mathbb{P}[\varphi_0]$
+  recovers $\varphi_0[\![f]\!]_0 / \varphi_0[\![1]\!]_0$.
+\end{theorem}
+
+\begin{lemma}[Degenerate base homomorphism]
+  \label{lem:downward-zero-at-hom}
+  \lean{FlagAlgebras.downward_zero_at_hom}
+  \uses{def:positive-hom, def:downward, def:basis-vector, thm:downward-linear}
+  \leanok
+  If $\varphi_0\langle\sigma\rangle_0 = 0$ then $\varphi_0[\![f]\!]_0 = 0$ for all
+  $f$ --- the degenerate case handled separately in the cone and Cauchy--Schwarz
+  arguments.
+\end{lemma}
+
+\begin{lemma}[Positive denominator]
+  \label{lem:positivehom-one-downward-pos}
+  \lean{FlagAlgebras.positiveHom_one_downward_pos}
+  \uses{def:positive-hom, def:downward, lem:downward-factor-pos}
+  \leanok
+  If $\varphi_0\langle\sigma\rangle_0 > 0$ then $\varphi_0[\![1]\!]_0 > 0$, the
+  denominator in the normalized downward value.
+\end{lemma}

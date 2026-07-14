@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subflag densities</title>
+<link rel="next" href="chap-algebra.html" title="The flag algebra Aσ" />
+<link rel="prev" href="chap-flags.html" title="Flags and labeled graphs" />
+<link rel="up" href="index.html" title="Lean Flag Algebras — Blueprint" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Lean Flag Algebras — Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="chap-overview.html"><span class="toc_ref">1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="chap-flags.html"><span class="toc_ref">2</span> <span class="toc_entry">Flags and labeled graphs</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-flags.html#a0000000002"><span class="toc_ref">2.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="chap-density.html"><span class="toc_ref">3</span> <span class="toc_entry">Subflag densities</span></a>
+ </li>
+<li class="">
+  <a href="chap-algebra.html"><span class="toc_ref">4</span> <span class="toc_entry">The flag algebra \(\mathcal{A}^\sigma \)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-algebra.html#a0000000003"><span class="toc_ref">4.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-downward.html"><span class="toc_ref">5</span> <span class="toc_entry">The unlabeling operator</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-downward.html#a0000000004"><span class="toc_ref">5.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-positivity.html"><span class="toc_ref">6</span> <span class="toc_entry">Positivity and sum-of-squares</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-positivity.html#a0000000005"><span class="toc_ref">6.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-limits.html"><span class="toc_ref">7</span> <span class="toc_entry">Limit semantics and random homomorphisms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-limits.html#a0000000006"><span class="toc_ref">7.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-compute.html"><span class="toc_ref">8</span> <span class="toc_entry">The computational layer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-compute.html#a0000000007"><span class="toc_ref">8.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-mantel.html"><span class="toc_ref">9</span> <span class="toc_entry">Application: Mantel’s theorem</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="chap:density">3 Subflag densities</h1>
+
+<p>The density of one flag inside another is the typed analogue of induced-subgraph density. This chapter defines it, lifts it through the flag quotient, generalizes it to lists of disjoint flags, and proves the <em>chain rules</em> that make the whole flag algebra tick. (Source: <span class="ttfamily">FlagAlgebra/SubflagDensity.lean</span>, <span class="ttfamily">SubflagListDensity.lean</span>, <span class="ttfamily">SubflagListDensityProp.lean</span>.) </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:labeled-graph-count">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">15</span>
+    <span class="definition_thmtitle">Labeled-graph count</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#def:labeled-graph-count">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-flags.html#def:labeled-graph">Definition 2</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphCount" class="lean_decl">FlagAlgebras.labeledGraphCount</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{labeledGraphCount}\, H\, G\) is the number of induced labeled subgraphs of the host \(G\) that are labeled-isomorphic to \(H\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:labeled-graph-density">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">16</span>
+    <span class="definition_thmtitle">Labeled-graph density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#def:labeled-graph-density">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:labeled-graph-count">Definition 15</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphDensity" class="lean_decl">FlagAlgebras.labeledGraphDensity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{labeledGraphDensity}\, H\, G\) normalizes the count by the number of ways to choose the non-type vertices of an \(H\)-sized induced subgraph, i.e. by \(\binom {|G|-|\sigma |}{|H|-|\sigma |}\), giving a rational in \([0,1]\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:density-iso-invariant">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">17</span>
+    <span class="lemma_thmtitle">Isomorphism invariance</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#lem:density-iso-invariant">#</a>
+    
+    <a class="icon proof" href="chap-density.html#a0000000008"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:labeled-graph-density">Definition 16</a></li>
+          
+          <li><a href="chap-flags.html#def:labeled-graph-iso">Definition 4</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphDensity_respect_eqv" class="lean_decl">FlagAlgebras.labeledGraphDensity_respect_eqv</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    Labeled-graph density is invariant under \(\simeq _f\) in both arguments. This is the well-definedness fact that lets density descend to flags. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000008">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Transport induced copies along the given isomorphisms; the counts, and hence the normalized densities, agree. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:subflag-density">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">18</span>
+    <span class="definition_thmtitle">Subflag density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#def:subflag-density">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:labeled-graph-density">Definition 16</a></li>
+          
+          <li><a href="chap-density.html#lem:density-iso-invariant">Lemma 17</a></li>
+          
+          <li><a href="chap-flags.html#def:flag">Definition 5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity" class="lean_decl">FlagAlgebras.subflagDensity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{subflagDensity} : \mathrm{Flag}\, \sigma \, V \to \mathrm{Flag}\, \sigma \, W \to \mathbb {Q}\) is \(\mathrm{labeledGraphDensity}\) lifted through the flag quotient in both arguments: the density of one flag inside another. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:subflag-density-values">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">19</span>
+    <span class="lemma_thmtitle">Boundary values</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#lem:subflag-density-values">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:subflag-density">Definition 18</a></li>
+          
+          <li><a href="chap-flags.html#def:empty-flag">Definition 6</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_empty" class="lean_decl">FlagAlgebras.subflagDensity_empty</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_self" class="lean_decl">FlagAlgebras.subflagDensity_self</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_other" class="lean_decl">FlagAlgebras.subflagDensity_other</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    The empty flag has density \(1\) in every flag; a flag has density \(1\) in itself; two distinct flags of the same size have density \(0\) in each other. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-list-density">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">20</span>
+    <span class="definition_thmtitle">List density and fixed arities</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#def:flag-list-density">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-flags.html#def:flag-list">Definition 7</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagListDensity" class="lean_decl">FlagAlgebras.flagListDensity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{flagListDensity}\) counts the induced subgraph-lists of \(G\) that simultaneously realize a whole disjoint list of prescribed flags (normalized by the multinomial coefficient distributing the non-type vertices), lifted through the quotient. It generalizes \(\mathrm{labeledGraphListDensity}\) on carriers. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-density-n">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">21</span>
+    <span class="definition_thmtitle">Single, pair, and triple densities</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#def:flag-density-n">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:flag-list-density">Definition 20</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₁" class="lean_decl">FlagAlgebras.flagDensity₁</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₂" class="lean_decl">FlagAlgebras.flagDensity₂</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₃" class="lean_decl">FlagAlgebras.flagDensity₃</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The fixed-arity specializations \(d_1(F;G)\), \(d_2(F_1,F_2;G)\), \(d_3(F_1,F_2,F_3;G)\) are list densities of the singleton, pair, and triple lists. \(d_2\) is the factor multiplication is built from; \(d_1\) is the ordinary subflag density. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:subflag-eq-list">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">22</span>
+    <span class="theorem_thmtitle">Single density is subflag density</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#thm:subflag-eq-list">#</a>
+    
+    <a class="icon proof" href="chap-density.html#a0000000009"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:subflag-density">Definition 18</a></li>
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_eq_flagListDensity" class="lean_decl">FlagAlgebras.subflagDensity_eq_flagListDensity</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    \(\mathrm{subflagDensity}\, F\, G = d_1(F;G)\): the single-flag list density coincides with the subflag density of Chapter start, linking the two developments. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000009">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Both count the same induced copies; unfold the singleton list. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:density-invariance">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">23</span>
+    <span class="lemma_thmtitle">Permutation and empty-insertion invariance</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#lem:density-invariance">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:flag-list-density">Definition 20</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_permute" class="lean_decl">FlagAlgebras.flagDensity_permute</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_insert_empty" class="lean_decl">FlagAlgebras.flagDensity_insert_empty</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    List density is unchanged by permuting the list, and by inserting an empty flag. These symmetries reduce the fixed-arity densities to one another in the chain-rule proofs. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:density-chain-rules">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">24</span>
+    <span class="theorem_thmtitle">Density chain rules</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#thm:density-chain-rules">#</a>
+    
+    <a class="icon proof" href="chap-density.html#a0000000010"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-density.html#lem:density-invariance">Lemma 23</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagDensity_eq_sum_density_prods</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagPairDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagPairDensity_eq_sum_density_prods</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagPairDensity_eq_sum_density_prods'" class="lean_decl">FlagAlgebras.flagPairDensity_eq_sum_density_prods'</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagTripleDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagTripleDensity_eq_sum_density_prods</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    A product-flag density expands as a sum over intermediate flags \(G'\) of size \(\ell '\) of products of densities, e.g. </p>
+<div class="displaymath" id="a0000000011">
+  \[  d_1(F;G) = \sum _{G'} d_1(F;G')\,  d_1(G';G), \qquad d_2(F_1,F_2;G) = \sum _{G'} d_1(F_1;G')\,  d_2(G',F_2;G).  \]
+</div>
+<p> The triple rule is foundational; the pair and single rules descend from it. These are the identities the quotient algebra is defined to respect. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000010">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Partition the induced copies of the product by the intermediate flag they span on a size-\(\ell '\) vertex set, then count each part with the appropriate density. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:density-prod-approx">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">25</span>
+    <span class="theorem_thmtitle">Asymptotic independence</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-density.html#thm:density-prod-approx">#</a>
+    
+    <a class="icon proof" href="chap-density.html#a0000000012"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-density.html#def:flag-density-n">Definition 21</a></li>
+          
+          <li><a href="chap-density.html#thm:subflag-eq-list">Theorem 22</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagListDensity₂_prod_approx" class="lean_decl">FlagAlgebras.flagListDensity₂_prod_approx</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    There is a constant \(c = 2(|F|+|F'|)^2\), independent of \(G\), with </p>
+<div class="displaymath" id="a0000000013">
+  \[  \bigl| d_2(F,F';G) - d_1(F;G)\,  d_1(F';G) \bigr| \le \frac{c}{|G|}.  \]
+</div>
+<p> Distinct subflag densities are thus asymptotically multiplicative — the probabilistic heart of the “product of densities” reasoning. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000012">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Model the choice of two vertex subsets as a finite probability space; the discrepancy is the probability that the subsets overlap off the type, which is \(O(1/|G|)\) by a union bound. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="chap-flags.html" title="Flags and labeled graphs"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Lean Flag Algebras — Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="chap-algebra.html" title="The flag algebra \(\mathcal{A}^\sigma \)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

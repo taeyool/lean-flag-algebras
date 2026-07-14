@@ -1,0 +1,144 @@
+\chapter{Positivity and sum-of-squares}
+\label{chap:positivity}
+
+Density bounds are inequalities in a semantic order on $\mathcal{A}^\sigma$
+induced by its positive homomorphisms. Sum-of-squares certificates are the
+mechanism that proves them. (Source: \texttt{FlagAlgebra/PositiveHom.lean},
+\texttt{QuadraticForm.lean}.)
+
+\begin{definition}[Positive homomorphism]
+  \label{def:positive-hom}
+  \lean{FlagAlgebras.PositiveHom}
+  \uses{def:flag-algebra, def:hom}
+  \leanok
+  A \emph{positive homomorphism} is an $\mathbb{R}$-algebra homomorphism
+  $\varphi : \mathcal{A}^\sigma \to \mathbb{R}$ that is nonnegative on every flag.
+  These are the semantic evaluations of the algebra --- the limits of subgraph
+  densities.
+\end{definition}
+
+\begin{definition}[Semantic cone]
+  \label{def:semantic-cone}
+  \lean{FlagAlgebras.semanticCone}
+  \uses{def:positive-hom}
+  \leanok
+  The \emph{semantic cone} is $\{\, f \mid \varphi(f) \ge 0 \text{ for all
+  positive } \varphi \,\}$. Membership is exactly an unconditional density
+  inequality.
+\end{definition}
+
+\begin{definition}[Semantic order]
+  \label{def:semantic-order}
+  \lean{FlagAlgebras.le_def}
+  \uses{def:semantic-cone}
+  \leanok
+  Define $f \le g$ to mean $g - f$ lies in the semantic cone, i.e.\ every
+  positive homomorphism satisfies $\varphi(f) \le \varphi(g)$. This is a preorder
+  on $\mathcal{A}^\sigma$, the order in which all bounds are stated.
+\end{definition}
+
+\begin{theorem}[Flags are nonnegative]
+  \label{thm:flag-nonneg}
+  \lean{FlagAlgebras.flag_geq_zero}
+  \uses{def:semantic-order, def:basis-vector, lem:positivehom-basisvector-nonneg}
+  \leanok
+  Every flag satisfies $[\![F]\!] \ge 0$ --- the base positivity fact from which
+  sum-of-squares bounds are assembled.
+\end{theorem}
+
+\begin{lemma}[Order arithmetic]
+  \label{lem:order-monotone}
+  \lean{FlagAlgebras.flag_add_le_add, FlagAlgebras.nonneg_smul_nonneg_geq_zero}
+  \uses{def:semantic-order}
+  \leanok
+  The semantic order is compatible with the algebra operations: inequalities may
+  be added termwise, and a nonnegative scalar times a nonnegative element is
+  nonnegative.
+\end{lemma}
+
+\begin{definition}[Flag quadratic form]
+  \label{def:flag-quadratic-form}
+  \lean{FlagAlgebras.flagQuadraticForm}
+  \uses{def:flag-algebra, def:flag-algebra-vec}
+  \leanok
+  Given a matrix $M$ and a vector $v = (v_1,\dots,v_n)$ of flag-algebra elements,
+  \[ \mathrm{flagQuadraticForm}\,M\,v \;=\; \sum_{i,j} M_{ij}\,(v_i\, v_j), \]
+  the raw sum-of-squares certificate object.
+\end{definition}
+
+\begin{theorem}[PSD forms are nonnegative]
+  \label{thm:sos-nonneg}
+  \lean{FlagAlgebras.flagQuadraticForm_nonneg}
+  \uses{def:flag-quadratic-form, def:semantic-cone, def:semantic-order}
+  \leanok
+  If $M \succeq 0$ (positive semidefinite) then
+  $\mathrm{flagQuadraticForm}\,M\,v \ge 0$ in the semantic cone.
+\end{theorem}
+\begin{proof}\leanok
+  Apply any positive homomorphism $\varphi$: it turns the form into
+  $\sum_{ij} M_{ij}\,\varphi(v_i)\varphi(v_j) = x^\top M x \ge 0$ with
+  $x_i = \varphi(v_i)$, since $M \succeq 0$.
+\end{proof}
+
+\begin{theorem}[Unlabeled PSD forms are nonnegative]
+  \label{thm:sos-downward-nonneg}
+  \lean{FlagAlgebras.flagQuadraticForm_downward_nonneg}
+  \uses{def:flag-quadratic-form, thm:sos-nonneg, def:downward}
+  \leanok
+  The unlabeled form $[\![\,\mathrm{flagQuadraticForm}\,M\,v\,]\!]_0 \ge 0$ for
+  $M \succeq 0$. This is the certificate actually used, since density bounds live
+  in the unlabeled algebra $\mathcal{A}^\emptyset$.
+\end{theorem}
+\begin{proof}\leanok
+  \uses{thm:downward-preserve-cone}
+  The form is in the semantic cone by Theorem~\ref{thm:sos-nonneg}, and downward
+  preserves the semantic cone (Theorem~\ref{thm:downward-preserve-cone}), so its
+  unlabeling is nonnegative.
+\end{proof}
+
+\section{Supporting constructions}
+
+\begin{definition}[Algebra homomorphism type]
+  \label{def:hom}
+  \lean{FlagAlgebras.Hom}
+  \uses{def:flag-algebra}
+  \leanok
+  $\mathrm{Hom}\,\sigma = \mathcal{A}^\sigma \to_{\mathbb{R}\text{-alg}}
+  \mathbb{R}$, the underlying $\mathbb{R}$-algebra homomorphisms; a positive
+  homomorphism is such a map that is additionally nonnegative on flags.
+\end{definition}
+
+\begin{definition}[Vector of algebra elements]
+  \label{def:flag-algebra-vec}
+  \lean{FlagAlgebras.FlagAlgebraVec}
+  \uses{def:flag-algebra}
+  \leanok
+  $\mathrm{FlagAlgebraVec}\,\sigma\,n = \mathrm{Fin}\,n \to \mathcal{A}^\sigma$,
+  the variables of a quadratic form.
+\end{definition}
+
+\begin{lemma}[Homomorphisms are nonnegative on flags]
+  \label{lem:positivehom-basisvector-nonneg}
+  \lean{FlagAlgebras.positiveHom_basisVector_ge_zero}
+  \uses{def:positive-hom, def:basis-vector}
+  \leanok
+  $0 \le \varphi[\![F]\!]$ for every positive homomorphism $\varphi$ and flag
+  $F$ --- the defining positivity, restated as $0 \le \cdot$.
+\end{lemma}
+
+\begin{lemma}[Order via nonnegative difference]
+  \label{lem:flag-sub-nonneg}
+  \lean{FlagAlgebras.flag_sub_nonneg}
+  \uses{def:semantic-order}
+  \leanok
+  $f \le g \iff 0 \le g - f$.
+\end{lemma}
+
+\begin{lemma}[Translation invariance of the order]
+  \label{lem:order-monotone-sides}
+  \lean{FlagAlgebras.flag_add_le_add_left, FlagAlgebras.flag_add_le_add_right}
+  \uses{lem:order-monotone}
+  \leanok
+  Adding a fixed element on either side preserves the semantic order; these
+  register as the \texttt{AddLeftMono}/\texttt{AddRightMono} instances.
+\end{lemma}

@@ -1,0 +1,96 @@
+\chapter{Application: Mantel's theorem}
+\label{chap:mantel}
+
+As a worked application of the whole framework, we prove \emph{Mantel's theorem}
+--- the Tur\'an density of the triangle $K_3$ is $\tfrac12$. The flag-algebra
+\emph{upper} bound (a sum-of-squares certificate, Chapter~\ref{chap:positivity})
+and the extremal \emph{lower} bound meet in Theorem~\ref{thm:turan-k3}. (Source:
+\texttt{LeanFlagAlgebras/MantelTheorem/}.)
+
+\begin{definition}[Edge and triangle densities]
+  \label{def:densities}
+  \lean{MantelTheorem.K2, MantelTheorem.K3}
+  \uses{def:fin-flag, def:basis-vector}
+  \leanok
+  $K_2, K_3 \in \mathcal{A}^\emptyset$ are the edge- and triangle-density basis
+  elements. For a positive homomorphism $\varphi$, $\varphi(K_2)$ is the edge
+  density and $\varphi(K_3)$ the triangle density.
+\end{definition}
+
+\begin{lemma}[Expansion of the edge density]
+  \label{lem:expand-k2}
+  \lean{MantelTheorem.expand_K2_on_three_vertex_graphs}
+  \uses{def:densities, thm:density-chain-rules}
+  \leanok
+  Expanding onto three vertices,
+  $K_2 = \tfrac13 E_3 + \tfrac23 P_3 + K_3$, where $E_3, P_3, K_3$ are the
+  one-edge, path, and triangle densities.
+\end{lemma}
+
+\begin{lemma}[Square-positivity certificate]
+  \label{lem:square-cert}
+  \lean{MantelTheorem.FlagAlgebra_2_1_0_0_minus_FlagAlgebra_2_1_0_1_square_downward}
+  \uses{def:downward, thm:square-downward-nonneg}
+  \leanok
+  Unlabelling the square of the difference of the two rooted two-vertex flags,
+  \[ [\![\,(O_2^{1} - K_2^{1})^2\,]\!]_0
+      = O_3 - \tfrac13 E_3 - \tfrac13 P_3 + K_3 \;\ge\; 0, \]
+  a sum-of-squares certificate: the left side is a downward-of-square, hence
+  nonnegative by Theorem~\ref{thm:square-downward-nonneg}.
+\end{lemma}
+
+\begin{theorem}[Mantel, flag-algebra form]
+  \label{thm:mantel-flag}
+  \lean{MantelTheorem.Mantel_theorem}
+  \uses{def:densities}
+  \leanok
+  In $\mathcal{A}^\emptyset$, $K_2 \le \tfrac12\cdot 1 + K_3$.
+\end{theorem}
+\begin{proof}
+  \uses{lem:expand-k2, lem:square-cert, lem:order-monotone}
+  \leanok
+  Substitute the expansion of Lemma~\ref{lem:expand-k2}, add the certificate of
+  Lemma~\ref{lem:square-cert} and the nonnegativity of the three-vertex
+  densities, and collect terms using the order arithmetic of
+  Lemma~\ref{lem:order-monotone}.
+\end{proof}
+
+\begin{theorem}[Mantel, homomorphism form]
+  \label{thm:mantel-hom}
+  \lean{MantelTheorem.Mantel_theorem'}
+  \uses{thm:mantel-flag, def:positive-hom}
+  \leanok
+  For every positive homomorphism $\varphi$ with $\varphi(K_3) = 0$ (a
+  triangle-free limit), $\varphi(K_2) \le \tfrac12$.
+\end{theorem}
+\begin{proof}
+  \uses{thm:mantel-flag}
+  \leanok
+  Apply $\varphi$ to Theorem~\ref{thm:mantel-flag}; positivity and
+  $\varphi(K_3)=0$ give $\varphi(K_2) \le \tfrac12$.
+\end{proof}
+
+\begin{lemma}[Complete-bipartite lower bound]
+  \label{lem:lower-bound}
+  \lean{MantelTheorem.extremal_density_K3_ge}
+  \leanok
+  For $n \ge 2$, the maximal edge density of a triangle-free graph on $n$
+  vertices is at least $\tfrac12$, witnessed by the balanced complete bipartite
+  graph:
+  $\operatorname{ex}(n,K_3)/\binom{n}{2} \ge \tfrac12$.
+\end{lemma}
+
+\begin{theorem}[Tur\'an density of the triangle]
+  \label{thm:turan-k3}
+  \lean{MantelTheorem.Turan_density_K3}
+  \uses{thm:mantel-hom, lem:lower-bound}
+  \leanok
+  $\pi(K_3) = \tfrac12$.
+\end{theorem}
+\begin{proof}
+  \uses{thm:mantel-hom, lem:lower-bound}
+  \leanok
+  The homomorphism form gives the upper bound $\pi(K_3) \le \tfrac12$; the
+  complete-bipartite construction gives the matching lower bound. They meet at
+  $\tfrac12$.
+\end{proof}

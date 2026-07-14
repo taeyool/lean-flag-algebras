@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Positivity and sum-of-squares</title>
+<link rel="next" href="chap-limits.html" title="Limit semantics and random homomorphisms" />
+<link rel="prev" href="chap-downward.html" title="The unlabeling operator" />
+<link rel="up" href="index.html" title="Lean Flag Algebras — Blueprint" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Lean Flag Algebras — Blueprint</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="chap-overview.html"><span class="toc_ref">1</span> <span class="toc_entry">Overview</span></a>
+ </li>
+<li class="">
+  <a href="chap-flags.html"><span class="toc_ref">2</span> <span class="toc_entry">Flags and labeled graphs</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-flags.html#a0000000002"><span class="toc_ref">2.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-density.html"><span class="toc_ref">3</span> <span class="toc_entry">Subflag densities</span></a>
+ </li>
+<li class="">
+  <a href="chap-algebra.html"><span class="toc_ref">4</span> <span class="toc_entry">The flag algebra \(\mathcal{A}^\sigma \)</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-algebra.html#a0000000003"><span class="toc_ref">4.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-downward.html"><span class="toc_ref">5</span> <span class="toc_entry">The unlabeling operator</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-downward.html#a0000000004"><span class="toc_ref">5.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class=" active current">
+  <a href="chap-positivity.html"><span class="toc_ref">6</span> <span class="toc_entry">Positivity and sum-of-squares</span></a>
+  <span class="expand-toc">▼</span>
+  <ul class="sub-toc-1 active">
+     <li class="">
+  <a href="chap-positivity.html#a0000000005"><span class="toc_ref">6.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-limits.html"><span class="toc_ref">7</span> <span class="toc_entry">Limit semantics and random homomorphisms</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-limits.html#a0000000006"><span class="toc_ref">7.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-compute.html"><span class="toc_ref">8</span> <span class="toc_entry">The computational layer</span></a>
+  <span class="expand-toc">▶</span>
+  <ul class="sub-toc-1">
+     <li class="">
+  <a href="chap-compute.html#a0000000007"><span class="toc_ref">8.1</span> <span class="toc_entry">Supporting constructions</span></a>
+ </li>
+
+  </ul>
+ </li>
+<li class="">
+  <a href="chap-mantel.html"><span class="toc_ref">9</span> <span class="toc_entry">Application: Mantel’s theorem</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="chap:positivity">6 Positivity and sum-of-squares</h1>
+
+<p>Density bounds are inequalities in a semantic order on \(\mathcal{A}^\sigma \) induced by its positive homomorphisms. Sum-of-squares certificates are the mechanism that proves them. (Source: <span class="ttfamily">FlagAlgebra/PositiveHom.lean</span>, <span class="ttfamily">QuadraticForm.lean</span>.) </p>
+<div class="definition_thmwrapper theorem-style-definition" id="def:positive-hom">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">61</span>
+    <span class="definition_thmtitle">Positive homomorphism</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:positive-hom">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-positivity.html#def:hom">Definition 69</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.PositiveHom" class="lean_decl">FlagAlgebras.PositiveHom</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    A <em>positive homomorphism</em> is an \(\mathbb {R}\)-algebra homomorphism \(\varphi : \mathcal{A}^\sigma \to \mathbb {R}\) that is nonnegative on every flag. These are the semantic evaluations of the algebra — the limits of subgraph densities. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:semantic-cone">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">62</span>
+    <span class="definition_thmtitle">Semantic cone</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:semantic-cone">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:positive-hom">Definition 61</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.semanticCone" class="lean_decl">FlagAlgebras.semanticCone</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    The <em>semantic cone</em> is \(\{ \,  f \mid \varphi (f) \ge 0 \text{ for all positive } \varphi \, \} \). Membership is exactly an unconditional density inequality. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:semantic-order">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">63</span>
+    <span class="definition_thmtitle">Semantic order</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:semantic-order">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:semantic-cone">Definition 62</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.le_def" class="lean_decl">FlagAlgebras.le_def</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Define \(f \le g\) to mean \(g - f\) lies in the semantic cone, i.e. every positive homomorphism satisfies \(\varphi (f) \le \varphi (g)\). This is a preorder on \(\mathcal{A}^\sigma \), the order in which all bounds are stated. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:flag-nonneg">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">64</span>
+    <span class="theorem_thmtitle">Flags are nonnegative</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#thm:flag-nonneg">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:semantic-order">Definition 63</a></li>
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+          <li><a href="chap-positivity.html#lem:positivehom-basisvector-nonneg">Lemma 71</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_geq_zero" class="lean_decl">FlagAlgebras.flag_geq_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    Every flag satisfies \([\! [F]\! ] \ge 0\) — the base positivity fact from which sum-of-squares bounds are assembled. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:order-monotone">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">65</span>
+    <span class="lemma_thmtitle">Order arithmetic</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#lem:order-monotone">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:semantic-order">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add" class="lean_decl">FlagAlgebras.flag_add_le_add</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.nonneg_smul_nonneg_geq_zero" class="lean_decl">FlagAlgebras.nonneg_smul_nonneg_geq_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    The semantic order is compatible with the algebra operations: inequalities may be added termwise, and a nonnegative scalar times a nonnegative element is nonnegative. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-quadratic-form">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">66</span>
+    <span class="definition_thmtitle">Flag quadratic form</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:flag-quadratic-form">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+          <li><a href="chap-positivity.html#def:flag-algebra-vec">Definition 70</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm" class="lean_decl">FlagAlgebras.flagQuadraticForm</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    Given a matrix \(M\) and a vector \(v = (v_1,\dots ,v_n)\) of flag-algebra elements, </p>
+<div class="displaymath" id="a0000000023">
+  \[  \mathrm{flagQuadraticForm}\, M\, v \; =\;  \sum _{i,j} M_{ij}\, (v_i\,  v_j),  \]
+</div>
+<p> the raw sum-of-squares certificate object. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:sos-nonneg">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">67</span>
+    <span class="theorem_thmtitle">PSD forms are nonnegative</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#thm:sos-nonneg">#</a>
+    
+    <a class="icon proof" href="chap-positivity.html#a0000000024"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:flag-quadratic-form">Definition 66</a></li>
+          
+          <li><a href="chap-positivity.html#def:semantic-cone">Definition 62</a></li>
+          
+          <li><a href="chap-positivity.html#def:semantic-order">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm_nonneg" class="lean_decl">FlagAlgebras.flagQuadraticForm_nonneg</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    If \(M \succeq 0\) (positive semidefinite) then \(\mathrm{flagQuadraticForm}\, M\, v \ge 0\) in the semantic cone. </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000024">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>Apply any positive homomorphism \(\varphi \): it turns the form into \(\sum _{ij} M_{ij}\, \varphi (v_i)\varphi (v_j) = x^\top M x \ge 0\) with \(x_i = \varphi (v_i)\), since \(M \succeq 0\). </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:sos-downward-nonneg">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">68</span>
+    <span class="theorem_thmtitle">Unlabeled PSD forms are nonnegative</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#thm:sos-downward-nonneg">#</a>
+    
+    <a class="icon proof" href="chap-positivity.html#a0000000025"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:flag-quadratic-form">Definition 66</a></li>
+          
+          <li><a href="chap-positivity.html#thm:sos-nonneg">Theorem 67</a></li>
+          
+          <li><a href="chap-downward.html#def:downward">Definition 50</a></li>
+          
+          <li><a href="chap-limits.html#thm:downward-preserve-cone">Theorem 84</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm_downward_nonneg" class="lean_decl">FlagAlgebras.flagQuadraticForm_downward_nonneg</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>    The unlabeled form \([\! [\, \mathrm{flagQuadraticForm}\, M\, v\, ]\! ]_0 \ge 0\) for \(M \succeq 0\). This is the certificate actually used, since density bounds live in the unlabeled algebra \(\mathcal{A}^\emptyset \). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000025">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p> The form is in the semantic cone by Theorem&#160;<a href="chap-positivity.html#thm:sos-nonneg">67</a>, and downward preserves the semantic cone (Theorem&#160;<a href="chap-limits.html#thm:downward-preserve-cone">84</a>), so its unlabeling is nonnegative. </p>
+
+  </div>
+</div>
+<h1 id="a0000000005">6.1 Supporting constructions</h1>
+<div class="definition_thmwrapper theorem-style-definition" id="def:hom">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">69</span>
+    <span class="definition_thmtitle">Algebra homomorphism type</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:hom">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Hom" class="lean_decl">FlagAlgebras.Hom</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{Hom}\, \sigma = \mathcal{A}^\sigma \to _{\mathbb {R}\text{-alg}} \mathbb {R}\), the underlying \(\mathbb {R}\)-algebra homomorphisms; a positive homomorphism is such a map that is additionally nonnegative on flags. </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:flag-algebra-vec">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">70</span>
+    <span class="definition_thmtitle">Vector of algebra elements</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#def:flag-algebra-vec">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-algebra.html#def:flag-algebra">Definition 31</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagAlgebraVec" class="lean_decl">FlagAlgebras.FlagAlgebraVec</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>    \(\mathrm{FlagAlgebraVec}\, \sigma \, n = \mathrm{Fin}\, n \to \mathcal{A}^\sigma \), the variables of a quadratic form. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:positivehom-basisvector-nonneg">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">71</span>
+    <span class="lemma_thmtitle">Homomorphisms are nonnegative on flags</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#lem:positivehom-basisvector-nonneg">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:positive-hom">Definition 61</a></li>
+          
+          <li><a href="chap-algebra.html#def:basis-vector">Definition 28</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.positiveHom_basisVector_ge_zero" class="lean_decl">FlagAlgebras.positiveHom_basisVector_ge_zero</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    \(0 \le \varphi [\! [F]\! ]\) for every positive homomorphism \(\varphi \) and flag \(F\) — the defining positivity, restated as \(0 \le \cdot \). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:flag-sub-nonneg">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">72</span>
+    <span class="lemma_thmtitle">Order via nonnegative difference</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#lem:flag-sub-nonneg">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#def:semantic-order">Definition 63</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_sub_nonneg" class="lean_decl">FlagAlgebras.flag_sub_nonneg</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    \(f \le g \iff 0 \le g - f\). </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:order-monotone-sides">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">73</span>
+    <span class="lemma_thmtitle">Translation invariance of the order</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="chap-positivity.html#lem:order-monotone-sides">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="chap-positivity.html#lem:order-monotone">Lemma 65</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add_left" class="lean_decl">FlagAlgebras.flag_add_le_add_left</a></li>
+          
+          <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add_right" class="lean_decl">FlagAlgebras.flag_add_le_add_right</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>    Adding a fixed element on either side preserves the semantic order; these register as the <span class="ttfamily">AddLeftMono</span>/<span class="ttfamily">AddRightMono</span> instances. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="chap-downward.html" title="The unlabeling operator"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Lean Flag Algebras — Blueprint"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="chap-limits.html" title="Limit semantics and random homomorphisms"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

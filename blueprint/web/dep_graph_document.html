@@ -1,0 +1,3960 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/extra_styles.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      
+      <dt>Boxes</dt><dd>definitions</dd>
+      
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Orange border</dt><dd>the <em>statement</em> of this result is not ready to be formalized; the blueprint needs more work</dd>
+      
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+      
+      <dt>Dark green background</dt><dd>the <em>proof</em> of this result and all its ancestors are formalized</dd>
+      
+      <dt>Dark green border</dt><dd>this is in Mathlib</dd>
+      
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="def:basis-vector_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:basis-vector" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">28</span><span class="definition_thmtitle">Basis vector</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{basisVector}\, F\) is the unit vector supported on the single flag \(F\); every construction reduces to these. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:basis-vector">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:build-full-map_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:build-full-map" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">113</span><span class="definition_thmtitle">Permutation builder</span></div>
+    <div class="thm_thmcontent"><p>   Assembles a full vertex permutation that fixes the type embedding and routes the remaining vertices through a chosen permutation — the inner loop of the fast isomorphism search. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:build-full-map">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.buildFullMap">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:converges-to_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:converges-to" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">76</span><span class="definition_thmtitle">Convergence</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{ConvergesTo}\, s\, a\) says the flag sequence \(s\) has strictly increasing sizes and its subgraph-density profile converges pointwise to the limit \(a\). </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:converges-to">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.ConvergesTo">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:deg-key_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:deg-key" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">101</span><span class="definition_thmtitle">Cheap iso invariant</span></div>
+    <div class="thm_thmcontent"><p>    A cheap \(O(n)\) isomorphism invariant — edge count paired with the sorted degree sequence — used to prefilter before the expensive isomorphism test. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:deg-key">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degKey">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:deg-seq_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:deg-seq" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">112</span><span class="definition_thmtitle">Degree sequence</span></div>
+    <div class="thm_thmcontent"><p>    The sorted degree sequence of an edge-set graph, the main part of the cheap isomorphism key. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:deg-seq">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degSeq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:densities_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:densities" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">114</span><span class="definition_thmtitle">Edge and triangle densities</span></div>
+    <div class="thm_thmcontent"><p>    \(K_2, K_3 \in \mathcal{A}^\emptyset \) are the edge- and triangle-density basis elements. For a positive homomorphism \(\varphi \), \(\varphi (K_2)\) is the edge density and \(\varphi (K_3)\) the triangle density. </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#def:densities">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.K2" class="lean_decl">MantelTheorem.K2</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.K3" class="lean_decl">MantelTheorem.K3</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:downward_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:downward" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">50</span><span class="definition_thmtitle">Downward operator</span></div>
+    <div class="thm_thmcontent"><p>    \([\! [\, \cdot \, ]\! ]_0 : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset \) is the \(\mathbb {R}\)-linear map induced by \(F \mapsto w(F)\cdot \mathrm{unlabel}\, F\); it averages a labeled element over all unlabelings. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:downward">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:downward-factor_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:downward-factor" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">46</span><span class="definition_thmtitle">Downward normalizing factor</span></div>
+    <div class="thm_thmcontent"><p>    The strictly positive rational weight of a flag: the fraction of label placements (injections of the \(|\sigma |\) labels into the vertices) that realize it. It is the coefficient by which \(\mathrm{unlabel}\, F\) is scaled. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:downward-factor">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardNormalizingFactor">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:downward-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:downward-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">57</span><span class="definition_thmtitle">Downward image of a flag</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{downwardFlag}\, F = w(F)\cdot \mathrm{unlabel}\, F\) on a single flag, its linear extension \(\mathrm{downwardFlagVector}\) to flag vectors, and the quotient-level \(\mathrm{downwardFlagVectorQuot}\) — the raw form of downward before descending to the quotient. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:downward-flag">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlag" class="lean_decl">FlagAlgebras.downwardFlag</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlagVector" class="lean_decl">FlagAlgebras.downwardFlagVector</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlagVectorQuot" class="lean_decl">FlagAlgebras.downwardFlagVectorQuot</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:empty-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:empty-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">6</span><span class="definition_thmtitle">Empty flag</span></div>
+    <div class="thm_thmcontent"><p>    The <em>empty flag</em> \(\mathrm{emptyFlag}\, \sigma \) is the class of the trivial labeled graph \(\sigma \) on \(T\) with the identity embedding: the type with no extra vertices. It is the multiplicative unit of the flag algebra. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:empty-flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.emptyFlag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:empty-labeled-graph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:empty-labeled-graph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">8</span><span class="definition_thmtitle">Empty labeled graph</span></div>
+    <div class="thm_thmcontent"><p>    The trivial carrier: the type \(\sigma \) itself on \(T\) with the identity embedding. Its isomorphism class is the empty flag. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:empty-labeled-graph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.emptyLabeledGraph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:empty-type_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:empty-type" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">53</span><span class="definition_thmtitle">Empty type</span></div>
+    <div class="thm_thmcontent"><p>    The empty flag type \(\varnothing _t\) (written \(\emptyset \)) with no labeled vertices; its flags are unlabeled graphs, and density bounds live in \(\mathcal{A}^\emptyset \). </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:empty-type">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.emptyType">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:fast-iso_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:fast-iso" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">103</span><span class="definition_thmtitle">Fast isomorphism test</span></div>
+    <div class="thm_thmcontent"><p>    Permutation-search isomorphism decision procedures for edge-set graphs (empty and \(\sigma \)-typed), early-exiting on unequal keys; each is proved sound and complete against flag equivalence. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:fast-iso">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.isEmptyIsoFast_bool" class="lean_decl">FlagAlgebras.Compute.isEmptyIsoFast_bool</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.isIsoFast_bool" class="lean_decl">FlagAlgebras.Compute.isIsoFast_bool</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:fast-iso-decidable_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:fast-iso-decidable" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">104</span><span class="definition_thmtitle">Fast decidability instance</span></div>
+    <div class="thm_thmcontent"><p>    The high-priority \(\mathrm{Decidable}\) instance for flag equivalence backed by the fast test; it makes \(\mathrm{Fintype}\)-based flag enumeration tractable. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:fast-iso-decidable">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.fastDecidableSym2LabeledGraphEqv">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:fin-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:fin-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">26</span><span class="definition_thmtitle">Size-tagged flag</span></div>
+    <div class="thm_thmcontent"><p>    A <em>size-tagged flag</em> is a dependent pair \(\langle n, F\rangle \) of a vertex count \(n\) and a flag \(F\) on \(\mathrm{Fin}\, n\). These are the basis indices of the algebra. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:fin-flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FinFlag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:finflag-pmf_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:finflag-pmf" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">82</span><span class="definition_thmtitle">Random flag distribution</span></div>
+    <div class="thm_thmcontent"><p>    Turns a large unlabeled flag of positive \(\sigma \)-density into a distribution on density profiles: draw a random labelling extension weighted by its normalizing factor and read off its density vector. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:finflag-pmf">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FinFlag.toPMF">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">5</span><span class="definition_thmtitle">Flag</span></div>
+    <div class="thm_thmcontent"><p>    A <em>flag</em> of type \(\sigma \) on \(V\), \(\mathrm{Flag}\, \sigma \, V\), is an isomorphism class of labeled graphs under \(\sim _f\) (the equivalence “\(\exists \) a labeled-graph isomorphism”). This is the basic object the flag algebra is built from. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Flag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-algebra_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-algebra" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">31</span><span class="definition_thmtitle">The flag algebra</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathcal{A}^\sigma = \mathrm{FlagVector}\, \sigma / {\sim _v}\), flag vectors modulo the zero space. It carries a commutative \(\mathbb {R}\)-algebra structure (built below), with quotient map written \([\! [\, \cdot \, ]\! ]\). </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-algebra">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagAlgebra">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-algebra-vec_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-algebra-vec" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">70</span><span class="definition_thmtitle">Vector of algebra elements</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{FlagAlgebraVec}\, \sigma \, n = \mathrm{Fin}\, n \to \mathcal{A}^\sigma \), the variables of a quadratic form. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:flag-algebra-vec">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagAlgebraVec">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-density-n_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-density-n" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">21</span><span class="definition_thmtitle">Single, pair, and triple densities</span></div>
+    <div class="thm_thmcontent"><p>    The fixed-arity specializations \(d_1(F;G)\), \(d_2(F_1,F_2;G)\), \(d_3(F_1,F_2,F_3;G)\) are list densities of the singleton, pair, and triple lists. \(d_2\) is the factor multiplication is built from; \(d_1\) is the ordinary subflag density. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#def:flag-density-n">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₁" class="lean_decl">FlagAlgebras.flagDensity₁</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₂" class="lean_decl">FlagAlgebras.flagDensity₂</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity₃" class="lean_decl">FlagAlgebras.flagDensity₃</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-density-seq_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-density-seq" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">88</span><span class="definition_thmtitle">Density profile of a sequence</span></div>
+    <div class="thm_thmcontent"><p>    \(n \mapsto (F \mapsto d_1(F; s_n))\), the profile whose limit defines the semantics. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:flag-density-seq">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensitySeq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-density-space_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-density-space" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">75</span><span class="definition_thmtitle">Density space</span></div>
+    <div class="thm_thmcontent"><p>    The compact, metrizable space of density profiles \(\mathrm{FinFlag}\, \sigma \to [0,1]\) (a Tychonoff cube); the ambient space of the limit semantics. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:flag-density-space">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagDensitySpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-eqv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-eqv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">9</span><span class="definition_thmtitle">Flag equivalence</span></div>
+    <div class="thm_thmcontent"><p>    The relation \(G \sim _f G'\): “there exists a labeled-graph isomorphism \(G \simeq _f G'\)”. Flags are its equivalence classes. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:flag-eqv">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagEqv">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-expansion_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-expansion" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">37</span><span class="definition_thmtitle">Density expansion</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{flagExpansion}\, F\, \ell = \sum _{F'} d_1(F;F')\, \cdot F'\), the averaged expansion of \(F\) onto size-\(\ell \) flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-expansion">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagExpansion">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-list_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-list" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7</span><span class="definition_thmtitle">Flag list</span></div>
+    <div class="thm_thmcontent"><p>    A <em>flag list</em> of length \(t\) is a tuple \((F_0,\dots ,F_{t-1})\) of flags of type \(\sigma \), the \(i\)-th on its own vertex type. Flag lists (with the type-level <span class="ttfamily">insert</span>/<span class="ttfamily">permute</span> operations) are what let us speak of the simultaneous density of several disjoint flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:flag-list">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagList">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-list-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-list-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">20</span><span class="definition_thmtitle">List density and fixed arities</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{flagListDensity}\) counts the induced subgraph-lists of \(G\) that simultaneously realize a whole disjoint list of prescribed flags (normalized by the multinomial coefficient distributing the non-type vertices), lifted through the quotient. It generalizes \(\mathrm{labeledGraphListDensity}\) on carriers. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#def:flag-list-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagListDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-list-ops_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-list-ops" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">13</span><span class="definition_thmtitle">Flag-list operations</span></div>
+    <div class="thm_thmcontent"><p>    Appending a flag to a flag list, and reordering a flag list by a permutation. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:flag-list-ops">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagList.insert" class="lean_decl">FlagAlgebras.FlagList.insert</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagList.permute" class="lean_decl">FlagAlgebras.FlagList.permute</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-mul_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-mul" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">29</span><span class="definition_thmtitle">Flag multiplication</span></div>
+    <div class="thm_thmcontent"><p>    The product of two flags is expanded onto flags \(G\) of a target size \(\ell \), weighted by the pair density: </p>
+<div class="displaymath" id="a0000000014">
+  \[  F \cdot F' \; =\;  \sum _{G} d_2(F,F';G)\, \cdot G,  \]
+</div>
+<p> taken at the minimal size \(\ell = |F| + |F'| - |\sigma |\) (\(\mathrm{flagMul}\)); the choice of \(\ell \) is irrelevant modulo the averaging relations. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-mul">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagMul" class="lean_decl">FlagAlgebras.flagMul</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagMulWithSize" class="lean_decl">FlagAlgebras.flagMulWithSize</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-quadratic-form_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-quadratic-form" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">66</span><span class="definition_thmtitle">Flag quadratic form</span></div>
+    <div class="thm_thmcontent"><p>    Given a matrix \(M\) and a vector \(v = (v_1,\dots ,v_n)\) of flag-algebra elements, </p>
+<div class="displaymath" id="a0000000023">
+  \[  \mathrm{flagQuadraticForm}\, M\, v \; =\;  \sum _{i,j} M_{ij}\, (v_i\,  v_j),  \]
+</div>
+<p> the raw sum-of-squares certificate object. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:flag-quadratic-form">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-seq_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-seq" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">74</span><span class="definition_thmtitle">Flag sequence</span></div>
+    <div class="thm_thmcontent"><p>    A <em>flag sequence</em> is a sequence \(\mathbb {N} \to \mathrm{FinFlag}\, \sigma \) of flags, typically of growing size. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:flag-seq">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagSeq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-type_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-type" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1</span><span class="definition_thmtitle">Flag type</span></div>
+    <div class="thm_thmcontent"><p>   A <em>flag type</em> \(\sigma \) is a simple graph on a finite label set \(T\). It describes the labeled “root” every flag of type \(\sigma \) must carry. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:flag-type">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagType">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-vector_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-vector" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">27</span><span class="definition_thmtitle">Flag vector</span></div>
+    <div class="thm_thmcontent"><p>    A <em>flag vector</em> is a finitely supported real combination of size-tagged flags, i.e. an element of \(\mathrm{FinFlag}\, \sigma \to _{0} \mathbb {R}\): the underlying module before quotienting. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-vector">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagVector">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-vector-eqv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-vector-eqv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">40</span><span class="definition_thmtitle">Flag equivalence of vectors</span></div>
+    <div class="thm_thmcontent"><p>    \(f \sim _v g\) iff \(f - g \in \mathrm{ZeroSpace}\, \sigma \): the two vectors represent the same flag-algebra element. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-vector-eqv">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVectorEqv">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flag-with-size_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flag-with-size" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">36</span><span class="definition_thmtitle">Flag of fixed size</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{FlagWithSize}\, \sigma \, n = \mathrm{Flag}\, \sigma \, (\mathrm{Fin}\, n)\): a flag on the fixed \(n\)-element carrier. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:flag-with-size">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.FlagWithSize">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:flagseq-measure_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:flagseq-measure" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">90</span><span class="definition_thmtitle">Flag-sequence measure</span></div>
+    <div class="thm_thmcontent"><p>    The independent product measure \(\mu \{ \varphi \} \) on sequences of flags, each component drawn from \(\varphi \)’s PMF; the source of the random flag sequence in Theorem&#160;<a href="chap-limits.html#thm:hom-is-limit">81</a>. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:flagseq-measure">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagSeqMeasure">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">69</span><span class="definition_thmtitle">Algebra homomorphism type</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{Hom}\, \sigma = \mathcal{A}^\sigma \to _{\mathbb {R}\text{-alg}} \mathbb {R}\), the underlying \(\mathbb {R}\)-algebra homomorphisms; a positive homomorphism is such a map that is additionally nonnegative on flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:hom">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Hom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:increases_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:increases" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">87</span><span class="definition_thmtitle">Increasing sizes</span></div>
+    <div class="thm_thmcontent"><p>    A flag sequence has strictly increasing flag sizes. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:increases">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Increases">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:induced-labeled-subgraph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:induced-labeled-subgraph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">10</span><span class="definition_thmtitle">Induced labeled subgraph</span></div>
+    <div class="thm_thmcontent"><p>    The labeled subgraph of \(G\) induced on a chosen vertex set \(S\) containing all labeled vertices — the canonical way to cut out a sub-flag on \(S\). </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:induced-labeled-subgraph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.LabeledSubgraph.inducedLabeledSubgraph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:isomorphism-count_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:isomorphism-count" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">54</span><span class="definition_thmtitle">Isomorphism count</span></div>
+    <div class="thm_thmcontent"><p>    The number of label placements on the same underlying graph as \(G\) that are flag-isomorphic to \(G\). </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:isomorphism-count">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.isomorphismCount">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:label-extensions_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:label-extensions" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">56</span><span class="definition_thmtitle">Label extensions</span></div>
+    <div class="thm_thmcontent"><p>    For an unlabeled flag \(F\), the finset of all \(\sigma \)-labeled flags of the same size whose unlabeling is \(F\) — the ways to re-add a labelling. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:label-extensions">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labelExtensions">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-graph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-graph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">2</span><span class="definition_thmtitle">Labeled graph</span></div>
+    <div class="thm_thmcontent"><p>    A <em>labeled graph</em> of type \(\sigma \) on a vertex type \(V\) is a simple graph \(G\) on \(V\) together with an induced-subgraph embedding \(\sigma \hookrightarrow G\). Its image is the set of labeled (“rooted”) vertices. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:labeled-graph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.LabeledGraph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-graph-count_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-graph-count" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">15</span><span class="definition_thmtitle">Labeled-graph count</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{labeledGraphCount}\, H\, G\) is the number of induced labeled subgraphs of the host \(G\) that are labeled-isomorphic to \(H\). </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#def:labeled-graph-count">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphCount">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-graph-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-graph-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">16</span><span class="definition_thmtitle">Labeled-graph density</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{labeledGraphDensity}\, H\, G\) normalizes the count by the number of ways to choose the non-type vertices of an \(H\)-sized induced subgraph, i.e. by \(\binom {|G|-|\sigma |}{|H|-|\sigma |}\), giving a rational in \([0,1]\). </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#def:labeled-graph-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-graph-iso_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-graph-iso" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">4</span><span class="definition_thmtitle">Isomorphism of labeled graphs, \(\simeq _f\)</span></div>
+    <div class="thm_thmcontent"><p>    A <em>labeled-graph isomorphism</em> \(G \simeq _f G'\) is a graph isomorphism of the underlying graphs that commutes with the two type embeddings. Flags are exactly the isomorphism classes for this relation. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:labeled-graph-iso">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.LabeledGraphIso">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-graph-list_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-graph-list" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">11</span><span class="definition_thmtitle">Labeled-graph list</span></div>
+    <div class="thm_thmcontent"><p>    A \(t\)-tuple of labeled graphs, the \(i\)-th on vertex type \(V_i\); the pre-quotient form of a flag list. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:labeled-graph-list">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.LabeledGraphList">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:labeled-subgraph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:labeled-subgraph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3</span><span class="definition_thmtitle">Labeled subgraph</span></div>
+    <div class="thm_thmcontent"><p>    A <em>labeled subgraph</em> of a labeled graph \(G\) is a subgraph of \(G\) that still contains all labeled vertices and embeds \(\sigma \) compatibly with \(G\). These are the pieces cut out when measuring subflag densities. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:labeled-subgraph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.LabeledSubgraph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:list-type-ops_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:list-type-ops" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">12</span><span class="definition_thmtitle">Type-level list operations</span></div>
+    <div class="thm_thmcontent"><p>   The operations on a vertex-type family that append a new type at the end (\(\mathrm{listTypeInsert}\)) or reorder it by a permutation (\(\mathrm{listTypePermute}\)); they supply the return types of the flag-list operations. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#def:list-type-ops">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.listTypeInsert" class="lean_decl">FlagAlgebras.listTypeInsert</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.listTypePermute" class="lean_decl">FlagAlgebras.listTypePermute</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:positive-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:positive-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">61</span><span class="definition_thmtitle">Positive homomorphism</span></div>
+    <div class="thm_thmcontent"><p>    A <em>positive homomorphism</em> is an \(\mathbb {R}\)-algebra homomorphism \(\varphi : \mathcal{A}^\sigma \to \mathbb {R}\) that is nonnegative on every flag. These are the semantic evaluations of the algebra — the limits of subgraph densities. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:positive-hom">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.PositiveHom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:positive-hom-coe_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:positive-hom-coe" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">77</span><span class="definition_thmtitle">Density profile of a homomorphism</span></div>
+    <div class="thm_thmcontent"><p>    Each positive homomorphism \(\varphi \) has a density profile \(F \mapsto \varphi [\! [F]\! ]\); this is the injective bridge from the algebraic to the analytic side. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:positive-hom-coe">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.PositiveHom.coe">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:positive-hom-space_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:positive-hom-space" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">78</span><span class="definition_thmtitle">Positive homomorphism space</span></div>
+    <div class="thm_thmcontent"><p>    The range of the profile map; shown to be closed, hence compact and measurable. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:positive-hom-space">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.PositiveHomSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:positivehom-topmf_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:positivehom-topmf" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">89</span><span class="definition_thmtitle">Homomorphism as a PMF</span></div>
+    <div class="thm_thmcontent"><p>    The distribution on size-\(\ell \) flags whose mass at \(F\) is \(\varphi [\! [F]\! ]\); \(\varphi \)’s random model at scale \(\ell \). </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:positivehom-topmf">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.PositiveHom.toPMF">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:prob-measure-witness_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:prob-measure-witness" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">94</span><span class="definition_thmtitle">The measure \(\mathbb {P}[\varphi _0]\)</span></div>
+    <div class="thm_thmcontent"><p>    The chosen random-extension measure \(\mathbb {P}[\varphi _0]\), the witness of Theorem&#160;<a href="chap-limits.html#thm:random-hom-measure">83</a>. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#def:prob-measure-witness">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.probMeasure_extend_emptyType_positiveHom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:semantic-cone_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:semantic-cone" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">62</span><span class="definition_thmtitle">Semantic cone</span></div>
+    <div class="thm_thmcontent"><p>    The <em>semantic cone</em> is \(\{ \,  f \mid \varphi (f) \ge 0 \text{ for all positive } \varphi \, \} \). Membership is exactly an unconditional density inequality. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:semantic-cone">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.semanticCone">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:semantic-order_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:semantic-order" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">63</span><span class="definition_thmtitle">Semantic order</span></div>
+    <div class="thm_thmcontent"><p>    Define \(f \le g\) to mean \(g - f\) lies in the semantic cone, i.e. every positive homomorphism satisfies \(\varphi (f) \le \varphi (g)\). This is a preorder on \(\mathcal{A}^\sigma \), the order in which all bounds are stated. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#def:semantic-order">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.le_def">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:subflag-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:subflag-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">18</span><span class="definition_thmtitle">Subflag density</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{subflagDensity} : \mathrm{Flag}\, \sigma \, V \to \mathrm{Flag}\, \sigma \, W \to \mathbb {Q}\) is \(\mathrm{labeledGraphDensity}\) lifted through the flag quotient in both arguments: the density of one flag inside another. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#def:subflag-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-count_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-count" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">109</span><span class="definition_thmtitle">Placement counts</span></div>
+    <div class="thm_thmcontent"><p>    The computable numerators of the densities: the number of vertex-disjoint placements of a flag list inside a host, empty-typed and \(\sigma \)-typed. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-count">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2InducedSubgraphListCount" class="lean_decl">FlagAlgebras.Compute.sym2InducedSubgraphListCount</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2InducedLabeledSubgraphListCount" class="lean_decl">FlagAlgebras.Compute.sym2InducedLabeledSubgraphListCount</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-density1_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-density1" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">110</span><span class="definition_thmtitle">Computable single density</span></div>
+    <div class="thm_thmcontent"><p>    The computable single subflag density on empty-typed edge-set flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-density1">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-density2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-density2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">111</span><span class="definition_thmtitle">Computable pair density</span></div>
+    <div class="thm_thmcontent"><p>    The computable pair (multiplication) density on \(\sigma \)-typed edge-set flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-density2">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.sym2FlagDensity₂">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-empty-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-empty-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">108</span><span class="definition_thmtitle">Computable empty-typed flag</span></div>
+    <div class="thm_thmcontent"><p>    The computable counterpart of \(\mathrm{Flag}\, \emptyset \, (\mathrm{Fin}\, n)\): edge-set graphs modulo computable flag equivalence. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-empty-flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2EmptyTypedFlag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">100</span><span class="definition_thmtitle">Computable flag</span></div>
+    <div class="thm_thmcontent"><p>    The computable counterpart of \(\mathrm{Flag}\, \sigma \): edge-set labeled graphs modulo a computable flag equivalence, carrying effective \(\mathrm{Fintype}\)/\(\mathrm{DecidableEq}\) instances. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2Flag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-graph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-graph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">98</span><span class="definition_thmtitle">Edge-set graph</span></div>
+    <div class="thm_thmcontent"><p>   A computable simple graph on \(\mathrm{Fin}\, n\): a finite set of non-loop edges in \(\mathrm{Sym}_2(\mathrm{Fin}\, n)\). It decodes to an abstract (empty-type) labeled graph. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-graph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2Graph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:sym2-labeled-graph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:sym2-labeled-graph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">99</span><span class="definition_thmtitle">Edge-set labeled graph</span></div>
+    <div class="thm_thmcontent"><p>    The typed version: an edge set together with a graph embedding of a decoded type \(\sigma \); decodes to an abstract \(\mathrm{LabeledGraph}\). </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#def:sym2-labeled-graph">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.Sym2LabeledGraph">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:unlabel_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:unlabel" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">45</span><span class="definition_thmtitle">Unlabel</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{unlabel}\) drops the type embedding of a single flag, returning its underlying graph as an unlabeled (\(\emptyset \)-type) flag. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:unlabel">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.unlabel">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:unlabeled-graph_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:unlabeled-graph" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">55</span><span class="definition_thmtitle">Unlabeled graph</span></div>
+    <div class="thm_thmcontent"><p>    Forgetting the type embedding of a labeled graph, as a graph (\(\mathrm{unlabeledGraph}\)) and as its flag class (\(\mathrm{unlabeledGraphQuot}\)). </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#def:unlabeled-graph">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.unlabeledGraph" class="lean_decl">FlagAlgebras.unlabeledGraph</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.unlabeledGraphQuot" class="lean_decl">FlagAlgebras.unlabeledGraphQuot</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:zero-element_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:zero-element" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">38</span><span class="definition_thmtitle">Averaging relation</span></div>
+    <div class="thm_thmcontent"><p>    Razborov’s generating relation \(\mathrm{zeroElement}\, F\, \ell = F - \mathrm{flagExpansion}\, F\, \ell \), identified with \(0\) in the algebra. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:zero-element">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.zeroElement">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:zero-set_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:zero-set" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">39</span><span class="definition_thmtitle">Relation set</span></div>
+    <div class="thm_thmcontent"><p>    The set of all averaging relations \(\mathrm{zeroElement}\, F\, \ell \) (with \(|F| \le \ell \)); its span is the zero space. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:zero-set">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.zeroSet">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:zero-space_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:zero-space" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">30</span><span class="definition_thmtitle">Zero space</span></div>
+    <div class="thm_thmcontent"><p>    The <em>zero space</em> \(\mathrm{ZeroSpace}\, \sigma \) is the \(\mathbb {R}\)-submodule spanned by all of Razborov’s averaging relations (the set \(\mathrm{zeroSet}\, \sigma \)). Quotienting by it identifies each flag with its density expansion. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#def:zero-space">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.ZeroSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:bridge-counts_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:bridge-counts" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">47</span><span class="lemma_thmtitle">The bridge set, counted three ways</span></div>
+    <div class="thm_thmcontent"><p>    The set of pairs (vertex subset, injective label assignment) embedding a labeled flag into an unlabeled one is counted three ways: by isomorphism-count times labeled count; by summing labeled counts over labellings of the same graph; and, grouped by label-extension flag, over all relabellings. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#lem:bridge-counts">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledGraphCount" class="lean_decl">FlagAlgebras.isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledGraphCount</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labeledGraphCount_of_same_graph" class="lean_decl">FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labeledGraphCount_of_same_graph</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledGraphCount" class="lean_decl">FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledGraphCount</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:density-invariance_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:density-invariance" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">23</span><span class="lemma_thmtitle">Permutation and empty-insertion invariance</span></div>
+    <div class="thm_thmcontent"><p>    List density is unchanged by permuting the list, and by inserting an empty flag. These symmetries reduce the fixed-arity densities to one another in the chain-rule proofs. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#lem:density-invariance">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_permute" class="lean_decl">FlagAlgebras.flagDensity_permute</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_insert_empty" class="lean_decl">FlagAlgebras.flagDensity_insert_empty</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:density-iso-invariant_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:density-iso-invariant" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">17</span><span class="lemma_thmtitle">Isomorphism invariance</span></div>
+    <div class="thm_thmcontent"><p>    Labeled-graph density is invariant under \(\simeq _f\) in both arguments. This is the well-definedness fact that lets density descend to flags. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#lem:density-iso-invariant">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.labeledGraphDensity_respect_eqv">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:downward-factor-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:downward-factor-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">60</span><span class="theorem_thmtitle">The normalizing factor is positive</span></div>
+    <div class="thm_thmcontent"><p>    \(w(F) {\gt} 0\) for every flag \(F\): every flag is realized by at least one label placement. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#lem:downward-factor-pos">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardNormalizingFactor_pos">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:downward-flag-sum_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:downward-flag-sum" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">58</span><span class="lemma_thmtitle">Downward averaging expansion</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{downwardFlag}\, F \sim _v \sum _{G} d_1(F;G)\cdot \mathrm{downwardFlag}\, G\) over size-\(\ell \) flags — the averaging expansion driving well-definedness. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#lem:downward-flag-sum">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlag_eqv_sum_flagDensity_smul_downwardFlag">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:downward-well-defined_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:downward-well-defined" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">49</span><span class="lemma_thmtitle">Downward respects the zero space</span></div>
+    <div class="thm_thmcontent"><p>    The unlabeling map sends the zero space of \(\sigma \) into the zero space of the empty type, so it descends to the quotient algebra. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#lem:downward-well-defined">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlagVector_zeroSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:downward-zero-at-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:downward-zero-at-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">96</span><span class="lemma_thmtitle">Degenerate base homomorphism</span></div>
+    <div class="thm_thmcontent"><p>    If \(\varphi _0\langle \sigma \rangle _0 = 0\) then \(\varphi _0[\! [f]\! ]_0 = 0\) for all \(f\) — the degenerate case handled separately in the cone and Cauchy–Schwarz arguments. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#lem:downward-zero-at-hom">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward_zero_at_hom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:downward-zero-element_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:downward-zero-element" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">59</span><span class="lemma_thmtitle">Downward of a relation is a relation</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{downwardFlagVector}\) sends each generating relation \(\mathrm{zeroElement}\, F\, \ell \) into the zero space of the empty type. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#lem:downward-zero-element">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downwardFlagVector_zeroElement_zeroSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:expand-k2_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:expand-k2" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">115</span><span class="lemma_thmtitle">Expansion of the edge density</span></div>
+    <div class="thm_thmcontent"><p>    Expanding onto three vertices, \(K_2 = \tfrac 13 E_3 + \tfrac 23 P_3 + K_3\), where \(E_3, P_3, K_3\) are the one-edge, path, and triangle densities. </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#lem:expand-k2">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.expand_K2_on_three_vertex_graphs">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:flag-sub-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:flag-sub-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">72</span><span class="lemma_thmtitle">Order via nonnegative difference</span></div>
+    <div class="thm_thmcontent"><p>    \(f \le g \iff 0 \le g - f\). </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#lem:flag-sub-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_sub_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:integral-density-div_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:integral-density-div" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">91</span><span class="lemma_thmtitle">Expected density is the downward ratio</span></div>
+    <div class="thm_thmcontent"><p>    The expected \(F\)-density under a large flag’s measure equals the normalized downward density ratio; the finite-level identity behind Lemma&#160;3.11. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#lem:integral-density-div">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.integral_flagDensitySpace_eq_flagVectorDensity_div">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:lower-bound_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:lower-bound" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">119</span><span class="lemma_thmtitle">Complete-bipartite lower bound</span></div>
+    <div class="thm_thmcontent"><p>   For \(n \ge 2\), the maximal edge density of a triangle-free graph on \(n\) vertices is at least \(\tfrac 12\), witnessed by the balanced complete bipartite graph: \(\operatorname {ex}(n,K_3)/\binom {n}{2} \ge \tfrac 12\). </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#lem:lower-bound">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.extremal_density_K3_ge">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:measure-support_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:measure-support" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">93</span><span class="lemma_thmtitle">Limit measure is supported on homomorphisms</span></div>
+    <div class="thm_thmcontent"><p>    The weak limit of a convergent flag sequence’s probability measures is concentrated on the positive-homomorphism space. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#lem:measure-support">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagSeq_limit_measure_support_positiveHomSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:order-monotone_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:order-monotone" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">65</span><span class="lemma_thmtitle">Order arithmetic</span></div>
+    <div class="thm_thmcontent"><p>    The semantic order is compatible with the algebra operations: inequalities may be added termwise, and a nonnegative scalar times a nonnegative element is nonnegative. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#lem:order-monotone">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add" class="lean_decl">FlagAlgebras.flag_add_le_add</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.nonneg_smul_nonneg_geq_zero" class="lean_decl">FlagAlgebras.nonneg_smul_nonneg_geq_zero</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:order-monotone-sides_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:order-monotone-sides" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">73</span><span class="lemma_thmtitle">Translation invariance of the order</span></div>
+    <div class="thm_thmcontent"><p>    Adding a fixed element on either side preserves the semantic order; these register as the <span class="ttfamily">AddLeftMono</span>/<span class="ttfamily">AddRightMono</span> instances. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#lem:order-monotone-sides">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add_left" class="lean_decl">FlagAlgebras.flag_add_le_add_left</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_add_le_add_right" class="lean_decl">FlagAlgebras.flag_add_le_add_right</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:positivehom-basisvector-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:positivehom-basisvector-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">71</span><span class="lemma_thmtitle">Homomorphisms are nonnegative on flags</span></div>
+    <div class="thm_thmcontent"><p>    \(0 \le \varphi [\! [F]\! ]\) for every positive homomorphism \(\varphi \) and flag \(F\) — the defining positivity, restated as \(0 \le \cdot \). </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#lem:positivehom-basisvector-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.positiveHom_basisVector_ge_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:positivehom-one-downward-pos_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:positivehom-one-downward-pos" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">97</span><span class="lemma_thmtitle">Positive denominator</span></div>
+    <div class="thm_thmcontent"><p>    If \(\varphi _0\langle \sigma \rangle _0 {\gt} 0\) then \(\varphi _0[\! [1]\! ]_0 {\gt} 0\), the denominator in the normalized downward value. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#lem:positivehom-one-downward-pos">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.positiveHom_one_downward_pos">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:square-cert_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:square-cert" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">116</span><span class="lemma_thmtitle">Square-positivity certificate</span></div>
+    <div class="thm_thmcontent"><p>    Unlabelling the square of the difference of the two rooted two-vertex flags, </p>
+<div class="displaymath" id="a0000000034">
+  \[  [\! [\, (O_2^{1} - K_2^{1})^2\, ]\! ]_0 = O_3 - \tfrac 13 E_3 - \tfrac 13 P_3 + K_3 \; \ge \;  0,  \]
+</div>
+<p> a sum-of-squares certificate: the left side is a downward-of-square, hence nonnegative by Theorem&#160;<a href="chap-limits.html#thm:square-downward-nonneg">85</a>. </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#lem:square-cert">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.FlagAlgebra_2_1_0_0_minus_FlagAlgebra_2_1_0_1_square_downward">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:subflag-density-values_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:subflag-density-values" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">19</span><span class="lemma_thmtitle">Boundary values</span></div>
+    <div class="thm_thmcontent"><p>    The empty flag has density \(1\) in every flag; a flag has density \(1\) in itself; two distinct flags of the same size have density \(0\) in each other. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#lem:subflag-density-values">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_empty" class="lean_decl">FlagAlgebras.subflagDensity_empty</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_self" class="lean_decl">FlagAlgebras.subflagDensity_self</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_other" class="lean_decl">FlagAlgebras.subflagDensity_other</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:basis-quot-eq-sum_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:basis-quot-eq-sum" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">43</span><span class="theorem_thmtitle">Flag class as density expansion</span></div>
+    <div class="thm_thmcontent"><p>    In the algebra, \([\! [F]\! ] = \sum _{F'} d_1(F;F')\, [\! [F']\! ]\) over size-\(\ell \) flags: the averaging relation written as a \([\! [\, \cdot \, ]\! ]\) identity. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:basis-quot-eq-sum">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector_quot_eq_sum">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:cauchy-schwarz_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:cauchy-schwarz" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">86</span><span class="theorem_thmtitle">Cauchy–Schwarz for downward</span></div>
+    <div class="thm_thmcontent"><p>    \([\! [f\cdot f]\! ]_0 \cdot [\! [g\cdot g]\! ]_0 \ge [\! [f\cdot g]\! ]_0^2\), the key inequality behind semidefinite flag-algebra density bounds. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:cauchy-schwarz">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.square_downward_mul_ge_mul_downward_square">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:counting-identity_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:counting-identity" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">48</span><span class="theorem_thmtitle">Counting identity</span></div>
+    <div class="thm_thmcontent"><p>    Equating the three counts yields </p>
+<div class="displaymath" id="a0000000021">
+  \[  d_1(\mathrm{unlabel}\, F;\, F')\cdot w(F) \; =\;  \sum _{G \in \mathrm{ext}(F')} d_1(F;G)\cdot w(G),  \]
+</div>
+<p> where \(w\) is the normalizing factor and \(\mathrm{ext}(F')\) ranges over the relabellings of \(F'\). This is the algebraic engine of well-definedness. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#thm:counting-identity">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:deg-key-iso-invariant_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:deg-key-iso-invariant" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">102</span><span class="theorem_thmtitle">The key is an invariant</span></div>
+    <div class="thm_thmcontent"><p>    Equivalent graphs share the cheap key, justifying its use as a deduplication prefilter. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#thm:deg-key-iso-invariant">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.degKey_iso_invariant">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:density-chain-rules_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:density-chain-rules" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">24</span><span class="theorem_thmtitle">Density chain rules</span></div>
+    <div class="thm_thmcontent"><p>    A product-flag density expands as a sum over intermediate flags \(G'\) of size \(\ell '\) of products of densities, e.g. </p>
+<div class="displaymath" id="a0000000011">
+  \[  d_1(F;G) = \sum _{G'} d_1(F;G')\,  d_1(G';G), \qquad d_2(F_1,F_2;G) = \sum _{G'} d_1(F_1;G')\,  d_2(G',F_2;G).  \]
+</div>
+<p> The triple rule is foundational; the pair and single rules descend from it. These are the identities the quotient algebra is defined to respect. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#thm:density-chain-rules">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagDensity_eq_sum_density_prods</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagPairDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagPairDensity_eq_sum_density_prods</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagPairDensity_eq_sum_density_prods'" class="lean_decl">FlagAlgebras.flagPairDensity_eq_sum_density_prods'</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagTripleDensity_eq_sum_density_prods" class="lean_decl">FlagAlgebras.flagTripleDensity_eq_sum_density_prods</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:density-compute_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:density-compute" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">106</span><span class="theorem_thmtitle">Computable densities, certified</span></div>
+    <div class="thm_thmcontent"><p>    Computable single- and pair-densities on edge-set flags, each proved equal to the abstract \(d_1\), \(d_2\) — so a density computed in the edge-set representation is provably the abstract value. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#thm:density-compute">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.flagDensity₁_eq_sym2EmptyTypeFlagDensity₁" class="lean_decl">FlagAlgebras.Compute.flagDensity₁_eq_sym2EmptyTypeFlagDensity₁</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.flagDensity₂_eq_sym2FlagDensity₂" class="lean_decl">FlagAlgebras.Compute.flagDensity₂_eq_sym2FlagDensity₂</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:density-prod-approx_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:density-prod-approx" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">25</span><span class="theorem_thmtitle">Asymptotic independence</span></div>
+    <div class="thm_thmcontent"><p>    There is a constant \(c = 2(|F|+|F'|)^2\), independent of \(G\), with </p>
+<div class="displaymath" id="a0000000013">
+  \[  \bigl| d_2(F,F';G) - d_1(F;G)\,  d_1(F';G) \bigr| \le \frac{c}{|G|}.  \]
+</div>
+<p> Distinct subflag densities are thus asymptotically multiplicative — the probabilistic heart of the “product of densities” reasoning. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#thm:density-prod-approx">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagListDensity₂_prod_approx">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:downward-compute_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:downward-compute" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">105</span><span class="theorem_thmtitle">Computable normalizing factor, certified</span></div>
+    <div class="thm_thmcontent"><p>    A computable downward normalizing factor on edge-set flags, proved equal to the abstract \(\mathrm{downwardNormalizingFactor}\) on the decoded flag. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#thm:downward-compute">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag" class="lean_decl">FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.downwardNormalizingFactor_eq" class="lean_decl">FlagAlgebras.Compute.downwardNormalizingFactor_eq</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:downward-empty_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:downward-empty" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">52</span><span class="theorem_thmtitle">Identity on the empty type</span></div>
+    <div class="thm_thmcontent"><p>    On \(\mathcal{A}^\emptyset \) there is nothing to unlabel, so \([\! [f]\! ]_0 = f\). </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#thm:downward-empty">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward_emptyType">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:downward-linear_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:downward-linear" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">51</span><span class="theorem_thmtitle">Linearity</span></div>
+    <div class="thm_thmcontent"><p>    \([\! [f+f']\! ]_0 = [\! [f]\! ]_0 + [\! [f']\! ]_0\) and \([\! [r\cdot f]\! ]_0 = r\cdot [\! [f]\! ]_0\): downward is \(\mathbb {R}\)-linear. </p>
+</div>
+
+    <a class="latex_link" href="chap-downward.html#thm:downward-linear">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward_add" class="lean_decl">FlagAlgebras.downward_add</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward_smul" class="lean_decl">FlagAlgebras.downward_smul</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:downward-preserve-cone_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:downward-preserve-cone" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">84</span><span class="theorem_thmtitle">Downward preserves the semantic cone</span></div>
+    <div class="thm_thmcontent"><p>    If \(f\) is semantically nonnegative in the typed algebra then so is its unlabeling in the empty-type algebra: </p>
+<div class="displaymath" id="a0000000031">
+  \[  f \in \mathrm{semanticCone}\, \sigma \; \Longrightarrow \;  [\! [f]\! ]_0 \in \mathrm{semanticCone}\, \emptyset .  \]
+</div>
+<p> This is the bridge that turns typed nonnegativity into unlabeled nonnegativity, and it is what the sum-of-squares certificates (Theorem&#160;<a href="chap-positivity.html#thm:sos-downward-nonneg">68</a>) and the square/Cauchy–Schwarz results below rest on. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:downward-preserve-cone">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.downward_preserve_semanticCone">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:eqv-quot-list-flaglist_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:eqv-quot-list-flaglist" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">14</span><span class="theorem_thmtitle">Quotient of lists is a list of flags</span></div>
+    <div class="thm_thmcontent"><p>    The quotient of labeled-graph lists is equivalent to the tuple of flags: taking isomorphism classes commutes with the \(\mathrm{Fin}\, t\)-indexed product. </p>
+</div>
+
+    <a class="latex_link" href="chap-flags.html#thm:eqv-quot-list-flaglist">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.eqv_QuotLabeledGraphList_FlagList">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:flag-algebra-nontrivial_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:flag-algebra-nontrivial" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">44</span><span class="theorem_thmtitle">Nontriviality</span></div>
+    <div class="thm_thmcontent"><p>    \(0 \ne 1\) in \(\mathcal{A}^\sigma \): the flag algebra is nontrivial (so its \(\mathrm{CommRing}\) structure is not the zero ring). </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:flag-algebra-nontrivial">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagAlgebra_zero_ne_one">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:flag-enumeration_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:flag-enumeration" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">107</span><span class="theorem_thmtitle">Flag enumeration, complete</span></div>
+    <div class="thm_thmcontent"><p>    Orderly (McKay-style) augmentation with cheap-key dedup generates one representative per isomorphism class; the generated set is proved to exhaust \(\mathrm{Finset.univ}\), so enumeration is complete. </p>
+</div>
+
+    <a class="latex_link" href="chap-compute.html#thm:flag-enumeration">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.genSym2Graphs" class="lean_decl">FlagAlgebras.Compute.genSym2Graphs</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.Compute.genFlagSet_eq_univ" class="lean_decl">FlagAlgebras.Compute.genFlagSet_eq_univ</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:flag-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:flag-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">64</span><span class="theorem_thmtitle">Flags are nonnegative</span></div>
+    <div class="thm_thmcontent"><p>    Every flag satisfies \([\! [F]\! ] \ge 0\) — the base positivity fact from which sum-of-squares bounds are assembled. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#thm:flag-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flag_geq_zero">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:hom-is-limit_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:hom-is-limit" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">81</span><span class="theorem_thmtitle">Every homomorphism is a limit (Razborov 3.3b)</span></div>
+    <div class="thm_thmcontent"><p>    Conversely every positive homomorphism arises as a convergent flag-sequence limit. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:hom-is-limit">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.positiveHom_as_flagSeq_limit">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:lemma-3-11_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:lemma-3-11" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">92</span><span class="theorem_thmtitle">Lemma 3.11: convergence of expected densities</span></div>
+    <div class="thm_thmcontent"><p>    Along a flag sequence converging to \(\varphi \), the expected \(F\)-densities tend to the normalized downward value \(\varphi [\! [\, [\! [F]\! ]\, ]\! ]_0 / \varphi [\! [1]\! ]_0\). </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:lemma-3-11">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.tendsto_integral_flagDensitySpace_of_converge_flagSeq">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:limit-is-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:limit-is-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">80</span><span class="theorem_thmtitle">Every limit is a homomorphism (Razborov 3.3a)</span></div>
+    <div class="thm_thmcontent"><p>    Any convergent flag-sequence density limit is the profile of some positive homomorphism. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:limit-is-hom">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagSeq_limit_mem_positiveHom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:mantel-flag_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:mantel-flag" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">117</span><span class="theorem_thmtitle">Mantel, flag-algebra form</span></div>
+    <div class="thm_thmcontent"><p>    In \(\mathcal{A}^\emptyset \), \(K_2 \le \tfrac 12\cdot 1 + K_3\). </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#thm:mantel-flag">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Mantel_theorem">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:mantel-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:mantel-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">118</span><span class="theorem_thmtitle">Mantel, homomorphism form</span></div>
+    <div class="thm_thmcontent"><p>    For every positive homomorphism \(\varphi \) with \(\varphi (K_3) = 0\) (a triangle-free limit), \(\varphi (K_2) \le \tfrac 12\). </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#thm:mantel-hom">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Mantel_theorem'">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:mul-assoc_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:mul-assoc" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">33</span><span class="theorem_thmtitle">Associativity modulo \(\sim _v\)</span></div>
+    <div class="thm_thmcontent"><p>    \((f\cdot g)\cdot h \sim _v f\cdot (g\cdot h)\). Associativity fails on the nose on flag vectors but holds modulo the zero space, so it lifts to genuine associativity on \(\mathcal{A}^\sigma \). </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:mul-assoc">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVector_mul_assoc">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:positive-hom-space-char_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:positive-hom-space-char" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">79</span><span class="theorem_thmtitle">Algebraic characterization</span></div>
+    <div class="thm_thmcontent"><p>    A density profile arises from a positive homomorphism iff it satisfies the chain rule (<span class="ttfamily">zeroSpaceProp</span>), normalization \(a(1)=1\) (<span class="ttfamily">oneProp</span>), and multiplicativity through pair densities (<span class="ttfamily">mulProp</span>). </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:positive-hom-space-char">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.positiveHomSpace_eq" class="lean_decl">FlagAlgebras.positiveHomSpace_eq</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.zeroSpaceProp" class="lean_decl">FlagAlgebras.zeroSpaceProp</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.oneProp" class="lean_decl">FlagAlgebras.oneProp</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.mulProp" class="lean_decl">FlagAlgebras.mulProp</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:prob-measure-spec_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:prob-measure-spec" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">95</span><span class="theorem_thmtitle">Defining property of \(\mathbb {P}[\varphi _0]\)</span></div>
+    <div class="thm_thmcontent"><p>    Integrating \(\varphi \mapsto \varphi (f)\) against \(\mathbb {P}[\varphi _0]\) recovers \(\varphi _0[\! [f]\! ]_0 / \varphi _0[\! [1]\! ]_0\). </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:prob-measure-spec">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.probMeasure_extend_emptyType_positiveHom_spec">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:quot-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:quot-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">41</span><span class="theorem_thmtitle">Quotient map is a homomorphism</span></div>
+    <div class="thm_thmcontent"><p>    The quotient map \([\! [\, \cdot \, ]\! ]\) commutes with addition, multiplication, scalar multiplication, and finite sums. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:quot-hom">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.add_quot" class="lean_decl">FlagAlgebras.add_quot</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.mul_quot" class="lean_decl">FlagAlgebras.mul_quot</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.smul_quot" class="lean_decl">FlagAlgebras.smul_quot</a></li>
+        
+           <li><a href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.sum_quot" class="lean_decl">FlagAlgebras.sum_quot</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:quot-mul-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:quot-mul-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">34</span><span class="theorem_thmtitle">Product equals density expansion</span></div>
+    <div class="thm_thmcontent"><p>    In \(\mathcal{A}^\sigma \), \([\! [F]\! ]\cdot [\! [G]\! ] = [\! [\, \mathrm{flagMul}\, F\, G\, ]\! ]\): the ring product of two flags is the class of their density expansion. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:quot-mul-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.basisVector_quot_mul_eq_flagMul_quot">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:random-hom-measure_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:random-hom-measure" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">83</span><span class="theorem_thmtitle">Random homomorphism measure (Razborov 3.5)</span></div>
+    <div class="thm_thmcontent"><p>    For a base homomorphism \(\varphi _0\) on the empty type with \(\varphi _0\langle \sigma \rangle _0 {\gt} 0\), there is a probability measure \(\mathbb {P}[\varphi _0]\) on the positive-homomorphism space whose expectation recovers the normalized downward operator: </p>
+<div class="displaymath" id="a0000000029">
+  \[  \int \varphi (f)\,  d\mathbb {P}[\varphi _0] \; =\;  \frac{\varphi _0[\! [f]\! ]_0}{\varphi _0[\! [1]\! ]_0}.  \]
+</div>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:random-hom-measure">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.exists_probMeasure_extend_emptyType_positiveHom">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:sos-downward-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:sos-downward-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">68</span><span class="theorem_thmtitle">Unlabeled PSD forms are nonnegative</span></div>
+    <div class="thm_thmcontent"><p>    The unlabeled form \([\! [\, \mathrm{flagQuadraticForm}\, M\, v\, ]\! ]_0 \ge 0\) for \(M \succeq 0\). This is the certificate actually used, since density bounds live in the unlabeled algebra \(\mathcal{A}^\emptyset \). </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#thm:sos-downward-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm_downward_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:sos-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:sos-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">67</span><span class="theorem_thmtitle">PSD forms are nonnegative</span></div>
+    <div class="thm_thmcontent"><p>    If \(M \succeq 0\) (positive semidefinite) then \(\mathrm{flagQuadraticForm}\, M\, v \ge 0\) in the semantic cone. </p>
+</div>
+
+    <a class="latex_link" href="chap-positivity.html#thm:sos-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagQuadraticForm_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:square-downward-nonneg_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:square-downward-nonneg" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">85</span><span class="theorem_thmtitle">Squares have nonnegative average</span></div>
+    <div class="thm_thmcontent"><p>    \([\! [f\cdot f]\! ]_0 \ge 0\) for every \(f\): the downward image of a square is nonnegative. </p>
+</div>
+
+    <a class="latex_link" href="chap-limits.html#thm:square-downward-nonneg">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.square_downward_nonneg">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:subflag-eq-list_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:subflag-eq-list" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">22</span><span class="theorem_thmtitle">Single density is subflag density</span></div>
+    <div class="thm_thmcontent"><p>    \(\mathrm{subflagDensity}\, F\, G = d_1(F;G)\): the single-flag list density coincides with the subflag density of Chapter start, linking the two developments. </p>
+</div>
+
+    <a class="latex_link" href="chap-density.html#thm:subflag-eq-list">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.subflagDensity_eq_flagListDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:sum-flags-eq-one_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:sum-flags-eq-one" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">35</span><span class="theorem_thmtitle">Same-size flags sum to one</span></div>
+    <div class="thm_thmcontent"><p>    For every \(\ell \ge |\sigma |\), \(\sum _{F : |F|=\ell } [\! [F]\! ] = 1\) in \(\mathcal{A}^\sigma \): the sum over all flags of a fixed size is the unit. This normalization is used pervasively in density proofs. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:sum-flags-eq-one">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.sum_flagWithSize_eq_one">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:triple-mul-density_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:triple-mul-density" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">42</span><span class="theorem_thmtitle">Triple product expansion</span></div>
+    <div class="thm_thmcontent"><p>    The product of three flags is, modulo \(\sim _v\), the size-\(\ell \) sum weighted by the triple density \(d_3\). This is the engine behind associativity (Theorem&#160;<a href="chap-algebra.html#thm:mul-assoc">33</a>). </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:triple-mul-density">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.three_flag_mul_eqv_sum_tripleDensity">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:turan-k3_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:turan-k3" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">120</span><span class="theorem_thmtitle">Turán density of the triangle</span></div>
+    <div class="thm_thmcontent"><p>    \(\pi (K_3) = \tfrac 12\). </p>
+</div>
+
+    <a class="latex_link" href="chap-mantel.html#thm:turan-k3">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/MantelTheorem.Turan_density_K3">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="thm:zero-space-ideal_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="thm:zero-space-ideal" style="display: none">
+    <div class="thm_thmheading">
+      <span class="theorem_thmcaption">
+      Theorem
+      </span>
+      <span class="theorem_thmlabel">32</span><span class="theorem_thmtitle">The zero space is an ideal</span></div>
+    <div class="thm_thmcontent"><p>    Multiplying any flag vector by an averaging relation gives another element of the zero space. Hence multiplication descends to a well-defined operation on the quotient. </p>
+</div>
+
+    <a class="latex_link" href="chap-algebra.html#thm:zero-space-ideal">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://taeyool.github.io/lean-flag-algebras/docs/find/#doc/FlagAlgebras.flagVector_mul_zeroSpace">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:flag-list-density"	[color=green,		fillcolor="#B0ECA3",		label="flag-list-density",		shape=box,		style=filled];	"def:flag-density-n"	[color=green,		fillcolor="#B0ECA3",		label="flag-density-n",		shape=box,		style=filled];	"def:flag-list-density" -> "def:flag-density-n"	[style=dashed];	"lem:density-invariance"	[color=green,		label="density-invariance",		shape=ellipse];	"def:flag-list-density" -> "lem:density-invariance"	[style=dashed];	"thm:density-chain-rules"	[color=green,		fillcolor="#9CEC8B",		label="density-chain-rules",		shape=ellipse,		style=filled];	"def:flag-density-n" -> "thm:density-chain-rules"	[style=dashed];	"def:flag-mul"	[color=green,		fillcolor="#B0ECA3",		label="flag-mul",		shape=box,		style=filled];	"def:flag-density-n" -> "def:flag-mul"	[style=dashed];	"thm:counting-identity"	[color=green,		fillcolor="#9CEC8B",		label="counting-identity",		shape=ellipse,		style=filled];	"def:flag-density-n" -> "thm:counting-identity"	[style=dashed];	"def:flag-density-seq"	[color=green,		fillcolor="#B0ECA3",		label="flag-density-seq",		shape=box,		style=filled];	"def:flag-density-n" -> "def:flag-density-seq"	[style=dashed];	"def:flag-expansion"	[color=green,		fillcolor="#B0ECA3",		label="flag-expansion",		shape=box,		style=filled];	"def:flag-density-n" -> "def:flag-expansion"	[style=dashed];	"thm:density-compute"	[color=green,		label="density-compute",		shape=ellipse];	"def:flag-density-n" -> "thm:density-compute"	[style=dashed];	"thm:subflag-eq-list"	[color=green,		fillcolor="#1CAC78",		label="subflag-eq-list",		shape=ellipse,		style=filled];	"def:flag-density-n" -> "thm:subflag-eq-list"	[style=dashed];	"lem:density-invariance" -> "thm:density-chain-rules"	[style=dashed];	"thm:triple-mul-density"	[color=green,		label="triple-mul-density",		shape=ellipse];	"thm:density-chain-rules" -> "thm:triple-mul-density"	[style=dashed];	"thm:flag-algebra-nontrivial"	[color=green,		fillcolor="#9CEC8B",		label="flag-algebra-nontrivial",		shape=ellipse,		style=filled];	"thm:density-chain-rules" -> "thm:flag-algebra-nontrivial"	[style=dashed];	"lem:expand-k2"	[color=green,		label="expand-k2",		shape=ellipse];	"thm:density-chain-rules" -> "lem:expand-k2"	[style=dashed];	"def:flag-mul" -> "thm:triple-mul-density"	[style=dashed];	"thm:quot-mul-density"	[color=green,		fillcolor="#1CAC78",		label="quot-mul-density",		shape=ellipse,		style=filled];	"def:flag-mul" -> "thm:quot-mul-density"	[style=dashed];	"thm:zero-space-ideal"	[color=green,		fillcolor="#1CAC78",		label="zero-space-ideal",		shape=ellipse,		style=filled];	"def:flag-mul" -> "thm:zero-space-ideal"	[style=dashed];	"lem:integral-density-div"	[color=green,		label="integral-density-div",		shape=ellipse];	"thm:counting-identity" -> "lem:integral-density-div"	[style=dashed];	"lem:downward-flag-sum"	[color=green,		label="downward-flag-sum",		shape=ellipse];	"thm:counting-identity" -> "lem:downward-flag-sum"	[style=dashed];	"def:converges-to"	[color=green,		fillcolor="#B0ECA3",		label="converges-to",		shape=box,		style=filled];	"def:flag-density-seq" -> "def:converges-to"	[style=dashed];	"def:zero-element"	[color=green,		fillcolor="#B0ECA3",		label="zero-element",		shape=box,		style=filled];	"def:flag-expansion" -> "def:zero-element"	[style=dashed];	"thm:density-prod-approx"	[color=green,		fillcolor="#1CAC78",		label="density-prod-approx",		shape=ellipse,		style=filled];	"thm:subflag-eq-list" -> "thm:density-prod-approx"	[style=dashed];	"thm:mul-assoc"	[color=green,		fillcolor="#9CEC8B",		label="mul-assoc",		shape=ellipse,		style=filled];	"thm:triple-mul-density" -> "thm:mul-assoc";	"thm:lemma-3-11"	[color=green,		label="lemma-3-11",		shape=ellipse];	"lem:integral-density-div" -> "thm:lemma-3-11"	[style=dashed];	"thm:random-hom-measure"	[color=green,		fillcolor="#9CEC8B",		label="random-hom-measure",		shape=ellipse,		style=filled];	"thm:lemma-3-11" -> "thm:random-hom-measure"	[style=dashed];	"thm:mantel-flag"	[color=green,		fillcolor="#9CEC8B",		label="mantel-flag",		shape=ellipse,		style=filled];	"lem:expand-k2" -> "thm:mantel-flag";	"thm:basis-quot-eq-sum"	[color=green,		label="basis-quot-eq-sum",		shape=ellipse];	"thm:sum-flags-eq-one"	[color=green,		fillcolor="#9CEC8B",		label="sum-flags-eq-one",		shape=ellipse,		style=filled];	"thm:basis-quot-eq-sum" -> "thm:sum-flags-eq-one";	"thm:positive-hom-space-char"	[color=green,		label="positive-hom-space-char",		shape=ellipse];	"thm:limit-is-hom"	[color=green,		fillcolor="#9CEC8B",		label="limit-is-hom",		shape=ellipse,		style=filled];	"thm:positive-hom-space-char" -> "thm:limit-is-hom"	[style=dashed];	"lem:measure-support"	[color=green,		label="measure-support",		shape=ellipse];	"thm:positive-hom-space-char" -> "lem:measure-support"	[style=dashed];	"lem:measure-support" -> "thm:random-hom-measure"	[style=dashed];	"lem:downward-zero-element"	[color=green,		label="downward-zero-element",		shape=ellipse];	"lem:downward-flag-sum" -> "lem:downward-zero-element"	[style=dashed];	"def:converges-to" -> "thm:lemma-3-11"	[style=dashed];	"def:converges-to" -> "thm:limit-is-hom"	[style=dashed];	"thm:hom-is-limit"	[color=green,		fillcolor="#9CEC8B",		label="hom-is-limit",		shape=ellipse,		style=filled];	"def:converges-to" -> "thm:hom-is-limit"	[style=dashed];	"def:zero-set"	[color=green,		fillcolor="#B0ECA3",		label="zero-set",		shape=box,		style=filled];	"def:zero-element" -> "def:zero-set"	[style=dashed];	"lem:downward-well-defined"	[color=green,		fillcolor="#9CEC8B",		label="downward-well-defined",		shape=ellipse,		style=filled];	"lem:downward-zero-element" -> "lem:downward-well-defined";	"def:labeled-graph"	[color=green,		fillcolor="#B0ECA3",		label="labeled-graph",		shape=box,		style=filled];	"def:labeled-subgraph"	[color=green,		fillcolor="#B0ECA3",		label="labeled-subgraph",		shape=box,		style=filled];	"def:labeled-graph" -> "def:labeled-subgraph"	[style=dashed];	"def:labeled-graph-list"	[color=green,		fillcolor="#B0ECA3",		label="labeled-graph-list",		shape=box,		style=filled];	"def:labeled-graph" -> "def:labeled-graph-list"	[style=dashed];	"def:empty-labeled-graph"	[color=green,		fillcolor="#B0ECA3",		label="empty-labeled-graph",		shape=box,		style=filled];	"def:labeled-graph" -> "def:empty-labeled-graph"	[style=dashed];	"def:labeled-graph-iso"	[color=green,		fillcolor="#B0ECA3",		label="labeled-graph-iso",		shape=box,		style=filled];	"def:labeled-graph" -> "def:labeled-graph-iso"	[style=dashed];	"def:isomorphism-count"	[color=green,		fillcolor="#B0ECA3",		label="isomorphism-count",		shape=box,		style=filled];	"def:labeled-graph" -> "def:isomorphism-count"	[style=dashed];	"def:unlabeled-graph"	[color=green,		fillcolor="#B0ECA3",		label="unlabeled-graph",		shape=box,		style=filled];	"def:labeled-graph" -> "def:unlabeled-graph"	[style=dashed];	"def:labeled-graph-count"	[color=green,		fillcolor="#B0ECA3",		label="labeled-graph-count",		shape=box,		style=filled];	"def:labeled-graph" -> "def:labeled-graph-count"	[style=dashed];	"def:induced-labeled-subgraph"	[color=green,		fillcolor="#B0ECA3",		label="induced-labeled-subgraph",		shape=box,		style=filled];	"def:labeled-subgraph" -> "def:induced-labeled-subgraph"	[style=dashed];	"thm:eqv-quot-list-flaglist"	[color=green,		label="eqv-quot-list-flaglist",		shape=ellipse];	"def:labeled-graph-list" -> "thm:eqv-quot-list-flaglist"	[style=dashed];	"def:empty-flag"	[color=green,		fillcolor="#B0ECA3",		label="empty-flag",		shape=box,		style=filled];	"def:empty-labeled-graph" -> "def:empty-flag"	[style=dashed];	"def:flag-eqv"	[color=green,		fillcolor="#B0ECA3",		label="flag-eqv",		shape=box,		style=filled];	"def:labeled-graph-iso" -> "def:flag-eqv"	[style=dashed];	"lem:density-iso-invariant"	[color=green,		fillcolor="#1CAC78",		label="density-iso-invariant",		shape=ellipse,		style=filled];	"def:labeled-graph-iso" -> "lem:density-iso-invariant"	[style=dashed];	"lem:downward-factor-pos"	[color=green,		label="downward-factor-pos",		shape=ellipse];	"def:isomorphism-count" -> "lem:downward-factor-pos"	[style=dashed];	"lem:bridge-counts"	[color=green,		label="bridge-counts",		shape=ellipse];	"def:isomorphism-count" -> "lem:bridge-counts"	[style=dashed];	"def:unlabel"	[color=green,		fillcolor="#B0ECA3",		label=unlabel,		shape=box,		style=filled];	"def:unlabeled-graph" -> "def:unlabel"	[style=dashed];	"def:labeled-graph-density"	[color=green,		fillcolor="#B0ECA3",		label="labeled-graph-density",		shape=box,		style=filled];	"def:labeled-graph-count" -> "def:labeled-graph-density"	[style=dashed];	"def:flag"	[color=green,		fillcolor="#B0ECA3",		label=flag,		shape=box,		style=filled];	"def:flag-eqv" -> "def:flag"	[style=dashed];	"def:flag" -> "def:empty-flag"	[style=dashed];	"def:subflag-density"	[color=green,		fillcolor="#B0ECA3",		label="subflag-density",		shape=box,		style=filled];	"def:flag" -> "def:subflag-density"	[style=dashed];	"def:flag" -> "def:unlabel"	[style=dashed];	"def:flag-with-size"	[color=green,		fillcolor="#B0ECA3",		label="flag-with-size",		shape=box,		style=filled];	"def:flag" -> "def:flag-with-size"	[style=dashed];	"def:sym2-flag"	[color=green,		fillcolor="#B0ECA3",		label="sym2-flag",		shape=box,		style=filled];	"def:flag" -> "def:sym2-flag"	[style=dashed];	"def:flag-list"	[color=green,		fillcolor="#B0ECA3",		label="flag-list",		shape=box,		style=filled];	"def:flag" -> "def:flag-list"	[style=dashed];	"def:downward-factor"	[color=green,		fillcolor="#B0ECA3",		label="downward-factor",		shape=box,		style=filled];	"def:flag" -> "def:downward-factor"	[style=dashed];	"lem:subflag-density-values"	[color=green,		label="subflag-density-values",		shape=ellipse];	"def:empty-flag" -> "lem:subflag-density-values"	[style=dashed];	"lem:density-iso-invariant" -> "def:subflag-density"	[style=dashed];	"lem:positivehom-one-downward-pos"	[color=green,		label="positivehom-one-downward-pos",		shape=ellipse];	"lem:downward-factor-pos" -> "lem:positivehom-one-downward-pos"	[style=dashed];	"lem:bridge-counts" -> "thm:counting-identity"	[style=dashed];	"def:subflag-density" -> "thm:subflag-eq-list"	[style=dashed];	"def:subflag-density" -> "lem:subflag-density-values"	[style=dashed];	"def:unlabel" -> "lem:bridge-counts"	[style=dashed];	"def:downward-flag"	[color=green,		fillcolor="#B0ECA3",		label="downward-flag",		shape=box,		style=filled];	"def:unlabel" -> "def:downward-flag"	[style=dashed];	"def:label-extensions"	[color=green,		fillcolor="#B0ECA3",		label="label-extensions",		shape=box,		style=filled];	"def:unlabel" -> "def:label-extensions"	[style=dashed];	"def:flag-with-size" -> "def:label-extensions"	[style=dashed];	"def:fin-flag"	[color=green,		fillcolor="#B0ECA3",		label="fin-flag",		shape=box,		style=filled];	"def:flag-with-size" -> "def:fin-flag"	[style=dashed];	"thm:downward-compute"	[color=green,		label="downward-compute",		shape=ellipse];	"def:sym2-flag" -> "thm:downward-compute"	[style=dashed];	"def:sym2-density2"	[color=green,		fillcolor="#B0ECA3",		label="sym2-density2",		shape=box,		style=filled];	"def:sym2-flag" -> "def:sym2-density2"	[style=dashed];	"def:flag-list" -> "def:flag-list-density"	[style=dashed];	"def:flag-list" -> "thm:eqv-quot-list-flaglist"	[style=dashed];	"def:flag-list-ops"	[color=green,		fillcolor="#B0ECA3",		label="flag-list-ops",		shape=box,		style=filled];	"def:flag-list" -> "def:flag-list-ops"	[style=dashed];	"def:downward-factor" -> "thm:counting-identity"	[style=dashed];	"def:downward-factor" -> "lem:downward-factor-pos"	[style=dashed];	"def:downward-factor" -> "def:downward-flag"	[style=dashed];	"def:downward-factor" -> "thm:downward-compute"	[style=dashed];	"def:labeled-graph-density" -> "lem:density-iso-invariant"	[style=dashed];	"def:downward-flag" -> "lem:downward-flag-sum"	[style=dashed];	"def:downward"	[color=green,		fillcolor="#B0ECA3",		label=downward,		shape=box,		style=filled];	"lem:downward-well-defined" -> "def:downward"	[style=dashed];	"def:downward" -> "thm:lemma-3-11"	[style=dashed];	"def:downward" -> "lem:positivehom-one-downward-pos"	[style=dashed];	"thm:downward-empty"	[color=green,		label="downward-empty",		shape=ellipse];	"def:downward" -> "thm:downward-empty"	[style=dashed];	"thm:downward-linear"	[color=green,		label="downward-linear",		shape=ellipse];	"def:downward" -> "thm:downward-linear"	[style=dashed];	"thm:downward-preserve-cone"	[color=green,		fillcolor="#9CEC8B",		label="downward-preserve-cone",		shape=ellipse,		style=filled];	"lem:positivehom-one-downward-pos" -> "thm:downward-preserve-cone";	"lem:downward-zero-at-hom"	[color=green,		label="downward-zero-at-hom",		shape=ellipse];	"thm:downward-linear" -> "lem:downward-zero-at-hom"	[style=dashed];	"def:fast-iso-decidable"	[color=green,		fillcolor="#B0ECA3",		label="fast-iso-decidable",		shape=box,		style=filled];	"def:prob-measure-witness"	[color=green,		fillcolor="#B0ECA3",		label="prob-measure-witness",		shape=box,		style=filled];	"thm:prob-measure-spec"	[color=green,		label="prob-measure-spec",		shape=ellipse];	"def:prob-measure-witness" -> "thm:prob-measure-spec"	[style=dashed];	"thm:prob-measure-spec" -> "thm:downward-preserve-cone";	"thm:cauchy-schwarz"	[color=green,		fillcolor="#9CEC8B",		label="cauchy-schwarz",		shape=ellipse,		style=filled];	"thm:prob-measure-spec" -> "thm:cauchy-schwarz";	"thm:sos-downward-nonneg"	[color=green,		fillcolor="#9CEC8B",		label="sos-downward-nonneg",		shape=ellipse,		style=filled];	"thm:downward-preserve-cone" -> "thm:sos-downward-nonneg";	"thm:square-downward-nonneg"	[color=green,		fillcolor="#9CEC8B",		label="square-downward-nonneg",		shape=ellipse,		style=filled];	"thm:downward-preserve-cone" -> "thm:square-downward-nonneg";	"def:flagseq-measure"	[color=green,		fillcolor="#B0ECA3",		label="flagseq-measure",		shape=box,		style=filled];	"def:flagseq-measure" -> "thm:hom-is-limit"	[style=dashed];	"thm:hom-is-limit" -> "thm:random-hom-measure"	[style=dashed];	"thm:random-hom-measure" -> "def:prob-measure-witness"	[style=dashed];	"def:build-full-map"	[color=green,		fillcolor="#B0ECA3",		label="build-full-map",		shape=box,		style=filled];	"def:fast-iso"	[color=green,		fillcolor="#B0ECA3",		label="fast-iso",		shape=box,		style=filled];	"def:build-full-map" -> "def:fast-iso"	[style=dashed];	"def:fast-iso" -> "def:fast-iso-decidable"	[style=dashed];	"thm:flag-enumeration"	[color=green,		label="flag-enumeration",		shape=ellipse];	"def:fast-iso" -> "thm:flag-enumeration"	[style=dashed];	"lem:square-cert"	[color=green,		label="square-cert",		shape=ellipse];	"lem:square-cert" -> "thm:mantel-flag";	"thm:mantel-hom"	[color=green,		fillcolor="#9CEC8B",		label="mantel-hom",		shape=ellipse,		style=filled];	"thm:mantel-flag" -> "thm:mantel-hom"	[style=dashed];	"thm:turan-k3"	[color=green,		fillcolor="#9CEC8B",		label="turan-k3",		shape=ellipse,		style=filled];	"thm:mantel-hom" -> "thm:turan-k3"	[style=dashed];	"def:semantic-cone"	[color=green,		fillcolor="#B0ECA3",		label="semantic-cone",		shape=box,		style=filled];	"def:semantic-cone" -> "thm:downward-preserve-cone"	[style=dashed];	"def:semantic-order"	[color=green,		fillcolor="#B0ECA3",		label="semantic-order",		shape=box,		style=filled];	"def:semantic-cone" -> "def:semantic-order"	[style=dashed];	"thm:sos-nonneg"	[color=green,		fillcolor="#1CAC78",		label="sos-nonneg",		shape=ellipse,		style=filled];	"def:semantic-order" -> "thm:sos-nonneg"	[style=dashed];	"lem:order-monotone"	[color=green,		label="order-monotone",		shape=ellipse];	"def:semantic-order" -> "lem:order-monotone"	[style=dashed];	"thm:flag-nonneg"	[color=green,		label="flag-nonneg",		shape=ellipse];	"def:semantic-order" -> "thm:flag-nonneg"	[style=dashed];	"lem:flag-sub-nonneg"	[color=green,		label="flag-sub-nonneg",		shape=ellipse];	"def:semantic-order" -> "lem:flag-sub-nonneg"	[style=dashed];	"thm:sos-nonneg" -> "thm:sos-downward-nonneg"	[style=dashed];	"lem:order-monotone" -> "thm:mantel-flag";	"lem:order-monotone-sides"	[color=green,		label="order-monotone-sides",		shape=ellipse];	"lem:order-monotone" -> "lem:order-monotone-sides"	[style=dashed];	"thm:square-downward-nonneg" -> "lem:square-cert"	[style=dashed];	"def:deg-key"	[color=green,		fillcolor="#B0ECA3",		label="deg-key",		shape=box,		style=filled];	"def:deg-key" -> "thm:flag-enumeration"	[style=dashed];	"thm:deg-key-iso-invariant"	[color=green,		label="deg-key-iso-invariant",		shape=ellipse];	"def:deg-key" -> "thm:deg-key-iso-invariant"	[style=dashed];	"def:flag-quadratic-form"	[color=green,		fillcolor="#B0ECA3",		label="flag-quadratic-form",		shape=box,		style=filled];	"def:flag-quadratic-form" -> "thm:sos-nonneg"	[style=dashed];	"def:finflag-pmf"	[color=green,		fillcolor="#B0ECA3",		label="finflag-pmf",		shape=box,		style=filled];	"def:finflag-pmf" -> "lem:integral-density-div"	[style=dashed];	"def:zero-space"	[color=green,		fillcolor="#B0ECA3",		label="zero-space",		shape=box,		style=filled];	"def:zero-set" -> "def:zero-space"	[style=dashed];	"def:zero-space" -> "thm:zero-space-ideal"	[style=dashed];	"def:zero-space" -> "lem:downward-zero-element"	[style=dashed];	"def:flag-vector-eqv"	[color=green,		fillcolor="#B0ECA3",		label="flag-vector-eqv",		shape=box,		style=filled];	"def:zero-space" -> "def:flag-vector-eqv"	[style=dashed];	"def:flag-vector-eqv" -> "thm:triple-mul-density"	[style=dashed];	"def:flag-algebra"	[color=green,		fillcolor="#B0ECA3",		label="flag-algebra",		shape=box,		style=filled];	"def:flag-vector-eqv" -> "def:flag-algebra"	[style=dashed];	"def:empty-type"	[color=green,		fillcolor="#B0ECA3",		label="empty-type",		shape=box,		style=filled];	"def:empty-type" -> "def:unlabeled-graph"	[style=dashed];	"def:label-extensions" -> "thm:counting-identity"	[style=dashed];	"def:deg-seq"	[color=green,		fillcolor="#B0ECA3",		label="deg-seq",		shape=box,		style=filled];	"def:deg-seq" -> "def:deg-key"	[style=dashed];	"thm:quot-hom"	[color=green,		label="quot-hom",		shape=ellipse];	"thm:quot-hom" -> "thm:basis-quot-eq-sum"	[style=dashed];	"def:positive-hom-coe"	[color=green,		fillcolor="#B0ECA3",		label="positive-hom-coe",		shape=box,		style=filled];	"def:positive-hom-coe" -> "thm:lemma-3-11"	[style=dashed];	"def:positive-hom-coe" -> "thm:hom-is-limit"	[style=dashed];	"def:positive-hom-space"	[color=green,		fillcolor="#B0ECA3",		label="positive-hom-space",		shape=box,		style=filled];	"def:positive-hom-coe" -> "def:positive-hom-space"	[style=dashed];	"def:positive-hom-space" -> "thm:positive-hom-space-char"	[style=dashed];	"def:positive-hom"	[color=green,		fillcolor="#B0ECA3",		label="positive-hom",		shape=box,		style=filled];	"def:positive-hom" -> "lem:positivehom-one-downward-pos"	[style=dashed];	"def:positive-hom" -> "def:semantic-cone"	[style=dashed];	"def:positive-hom" -> "def:positive-hom-coe"	[style=dashed];	"def:positive-hom" -> "lem:downward-zero-at-hom"	[style=dashed];	"lem:positivehom-basisvector-nonneg"	[color=green,		label="positivehom-basisvector-nonneg",		shape=ellipse];	"def:positive-hom" -> "lem:positivehom-basisvector-nonneg"	[style=dashed];	"lem:downward-zero-at-hom" -> "thm:downward-preserve-cone";	"lem:downward-zero-at-hom" -> "thm:cauchy-schwarz";	"lem:positivehom-basisvector-nonneg" -> "thm:flag-nonneg"	[style=dashed];	"def:positivehom-topmf"	[color=green,		fillcolor="#B0ECA3",		label="positivehom-topmf",		shape=box,		style=filled];	"lem:positivehom-basisvector-nonneg" -> "def:positivehom-topmf"	[style=dashed];	"def:positivehom-topmf" -> "def:flagseq-measure"	[style=dashed];	"def:hom"	[color=green,		fillcolor="#B0ECA3",		label=hom,		shape=box,		style=filled];	"def:hom" -> "def:positive-hom"	[style=dashed];	"def:list-type-ops"	[color=green,		fillcolor="#B0ECA3",		label="list-type-ops",		shape=box,		style=filled];	"def:list-type-ops" -> "def:flag-list-ops"	[style=dashed];	"def:flag-vector"	[color=green,		fillcolor="#B0ECA3",		label="flag-vector",		shape=box,		style=filled];	"def:fin-flag" -> "def:flag-vector"	[style=dashed];	"def:flag-density-space"	[color=green,		fillcolor="#B0ECA3",		label="flag-density-space",		shape=box,		style=filled];	"def:fin-flag" -> "def:flag-density-space"	[style=dashed];	"def:flag-seq"	[color=green,		fillcolor="#B0ECA3",		label="flag-seq",		shape=box,		style=filled];	"def:fin-flag" -> "def:flag-seq"	[style=dashed];	"def:basis-vector"	[color=green,		fillcolor="#B0ECA3",		label="basis-vector",		shape=box,		style=filled];	"def:flag-vector" -> "def:basis-vector"	[style=dashed];	"def:flag-density-space" -> "def:converges-to"	[style=dashed];	"def:flag-density-space" -> "def:finflag-pmf"	[style=dashed];	"def:flag-density-space" -> "def:positive-hom-coe"	[style=dashed];	"def:flag-seq" -> "def:flag-density-seq"	[style=dashed];	"def:increases"	[color=green,		fillcolor="#B0ECA3",		label=increases,		shape=box,		style=filled];	"def:flag-seq" -> "def:increases"	[style=dashed];	"def:basis-vector" -> "def:flag-mul"	[style=dashed];	"def:basis-vector" -> "def:flag-expansion"	[style=dashed];	"def:basis-vector" -> "def:downward-flag"	[style=dashed];	"def:densities"	[color=green,		fillcolor="#B0ECA3",		label=densities,		shape=box,		style=filled];	"def:basis-vector" -> "def:densities"	[style=dashed];	"def:increases" -> "lem:measure-support"	[style=dashed];	"def:increases" -> "def:converges-to"	[style=dashed];	"def:densities" -> "lem:expand-k2"	[style=dashed];	"def:flag-algebra-vec"	[color=green,		fillcolor="#B0ECA3",		label="flag-algebra-vec",		shape=box,		style=filled];	"def:flag-algebra-vec" -> "def:flag-quadratic-form"	[style=dashed];	"def:flag-type"	[color=green,		fillcolor="#B0ECA3",		label="flag-type",		shape=box,		style=filled];	"def:flag-type" -> "def:labeled-graph"	[style=dashed];	"def:flag-type" -> "def:empty-type"	[style=dashed];	"def:flag-algebra" -> "thm:flag-algebra-nontrivial"	[style=dashed];	"def:flag-algebra" -> "thm:quot-mul-density"	[style=dashed];	"def:flag-algebra" -> "def:downward"	[style=dashed];	"def:flag-algebra" -> "thm:quot-hom"	[style=dashed];	"def:flag-algebra" -> "def:hom"	[style=dashed];	"def:flag-algebra" -> "def:flag-algebra-vec"	[style=dashed];	"def:sym2-density2" -> "thm:density-compute"	[style=dashed];	"def:sym2-count"	[color=green,		fillcolor="#B0ECA3",		label="sym2-count",		shape=box,		style=filled];	"def:sym2-count" -> "def:sym2-density2"	[style=dashed];	"def:sym2-density1"	[color=green,		fillcolor="#B0ECA3",		label="sym2-density1",		shape=box,		style=filled];	"def:sym2-count" -> "def:sym2-density1"	[style=dashed];	"def:sym2-density1" -> "thm:density-compute"	[style=dashed];	"def:sym2-labeled-graph"	[color=green,		fillcolor="#B0ECA3",		label="sym2-labeled-graph",		shape=box,		style=filled];	"def:sym2-labeled-graph" -> "def:sym2-flag"	[style=dashed];	"def:sym2-labeled-graph" -> "def:fast-iso"	[style=dashed];	"def:sym2-labeled-graph" -> "def:sym2-count"	[style=dashed];	"def:sym2-empty-flag"	[color=green,		fillcolor="#B0ECA3",		label="sym2-empty-flag",		shape=box,		style=filled];	"def:sym2-empty-flag" -> "def:sym2-density1"	[style=dashed];	"lem:lower-bound"	[color=green,		label="lower-bound",		shape=ellipse];	"lem:lower-bound" -> "thm:turan-k3"	[style=dashed];	"def:sym2-graph"	[color=green,		fillcolor="#B0ECA3",		label="sym2-graph",		shape=box,		style=filled];	"def:sym2-graph" -> "def:deg-seq"	[style=dashed];	"def:sym2-graph" -> "def:sym2-labeled-graph"	[style=dashed];	"def:sym2-graph" -> "def:sym2-empty-flag"	[style=dashed];}`)
+    .on("end", interactive);
+
+latexLabelEscaper = function(label) {
+  return label.replace(/\./g, '\\.').replace(/:/g, '\\:')
+}
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+  $('.thm').hide();
+  $('#'+latexLabelEscaper(node_id)).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+latexLabelEscaper(title)+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>

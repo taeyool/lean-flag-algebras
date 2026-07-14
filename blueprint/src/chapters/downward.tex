@@ -1,0 +1,175 @@
+\chapter{The unlabeling operator}
+\label{chap:downward}
+
+Density bounds are ultimately statements about \emph{unlabeled} graphs. The
+\emph{downward} operator $[\![\,\cdot\,]\!]_0 : \mathcal{A}^\sigma \to
+\mathcal{A}^\emptyset$ forgets a flag's labelling by averaging over all ways to
+place the labels. (Source: \texttt{FlagAlgebra/FlagOperators.lean}; $\emptyset$
+denotes the empty type $\varnothing_t$.)
+
+\begin{definition}[Unlabel]
+  \label{def:unlabel}
+  \lean{FlagAlgebras.unlabel}
+  \uses{def:flag, def:unlabeled-graph, def:empty-type}
+  \leanok
+  $\mathrm{unlabel}$ drops the type embedding of a single flag, returning its
+  underlying graph as an unlabeled ($\emptyset$-type) flag.
+\end{definition}
+
+\begin{definition}[Downward normalizing factor]
+  \label{def:downward-factor}
+  \lean{FlagAlgebras.downwardNormalizingFactor}
+  \uses{def:flag}
+  \leanok
+  The strictly positive rational weight of a flag: the fraction of label
+  placements (injections of the $|\sigma|$ labels into the vertices) that realize
+  it. It is the coefficient by which $\mathrm{unlabel}\,F$ is scaled.
+\end{definition}
+
+\begin{lemma}[The bridge set, counted three ways]
+  \label{lem:bridge-counts}
+  \lean{FlagAlgebras.isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledGraphCount, FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labeledGraphCount_of_same_graph, FlagAlgebras.isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledGraphCount}
+  \uses{def:unlabel, def:isomorphism-count}
+  \leanok
+  The set of pairs (vertex subset, injective label assignment) embedding a
+  labeled flag into an unlabeled one is counted three ways: by
+  isomorphism-count times labeled count; by summing labeled counts over labellings
+  of the same graph; and, grouped by label-extension flag, over all relabellings.
+\end{lemma}
+
+\begin{theorem}[Counting identity]
+  \label{thm:counting-identity}
+  \lean{FlagAlgebras.flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions}
+  \uses{lem:bridge-counts, def:unlabel, def:downward-factor, def:flag-density-n, def:label-extensions}
+  \leanok
+  Equating the three counts yields
+  \[ d_1(\mathrm{unlabel}\,F;\,F')\cdot w(F)
+     \;=\; \sum_{G \in \mathrm{ext}(F')} d_1(F;G)\cdot w(G), \]
+  where $w$ is the normalizing factor and $\mathrm{ext}(F')$ ranges over the
+  relabellings of $F'$. This is the algebraic engine of well-definedness.
+\end{theorem}
+\begin{proof}\leanok
+  Combine the first and third counts of Lemma~\ref{lem:bridge-counts} and divide
+  by the number of label injections.
+\end{proof}
+
+\begin{lemma}[Downward respects the zero space]
+  \label{lem:downward-well-defined}
+  \lean{FlagAlgebras.downwardFlagVector_zeroSpace}
+  \uses{def:zero-space}
+  \leanok
+  The unlabeling map sends the zero space of $\sigma$ into the zero space of the
+  empty type, so it descends to the quotient algebra.
+\end{lemma}
+\begin{proof}\leanok
+  \uses{lem:downward-zero-element}
+  The zero space is spanned by the generating relations, each of which downward
+  sends into the zero space of the empty type
+  (Lemma~\ref{lem:downward-zero-element}).
+\end{proof}
+
+\begin{definition}[Downward operator]
+  \label{def:downward}
+  \lean{FlagAlgebras.downward}
+  \uses{def:unlabel, def:downward-factor, lem:downward-well-defined, def:flag-algebra, def:downward-flag}
+  \leanok
+  $[\![\,\cdot\,]\!]_0 : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset$ is the
+  $\mathbb{R}$-linear map induced by $F \mapsto w(F)\cdot \mathrm{unlabel}\,F$;
+  it averages a labeled element over all unlabelings.
+\end{definition}
+
+\begin{theorem}[Linearity]
+  \label{thm:downward-linear}
+  \lean{FlagAlgebras.downward_add, FlagAlgebras.downward_smul}
+  \uses{def:downward}
+  \leanok
+  $[\![f+f']\!]_0 = [\![f]\!]_0 + [\![f']\!]_0$ and
+  $[\![r\cdot f]\!]_0 = r\cdot[\![f]\!]_0$: downward is $\mathbb{R}$-linear.
+\end{theorem}
+
+\begin{theorem}[Identity on the empty type]
+  \label{thm:downward-empty}
+  \lean{FlagAlgebras.downward_emptyType}
+  \uses{def:downward}
+  \leanok
+  On $\mathcal{A}^\emptyset$ there is nothing to unlabel, so
+  $[\![f]\!]_0 = f$.
+\end{theorem}
+
+\section{Supporting constructions}
+
+\begin{definition}[Empty type]
+  \label{def:empty-type}
+  \lean{FlagAlgebras.emptyType}
+  \uses{def:flag-type}
+  \leanok
+  The empty flag type $\varnothing_t$ (written $\emptyset$) with no labeled
+  vertices; its flags are unlabeled graphs, and density bounds live in
+  $\mathcal{A}^\emptyset$.
+\end{definition}
+
+\begin{definition}[Isomorphism count]
+  \label{def:isomorphism-count}
+  \lean{FlagAlgebras.isomorphismCount}
+  \uses{def:labeled-graph}
+  \leanok
+  The number of label placements on the same underlying graph as $G$ that are
+  flag-isomorphic to $G$.
+\end{definition}
+
+\begin{definition}[Unlabeled graph]
+  \label{def:unlabeled-graph}
+  \lean{FlagAlgebras.unlabeledGraph, FlagAlgebras.unlabeledGraphQuot}
+  \uses{def:labeled-graph, def:empty-type}
+  \leanok
+  Forgetting the type embedding of a labeled graph, as a graph
+  ($\mathrm{unlabeledGraph}$) and as its flag class
+  ($\mathrm{unlabeledGraphQuot}$).
+\end{definition}
+
+\begin{definition}[Label extensions]
+  \label{def:label-extensions}
+  \lean{FlagAlgebras.labelExtensions}
+  \uses{def:unlabel, def:flag-with-size, def:empty-type}
+  \leanok
+  For an unlabeled flag $F$, the finset of all $\sigma$-labeled flags of the same
+  size whose unlabeling is $F$ --- the ways to re-add a labelling.
+\end{definition}
+
+\begin{definition}[Downward image of a flag]
+  \label{def:downward-flag}
+  \lean{FlagAlgebras.downwardFlag, FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlagVectorQuot}
+  \uses{def:downward-factor, def:unlabel, def:basis-vector}
+  \leanok
+  $\mathrm{downwardFlag}\,F = w(F)\cdot\mathrm{unlabel}\,F$ on a single flag, its
+  linear extension $\mathrm{downwardFlagVector}$ to flag vectors, and the
+  quotient-level $\mathrm{downwardFlagVectorQuot}$ --- the raw form of downward
+  before descending to the quotient.
+\end{definition}
+
+\begin{lemma}[Downward averaging expansion]
+  \label{lem:downward-flag-sum}
+  \lean{FlagAlgebras.downwardFlag_eqv_sum_flagDensity_smul_downwardFlag}
+  \uses{def:downward-flag, thm:counting-identity, def:flag-density-n, def:label-extensions}
+  \leanok
+  $\mathrm{downwardFlag}\,F \sim_v \sum_{G} d_1(F;G)\cdot\mathrm{downwardFlag}\,G$
+  over size-$\ell$ flags --- the averaging expansion driving well-definedness.
+\end{lemma}
+
+\begin{lemma}[Downward of a relation is a relation]
+  \label{lem:downward-zero-element}
+  \lean{FlagAlgebras.downwardFlagVector_zeroElement_zeroSpace}
+  \uses{def:downward-flag, lem:downward-flag-sum, def:zero-space, def:zero-element}
+  \leanok
+  $\mathrm{downwardFlagVector}$ sends each generating relation
+  $\mathrm{zeroElement}\,F\,\ell$ into the zero space of the empty type.
+\end{lemma}
+
+\begin{theorem}[The normalizing factor is positive]
+  \label{lem:downward-factor-pos}
+  \lean{FlagAlgebras.downwardNormalizingFactor_pos}
+  \uses{def:downward-factor, def:isomorphism-count}
+  \leanok
+  $w(F) > 0$ for every flag $F$: every flag is realized by at least one label
+  placement.
+\end{theorem}

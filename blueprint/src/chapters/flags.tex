@@ -1,0 +1,143 @@
+\chapter{Flags and labeled graphs}
+\label{chap:flags}
+
+Fix a finite label set $T$ and a graph $\sigma$ on it, the \emph{type}. A flag of
+type $\sigma$ is a finite graph carrying a distinguished induced copy of $\sigma$,
+taken up to type-preserving isomorphism. This chapter sets up these carriers;
+everything downstream is built from them. (Source: \texttt{FlagAlgebra/FlagDef.lean}.)
+
+\begin{definition}[Flag type]
+  \label{def:flag-type}
+  \lean{FlagAlgebras.FlagType}
+  \leanok
+  A \emph{flag type} $\sigma$ is a simple graph on a finite label set $T$. It
+  describes the labeled ``root'' every flag of type $\sigma$ must carry.
+\end{definition}
+
+\begin{definition}[Labeled graph]
+  \label{def:labeled-graph}
+  \lean{FlagAlgebras.LabeledGraph}
+  \uses{def:flag-type}
+  \leanok
+  A \emph{labeled graph} of type $\sigma$ on a vertex type $V$ is a simple graph
+  $G$ on $V$ together with an induced-subgraph embedding
+  $\sigma \hookrightarrow G$. Its image is the set of labeled (``rooted'')
+  vertices.
+\end{definition}
+
+\begin{definition}[Labeled subgraph]
+  \label{def:labeled-subgraph}
+  \lean{FlagAlgebras.LabeledSubgraph}
+  \uses{def:labeled-graph}
+  \leanok
+  A \emph{labeled subgraph} of a labeled graph $G$ is a subgraph of $G$ that
+  still contains all labeled vertices and embeds $\sigma$ compatibly with $G$.
+  These are the pieces cut out when measuring subflag densities.
+\end{definition}
+
+\begin{definition}[Isomorphism of labeled graphs, $\simeq_f$]
+  \label{def:labeled-graph-iso}
+  \lean{FlagAlgebras.LabeledGraphIso}
+  \uses{def:labeled-graph}
+  \leanok
+  A \emph{labeled-graph isomorphism} $G \simeq_f G'$ is a graph isomorphism of the
+  underlying graphs that commutes with the two type embeddings. Flags are exactly
+  the isomorphism classes for this relation.
+\end{definition}
+
+\begin{definition}[Flag]
+  \label{def:flag}
+  \lean{FlagAlgebras.Flag}
+  \uses{def:labeled-graph, def:labeled-graph-iso, def:flag-eqv}
+  \leanok
+  A \emph{flag} of type $\sigma$ on $V$, $\mathrm{Flag}\,\sigma\,V$, is an
+  isomorphism class of labeled graphs under $\sim_f$ (the equivalence
+  ``$\exists$ a labeled-graph isomorphism''). This is the basic object the flag
+  algebra is built from.
+\end{definition}
+
+\begin{definition}[Empty flag]
+  \label{def:empty-flag}
+  \lean{FlagAlgebras.emptyFlag}
+  \uses{def:flag, def:empty-labeled-graph}
+  \leanok
+  The \emph{empty flag} $\mathrm{emptyFlag}\,\sigma$ is the class of the trivial
+  labeled graph $\sigma$ on $T$ with the identity embedding: the type with no
+  extra vertices. It is the multiplicative unit of the flag algebra.
+\end{definition}
+
+\begin{definition}[Flag list]
+  \label{def:flag-list}
+  \lean{FlagAlgebras.FlagList}
+  \uses{def:flag}
+  \leanok
+  A \emph{flag list} of length $t$ is a tuple $(F_0,\dots,F_{t-1})$ of flags of
+  type $\sigma$, the $i$-th on its own vertex type. Flag lists (with the
+  type-level \texttt{insert}/\texttt{permute} operations) are what let us speak
+  of the simultaneous density of several disjoint flags.
+\end{definition}
+
+\section{Supporting constructions}
+
+\begin{definition}[Empty labeled graph]
+  \label{def:empty-labeled-graph}
+  \lean{FlagAlgebras.emptyLabeledGraph}
+  \uses{def:labeled-graph}
+  \leanok
+  The trivial carrier: the type $\sigma$ itself on $T$ with the identity
+  embedding. Its isomorphism class is the empty flag.
+\end{definition}
+
+\begin{definition}[Flag equivalence]
+  \label{def:flag-eqv}
+  \lean{FlagAlgebras.flagEqv}
+  \uses{def:labeled-graph, def:labeled-graph-iso}
+  \leanok
+  The relation $G \sim_f G'$: ``there exists a labeled-graph isomorphism
+  $G \simeq_f G'$''. Flags are its equivalence classes.
+\end{definition}
+
+\begin{definition}[Induced labeled subgraph]
+  \label{def:induced-labeled-subgraph}
+  \lean{FlagAlgebras.LabeledSubgraph.inducedLabeledSubgraph}
+  \uses{def:labeled-graph, def:labeled-subgraph}
+  \leanok
+  The labeled subgraph of $G$ induced on a chosen vertex set $S$ containing all
+  labeled vertices --- the canonical way to cut out a sub-flag on $S$.
+\end{definition}
+
+\begin{definition}[Labeled-graph list]
+  \label{def:labeled-graph-list}
+  \lean{FlagAlgebras.LabeledGraphList}
+  \uses{def:labeled-graph}
+  \leanok
+  A $t$-tuple of labeled graphs, the $i$-th on vertex type $V_i$; the
+  pre-quotient form of a flag list.
+\end{definition}
+
+\begin{definition}[Type-level list operations]
+  \label{def:list-type-ops}
+  \lean{FlagAlgebras.listTypeInsert, FlagAlgebras.listTypePermute}
+  \leanok
+  The operations on a vertex-type family that append a new type at the end
+  ($\mathrm{listTypeInsert}$) or reorder it by a permutation
+  ($\mathrm{listTypePermute}$); they supply the return types of the flag-list
+  operations.
+\end{definition}
+
+\begin{definition}[Flag-list operations]
+  \label{def:flag-list-ops}
+  \lean{FlagAlgebras.FlagList.insert, FlagAlgebras.FlagList.permute}
+  \uses{def:flag-list, def:list-type-ops}
+  \leanok
+  Appending a flag to a flag list, and reordering a flag list by a permutation.
+\end{definition}
+
+\begin{theorem}[Quotient of lists is a list of flags]
+  \label{thm:eqv-quot-list-flaglist}
+  \lean{FlagAlgebras.eqv_QuotLabeledGraphList_FlagList}
+  \uses{def:labeled-graph-list, def:flag-list, def:flag-eqv}
+  \leanok
+  The quotient of labeled-graph lists is equivalent to the tuple of flags: taking
+  isomorphism classes commutes with the $\mathrm{Fin}\,t$-indexed product.
+\end{theorem}

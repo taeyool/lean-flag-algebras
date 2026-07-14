@@ -1,0 +1,35 @@
+\chapter{Overview}
+\label{chap:overview}
+
+This blueprint maps the core of the \texttt{LeanFlagAlgebras} library --- the
+\texttt{FlagAlgebra/} directory --- which formalizes Razborov's flag algebras in
+Lean~4. The development is layered, and each chapter below corresponds to one
+layer:
+
+\begin{itemize}
+  \item \textbf{Flags} (Chapter~\ref{chap:flags}): labeled graphs, their
+    isomorphisms, and the flag $\mathrm{Flag}\,\sigma$ as an isomorphism class.
+  \item \textbf{Subflag densities} (Chapter~\ref{chap:density}): how often one
+    flag occurs inside another, and the \emph{chain rules} relating single,
+    pair, and triple densities.
+  \item \textbf{The flag algebra $\mathcal{A}^\sigma$} (Chapter~\ref{chap:algebra}):
+    the commutative $\mathbb{R}$-algebra obtained by quotienting formal flag
+    combinations by Razborov's averaging relations, with multiplication defined
+    through pair densities.
+  \item \textbf{The unlabeling operator} (Chapter~\ref{chap:downward}):
+    $[\![\,\cdot\,]\!]_0 : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset$, which
+    averages away the labels.
+  \item \textbf{Positivity and SOS} (Chapter~\ref{chap:positivity}): positive
+    homomorphisms, the semantic order $\le$ in which density bounds are stated,
+    and the sum-of-squares certificates that prove them.
+  \item \textbf{Limit semantics} (Chapter~\ref{chap:limits}): the analytic side
+    (Razborov's Theorems 3.3 and 3.5) identifying positive homomorphisms with
+    limits of subgraph densities, and the resulting Cauchy--Schwarz inequality.
+  \item \textbf{Application} (Chapter~\ref{chap:mantel}): Mantel's theorem, the
+    Tur\'an density of the triangle, proved with the machinery above.
+\end{itemize}
+
+Every boxed node in the dependency graph is a definition or theorem tagged with
+the Lean declaration that realizes it; the graph edges are the mathematical
+dependencies declared here. All declarations named live in the \texttt{FlagAlgebras}
+namespace.
