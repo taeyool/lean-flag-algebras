@@ -3867,18 +3867,20 @@ about each one.
 The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
 algebra independent of the forbidden graph and imposes the constraint later,
 when a semantic inequality is stated.  Razborov's universal-theory
-presentation instead fixes the constraint before constructing the
-corresponding algebra.  As \Cref{sec:forbidden} explains, these choices are
-not interchangeable for every typed inequality: the ensemble order tests
-almost every randomly rooted view, whereas a built-in constrained algebra can
-also test specially chosen roots.  For the final unlabeled Tur\'an bounds in
-our case studies, the transfer theorem validates the deferred route.
+presentation instead fixes the forbidden graphs before constructing the
+flags, algebras, and positive homomorphisms.  As \Cref{sec:forbidden}
+explains, this difference is not purely organizational: for intermediate
+statements about labeled flags, the two approaches need not give the same
+notion of validity.  Our case studies, however, use \lean{forbidLE} to derive
+final unlabeled Tur\'an bounds, and the transfer theorem proves that this use
+is sound.
 
 The unresolved question is therefore architectural rather than a claim of
 semantic equivalence.  Deferral lets the core definitions and algebraic lemmas
-be reused across forbidden graphs; a built-in theory may make
-constraint-specific typed arguments more direct.  Comparing the total cost
-would require carrying comparable case studies through both designs.
+be reused across forbidden graphs; fixing the forbidden graphs at the outset
+may make arguments specific to one extremal problem more direct.  Comparing
+the total cost would require carrying comparable case studies through both
+designs.
 
 \paragraph{Which engineering obstacles are Lean-specific?}
 \Cref{sec:obstacles} contains both representation-independent obligations and
@@ -3887,36 +3889,56 @@ isomorphism is an ordinary cost of using quotient objects.  By contrast, the
 need to bind a particular \lean{Fintype} instance arises because Lean can fill
 two occurrences of the same finite type with different instance terms, and
 the use of \lean{cast} and \lean{HEq} arises because pointwise-equal dependent
-type families need not be identical by computation.  Other proof assistants
-organize finite enumeration, implicit arguments, and dependent equality
-differently.  We therefore do not know how much of this local scaffolding
-would survive a port to Rocq, Agda, or Isabelle/HOL.  The combinatorial
-obligations would remain, but their proof-engineering form may change.
+type families need not be definitionally equal: Lean's type checker may not
+regard them as the same type without an explicit proof.  Other proof
+assistants organize finite enumeration, implicit arguments, and dependent
+equality differently.  We therefore do not know how much of this local
+scaffolding would survive a port to Rocq, Agda, or Isabelle/HOL.  The
+combinatorial obligations would remain, but their proof-engineering form may
+change.
 
-\paragraph{Is the bridge layer essential or an artifact of our specification
-choices?}
-The reflection layer and the automation built on it
-(\Cref{sec:reflection,sec:flagmatic-pipeline}) are necessary in the current
-development.  Reflection connects the quotient-based specification to the
-executable \lean{Sym2Graph} representation used by the pentagon proof.  A
-specification based on canonical graph representatives
-might avoid the same adequacy boundary, but would expose canonicalization
-choices inside the mathematical layer.  Our development shows that the
-separation works and concentrates representation-specific proofs in the
-bridge; it does not show that this separation minimizes the total proof or
-computation cost.  Answering that question requires an alternative
-formalization against which to compare it.
+\paragraph{Should specification and computation use separate representations?}
+Our development maintains two representations
+(\Cref{sec:reflection,sec:flagmatic-pipeline}).  The specification layer uses
+quotients and definitions close to the mathematics, allowing the abstract
+theory to ignore choices of graph representatives.  The reflection layer uses
+the concrete \lean{Sym2Graph} representation to evaluate finite densities,
+downward coefficients, and multiplication tables.  Adequacy theorems connect
+the two, turning these evaluations into facts about the specification-level
+definitions.  The density and multiplication facts used throughout our case
+studies are obtained in this way.
 
-\paragraph{Will theorem generation scale beyond five-vertex hosts?}
-The pentagon proof generates 2,832 specialized pair-density theorems, in 15
-native-evaluation batches, at elaboration time.  Lean accepts this workload in
-our current case study.  Moving to larger host sizes would increase both the
-number of flags and the number of flag pairs whose densities are generated.
-We have not stress-tested that regime and do not know whether flag
-enumeration, density and multiplication theorem generation, or the growing
-environment of named theorems would become the first bottleneck.  The present
-evaluation therefore establishes feasibility through five-vertex hosts, not
-scalability to substantially larger certificates.
+This separation lets us keep the abstract development simple while retaining
+an efficient executable representation.  It also creates a substantial
+bridge of adequacy proofs.  One alternative is to use the abstract
+representation throughout and evaluate its definitions directly; as
+\Cref{sec:lessons} discusses, this was not practical for our largest case
+study.  Another is to use a concrete, canonical representation throughout;
+this could reduce the bridge but would make representation and
+canonicalization choices visible in the abstract theory.  We have not carried
+either alternative through comparable case studies, so we do not know which
+architecture minimizes the total proof and computation cost.
+
+\paragraph{Can the computational layer scale beyond five vertices?}
+Our seven end-to-end certificates (\Cref{sec:results}) expand their
+calculations over graphs on three, four, or five vertices.  At this scale,
+batched theorem generation makes the required families of finite identities
+manageable.  For the five-vertex pentagon certificate, the three flag types
+require 1,800, 672, and 360 pair-density theorems, respectively.  Lean checks
+these 2,832 identities in 15 native-evaluation batches and then uses the
+resulting theorems in the complete certificate proof.  This demonstrates that
+the current reflection and automation layers can support calculations
+involving thousands of density facts at the five-vertex scale.
+
+Going substantially beyond five vertices remains a major engineering
+challenge.  As the number of vertices grows, so do the families of flags,
+the density and multiplication identities generated from their pairs, and the
+expressions that the final algebraic proof must normalize.  Scaling to larger
+certificates will therefore likely require more efficient executable graph
+representations and counting algorithms in the reflection layer, as well as
+improvements to theorem generation and algebraic normalization.  We have not
+yet determined which of these costs will dominate or how far such
+optimizations will extend the practical range of the formalization.
 
 
 \section{Lessons for Future Formalizations}
@@ -4014,20 +4036,18 @@ verified separately (\Cref{sec:flagmatic-trust}).
 \paragraph{Lesson 5 (Moving a constraint can change intermediate semantics).}
 Razborov's presentation fixes a universal theory of forbidden graphs before
 constructing the constrained algebra.  Our development instead keeps an
-ambient algebra and imposes the constraint through the ensemble semantic
-order when an inequality is stated.  This deferral makes unconstrained
-algebraic lemmas reusable, and the transfer theorem recovers the final
-unlabeled Tur\'an bounds used in our case studies.
+ambient algebra and introduces the forbidden-graph assumption when an
+inequality is stated.  This deferral makes unconstrained algebraic lemmas
+reusable, and the transfer theorem recovers the final unlabeled Tur\'an bounds
+used in our case studies.
 
 The change is not merely organizational.  As \Cref{sec:forbidden} explains,
-the built-in semantics can test a specially chosen root, whereas the ensemble
-semantics tests almost every root obtained by random labeling.  The two orders
-therefore need not validate the same typed inequalities.  The lesson is not
-that constraints should always be deferred, but that moving a constraint
-across an abstraction boundary can change the meaning of intermediate
-statements.  A formalization should state the resulting semantic order
-explicitly and prove the comparison it needs rather than treating deferral as
-a semantics-preserving refactoring.
+the two approaches need not give the same meaning to intermediate statements
+about labeled flags.  The lesson is not that constraints should always be
+deferred, but that moving a constraint across an abstraction boundary can
+change the meaning of such statements.  A formalization should define the
+resulting comparison explicitly and prove the relationship it needs rather
+than treating deferral as a semantics-preserving refactoring.
 
 \paragraph{Lesson 6 (Report the trust boundary for each proof obligation).}
 Our formalization uses two evaluators with different trusted-computing-base
@@ -4037,10 +4057,10 @@ native compiler, whereas \lean{decide +kernel} performs the evaluation inside
 the kernel.  This difference matters even though both commands close Lean
 goals.
 
-The 2,832 generated pair-density theorems are discharged by
-\lean{native\_decide}, because kernel evaluation of these numerous closed
-reflection-layer computations is not practical at the current scale.  For
-the pentagon proof, the three SDP matrix equalities (sizes
+For the pentagon proof, \lean{native\_decide} checks 15 batch equalities, from
+which Lean derives the 2,832 individual pair-density theorems by projection.
+Kernel evaluation of these numerous closed reflection-layer computations is
+not practical at the current scale.  The three SDP matrix equalities (sizes
 $8 \times 8$, $6 \times 6$, $5 \times 5$ over $\mathbb{Q}$) are discharged
 by \lean{decide +kernel}.  These matrices are small enough for kernel
 evaluation, so their exact rational equalities remain kernel-checked.
