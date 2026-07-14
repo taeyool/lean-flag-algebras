@@ -3759,25 +3759,40 @@ constructed once by considering $i=0$ and $i=1$; subsequent definitions can
 then request the enumeration at an arbitrary position without repeating that
 case analysis.
 
-The resulting inconvenience is concentrated rather than eliminated.  The
-small transport and instance-management lemmas hide most of it from the main
-case studies, but a new size-changing operation or counting equivalence still
-has to cross the same intensional boundaries once.  This is why we treat these
-lemmas as an engineering interface: they do not remove the underlying proof
-obligations, but they keep those obligations from spreading through every
-algebraic proof.
+The bookkeeping above is not eliminated, but its location is made explicit.
+When a new finite construction is introduced, the formalization may have to
+specify which ambient type \lean{Finset.univ} enumerates, bind the particular
+\lean{Fintype} instance used by a cardinality, or provide the componentwise
+\lean{Fintype} instances required by a dependent tuple.  Each choice is
+recorded once in a local instance or helper definition.  The subsequent
+density proofs can then reuse that choice instead of asking typeclass search to
+reconstruct it at every occurrence.  Thus a new counting construction still
+requires local enumeration setup, but that setup does not spread into the
+later algebraic argument.
 
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
 
-The \lean{Fintype}-instance ambiguity just described also shaped how we prove
-density identities.  The most common informal move in flag-algebra
-calculations is to say that two densities are equal because the two sampling
-procedures count the same objects after a reindexing.  In Lean we make this
-extensional argument explicit.  The proof first names the two sample spaces,
-fixes the \lean{Fintype} instances that will be used to count them, constructs
-an equivalence between the sample spaces, and only then simplifies the
-resulting rational equality.  A typical proof has the following shape:
+Many density identities reduce to bijective counting.  The two sides count
+finite collections of configurations---typically tuples of disjoint induced
+copies---and a bijection between those collections proves that their
+cardinalities are equal.  We therefore begin with the counted collections and
+the bijection, rather than with symbolic manipulation of the resulting
+rational expressions.
+
+The \lean{Fintype}-instance ambiguity from \Cref{sec:fintype} enters when Lean
+turns that bijection into a cardinality equality.  Both
+\lean{Fintype.card\_congr}, which transfers cardinality across a bijection, and
+the cardinalities already occurring in the density definition carry implicit
+\lean{Fintype} instances.  If those instances are synthesized independently,
+the equality obtained from the bijection may not rewrite the cardinality in
+the density expression.  We therefore follow the discipline of the preceding
+subsection: first name the two finite collections, then bind the
+\lean{Fintype} instance used for each, construct the bijection, and finally
+derive and use the cardinality equality.  The connection is formal rather
+than combinatorial: the bijection is the mathematical proof, while explicit
+instance control ensures that its conclusion matches the density expression.
+A typical proof has the following shape:
 \begin{lstlisting}
 let S0 := setOfLabeledSubgraphListIsoHl G Hl0
 let S1 := setOfLabeledSubgraphListIsoHl G Hl1
@@ -3790,9 +3805,9 @@ simp_all only [Set.toFinset_card]
 \end{lstlisting}
 
 This is the pattern used in \lean{flagDensity\_permute} to show that
-permuting the order of sampled flags does not change density, and in
-\lean{flagDensity\_insert\_empty} to show that inserting an empty flag leaves
-the density unchanged.  It also appears in the adequacy proof that the
+reordering the prescribed tuple $(F_1,\ldots,F_t)$ does not change its
+multi-flag density, and in \lean{flagDensity\_insert\_empty} to show that
+inserting an empty flag leaves the density unchanged.  It also appears in the adequacy proof that the
 concrete \lean{Sym2InducedSubgraph} enumeration has the same count as the
 abstract \lean{LabeledSubgraph} enumeration.  The invariant enforced by the
 pattern is that a numerical equality is justified by an explicit isomorphism
