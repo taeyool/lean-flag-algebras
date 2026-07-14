@@ -3773,12 +3773,12 @@ later algebraic argument.
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
 
-Many density identities reduce to bijective counting.  The two sides count
-finite collections of configurations---typically tuples of disjoint induced
-copies---and a bijection between those collections proves that their
-cardinalities are equal.  We therefore begin with the counted collections and
-the bijection, rather than with symbolic manipulation of the resulting
-rational expressions.
+A recurring proof obligation in the specification layer was to establish
+identities involving subflag densities.  Although these identities take
+several forms, unfolding and simplifying their definitions reveals a common structure: the two sides of the identity are cardinalities of finite sets of configurations
+presented in different ways.  We adopted a uniform proof strategy for such
+identities: identify the two sets, construct an explicit bijection between
+them, and use the bijection to prove equality of their cardinalities. The bijection here carries the main mathematical content of the proof.
 
 The \lean{Fintype}-instance ambiguity from \Cref{sec:fintype} enters when Lean
 turns that bijection into a cardinality equality.  Both
