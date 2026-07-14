@@ -136,13 +136,13 @@ noncomputable def subBlowupToIndepIso (m : Fin n → ℕ) (W : ∀ v, SimpleGrap
       map_rel_iff' := by
         intro u v
         rw [coe_adj_iff, coe_adj_iff]
-        simp only [hBsub, hGsub, inducedLabeledSubgraph, inducedSubgraph]
+        simp only [hBsub, hGsub, inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, Subgraph.top_adj]
         have hu : (↑u : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ u.property
         have hv : (↑v : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ v.property
         rw [he u, he v]
         -- Both reduce to `<graph>.Adj u v ∧ u ∈ S' ∧ v ∈ S'`; the side conditions match, so it
         -- remains to compare the two graph adjacencies, which agree off the diagonal.
-        refine and_congr ?_ Iff.rfl
+        refine and_congr Iff.rfl (and_congr Iff.rfl ?_)
         by_cases hfst : (v.val).1 = (u.val).1
         · -- same clone class ⟹ injectivity forces `u = v` ⟹ both adjacencies are `False`.
           have huv : (u.val : Σ v : Fin n, Fin (m v)) = v.val := hinj hu hv hfst.symm

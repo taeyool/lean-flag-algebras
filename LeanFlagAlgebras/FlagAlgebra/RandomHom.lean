@@ -85,7 +85,7 @@ theorem flagDensity₁_flagType_asEmptyType_pos
     use G
     refine ⟨LabeledSubgraph.inducedLabeledSubgraph_isInduced _ _ _, Nonempty.intro ?_⟩
     simp only [unlabeledGraph, LabeledSubgraph.inducedLabeledSubgraph, LabeledGraph.type_verts,
-      inducedSubgraph, LabeledSubgraph.coe, G]
+      SimpleGraph.Subgraph.induce, LabeledSubgraph.coe, G]
     exact {
       graph_iso := {
           toFun v := by
@@ -113,18 +113,20 @@ theorem flagDensity₁_flagType_asEmptyType_pos
             simp only [Set.image_univ, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
             constructor
             · intro h
-              constructor
+              refine ⟨?_, ?_, ?_⟩
+              · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hv
+              · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hw
               · simp only [Set.image_univ, Set.mem_range] at hv hw
                 obtain ⟨vi, hvi⟩ := hv
                 obtain ⟨wi, hwi⟩ := hw
                 subst hvi hwi
-                simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff]
-              · constructor
-                · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hv
-                · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hw
-            · intro ⟨h, ⟨vi, hvi⟩, ⟨wi, hwi⟩⟩
+                simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff, SimpleGraph.Subgraph.top_adj]
+            · rintro ⟨hmv, hmw, h⟩
+              simp only [Set.image_univ, Set.mem_range] at hmv hmw
+              obtain ⟨vi, hvi⟩ := hmv
+              obtain ⟨wi, hwi⟩ := hmw
               subst hvi hwi
-              simp_all only [SimpleGraph.Embedding.map_adj_iff, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+              simp_all only [SimpleGraph.Embedding.map_adj_iff, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Subgraph.top_adj]
         }
       type_preserve := List.ofFn_inj.mp rfl
     }

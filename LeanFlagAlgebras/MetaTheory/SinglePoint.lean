@@ -135,10 +135,10 @@ lemma flagDensity_unlabelledNonEdge_pos {m : ℕ} {D : FlagWithSize ∅ₜ m}
       ext u v
       simp only [bot_adj, iff_false]
       intro hadj
-      have hadj' : L.graph.Adj u.val v.val
-          ∧ u.val ∈ (↑({a, b} : Finset (Fin m)) : Set (Fin m))
-          ∧ v.val ∈ (↑({a, b} : Finset (Fin m)) : Set (Fin m)) := hadj
-      obtain ⟨hLuv, hu, hv⟩ := hadj'
+      have hadj' : u.val ∈ (↑({a, b} : Finset (Fin m)) : Set (Fin m))
+          ∧ v.val ∈ (↑({a, b} : Finset (Fin m)) : Set (Fin m))
+          ∧ L.graph.Adj u.val v.val := hadj
+      obtain ⟨hu, hv, hLuv⟩ := hadj'
       simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_insert_iff,
         Set.mem_singleton_iff] at hu hv
       rcases hu with hu | hu <;> rcases hv with hv | hv

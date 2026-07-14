@@ -181,13 +181,6 @@ theorem exists_perm_comp_emb_pair {n₁ n₂ ℓ : ℕ}
 
 /-! ## Unlabelled flag densities as subset counts -/
 
-/-- The `inducedSubgraph` construction (from `SubgraphUtil.lean`) coerced to a plain graph on
-its vertex subset agrees with `SimpleGraph.induce`: both reduce to `G.Adj` on the subtype. -/
-private lemma induce_eq_inducedSubgraph_coe {V : Type} (G : SimpleGraph V) (S : Set V) :
-    (inducedSubgraph G S).coe = G.induce S := by
-  ext u v
-  simp [SimpleGraph.induce, SimpleGraph.comap_adj, inducedSubgraph, SimpleGraph.Subgraph.coe_adj]
-
 /-- The `graphFlag` representative record has empty `type_verts`: the empty type `∅ₜ = Fin 0`
 has no elements to embed. -/
 private lemma graphFlagRep_type_verts_eq_empty {V : Type} (G : SimpleGraph V) :
@@ -225,14 +218,14 @@ theorem flagDensity₁_graphFlag {n ℓ : ℕ} (F : SimpleGraph (Fin n)) (H : Si
   · rintro ⟨_, hiso⟩
     rw [flagEqv_emptyType_iff] at hiso
     simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph] at hiso
-    rw [← induce_eq_inducedSubgraph_coe]
+    rw [SimpleGraph.induce_eq_coe_induce_top]
     exact hiso
   · intro hiso
     refine ⟨?_, ?_⟩
     · rw [graphFlagRep_type_verts_eq_empty]; exact Set.empty_subset _
     · rw [flagEqv_emptyType_iff]
       simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph]
-      rw [induce_eq_inducedSubgraph_coe]
+      rw [← SimpleGraph.induce_eq_coe_induce_top]
       exact hiso
 
 /-- **The unlabelled pair density on a tight host as an ordered-partition count**: for graphs
@@ -280,11 +273,11 @@ theorem flagDensity₂_graphFlag {n₁ n₂ : ℕ} (F₁ : SimpleGraph (Fin n₁
       exact hdisj
     · rw [flagEqv_emptyType_iff] at hiso1
       simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph] at hiso1
-      rw [← induce_eq_inducedSubgraph_coe]
+      rw [SimpleGraph.induce_eq_coe_induce_top]
       exact hiso1
     · rw [flagEqv_emptyType_iff] at hiso2
       simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph] at hiso2
-      rw [← induce_eq_inducedSubgraph_coe]
+      rw [SimpleGraph.induce_eq_coe_induce_top]
       exact hiso2
   · rintro ⟨hdisj, hiso1, hiso2⟩
     refine ⟨?_, ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
@@ -294,12 +287,12 @@ theorem flagDensity₂_graphFlag {n₁ n₂ : ℕ} (F₁ : SimpleGraph (Fin n₁
     · exact graphFlagRep_type_verts_eq_empty H ▸ Set.empty_subset _
     · rw [flagEqv_emptyType_iff]
       simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph]
-      rw [induce_eq_inducedSubgraph_coe]
+      rw [← SimpleGraph.induce_eq_coe_induce_top]
       exact hiso1
     · exact graphFlagRep_type_verts_eq_empty H ▸ Set.empty_subset _
     · rw [flagEqv_emptyType_iff]
       simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.inducedLabeledSubgraph]
-      rw [induce_eq_inducedSubgraph_coe]
+      rw [← SimpleGraph.induce_eq_coe_induce_top]
       exact hiso2
 
 end FlagAlgebras.MetaTheory

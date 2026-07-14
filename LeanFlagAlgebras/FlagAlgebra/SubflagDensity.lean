@@ -182,7 +182,7 @@ lemma inducedLabeledSubgraph_related
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
     : relOfLabeledSubgraph φ H₀ (inducedLabeledSubgraphByIso φ H₀)
   :=
-  inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
+  induce_top_related φ.graph_iso H₀.subgraph h_ind₀
 
 omit [Fintype T] [Fintype V] in
 theorem embed_heq_of_subgraph_eq
@@ -229,8 +229,8 @@ lemma H_eq_reverseinduced_induced_H
     exact φ.graph_iso.left_inv v
   have h_eq : H₀.subgraph = H₀'.subgraph := by
     dsimp only [H₀', inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
-    simp only [inducedSubgraph_verts, ←h]
-    exact inducedSubgraph_eq h_ind₀
+    simp only [SimpleGraph.Subgraph.induce_verts, ←h]
+    exact (h_ind₀.induce_top_verts).symm
   exact labeledSubgraph_eq_from_subgraph_eq h_eq
 
 /-- The bijection between induced subgraphs of `G₀` satisfying `p₀` and those

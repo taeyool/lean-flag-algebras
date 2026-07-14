@@ -669,7 +669,7 @@ private noncomputable def induced_iso_match {n L : ℕ} (G : LabeledGraph σ (Fi
     show (inducedLabeledSubgraph G SG hrootG).coe.graph.Adj (e ⟨a, ha⟩) (e ⟨b, hb⟩)
         ↔ (inducedLabeledSubgraph LH SH hrootH).coe.graph.Adj ⟨a, ha⟩ ⟨b, hb⟩
     rw [LabeledSubgraph.coe_adj_iff, LabeledSubgraph.coe_adj_iff]
-    simp only [inducedLabeledSubgraph, inducedSubgraph, e, Equiv.ofBijective_apply, f]
+    simp only [inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, e, Equiv.ofBijective_apply, f]
     -- reduce to H.Adj a b ↔ G.Adj (ιG a) (ιG b)
     have hH : LH.graph.Adj a b ↔ G.graph.Adj (iotaG G a) (iotaG G b) := by
       rw [plantedLabeled_graph]
@@ -683,8 +683,8 @@ private noncomputable def induced_iso_match {n L : ℕ} (G : LabeledGraph σ (Fi
         · exact h
         · rw [hi] at hbu'; exact absurd hbu' (by simp)
     constructor
-    · rintro ⟨hadj, _, _⟩; exact ⟨hH.mpr hadj, ha, hb⟩
-    · rintro ⟨hadj, _, _⟩; exact ⟨hH.mp hadj, hmaps a ha, hmaps b hb⟩
+    · rintro ⟨_, _, hadj⟩; exact ⟨ha, hb, hH.mpr hadj⟩
+    · rintro ⟨_, _, hadj⟩; exact ⟨hmaps a ha, hmaps b hb, hH.mp hadj⟩
   · -- type_preserve
     funext t
     apply Subtype.ext

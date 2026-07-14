@@ -322,7 +322,7 @@ theorem Turan_density_K3
                 have hAdjG : (G k).Adj u.1 v.1 := by
                   simpa [SimpleGraph.mem_edgeSet] using hs'
                 change H.Adj u.1 v.1
-                exact ⟨hAdjG, hu, hv⟩
+                exact ⟨hu, hv, hAdjG⟩
               · intro huv
                 have hne' : f u ≠ f v := by
                   intro hEq
@@ -334,7 +334,7 @@ theorem Turan_density_K3
           }
       · intros; simp_all
       · intro e he e' he' heq
-        simp [LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph] at heq
+        simp [LabeledSubgraph.inducedLabeledSubgraph, Subgraph.induce] at heq
         simp_all
       · intro ⟨G', hG'_ind, hG'_eqv⟩ _
         have φ := hG'_eqv.some.graph_iso

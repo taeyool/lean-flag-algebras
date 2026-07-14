@@ -133,7 +133,7 @@ within-class structure (planted vertices lie in distinct clone classes). -/
 noncomputable def plantedIso_sub {n : ℕ} {σ : FlagType (Fin n₀)} {Γ : SimpleGraph (Fin n)}
     (θ : σ ↪g Γ) (Wf : (M : ℕ) → ∀ _v : Fin n, SimpleGraph (Fin (M + 1))) (M : ℕ)
     (c : Fin n₀ → Fin (M + 1)) :
-    σ ≃g (inducedSubgraph (subBlowup Γ (Wf M)) (↑(plantedSet θ M c) : Set _)).coe := by
+    σ ≃g ((⊤ : (subBlowup Γ (Wf M)).Subgraph).induce (↑(plantedSet θ M c) : Set _)).coe := by
   set B := subBlowup Γ (Wf M)
   set S : Set (Σ v : Fin n, Fin (M + 1)) := ↑(plantedSet θ M c) with hS
   have hmem : ∀ i : Fin n₀, (⟨θ i, c i⟩ : Σ v : Fin n, Fin (M + 1)) ∈ S := by
@@ -154,20 +154,20 @@ noncomputable def plantedIso_sub {n : ℕ} {σ : FlagType (Fin n₀)} {Γ : Simp
   refine ⟨Equiv.ofBijective f ⟨hf_inj, hf_surj⟩, ?_⟩
   intro i j
   simp only [Equiv.ofBijective_apply, Subgraph.coe_adj]
-  show (inducedSubgraph B S).Adj (f i).1 (f j).1 ↔ σ.Adj i j
+  show ((⊤ : B.Subgraph).induce S).Adj (f i).1 (f j).1 ↔ σ.Adj i j
   by_cases hij : i = j
   · subst hij
-    simp only [inducedSubgraph, SimpleGraph.irrefl, false_and, SimpleGraph.irrefl]
+    simp only [Subgraph.induce_adj, Subgraph.top_adj, SimpleGraph.irrefl, and_false, false_and, SimpleGraph.irrefl]
   · have hθ : (θ j) ≠ (θ i) := fun h => hij (θ.injective h.symm)
-    simp only [inducedSubgraph]
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
     constructor
-    · rintro ⟨hadj, _, _⟩
+    · rintro ⟨_, _, hadj⟩
       rw [show (f i).1 = (⟨θ i, c i⟩ : Σ v, Fin (M+1)) from rfl,
           show (f j).1 = (⟨θ j, c j⟩ : Σ v, Fin (M+1)) from rfl,
           subBlowup_adj_of_fst_ne Γ (Wf M) hθ] at hadj
       exact θ.map_adj_iff.mp hadj
     · intro h
-      refine ⟨?_, (f i).2, (f j).2⟩
+      refine ⟨(f i).2, (f j).2, ?_⟩
       rw [show (f i).1 = (⟨θ i, c i⟩ : Σ v, Fin (M+1)) from rfl,
           show (f j).1 = (⟨θ j, c j⟩ : Σ v, Fin (M+1)) from rfl,
           subBlowup_adj_of_fst_ne Γ (Wf M) hθ]
@@ -181,16 +181,16 @@ theorem pow_le_subgraphCount_subBlowup {n : ℕ} {σ : FlagType (Fin n₀)}
     (M + 1) ^ n₀ ≤ subgraphCount σ (subBlowup Γ (Wf M)) := by
   set B := subBlowup Γ (Wf M)
   have hmaps : ∀ c : Fin n₀ → Fin (M + 1),
-      inducedSubgraph B (↑(plantedSet θ M c) : Set _) ∈ subgraphSet σ B := by
+      (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _) ∈ subgraphSet σ B := by
     intro c
     rw [mem_subgraphSet_iff]
-    exact ⟨inducedSubgraph_isInduced _ _, ⟨(plantedIso_sub θ Wf M c).symm⟩⟩
+    exact ⟨Subgraph.induce_top_isInduced _ _, ⟨(plantedIso_sub θ Wf M c).symm⟩⟩
   have hinj : Function.Injective (fun c : Fin n₀ → Fin (M + 1) =>
-      inducedSubgraph B (↑(plantedSet θ M c) : Set _)) := by
+      (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _)) := by
     intro c c' h
     have h2 := congrArg Subgraph.verts h
-      |>.trans (inducedSubgraph_verts B (↑(plantedSet θ M c') : Set _))
-    rw [inducedSubgraph_verts] at h2
+      |>.trans (Subgraph.induce_verts (⊤ : B.Subgraph) (↑(plantedSet θ M c') : Set _))
+    rw [Subgraph.induce_verts] at h2
     have hverts : (↑(plantedSet θ M c) : Set (Σ v : Fin n, Fin (M + 1)))
         = (↑(plantedSet θ M c') : Set (Σ v : Fin n, Fin (M + 1))) := h2
     funext i
@@ -210,7 +210,7 @@ theorem pow_le_subgraphCount_subBlowup {n : ℕ} {σ : FlagType (Fin n₀)}
   calc (M + 1) ^ n₀ = Fintype.card (Fin n₀ → Fin (M + 1)) := by simp
     _ = (Finset.univ : Finset (Fin n₀ → Fin (M + 1))).card := by rw [Finset.card_univ]
     _ = (Finset.univ.image (fun c : Fin n₀ → Fin (M + 1) =>
-          inducedSubgraph B (↑(plantedSet θ M c) : Set _))).card := by
+          (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _))).card := by
         rw [Finset.card_image_of_injective _ hinj]
     _ ≤ (subgraphSet σ B).card := by
         apply Finset.card_le_card

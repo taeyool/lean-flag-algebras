@@ -204,7 +204,7 @@ private theorem cloud_density_eq (F : FinFlag σ) (m : ℕ) (hsm : F.1 ≤ n₀ 
         map_rel_iff' := by
           intro u v
           rw [LabeledSubgraph.coe_adj_iff]
-          exact ⟨fun h => ⟨h, u.2, v.2⟩, fun h => h.1⟩ }
+          exact ⟨fun h => ⟨u.2, v.2, h⟩, fun h => h.2.2⟩ }
     have hemb : F'.out.graph ↪g (cloudLabeled m).graph :=
       hcoeEmb.comp φiso.graph_iso.symm.toEmbedding
     have hcloud : (cloudLabeled m).graph.edgeFinset.card = σ.edgeFinset.card :=

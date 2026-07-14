@@ -68,39 +68,39 @@ def FinitePlanting (hc : HeredClass) (σ : FlagType (Fin n₀)) : Prop :=
 /-- The graph isomorphism `σ ≃g (subgraph induced on the range of a `σ`-embedding)`: a `σ`-embedding
 `e : σ ↪g G` is an isomorphism onto the subgraph of `G` induced on its image. -/
 private noncomputable def embeddingImageIso {N : ℕ} {σ : FlagType (Fin n₀)} {G : SimpleGraph (Fin N)}
-    (e : σ ↪g G) : σ ≃g (inducedSubgraph G (Set.range (e : Fin n₀ → Fin N))).coe := by
+    (e : σ ↪g G) : σ ≃g ((⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N))).coe := by
   set S : Set (Fin N) := Set.range (e : Fin n₀ → Fin N) with hS
   have hmem : ∀ i : Fin n₀, (e i) ∈ S := fun i => ⟨i, rfl⟩
-  let f : Fin n₀ → {x // x ∈ (inducedSubgraph G S).verts} :=
-    fun i => ⟨e i, by rw [inducedSubgraph_verts]; exact hmem i⟩
+  let f : Fin n₀ → {x // x ∈ ((⊤ : G.Subgraph).induce S).verts} :=
+    fun i => ⟨e i, by rw [Subgraph.induce_verts]; exact hmem i⟩
   have hf_inj : Function.Injective f := fun i j h => e.injective (Subtype.ext_iff.mp h)
   have hf_surj : Function.Surjective f := by
-    rintro ⟨x, hx⟩; rw [inducedSubgraph_verts] at hx
+    rintro ⟨x, hx⟩; rw [Subgraph.induce_verts] at hx
     obtain ⟨i, hi⟩ := hx; exact ⟨i, Subtype.ext hi⟩
   refine ⟨Equiv.ofBijective f ⟨hf_inj, hf_surj⟩, ?_⟩
   intro i j; simp only [Equiv.ofBijective_apply, Subgraph.coe_adj]
   constructor
-  · rintro ⟨hadj, _, _⟩; exact e.map_adj_iff.mp hadj
-  · intro h; exact ⟨e.map_adj_iff.mpr h, hmem i, hmem j⟩
+  · rintro ⟨_, _, hadj⟩; exact e.map_adj_iff.mp hadj
+  · intro h; exact ⟨hmem i, hmem j, e.map_adj_iff.mpr h⟩
 
 /-- The fiber bound: at most `n₀!` σ-embeddings of `σ` into `G` induce the same subgraph (i.e. have
 the same image vertex set), because two such embeddings differ by a permutation of `Fin n₀`. -/
 private theorem fiber_card_le {N : ℕ} {σ : FlagType (Fin n₀)} {G : SimpleGraph (Fin N)}
     (g : G.Subgraph) :
     (Finset.univ.filter (fun e : σ ↪g G =>
-      inducedSubgraph G (Set.range (e : Fin n₀ → Fin N)) = g)).card ≤ Nat.factorial n₀ := by
+      (⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N)) = g)).card ≤ Nat.factorial n₀ := by
   classical
   set fib := Finset.univ.filter (fun e : σ ↪g G =>
-      inducedSubgraph G (Set.range (e : Fin n₀ → Fin N)) = g) with hfib
+      (⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N)) = g) with hfib
   rcases fib.eq_empty_or_nonempty with hemp | ⟨e₀, he₀⟩
   · rw [hemp]; simp
   · have hrange : ∀ e ∈ fib, Set.range (e : Fin n₀ → Fin N) = Set.range (e₀ : Fin n₀ → Fin N) := by
       intro e he
       rw [hfib, Finset.mem_filter] at he he₀
-      have : inducedSubgraph G (Set.range (e : Fin n₀ → Fin N))
-           = inducedSubgraph G (Set.range (e₀ : Fin n₀ → Fin N)) := by rw [he.2, he₀.2]
+      have : (⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N))
+           = (⊤ : G.Subgraph).induce (Set.range (e₀ : Fin n₀ → Fin N)) := by rw [he.2, he₀.2]
       have h2 := congrArg Subgraph.verts this
-      rwa [inducedSubgraph_verts, inducedSubgraph_verts] at h2
+      rwa [Subgraph.induce_verts, Subgraph.induce_verts] at h2
     have hmem : ∀ e ∈ fib, ∀ i : Fin n₀, e i ∈ Set.range (e₀ : Fin n₀ → Fin N) := by
       intro e he i; rw [← hrange e he]; exact ⟨i, rfl⟩
     let pe : (e : σ ↪g G) → (he : e ∈ fib) → (Fin n₀ → Fin n₀) :=
@@ -137,13 +137,13 @@ private theorem card_embeddings_le_subgraphCount {N : ℕ} (σ : FlagType (Fin n
     Fintype.card (σ ↪g G) ≤ subgraphCount σ G * Nat.factorial n₀ := by
   classical
   have hmaps : ∀ e ∈ (Finset.univ : Finset (σ ↪g G)),
-      inducedSubgraph G (Set.range (e : Fin n₀ → Fin N)) ∈ subgraphSet σ G := by
+      (⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N)) ∈ subgraphSet σ G := by
     intro e _
     rw [mem_subgraphSet_iff]
-    exact ⟨inducedSubgraph_isInduced _ _, ⟨(embeddingImageIso e).symm⟩⟩
+    exact ⟨Subgraph.induce_top_isInduced _ _, ⟨(embeddingImageIso e).symm⟩⟩
   have hfiber : ∀ b ∈ subgraphSet σ G,
       (Finset.univ.filter (fun e : σ ↪g G =>
-        inducedSubgraph G (Set.range (e : Fin n₀ → Fin N)) = b)).card ≤ Nat.factorial n₀ :=
+        (⊤ : G.Subgraph).induce (Set.range (e : Fin n₀ → Fin N)) = b)).card ≤ Nat.factorial n₀ :=
     fun b _ => fiber_card_le b
   have := Finset.card_le_mul_card_image_of_maps_to hmaps (Nat.factorial n₀) hfiber
   rw [Finset.card_univ, mul_comm] at this

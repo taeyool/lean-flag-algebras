@@ -162,16 +162,16 @@ lemma subgraphCount_blowUp_C5_ge
           intro i j hij
           simp_all only [Prod.mk.injEq]
       }
-      inducedSubgraph (blowUp C5 n) (Finset.univ.map ϕ)
+      (⊤ : (blowUp C5 n).Subgraph).induce (Finset.univ.map ϕ)
     inj' := by
       intro g g' hgg'
       ext i
       simp at hgg'
-      have hmem : (i, g i) ∈ (inducedSubgraph (blowUp C5 n)
+      have hmem : (i, g i) ∈ ((⊤ : (blowUp C5 n).Subgraph).induce
           (Set.range (fun j ↦ (j, g' j)))).verts := by
         simp [← hgg']
       have hi : g' i = g i := by
-        simpa [inducedSubgraph] using hmem
+        simpa [Subgraph.induce_verts] using hmem
       simpa using congrArg Fin.val hi.symm
   }
   let S : Set (blowUp C5 n).Subgraph := (Set.univ : Set (Fin 5 → Fin n)).toFinset.map f
@@ -212,13 +212,13 @@ lemma subgraphCount_blowUp_C5_ge
           simpa [f] using v.2
         constructor
         · intro huv
-          have : C5.Adj u.1.1 v.1.1 ∧ (∃ y, (y, g y) = u.1) ∧ ∃ y, (y, g y) = v.1 :=
-            ⟨huv, hu', hv'⟩
-          simpa [f, Subgraph.coe, inducedSubgraph, blowUp_adj_iff] using this
+          have : (∃ y, (y, g y) = u.1) ∧ (∃ y, (y, g y) = v.1) ∧ C5.Adj u.1.1 v.1.1 :=
+            ⟨hu', hv', huv⟩
+          simpa [f, Subgraph.coe, Subgraph.induce_adj, Subgraph.top_adj, blowUp_adj_iff] using this
         · intro huv
-          have huv' : C5.Adj u.1.1 v.1.1 ∧ (∃ y, (y, g y) = u.1) ∧ ∃ y, (y, g y) = v.1 := by
-            simpa [f, Subgraph.coe, inducedSubgraph, blowUp_adj_iff] using huv
-          exact huv'.1
+          have huv' : (∃ y, (y, g y) = u.1) ∧ (∃ y, (y, g y) = v.1) ∧ C5.Adj u.1.1 v.1.1 := by
+            simpa [f, Subgraph.coe, Subgraph.induce_adj, Subgraph.top_adj, blowUp_adj_iff] using huv
+          exact huv'.2.2
     }
 
 /-- Lower bound on the generalized extremal number: the triangle-free blow-up

@@ -5,8 +5,9 @@ import Mathlib.Algebra.BigOperators.Field
 
 /-! # Subgraph utilities: induced subgraphs and transport along isomorphisms
 
-Shared utility supplying `Fintype` instances for (qualified) subgraphs, `inducedSubgraph` and its
-characterizations, and machinery to transport subgraphs / induced-subgraph predicates along a
+Shared utility supplying `Fintype` instances for (qualified) subgraphs, helper lemmas around
+mathlib's induced subgraph `(⊤ : G.Subgraph).induce S`, and machinery to transport subgraphs /
+induced-subgraph predicates along a
 graph isomorphism (`relOfSubgraph`, `subgraphFromIso`, `subgraphByComposition`,
 `subgraphFromPartialIso`, and the `isoSetOf…` equivalences). Also provides the canonical
 representative `getCanonicalQuotSimpleGraph` for `QuotSimpleGraph`. These underpin the
@@ -151,37 +152,17 @@ lemma predIsoH_related
       simp_all only [Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
-/-! ## Induced subgraphs -/
+/-! ## Induced subgraphs
 
-/-- The subgraph of `G` induced on the vertex set `S`: keep exactly the `G`-edges within `S`. -/
-def inducedSubgraph
-    (G : SimpleGraph V) (S : Set V) : G.Subgraph where
-  verts := S
-  Adj u v := G.Adj u v ∧ u ∈ S ∧ v ∈ S
-  adj_sub a := a.1
-  edge_vert a := a.2.1
-  symm _ _ h := ⟨G.symm h.1, h.2.2, h.2.1⟩
-
-omit [Fintype V] in
-@[simp]
-lemma inducedSubgraph_isInduced
-    (G : SimpleGraph V) (S : Set V)
-    : (inducedSubgraph G S).IsInduced
-  := by
-  intro u v h_u h_v h_adj
-  simp only [inducedSubgraph] at *
-  (repeat' constructor) <;> assumption
-
-omit [Fintype V] in
-@[simp]
-lemma inducedSubgraph_verts
-    (G : SimpleGraph V) (S : Set V) : (inducedSubgraph G S).verts = S
-  := by
-  simp [inducedSubgraph]
+We use mathlib's `SimpleGraph.Subgraph.induce`: the subgraph of `G` induced on a vertex set `S`
+is `(⊤ : G.Subgraph).induce S` (`verts := S`, keeping exactly the `G`-edges within `S`). The
+helper lemmas below transport induced subgraphs and induced-subgraph predicates along an
+isomorphism; the elementary facts come from mathlib (`induce_verts`, `induce_adj`,
+`IsInduced.induce_top_verts`, `isInduced_iff_exists_eq_induce_top`). -/
 
 omit [Fintype V] in
 /-- If `G₁` is induced and contains `G₀`'s vertices, then `G₀ ≤ G₁`. -/
-lemma inducedSubgraph_mono
+lemma SimpleGraph.Subgraph.IsInduced.le_of_verts_subset
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G}
     (h_G₁_ind : G₁.IsInduced) (h_sub : G₀.verts ⊆ G₁.verts)
     : G₀ ≤ G₁
@@ -194,69 +175,55 @@ lemma inducedSubgraph_mono
     exact h_G₁_ind h_u_G₁ h_v_G₁ <| G₀.adj_sub h_uv_G₀
 
 omit [Fintype V] in
-/-- An induced subgraph equals the subgraph induced on its own vertex set. -/
-lemma inducedSubgraph_eq
-    {G : SimpleGraph V} {G₀ : Subgraph G}
-    (h_G₀_ind : G₀.IsInduced) : G₀ = (inducedSubgraph G G₀.verts)
-  := by
-  dsimp [inducedSubgraph]
-  ext u v
-  . rfl
-  . constructor
-    . intro h_uv_G₀
-      have h_u_G₀ : u ∈ G₀.verts := G₀.edge_vert h_uv_G₀
-      have h_v_G₀ : v ∈ G₀.verts := G₀.edge_vert (G₀.symm h_uv_G₀)
-      have h_uv_G : G.Adj u v := G₀.adj_sub h_uv_G₀
-      exact ⟨h_uv_G, h_u_G₀, h_v_G₀⟩
-    . intro ⟨h_uv_G, h_u_G₀, h_v_G₀⟩
-      exact h_G₀_ind h_u_G₀ h_v_G₀ h_uv_G
+/-- The subgraph induced (from `⊤`) on any vertex set is an induced subgraph. -/
+@[simp]
+lemma SimpleGraph.Subgraph.induce_top_isInduced
+    (G : SimpleGraph V) (S : Set V) : ((⊤ : G.Subgraph).induce S).IsInduced :=
+  (Subgraph.isInduced_iff_exists_eq_induce_top _).mpr ⟨S, rfl⟩
 
 omit [Fintype V] in
 /-- Two induced subgraphs with the same vertex set are equal. -/
-lemma inducedSubgraph_eq_verts
-    {G : SimpleGraph V}
-    {G₁ : Subgraph G} (hG₁ : G₁.IsInduced)
-    {G₂ : Subgraph G} (hG₂ : G₂.IsInduced)
-    (h : G₁.verts = G₂.verts) :
-    G₁ = G₂ := by
-  rw [inducedSubgraph_eq hG₁, inducedSubgraph_eq hG₂, h]
+lemma SimpleGraph.Subgraph.IsInduced.eq_of_verts_eq
+    {G : SimpleGraph V} {G₁ G₂ : Subgraph G}
+    (hG₁ : G₁.IsInduced) (hG₂ : G₂.IsInduced) (h : G₁.verts = G₂.verts)
+    : G₁ = G₂ := by
+  rw [← hG₁.induce_top_verts, ← hG₂.induce_top_verts, h]
 
 omit [Fintype V] [Fintype W] in
 /-- The image of an induced subgraph `H₀` under `φ` is the subgraph induced on `φ '' H₀.verts`,
 and these two are `relOfSubgraph`-related. -/
-lemma inducedSubgraph_related
+lemma induce_top_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
-    : relOfSubgraph φ H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
+    : relOfSubgraph φ H₀ ((⊤ : G₁.Subgraph).induce (φ '' H₀.verts))
   := by
-  dsimp [relOfSubgraph, inducedSubgraph]; simp
-  intro u v
+  refine ⟨rfl, fun u v => ?_⟩
+  simp only [Subgraph.induce_adj, Subgraph.top_adj, Set.mem_image, EmbeddingLike.apply_eq_iff_eq,
+    exists_eq_right]
   constructor
-  . rintro ⟨h_uv, h_u, h_v⟩
+  . rintro ⟨h_u, h_v, h_uv⟩
     exact h_ind₀ h_u h_v <| φ.map_adj_iff.mp h_uv
   . intro h_uv_H₀
-    have h_uv_G₀ : G₀.Adj u v := H₀.adj_sub h_uv_H₀
-    have h_u_H₀ : u ∈ H₀.verts := H₀.edge_vert h_uv_H₀
-    have h_v_H₀ : v ∈ H₀.verts := H₀.edge_vert (H₀.symm h_uv_H₀)
-    exact ⟨φ.map_adj_iff.mpr h_uv_G₀, h_u_H₀, h_v_H₀⟩
+    exact ⟨H₀.edge_vert h_uv_H₀, H₀.edge_vert (H₀.symm h_uv_H₀),
+      φ.map_adj_iff.mpr (H₀.adj_sub h_uv_H₀)⟩
 
 omit [Fintype V] [Fintype W] in
-lemma inducedSubgraph_pred_iff
+lemma induce_top_pred_iff
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) (h_rel : relOfPredOnSubgraph φ p₀ p₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
-    : p₀ H₀ ↔ p₁ (inducedSubgraph G₁ (φ '' H₀.verts))
+    : p₀ H₀ ↔ p₁ ((⊤ : G₁.Subgraph).induce (φ '' H₀.verts))
   := by
-  have h_rel' := h_rel H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
-  exact h_rel' (inducedSubgraph_related φ H₀ h_ind₀)
+  have h_rel' := h_rel H₀ ((⊤ : G₁.Subgraph).induce (φ '' H₀.verts))
+  exact h_rel' (induce_top_related φ H₀ h_ind₀)
 
 omit [Fintype V] [Fintype W] [Fintype U] in
-lemma inducedSubgraph_predIsoH_iff
+lemma induce_top_predIsoH_iff
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : ∀ (H₀ : Subgraph G₀),
-        H₀.IsInduced → (predIsoH H G₀ H₀ ↔ predIsoH H G₁ (inducedSubgraph G₁ (φ '' H₀.verts)))
+        H₀.IsInduced → (predIsoH H G₀ H₀ ↔ predIsoH H G₁ ((⊤ : G₁.Subgraph).induce (φ '' H₀.verts)))
   :=
-  inducedSubgraph_pred_iff φ (predIsoH H G₀) (predIsoH H G₁) (predIsoH_related φ H)
+  induce_top_pred_iff φ (predIsoH H G₀) (predIsoH H G₁) (predIsoH_related φ H)
 
 /-! ### Equivalences of induced-subgraph sets across an isomorphism -/
 
@@ -273,43 +240,32 @@ noncomputable def isoSetOfInducedSubgraph
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-    let H₁ := inducedSubgraph G₁ (φ '' H₀.verts)
-    have h_ind₁ : H₁.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₀.verts)
-    have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
+    let H₁ := (⊤ : G₁.Subgraph).induce (φ '' H₀.verts)
+    have h_ind₁ : H₁.IsInduced := Subgraph.induce_top_isInduced G₁ (φ '' H₀.verts)
+    have : relOfSubgraph φ H₀ H₁ := induce_top_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩ := s₁
-    let H₀ := inducedSubgraph G₀ (φ.symm '' H₁.verts)
-    have h_ind₀ : H₀.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₁.verts)
-    have : relOfSubgraph φ.symm H₁ H₀ := inducedSubgraph_related φ.symm H₁ h_ind₁
+    let H₀ := (⊤ : G₀.Subgraph).induce (φ.symm '' H₁.verts)
+    have h_ind₀ : H₀.IsInduced := Subgraph.induce_top_isInduced G₀ (φ.symm '' H₁.verts)
+    have : relOfSubgraph φ.symm H₁ H₀ := induce_top_related φ.symm H₁ h_ind₁
     have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
   let f_bij : Function.Bijective f := by
     have h_leftinv : Function.LeftInverse f_inv f := by
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
-      dsimp [f, f_inv, inducedSubgraph]
-      ext u v
-      . simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-      . simp only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-        constructor
-        . rintro ⟨h_uv, h_u, h_v⟩
-          apply h_ind₀ <;> simp_all only
-        . rintro h_uv
-          exact ⟨H₀.adj_sub h_uv, H₀.edge_vert h_uv, H₀.edge_vert (H₀.symm h_uv)⟩
+      apply Subtype.ext
+      show (⊤ : G₀.Subgraph).induce (φ.symm '' (φ '' H₀.verts)) = H₀
+      apply (Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₀
+      simp [Set.image_image]
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
-      dsimp [f, f_inv, inducedSubgraph]
-      ext u v
-      . simp_all only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_image, exists_exists_and_eq_and, RelIso.apply_symm_apply, exists_eq_right, S₀, S₁, f_inv, f]
-      . simp
-        constructor
-        . rintro ⟨h_uv, h_u, h_v⟩
-          simp_all only [Set.coe_setOf, Set.mem_setOf_eq, S₀, S₁, f_inv, f]
-          apply h_ind₁ <;> simp_all only
-        . rintro h_uv
-          exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
+      apply Subtype.ext
+      show (⊤ : G₁.Subgraph).induce (φ '' (φ.symm '' H₁.verts)) = H₁
+      apply (Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₁
+      simp [Set.image_image]
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
@@ -345,16 +301,16 @@ noncomputable def isoSetOfInducedSubgraphPair
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
     let ⟨⟨H₀,H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩⟩ := s₀
-    let H₁ := inducedSubgraph G₁ (φ '' H₀.verts)
-    have h_ind₁ : H₁.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₀.verts)
-    have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
+    let H₁ := (⊤ : G₁.Subgraph).induce (φ '' H₀.verts)
+    have h_ind₁ : H₁.IsInduced := Subgraph.induce_top_isInduced G₁ (φ '' H₀.verts)
+    have : relOfSubgraph φ H₀ H₁ := induce_top_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
-    let H₃ := inducedSubgraph G₁ (φ '' H₂.verts)
-    have h_ind₃ : H₃.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₂.verts)
-    have : relOfSubgraph φ H₂ H₃ := inducedSubgraph_related φ H₂ h_ind₂
+    let H₃ := (⊤ : G₁.Subgraph).induce (φ '' H₂.verts)
+    have h_ind₃ : H₃.IsInduced := Subgraph.induce_top_isInduced G₁ (φ '' H₂.verts)
+    have : relOfSubgraph φ H₂ H₃ := induce_top_related φ H₂ h_ind₂
     have h_p₃ : p₃ H₃ := (h_rel' H₂ H₃ this).mp h_p₂
     have h_inter' : H₁.verts ∩ H₃.verts = ∅ := by
-      rw [(inducedSubgraph_related φ H₀ h_ind₀).1, (inducedSubgraph_related φ H₂ h_ind₂).1]
+      rw [(induce_top_related φ H₀ h_ind₀).1, (induce_top_related φ H₂ h_ind₂).1]
       have h := induced_disjoint_iff_image_disjoint φ H₀ H₂
       repeat rw [Set.disjoint_iff_inter_eq_empty] at h
       exact h.mpr h_inter
@@ -362,35 +318,36 @@ noncomputable def isoSetOfInducedSubgraphPair
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨⟨H₁,H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩⟩ := s₁
-    let H₀ := inducedSubgraph G₀ (φ.symm '' H₁.verts)
-    have h_ind₀ : H₀.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₁.verts)
-    have : relOfSubgraph φ.symm H₁ H₀ := inducedSubgraph_related φ.symm H₁ h_ind₁
+    let H₀ := (⊤ : G₀.Subgraph).induce (φ.symm '' H₁.verts)
+    have h_ind₀ : H₀.IsInduced := Subgraph.induce_top_isInduced G₀ (φ.symm '' H₁.verts)
+    have : relOfSubgraph φ.symm H₁ H₀ := induce_top_related φ.symm H₁ h_ind₁
     have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
-    let H₂ := inducedSubgraph G₀ (φ.symm '' H₃.verts)
-    have h_ind₂ : H₂.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₃.verts)
-    have : relOfSubgraph φ.symm H₃ H₂ := inducedSubgraph_related φ.symm H₃ h_ind₃
+    let H₂ := (⊤ : G₀.Subgraph).induce (φ.symm '' H₃.verts)
+    have h_ind₂ : H₂.IsInduced := Subgraph.induce_top_isInduced G₀ (φ.symm '' H₃.verts)
+    have : relOfSubgraph φ.symm H₃ H₂ := induce_top_related φ.symm H₃ h_ind₃
     have h_p₂ : p₂ H₂ := (h_rel_inv' H₃ H₂ this).mp h_p₃
     have h_inter' : H₀.verts ∩ H₂.verts = ∅ := by
-      rw [(inducedSubgraph_related φ.symm H₁ h_ind₁).1, (inducedSubgraph_related φ.symm H₃ h_ind₃).1]
+      rw [(induce_top_related φ.symm H₁ h_ind₁).1, (induce_top_related φ.symm H₃ h_ind₃).1]
       have h := induced_disjoint_iff_image_disjoint φ.symm H₁ H₃
       repeat rw [Set.disjoint_iff_inter_eq_empty] at h
       exact h.mpr h_inter
     exact ⟨⟨H₀, H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter'⟩⟩
   let f_bij : Function.Bijective f := by
-    refine Function.bijective_iff_has_inverse.mpr ⟨f_inv, ?_, ?_⟩ <;>
-    rintro ⟨⟨H₀, H₁⟩, h_ind₀, h_p₀, h_ind₁, h_p₁, h_inter⟩ <;>
-    dsimp [f, f_inv, inducedSubgraph] <;>
-    ext u v <;>
-    simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right] <;>
-    constructor
-    any_goals simp_all only [and_imp, RelIso.apply_symm_apply, exists_eq_right, implies_true]
-    any_goals intro _ _ _
-    any_goals apply h_ind₀
-    any_goals apply h_ind₁
-    any_goals simp_all only
-    all_goals intro h_uv
-    any_goals exact ⟨H₀.adj_sub h_uv, H₀.edge_vert h_uv, H₀.edge_vert (H₀.symm h_uv)⟩
-    all_goals exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
+    refine Function.bijective_iff_has_inverse.mpr ⟨f_inv, ?_, ?_⟩
+    · rintro ⟨⟨H₀, H₂⟩, h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩
+      apply Subtype.ext
+      show ((⊤ : G₀.Subgraph).induce (φ.symm '' (φ '' H₀.verts)),
+            (⊤ : G₀.Subgraph).induce (φ.symm '' (φ '' H₂.verts))) = (H₀, H₂)
+      rw [Prod.mk.injEq]
+      exact ⟨(Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₀ (by simp [Set.image_image]),
+             (Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₂ (by simp [Set.image_image])⟩
+    · rintro ⟨⟨H₁, H₃⟩, h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩
+      apply Subtype.ext
+      show ((⊤ : G₁.Subgraph).induce (φ '' (φ.symm '' H₁.verts)),
+            (⊤ : G₁.Subgraph).induce (φ '' (φ.symm '' H₃.verts))) = (H₁, H₃)
+      rw [Prod.mk.injEq]
+      exact ⟨(Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₁ (by simp [Set.image_image]),
+             (Subgraph.induce_top_isInduced _ _).eq_of_verts_eq h_ind₃ (by simp [Set.image_image])⟩
   Equiv.ofBijective f f_bij
 
 /-- Specialization of `isoSetOfInducedSubgraph` to the predicate "induced and isomorphic to
@@ -729,30 +686,33 @@ lemma subgraphByComposition_le
 
 /-- For induced `G₀`, inducing `G` on `X₁ ⊆ G₀.verts` equals composing the induced subgraph
 of `G₀.coe` on the corresponding vertices. -/
-lemma inducedSubgraph_eq_subgraphByComposition
+lemma induce_top_eq_subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (h_G₀_ind : G₀.IsInduced)
     (X₁ : Finset V) (h_X₁ : X₁ ⊆ G₀.verts.toFinset)
-    : inducedSubgraph G X₁
+    : (⊤ : G.Subgraph).induce ↑X₁
       =
-      subgraphByComposition G₀ (inducedSubgraph G₀.coe {v : G₀.verts | v.val ∈ X₁})
+      subgraphByComposition G₀ ((⊤ : G₀.coe.Subgraph).induce {v : G₀.verts | v.val ∈ X₁})
   := by
-    dsimp [subgraphByComposition, Subgraph.coeSubgraph, inducedSubgraph]
+    have hmem : ∀ {x}, x ∈ X₁ → x ∈ G₀.verts := fun hx => Set.mem_toFinset.mp (h_X₁ hx)
     ext u v
-    all_goals simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
-      Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop', nonempty_prop,
-      exists_eq_right_right, iff_self_and, Subgraph.map_adj, Relation.Map]
-    · intro h_u_X₁
-      exact Set.mem_toFinset.mp (h_X₁ h_u_X₁)
-    . constructor
-      . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
-        refine ⟨u, Set.mem_toFinset.mp (h_X₁ h_u_X₁), v, ?_⟩
-        have h_u_G₀ : u ∈ G₀.verts := Set.mem_toFinset.mp (h_X₁ h_u_X₁)
-        have h_v_G₀ : v ∈ G₀.verts := Set.mem_toFinset.mp (h_X₁ h_v_X₁)
-        simp only [h_u_X₁, h_v_X₁, and_self, and_true, h_v_G₀]
-        exact h_G₀_ind h_u_G₀ h_v_G₀ h_u_v
-      . rintro ⟨a, _, b, ⟨h_G₀_adj_a_b, h_a_X₁, h_b_X₁⟩, h_a_u, _, h_b_v⟩
-        rw [←h_a_u, ←h_b_v]
-        exact ⟨G₀.adj_sub h_G₀_adj_a_b, h_a_X₁, h_b_X₁⟩
+    · -- vertex sets
+      simp only [subgraphByComposition, Subgraph.induce_verts, Subgraph.verts_coeSubgraph,
+        Set.mem_image, Set.mem_setOf_eq, mem_coe]
+      constructor
+      · intro h
+        exact ⟨⟨u, hmem h⟩, h, rfl⟩
+      · rintro ⟨⟨x, hx⟩, hxX, rfl⟩
+        exact hxX
+    · -- adjacency
+      dsimp only [subgraphByComposition]
+      rw [Subgraph.coeSubgraph_adj]
+      simp only [Subgraph.induce_adj, Subgraph.top_adj, Subgraph.coe_adj, Set.mem_setOf_eq, mem_coe]
+      constructor
+      · rintro ⟨h_u_X₁, h_v_X₁, h_uv⟩
+        exact ⟨hmem h_u_X₁, hmem h_v_X₁, h_u_X₁, h_v_X₁,
+          h_G₀_ind (hmem h_u_X₁) (hmem h_v_X₁) h_uv⟩
+      · rintro ⟨_, _, h_u_X₁, h_v_X₁, h_uv⟩
+        exact ⟨h_u_X₁, h_v_X₁, G₀.adj_sub h_uv⟩
 
 /-- Transport a subgraph `G₁ ≤ G₀` to a subgraph of `H`, given a partial isomorphism
 `iso : G₀ ≃g H₀.coe` onto a subgraph `H₀` of `H`. -/
@@ -849,11 +809,12 @@ lemma subgraphFromPartialIso_preserve_cover
 omit [Fintype W] in
 /-- When `G₁` and `H₀` are induced, the transported subgraph is exactly the induced subgraph
 of `H` on the image vertex set. -/
-lemma subgraphFromPartialIso_eq_inducedSubgraph
+lemma subgraphFromPartialIso_eq_induce_top
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
     (h_G₁_ind : G₁.IsInduced) (h_H₀_ind : H₀.IsInduced)
-    : subgraphFromPartialIso iso G₁ = ↑(inducedSubgraph H ((Subtype.val ∘ iso) '' G₁.verts).toFinset)
+    : subgraphFromPartialIso iso G₁
+      = ↑((⊤ : H.Subgraph).induce ((Subtype.val ∘ iso) '' G₁.verts).toFinset)
   := by
     let H₁ := subgraphFromPartialIso iso G₁
     have h_H₁_vert_eq : H₁.verts = ((Subtype.val ∘ iso) '' G₁.verts).toFinset := by
@@ -864,7 +825,7 @@ lemma subgraphFromPartialIso_eq_inducedSubgraph
           Set.coe_toFinset]
     have h_H₁_ind : H₁.IsInduced :=
         subgraphFromPartialIso_preserve_inducedness iso G₁ h_H₀_ind h_G₁_ind
-    rw [←h_H₁_vert_eq, ←inducedSubgraph_eq h_H₁_ind]
+    rw [←h_H₁_vert_eq, h_H₁_ind.induce_top_verts]
 
 /-! ## Canonical `QuotSimpleGraph` representative -/
 
@@ -927,11 +888,11 @@ noncomputable def isoFromInducedSubgraphByPartialIso
     {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
     (iso_G₀_F₀ : Subgraph.coe G₀ ≃g F₀) (iso_F₁_H₁ : Subgraph.coe F₁ ≃g H₁)
     (h_F₁_ind : F₁.IsInduced) (h_G₀_ind : G₀.IsInduced)
-    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).coe ≃g H₁
+    : ((⊤ : G.Subgraph).induce ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).coe ≃g H₁
   := by
     have : subgraphFromPartialIso iso_G₀_F₀.symm F₁
-           = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset) :=
-      subgraphFromPartialIso_eq_inducedSubgraph iso_G₀_F₀.symm F₁ h_F₁_ind h_G₀_ind
+           = ↑((⊤ : G.Subgraph).induce ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset) :=
+      subgraphFromPartialIso_eq_induce_top iso_G₀_F₀.symm F₁ h_F₁_ind h_G₀_ind
     rw [←this]
     let g₁ : F₁.coe ≃g (subgraphFromPartialIso iso_G₀_F₀.symm F₁).coe :=
       isoToSubgraphFromPartialIso iso_G₀_F₀.symm F₁

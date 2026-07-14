@@ -201,36 +201,36 @@ private lemma emptyf_iso_iff {V W : Type} (A : LabeledGraph ∅ₜ V) (B : Label
 /-- The subgraph of `G` induced on a vertex subset `S` is isomorphic to the single edge `⊤` on
 `Fin 2` exactly when `S` is a pair `{u, w}` of distinct adjacent vertices. -/
 private lemma induced_iso_top_iff {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N)) :
-    Nonempty ((inducedSubgraph G (↑S : Set (Fin N))).coe ≃g (⊤ : SimpleGraph (Fin 2)))
+    Nonempty (((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe ≃g (⊤ : SimpleGraph (Fin 2)))
       ↔ ∃ u w, u ≠ w ∧ G.Adj u w ∧ S = {u, w} := by
   constructor
   · rintro ⟨f⟩
-    have hcard2 : Fintype.card (↑(inducedSubgraph G (↑S : Set (Fin N))).verts) = 2 := by
+    have hcard2 : Fintype.card (↑((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).verts) = 2 := by
       rw [f.card_eq]; simp
-    rw [inducedSubgraph_verts] at hcard2
+    rw [Subgraph.induce_verts] at hcard2
     have hScard : S.card = 2 := by
       rw [← hcard2, ← Set.toFinset_card]; congr 1; ext x; simp
     obtain ⟨u, w, huw, hSeq⟩ := Finset.card_eq_two.mp hScard
     refine ⟨u, w, huw, ?_, hSeq⟩
     have huS : u ∈ (↑S : Set (Fin N)) := by rw [hSeq]; simp
     have hwS : w ∈ (↑S : Set (Fin N)) := by rw [hSeq]; simp
-    have key : (inducedSubgraph G (↑S : Set (Fin N))).coe.Adj ⟨u, huS⟩ ⟨w, hwS⟩ := by
+    have key : ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe.Adj ⟨u, huS⟩ ⟨w, hwS⟩ := by
       rw [← f.map_adj_iff]; simp only [top_adj]; intro h
       apply huw; have := f.injective h; exact congrArg Subtype.val this
     rw [Subgraph.coe_adj] at key
-    simp only [inducedSubgraph] at key
-    exact key.1
+    simp only [Subgraph.induce_adj, Subgraph.top_adj] at key
+    exact key.2.2
   · rintro ⟨u, w, huw, hadj, rfl⟩
-    have hcoe_top : (inducedSubgraph G (↑({u, w} : Finset (Fin N)))).coe = (⊤ : SimpleGraph _) := by
+    have hcoe_top : ((⊤ : G.Subgraph).induce (↑({u, w} : Finset (Fin N)))).coe = (⊤ : SimpleGraph _) := by
       ext a b
-      simp only [Subgraph.coe_adj, inducedSubgraph, top_adj]
+      simp only [Subgraph.coe_adj, Subgraph.induce_adj, Subgraph.top_adj, top_adj]
       constructor
-      · rintro ⟨h, _, _⟩; intro hab; exact G.ne_of_adj h (congrArg Subtype.val hab)
+      · rintro ⟨_, _, h⟩; intro hab; exact G.ne_of_adj h (congrArg Subtype.val hab)
       · intro hab
         have ha := a.2; have hb := b.2
         simp only [Finset.coe_insert, Finset.coe_singleton] at ha hb
         have hab' : a.val ≠ b.val := fun h => hab (Subtype.ext h)
-        refine ⟨?_, a.2, b.2⟩
+        refine ⟨a.2, b.2, ?_⟩
         rcases ha with ha | ha <;> rcases hb with hb | hb <;> rw [ha, hb]
         · exact absurd (by rw [ha, hb]) hab'
         · exact hadj

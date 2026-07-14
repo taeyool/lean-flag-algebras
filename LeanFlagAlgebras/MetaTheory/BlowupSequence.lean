@@ -176,7 +176,7 @@ adjacent in the blow-up iff their base vertices are `Γ`-adjacent, which is `σ`
 `θ`. -/
 noncomputable def plantedIso {n : ℕ} {σ : FlagType (Fin n₀)} {Γ : SimpleGraph (Fin n)}
     (θ : σ ↪g Γ) (M : ℕ) (c : Fin n₀ → Fin (M + 1)) :
-    σ ≃g (inducedSubgraph (independentBlowup Γ (fun _ => M + 1))
+    σ ≃g ((⊤ : (independentBlowup Γ (fun _ => M + 1)).Subgraph).induce
         (↑(plantedSet θ M c) : Set _)).coe := by
   set B := independentBlowup Γ (fun _ => M + 1)
   set S : Set (Σ v : Fin n, Fin (M + 1)) := ↑(plantedSet θ M c) with hS
@@ -198,13 +198,13 @@ noncomputable def plantedIso {n : ℕ} {σ : FlagType (Fin n₀)} {Γ : SimpleGr
   refine ⟨Equiv.ofBijective f ⟨hf_inj, hf_surj⟩, ?_⟩
   intro i j
   simp only [Equiv.ofBijective_apply, Subgraph.coe_adj]
-  show (inducedSubgraph B S).Adj (f i).1 (f j).1 ↔ σ.Adj i j
-  simp only [inducedSubgraph]
+  show ((⊤ : B.Subgraph).induce S).Adj (f i).1 (f j).1 ↔ σ.Adj i j
+  simp only [Subgraph.induce_adj, Subgraph.top_adj]
   constructor
-  · rintro ⟨hadj, _, _⟩
+  · rintro ⟨_, _, hadj⟩
     exact θ.map_adj_iff.mp hadj
   · intro h
-    exact ⟨θ.map_adj_iff.mpr h, (f i).2, (f j).2⟩
+    exact ⟨(f i).2, (f j).2, θ.map_adj_iff.mpr h⟩
 
 /-- **Planted lower bound on the σ-count.**  There are at least `(M+1)^{n₀}` induced copies of
 `σ` in the `(M+1)`-blow-up of `Γ`: distinct clone choices `c` give distinct planted induced
@@ -215,17 +215,17 @@ theorem pow_le_subgraphCount_independentBlowup {n : ℕ} {σ : FlagType (Fin n�
   set B := independentBlowup Γ (fun _ => M + 1)
   -- The planted induced subgraphs all lie in `subgraphSet σ B`.
   have hmaps : ∀ c : Fin n₀ → Fin (M + 1),
-      inducedSubgraph B (↑(plantedSet θ M c) : Set _) ∈ subgraphSet σ B := by
+      (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _) ∈ subgraphSet σ B := by
     intro c
     rw [mem_subgraphSet_iff]
-    exact ⟨inducedSubgraph_isInduced _ _, ⟨(plantedIso θ M c).symm⟩⟩
+    exact ⟨Subgraph.induce_top_isInduced _ _, ⟨(plantedIso θ M c).symm⟩⟩
   -- Distinct clone choices give distinct planted subgraphs.
   have hinj : Function.Injective (fun c : Fin n₀ → Fin (M + 1) =>
-      inducedSubgraph B (↑(plantedSet θ M c) : Set _)) := by
+      (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _)) := by
     intro c c' h
     have h2 := congrArg Subgraph.verts h
-      |>.trans (inducedSubgraph_verts B (↑(plantedSet θ M c') : Set _))
-    rw [inducedSubgraph_verts] at h2
+      |>.trans (Subgraph.induce_verts (⊤ : B.Subgraph) (↑(plantedSet θ M c') : Set _))
+    rw [Subgraph.induce_verts] at h2
     have hverts : (↑(plantedSet θ M c) : Set (Σ v : Fin n, Fin (M + 1)))
         = (↑(plantedSet θ M c') : Set (Σ v : Fin n, Fin (M + 1))) := h2
     funext i
@@ -245,7 +245,7 @@ theorem pow_le_subgraphCount_independentBlowup {n : ℕ} {σ : FlagType (Fin n�
   calc (M + 1) ^ n₀ = Fintype.card (Fin n₀ → Fin (M + 1)) := by simp
     _ = (Finset.univ : Finset (Fin n₀ → Fin (M + 1))).card := by rw [Finset.card_univ]
     _ = (Finset.univ.image (fun c : Fin n₀ → Fin (M + 1) =>
-          inducedSubgraph B (↑(plantedSet θ M c) : Set _))).card := by
+          (⊤ : B.Subgraph).induce (↑(plantedSet θ M c) : Set _))).card := by
         rw [Finset.card_image_of_injective _ hinj]
     _ ≤ (subgraphSet σ B).card := by
         apply Finset.card_le_card

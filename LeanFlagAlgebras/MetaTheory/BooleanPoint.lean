@@ -224,9 +224,9 @@ private lemma flagDensity₁_eq_zero_of_not_edgeless {F : FinFlag vtype}
   simp only [bot_adj, iff_false]
   intro hadj
   rw [LabeledSubgraph.coe_adj_iff] at hadj
-  have hadj' : (inducedSubgraph (edgelessLabeled j).graph
+  have hadj' : ((⊤ : (edgelessLabeled j).graph.Subgraph).induce
       (↑S : Set (Fin (j + 1)))).Adj u.val v.val := hadj
-  simp only [inducedSubgraph, edgelessLabeled_graph, bot_adj, false_and] at hadj'
+  simp only [Subgraph.induce_adj, Subgraph.top_adj, edgelessLabeled_graph, bot_adj, and_false] at hadj'
 
 /-- A non-complete flag has density `0` in every stage of the complete sequence: a positive
 density would exhibit its graph as (isomorphic to) an induced subgraph of `⊤`, forcing it to
@@ -252,9 +252,9 @@ private lemma flagDensity₁_eq_zero_of_not_complete {F : FinFlag vtype}
       simpa only [LabeledSubgraph.inducedLabeledSubgraph_verts] using u.property
     have hv : v.val ∈ (↑S : Set (Fin (j + 1))) := by
       simpa only [LabeledSubgraph.inducedLabeledSubgraph_verts] using v.property
-    show (inducedSubgraph (completeLabeled j).graph (↑S : Set (Fin (j + 1)))).Adj u.val v.val
-    simp only [inducedSubgraph, completeLabeled_graph, top_adj, ne_eq]
-    exact ⟨fun hEq => huv (Subtype.ext hEq), hu, hv⟩
+    show ((⊤ : (completeLabeled j).graph.Subgraph).induce (↑S : Set (Fin (j + 1)))).Adj u.val v.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj, completeLabeled_graph, top_adj, ne_eq]
+    exact ⟨hu, hv, fun hEq => huv (Subtype.ext hEq)⟩
 
 /-- There is a point of `X_vtype` vanishing on every non-edgeless flag: the limit of the
 edgeless flag sequence.

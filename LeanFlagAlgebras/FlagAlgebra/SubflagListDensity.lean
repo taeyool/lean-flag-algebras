@@ -1030,10 +1030,10 @@ theorem labeledGraphListDensity_le_one
           _ = (Gl₂ i).subgraph.verts := by
             exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₂ i)))
       calc
-        (Gl₁ i).subgraph = inducedSubgraph G.graph (Gl₁ i).subgraph.verts := by
-          exact inducedSubgraph_eq hGl₁_i_ind
-        _ = inducedSubgraph G.graph (Gl₂ i).subgraph.verts := by rw [h_eq_verts]
-        _  = (Gl₂ i).subgraph := by exact (inducedSubgraph_eq hGl₂_i_ind).symm
+        (Gl₁ i).subgraph = (⊤ : G.graph.Subgraph).induce (Gl₁ i).subgraph.verts := by
+          exact (hGl₁_i_ind.induce_top_verts).symm
+        _ = (⊤ : G.graph.Subgraph).induce (Gl₂ i).subgraph.verts := by rw [h_eq_verts]
+        _  = (Gl₂ i).subgraph := by exact hGl₂_i_ind.induce_top_verts
 
 omit [DecidableEq T] in
 theorem quotLabeledGraphListDensity_ge_zero

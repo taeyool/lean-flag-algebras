@@ -290,8 +290,8 @@ theorem flagListDensity₂_prod_approx
           simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and] at hG hG'
           obtain ⟨⟨hG₁_ind, _⟩, ⟨hG₂_ind, _⟩⟩ := hG
           obtain ⟨⟨hG'₁_ind, _⟩, ⟨hG'₂_ind, _⟩⟩ := hG'
-          exact ⟨labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₁_ind hG'₁_ind h_eq.1),
-                labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₂_ind hG'₂_ind h_eq.2)⟩
+          exact ⟨labeledSubgraph_eq_from_subgraph_eq (hG₁_ind.eq_of_verts_eq hG'₁_ind h_eq.1),
+                labeledSubgraph_eq_from_subgraph_eq (hG₂_ind.eq_of_verts_eq hG'₂_ind h_eq.2)⟩
         · intro ⟨⟨⟨w₁, w₂⟩, h_in_Ω⟩, h_in_A⟩
           obtain ⟨⟨_, h_w₁_tverts⟩, ⟨_, h_w₂_tverts⟩⟩ := h_in_Ω
           simp only [mem_filter, mem_univ, true_and, A] at h_in_A

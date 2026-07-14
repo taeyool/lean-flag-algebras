@@ -269,18 +269,18 @@ theorem inducedLabeledSubgraph_coe_compl_graph (G : LabeledGraph σ V)
   rw [LabeledSubgraph.coe_adj_iff, LabeledSubgraph.coe_adj_iff]
   show (LabeledSubgraph.inducedLabeledSubgraph G.compl S h').subgraph.Adj u.val v.val
     ↔ u ≠ v ∧ ¬ (LabeledSubgraph.inducedLabeledSubgraph G S h).subgraph.Adj u.val v.val
-  simp only [LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph, LabeledGraph.compl_graph,
+  simp only [LabeledSubgraph.inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, LabeledGraph.compl_graph,
     SimpleGraph.compl_adj]
   constructor
-  · rintro ⟨⟨hne, hadj⟩, _, _⟩
+  · rintro ⟨_, _, hne, hadj⟩
     refine ⟨fun h => hne (congrArg Subtype.val h), ?_⟩
-    rintro ⟨h2, _, _⟩
+    rintro ⟨_, _, h2⟩
     exact hadj h2
   · rintro ⟨hne, hadj⟩
     have hne' : u.val ≠ v.val := fun h => hne (Subtype.ext h)
-    refine ⟨⟨hne', ?_⟩, u.property, v.property⟩
+    refine ⟨u.property, v.property, hne', ?_⟩
     intro hadjG
-    exact hadj ⟨hadjG, u.property, v.property⟩
+    exact hadj ⟨u.property, v.property, hadjG⟩
 
 omit [Fintype T] in
 /-- The complement-of-induced-subgraph iso transfer: an induced copy of `H` in `G` on `S`
