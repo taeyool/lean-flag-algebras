@@ -445,9 +445,9 @@ the bijective proof pattern used for density equalities.
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the automation layer, elaboration-time theorem generation,
 and the verified results.
-\Cref{sec:unsure,sec:lessons} discuss limitations and
-lessons for future formalizations, and \Cref{sec:related,sec:conclusion}
-give related work and conclusions.
+\Cref{sec:unsure,sec:lessons} discuss open design questions and lessons for
+future formalizations, and \Cref{sec:related,sec:conclusion} give related work
+and conclusions.
 
 
 \section{Background: Flag Algebras}
@@ -3773,257 +3773,284 @@ later algebraic argument.
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
 
-Many density identities reduce to bijective counting.  The two sides count
-finite collections of configurations---typically tuples of disjoint induced
-copies---and a bijection between those collections proves that their
-cardinalities are equal.  We therefore begin with the counted collections and
-the bijection, rather than with symbolic manipulation of the resulting
-rational expressions.
+Explicit bijections became an unexpectedly prevalent proof pattern in the
+specification layer, especially for establishing identities involving subflag
+densities.  We did not set out to make bijective arguments the default: we
+expected many of these equalities to follow from existing counting lemmas or
+symbolic simplification, with explicit equivalences needed only occasionally.
+In practice, however, unfolding and simplifying the definitions repeatedly
+exposed the same structure: the two sides are cardinalities of finite sets of
+configurations presented in different ways.  Our most reliable proof method
+is to identify the two sets, construct an explicit bijection between them, and
+use the bijection to prove equality of their cardinalities.  The bijection
+carries the main mathematical content of the proof.
 
-The \lean{Fintype}-instance ambiguity from \Cref{sec:fintype} enters when Lean
-turns that bijection into a cardinality equality.  Both
-\lean{Fintype.card\_congr}, which transfers cardinality across a bijection, and
-the cardinalities already occurring in the density definition carry implicit
-\lean{Fintype} instances.  If those instances are synthesized independently,
-the equality obtained from the bijection may not rewrite the cardinality in
-the density expression.  We therefore follow the discipline of the preceding
-subsection: first name the two finite collections, then bind the
-\lean{Fintype} instance used for each, construct the bijection, and finally
-derive and use the cardinality equality.  The connection is formal rather
-than combinatorial: the bijection is the mathematical proof, while explicit
-instance control ensures that its conclusion matches the density expression.
-A typical proof has the following shape:
+Our experience proving the density chain rules made this pattern particularly
+clear.  A chain rule identifies two sampling procedures: choosing the required
+subflags directly in the host, or making the same choice in stages through an
+intermediate flag.  On paper, these procedures are readily seen as two
+descriptions of the same experiment.  In Lean, after unfolding the
+definitions, the proof came down to a bijection between the finite sets of
+choices made by the two procedures.  This bijection yielded equality of the
+corresponding counts and hence the chain rule.
+
+The same proof pattern recurs across several formally different obligations.
+In \lean{flagDensity\_permute}, the bijection reindexes a tuple of
+pairwise-disjoint induced copies.  In \lean{flagDensity\_insert\_empty}, it
+inserts or deletes the unique empty component.  In the adequacy proof for
+\lean{Sym2InducedSubgraph}, it relates the concrete enumeration used for
+computation to the abstract \lean{LabeledSubgraph} enumeration used in the
+specification.  Although these statements serve different purposes, each
+proof identifies the two finite sets being counted and gives an explicit
+correspondence between their elements.
+
+This use of bijections interacts with the \lean{Fintype}-instance ambiguity
+from \Cref{sec:fintype}.  The theorem \lean{Fintype.card\_congr}, which
+transfers cardinality across a bijection, takes an implicit \lean{Fintype}
+instance for each of the two types.  The corresponding counts in an unfolded
+density goal have the form \lean{S0.toFinset.card} and
+\lean{S1.toFinset.card}; constructing each \lean{toFinset} likewise depends on
+an implicit \lean{Fintype} instance.  Lean normally fills in these hidden
+arguments automatically.  If the instances used by
+\lean{Fintype.card\_congr} differ from those used to construct the two
+\lean{toFinset} terms, the cardinality equality obtained from the bijection
+may not rewrite the counts already present in the goal.  This is not an
+additional combinatorial obligation: the bijection is already the
+mathematical proof.  We therefore first name the two finite sets and bind one
+local \lean{Fintype} instance for each.  The \lean{toFinset} counts and the
+cardinality equality from the bijection then use these same instances.  A
+typical proof has the following shape:
 \begin{lstlisting}
+-- Hl0 and Hl1 are lists of labeled graphs.
+-- S0 and S1 contain the labeled-subgraph lists of G
+-- that realize Hl0 and Hl1, respectively.
 let S0 := setOfLabeledSubgraphListIsoHl G Hl0
 let S1 := setOfLabeledSubgraphListIsoHl G Hl1
-let hS0 : Fintype S0 := Fintype.ofFinite S0
-let hS1 : Fintype S1 := Fintype.ofFinite S1
+-- Fix the Fintype instance used to count each set.
+letI hS0 : Fintype S0 := Fintype.ofFinite S0
+letI hS1 : Fintype S1 := Fintype.ofFinite S1
+-- The combinatorial proof is a bijection between the two sets.
 let h_iso : Equiv S0 S1 := ...
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso
-simp_all only [Set.toFinset_card]
+-- The bijection gives equality of their Fintype cardinalities.
+have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr h_iso
+-- Rewrite the two counts as Fintype cardinalities, then use card_eq.
+have count_eq : S0.toFinset.card = S1.toFinset.card := by
+  rw [Set.toFinset_card, Set.toFinset_card]
+  exact card_eq
 \end{lstlisting}
 
-This is the pattern used in \lean{flagDensity\_permute} to show that
-reordering the prescribed tuple $(F_1,\ldots,F_t)$ does not change its
-multi-flag density, and in \lean{flagDensity\_insert\_empty} to show that
-inserting an empty flag leaves the density unchanged.  It also appears in the adequacy proof that the
-concrete \lean{Sym2InducedSubgraph} enumeration has the same count as the
-abstract \lean{LabeledSubgraph} enumeration.  The invariant enforced by the
-pattern is that a numerical equality is justified by an explicit isomorphism
-between the finite sets being counted; arithmetic simplification is the last
-step, not the proof idea.
-
-We initially expected to use Mathlib's existing counting tactics for these
-identities and reach for explicit equivalences only as a fallback.  The
-opposite happened.  Generic counting tactics often fail to elaborate because
-they pick up the ``wrong'' enumeration term for one of the two sets.
-Constructing the equivalence makes the intended enumeration explicit and
-turns the cardinality equality into a one-line application of
-\lean{Fintype.card\_congr}.  The pattern resembles the familiar
-combinatorial search for an interpretation of an algebraic identity: here the
-equivalence is that interpretation, and the formalization makes it mandatory
-rather than optional.
+The broader lesson is that explicit bijections provide a common interface
+between combinatorial reasoning and Lean's handling of finite cardinalities.
+The bijection isolates the mathematical step---exhibiting a one-to-one
+correspondence between the objects counted on the two sides---while the
+subsequent code handles \lean{Fintype} instances and rewrites the resulting
+counts.  We do not claim that explicit bijections are the only possible
+approach.  What surprised us is that the same pattern worked across chain
+rules, permutation invariance, empty-flag insertion, and adequacy, and
+therefore became our default for finite counting identities.  The
+methodological observation is the unexpected prevalence of this proof
+pattern, rather than a claim that no alternative exists.
 
 
 
-\section{What We Are Unsure About}
+\section{Open Design Questions}
 \label{sec:unsure}
 
-The development resolves the proof obligations needed by our case studies, but
-it does not settle every design question exposed by the formalization.  We
-record four such questions to separate demonstrated properties of the current
-system from conjectures about how the approach might generalize.
+The development discharges the proof obligations needed by our case studies,
+but it does not determine which architecture would work best for a larger
+library.  The remaining uncertainties concern semantic design, portability,
+and scale rather than gaps in the checked case-study theorems.  We record four
+questions and state what the present development does---and does not---show
+about each one.
 
-\paragraph{Predicate-deferral vs.\ universal-theory specification.}
-The forbidden-subgraph predicate \lean{forbidLE}
-(\Cref{sec:forbidden}) defers the choice of forbidden graph from the
-universal theory at the top of the algebra to a parameter on the semantic
-order at use sites.  Razborov's original presentation does the opposite.
-Both designs can express the same theorems.  We do not know which design is
-preferable in the long run.  Reusable lemmas about the $\emptyt$-typed algebra
-are easier to share across forbidden graphs in our design; lemmas that
-exploit a specific forbidden graph from the outset may be cleaner in
-Razborov's.  We invite future work to compare the two on a development that
-needs both styles.
+\paragraph{When should a forbidden-graph constraint enter the formalization?}
+The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
+algebra independent of the forbidden graph and imposes the constraint later,
+when a semantic inequality is stated.  Razborov's universal-theory
+presentation instead fixes the constraint before constructing the
+corresponding algebra.  As \Cref{sec:forbidden} explains, these choices are
+not interchangeable for every typed inequality: the ensemble order tests
+almost every randomly rooted view, whereas a built-in constrained algebra can
+also test specially chosen roots.  For the final unlabeled Tur\'an bounds in
+our case studies, the transfer theorem validates the deferred route.
+
+The unresolved question is therefore architectural rather than a claim of
+semantic equivalence.  Deferral lets the core definitions and algebraic lemmas
+be reused across forbidden graphs; a built-in theory may make
+constraint-specific typed arguments more direct.  Comparing the total cost
+would require carrying comparable case studies through both designs.
 
 \paragraph{Which engineering obstacles are Lean-specific?}
-The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype} bindings and
-systematic use of \lean{HEq} and \lean{cast} for size changes---respond to two
-features of Lean~4: typeclass coherence by convention rather than by
-enforcement, and definitional inequality for dependently typed families that
-are propositionally equal.  We do not know which of these issues would survive
-a port to a different ITP (Rocq with SSReflect, Agda, or Isabelle/HOL with a
-different typeclass story).  In particular, the \lean{Fintype} ambiguity and
-the \lean{HEq} discipline depend on specific elaboration and equality
-mechanisms; a proof assistant with stricter coherence or a different treatment
-of dependent equality might dissolve some of these obstacles.  We report them
-as Lean~4 obstacles without claiming that they are foundational.
+\Cref{sec:obstacles} contains both representation-independent obligations and
+Lean-specific symptoms.  Proving that a construction respects graph
+isomorphism is an ordinary cost of using quotient objects.  By contrast, the
+need to bind a particular \lean{Fintype} instance arises because Lean can fill
+two occurrences of the same finite type with different instance terms, and
+the use of \lean{cast} and \lean{HEq} arises because pointwise-equal dependent
+type families need not be identical by computation.  Other proof assistants
+organize finite enumeration, implicit arguments, and dependent equality
+differently.  We therefore do not know how much of this local scaffolding
+would survive a port to Rocq, Agda, or Isabelle/HOL.  The combinatorial
+obligations would remain, but their proof-engineering form may change.
 
-\paragraph{Is the bridge layer essential or an artifact of our spec choices?}
-The reflection and automation layers of
-\Cref{sec:reflection,sec:flagmatic-pipeline} are
-load-bearing in our development: the pentagon proof does not go through
-without them.  But a different specification layer might collapse some of
-this work into the specification side.  For instance, a specification that
-represented each isomorphism class by a chosen canonical graph, rather than as
-a quotient, would not need the same adequacy theorems, though it
-would attach representation-specific side conditions to every algebraic
-lemma.  Whether the bridge layer is essential to the flag-algebra method or
-a consequence of our specific design choices is an open question that
-deserves a different formalization to test.
+\paragraph{Is the bridge layer essential or an artifact of our specification
+choices?}
+The reflection layer and the automation built on it
+(\Cref{sec:reflection,sec:flagmatic-pipeline}) are necessary in the current
+development.  Reflection connects the quotient-based specification to the
+executable \lean{Sym2Graph} representation used by the pentagon proof.  A
+specification based on canonical graph representatives
+might avoid the same adequacy boundary, but would expose canonicalization
+choices inside the mathematical layer.  Our development shows that the
+separation works and concentrates representation-specific proofs in the
+bridge; it does not show that this separation minimizes the total proof or
+computation cost.  Answering that question requires an alternative
+formalization against which to compare it.
 
-\paragraph{Does the elaboration-time generation pattern scale beyond
-pentagon size?}
+\paragraph{Will theorem generation scale beyond five-vertex hosts?}
 The pentagon proof generates 2,832 specialized pair-density theorems, in 15
 native-evaluation batches, at elaboration time.  Lean accepts this workload in
-our current case study.  Larger flag-algebra results in the literature, particularly those
-that work with $7$-vertex flags or beyond, would generate far more.  We have
-not stress-tested the elaboration-time generation pattern at that scale and
-do not know which part of the compiler---flag enumeration, density-theorem
-generation, multiplication-theorem generation, or the growing collection of
-named theorems---would be the first bottleneck.
+our current case study.  Moving to larger host sizes would increase both the
+number of flags and the number of flag pairs whose densities are generated.
+We have not stress-tested that regime and do not know whether flag
+enumeration, density and multiplication theorem generation, or the growing
+environment of named theorems would become the first bottleneck.  The present
+evaluation therefore establishes feasibility through five-vertex hosts, not
+scalability to substantially larger certificates.
 
 
-\section{Lessons for the Next Person}
+\section{Lessons for Future Formalizations}
 \label{sec:lessons}
 
-This section reports lessons we found transferable beyond flag algebras.
-Each is defended by a specific artifact in the formalization.  None is
-presented as a methodological discovery.  The first four are concrete
-engineering lessons.  The fifth is a meta-level lesson whose generality is
-conjectural---we mark it as such in the body.  The sixth is a reporting
-lesson about how to read the development's trust profile; it is included
-because the trust profile is otherwise easy to misread.
+This section distills six lessons from concrete design choices, successful
+proof patterns, and failed approaches in the development.  The first four
+concern representation and automation, the fifth concerns constrained
+semantics, and the sixth concerns reporting the trusted base.  They are
+case-study observations intended to inform future formalizations, not claims
+that the same choices are optimal in every proof assistant or application.
 
 \paragraph{Lesson 1 (Keeping quotient objects as quotients localizes
 representation costs).}
 Flag algebras are naturally quotient objects: graphs up to isomorphism, and
-flag-algebra elements modulo the equational theory of the algebra.  A
+flag-algebra elements modulo the density-expansion relations.  A
 formalization could pick canonical representatives in the specification
-layer to make every operation computable.  We do not.  The specification
-keeps the quotient, while a separate executable layer chooses representatives
-over the concrete \lean{Sym2Graph} type.  The two
-layers are connected by density adequacy theorems, whose proofs factor through
-count-level adequacy
-(\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}).  The
-benefit is that quotient and subgraph reasoning is paid once, inside
-adequacy, rather than thousands of times in the generated density lemmas.
-The cost is the adequacy proof itself, which is non-trivial.  The
-transferable claim is narrow: when the textbook object is a quotient and
-computability comes from a refinement, keeping the quotient in the
-specification localizes the awkward proof obligations rather than spreading
-them across the development.
+layer to make more operations directly executable.  Our specification instead
+keeps the quotients, while the reflection layer uses the concrete
+\lean{Sym2Graph} representation.  Density adequacy theorems connect the two,
+factoring through the count equality
+\lean{labeledGraphListCount\_eq\_sym2InducedSubgraphListCount}.
+
+This design concentrates quotient and representation-specific subgraph
+reasoning in the adequacy proofs instead of repeating it in thousands of
+generated density lemmas.  The adequacy proofs are themselves substantial,
+so this is a tradeoff rather than a free abstraction.  The lesson supported by
+our case study is narrow: when computation is supplied by a concrete
+refinement of a quotient specification, an adequacy boundary can localize
+representation costs while leaving later algebraic statements independent of
+the chosen representation.
 
 \paragraph{Lesson 2 (Computable is not the same as usable).}
 The naive reflective design is to leave the abstract quotient definitions in
 place, give the relevant finite types \lean{Fintype} instances, and ask
 \lean{native\_decide} to evaluate density goals by unfolding
-\lean{flagDensity}.  This type-checks.  It is not a viable compilation
-strategy for the pentagon proof: each density check repeatedly constructs
-finite sets of abstract subgraphs, compares quotient classes by searching
-for label-preserving graph isomorphisms, synthesizes overlapping \lean{Fintype} instances, and
-carries proof-valued fields through the evaluator.  The graphs are small but
-the proof terms are not---the evaluator is reducing a proof-relevant
-encoding of finite combinatorics, not a graph algorithm.
+\lean{flagDensity}.  This is computable in principle but not viable for the
+pentagon proof: each density check repeatedly constructs abstract subgraphs,
+compares quotient classes by searching for label-preserving isomorphisms, and
+carries proof-valued fields through the evaluator.  The graphs are small, but
+the computation induced by their specification is not.
 
 What worked was to treat reflection as verified compilation.  The abstract
 definitions remain the specification; the reflected isomorphism and density
 procedures form a compilation target with deliberate optimizations (edge-count
 pruning before permutation enumeration; type-aware permutation that fixes
 labeled vertices and enumerates only the remainder).  Adequacy theorems certify
-that the compilation preserves the specification's meaning.  In this development, when
-reflection on the natural specification was computable in principle but
-impractical, separating specification from implementation and connecting them
-once proved more effective than reshaping the specification around evaluation.
+that the executable procedures preserve the specification's meaning.  The
+lesson is that decidability alone says little about feasibility: the data
+representation presented to the evaluator can determine whether reflection is
+practical.  A separate verified implementation can improve that representation
+without replacing the mathematical specification.
 
-\paragraph{Lesson 3 (Names can serve as elaboration-time metadata).}
+\paragraph{Lesson 3 (Generated names can carry metadata for automation).}
 Every flag and flag-algebra constant in the development is named according
 to the scheme \lean{Flag\_n\_k\_m\_i} and \lean{FlagAlgebra\_n\_k\_m\_i},
 where $n$ is the vertex count, $k$ and $m$ identify the type graph, and $i$
-is a canonical index.  The convention is not organizational.  Tactics parse
-trailing integers from a constant's \lean{Name}, which is a syntactic object
-the elaborator can inspect without type-checking or attribute resolution.
-\lean{ac\_sort\_pipeline} computes sort keys entirely in the fast
-elaboration path.
+is a canonical index.  The convention is not merely organizational.  While
+Lean processes a proof script and turns tactic output into typed terms, the
+sorting tactics inspect each constant's syntactic \lean{Name} and parse its
+trailing index.  The tactic \lean{ac\_sort\_at\_pipeline} uses that index as a
+sort key without unfolding the flag or comparing graph structures.
 
 A recorded counterexample from the pentagon proof is a commented-out call that
 reads \texttt{-- sort\_at -- takes more than 10 minutes}.
 The generic \lean{sort\_at}, which uses \lean{simp} without index guidance,
-times out on expressions of around 25 flag-basis terms.  The index-guided
-\lean{ac\_sort} completes the same step promptly by exploiting the
-name encoding to bypass combinatorial search.  We do not claim that names
-beat user attributes or a custom AST in general; on this development they
-did, and the design axis is worth naming so that future formalizations
-facing the same large-expression performance wall know to consider it.
+does not finish promptly on that expression.  The index-guided
+\lean{ac\_sort\_at\_pipeline} completes the same step by exploiting the name
+encoding to bypass that search.  Names are not inherently better than user
+attributes or a custom expression type.  The narrower lesson is that, for
+generated declarations with a stable naming scheme, names can provide a
+lightweight metadata channel for proof automation.
 
 \paragraph{Lesson 4 (External computation is a candidate generator, not a
 proof).}
 The rational certificate produced by the SDP workflow, and the Python
-translator that turns it into Lean source, are both unverified.  Neither has to
-be trusted.  The translator emits the chosen flags, matrices, factorizations,
-and target inequality, while Lean independently enumerates the required flags
-and computes the density and multiplication theorems described in
-\Cref{sec:reflection-generation}.  A wrong flag index or coefficient therefore
-causes a generated equality or the final algebraic normalization to fail.
+translator that turns it into Lean source, are both unverified.  Neither is
+trusted for the logical validity of a theorem accepted by Lean.  The
+translator emits flags, matrices, factorizations, and a target inequality;
+Lean then checks the resulting PSD obligations, density and multiplication
+identities, algebraic calculation, and final statement.  Candidate data that
+do not support that statement cause proof construction to fail.
 
 The PSD data is checked separately: the rational matrix and its claimed
 $LDL^\top$ factorization are written explicitly, and Lean verifies both the
 non-negativity of the diagonal and the matrix identity before using the
-quadratic form.  The transferable framing is that the external tool proposes
-data and proof structure, while the proof assistant reconstructs the finite
-calculations and accepts only a complete proof.  External computation remains
-a candidate generator, not a proof authority.
+quadratic form.  There remains a separate fidelity boundary: Lean does not
+prove that the generated declarations faithfully transcribe the source
+certificate, so a translation error could produce a valid theorem different
+from the intended one.  The lesson is to separate these questions.  External
+tools can propose witnesses and proof structure without becoming authorities
+for logical validity, while fidelity to their source data must be audited or
+verified separately (\Cref{sec:flagmatic-trust}).
 
-\paragraph{Lesson 5 (When a constraint is already expressible in the
-textbook framework, the formalization choice is the timing of commitment).}
-\emph{This lesson is meta-level; its generality is conjectural.}
-Razborov's framework specifies which graphs are forbidden via a universal
-first-order theory chosen at the outset.  Our design defers the same
-specification to a parameter on the semantic order: the forbidden-subgraph
-assumption appears as a predicate we instantiate only when proving a
-specific theorem.  Both designs can express the same mathematical
-statements; what differs is which intermediate lemmas are reusable across
-choices of constraint.
+\paragraph{Lesson 5 (Moving a constraint can change intermediate semantics).}
+Razborov's presentation fixes a universal theory of forbidden graphs before
+constructing the constrained algebra.  Our development instead keeps an
+ambient algebra and imposes the constraint through the ensemble semantic
+order when an inequality is stated.  This deferral makes unconstrained
+algebraic lemmas reusable, and the transfer theorem recovers the final
+unlabeled Tur\'an bounds used in our case studies.
 
-We do not claim our deferred design is preferable to Razborov's.  We do
-report that, in our formalization, deferring the specification has the
-consequence that random-extension theorems became the definitional content
-of the forbidden-subgraph relation rather than analytic ingredients inside
-a fixed theory.  The general lesson, if it generalizes, is that when a
-constraint is already expressible in the textbook framework, the
-formalization design question is when in the development to commit to a
-specific instance of it, and that this question deserves explicit attention
-rather than being absorbed into the choice of framework.
+The change is not merely organizational.  As \Cref{sec:forbidden} explains,
+the built-in semantics can test a specially chosen root, whereas the ensemble
+semantics tests almost every root obtained by random labeling.  The two orders
+therefore need not validate the same typed inequalities.  The lesson is not
+that constraints should always be deferred, but that moving a constraint
+across an abstraction boundary can change the meaning of intermediate
+statements.  A formalization should state the resulting semantic order
+explicitly and prove the comparison it needs rather than treating deferral as
+a semantics-preserving refactoring.
 
-\paragraph{Lesson 6 (Honest description of the trust profile).}
-This is a reporting lesson, not a methodological one.  Our formalization
-uses two evaluators with different trusted-computing-base profiles:
-\lean{native\_decide}, which compiles the goal to native code and evaluates
-it outside the kernel; and \lean{decide +kernel}, which evaluates inside the
-kernel.  They are not interchangeable.
+\paragraph{Lesson 6 (Report the trust boundary for each proof obligation).}
+Our formalization uses two evaluators with different trusted-computing-base
+profiles:
+\lean{native\_decide} compiles and runs a decidable proposition using Lean's
+native compiler, whereas \lean{decide +kernel} performs the evaluation inside
+the kernel.  This difference matters even though both commands close Lean
+goals.
 
 The 2,832 generated pair-density theorems are discharged by
-\lean{native\_decide}.  This was not a deliberate trust choice:
-\lean{decide +kernel} does not complete at this scale on the
-proof-relevant encoding used by the specification, even after the optimizations
-of \Cref{sec:reflection}.  For the pentagon proof, the three SDP matrix
-equalities (sizes
+\lean{native\_decide}, because kernel evaluation of these numerous closed
+reflection-layer computations is not practical at the current scale.  For
+the pentagon proof, the three SDP matrix equalities (sizes
 $8 \times 8$, $6 \times 6$, $5 \times 5$ over $\mathbb{Q}$) are discharged
-by \lean{decide +kernel}.  Here the choice is deliberate: the matrices are
-small enough that kernel evaluation finishes, and the upper bound proof
-would collapse if a non-PSD matrix were erroneously accepted, so we pay the
-kernel-evaluation cost to keep PSD verification inside the kernel.
+by \lean{decide +kernel}.  These matrices are small enough for kernel
+evaluation, so their exact rational equalities remain kernel-checked.
 
-We report this asymmetry rather than presenting it as a design pattern.  A
-reader who depends on the artifact may want to know that the load-bearing
-PSD step is kernel-checked and that the bulk of the density bookkeeping is
-checked by compiled code; the profile is information they can act on.  A
-reader who finds the profile insufficient---for example, who would want
-\lean{decide +kernel} on the generated density theorems as well---can read this as a
-record of where the current development sits, not as a claim that the
-current placement is principled.  The trust profile of a large formalization
-is not always chosen, but it is always reportable.
+This asymmetry is a feasibility outcome, not a general recommendation about
+where trust should lie.  Reporting it lets a reader distinguish the
+kernel-checked PSD step from the bulk density computations that additionally
+trust the native compiler.  More generally, a trust profile should identify
+the mechanism used for each class of obligation, even when performance rather
+than principle determined the placement.
 
 
 \section{Related Work}
