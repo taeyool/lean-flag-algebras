@@ -90,6 +90,8 @@
 \newcommand{\hy}[1]{\textcolor{blue}{\textbf{[HY: #1]}}}
 \newcommand{\Ext}{\operatorname{Ext}}
 
+\newcommand{\commentout}[1]{}
+
 \tikzset{
   graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
   graph root/.style={circle, draw, fill=black, inner sep=0pt, minimum size=4.5pt},
@@ -252,11 +254,11 @@
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
 
 % =========================================================================
-\title{Formalizing Flag Algebras in Lean: Certified Proofs in Extremal Graph Theory and Root-Planting Semantics}
+\title{Formalizing Flag Algebras in Lean}
 \date{}
 
-\author[1,3]{Gyeongwon Jeong}
-\author[1,3]{Seonghun Park}
+\author[1,3]{Gyeongwon Jeong\thanks{These authors are joint first authors of this work.}}
+\author[1,3]{Seonghun Park\protect\footnotemark[1]}
 \author[1]{Jihoon Hyun}
 \author[2]{Sang-il Oum}
 \author[3]{Hongseok Yang}
@@ -291,19 +293,24 @@ flag-algebra proofs.  As case studies, we obtain machine-checked proofs of Mante
 theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
 a $C_4$-density bound for triangle-free graphs.
 
-The same formalization also led us to new theoretical results about
-constrained flag algebras.  We distinguish the built-in constraint semantics approach,
-which builds a hereditary graph constraint, such as \(H\)-freeness, into the
-flag algebra from the start, from the ensemble semantics approach, which
+The design of the formalization also led us to new theoretical results about
+constrained flag algebras.  We distinguish the built-in-constraint approach,
+which builds a hereditary graph constraint, such as ordinary \(H\)-freeness,
+into the
+flag algebra from the start, from the ensemble approach, which
 imposes constraints afterwards by testing inequalities on random labeled views
-of constrained graph limits.  The two approaches often agree, but they need
-not agree for all densities of finite labeled patterns.  We prove a
-root-planting criterion characterizing when they do agree, establish positive
-results for classes closed under vertex blow-ups or more general
-substitutions, and exhibit a counterexample based on induced-\(C_4\)-free graphs.  This
+of constrained graph limits.  The two approaches agree for important classes,
+but not in general for all densities of finite labeled patterns.  We prove a
+root-planting criterion characterizing when they do agree, establish a
+positive result for blow-up-closed classes that also covers
+substitution-closed classes, and exhibit a counterexample based on
+ordinary \(C_4\)-free graphs.  This
 post hoc ensemble viewpoint also points beyond Razborov's original hereditary
 setting: it can impose constraints on graph limits that are not themselves
 hereditary, such as restricting to an extremal-density or equality slice.
+The Lean development of this meta-theory was generated in a separate
+Claude-driven autoformalization workflow, building on the manually developed
+library reported in the main part of the paper.
 \end{abstract}
 
 % =========================================================================
@@ -358,10 +365,10 @@ maximum may change unpredictably as $n$ grows.
 
 Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
 for exactly this setting.  A flag is a finite graph together with a
-distinguished labeled subgraph.  By treating the densities of such partially
+distinguished labeled induced subgraph.  By treating the densities of such partially
 labeled patterns as algebraic objects, the method turns a global asymptotic
 problem into a finite inequality in a quotient algebra.  Crucially, many
-strong inequalities can be obtained from positive semidefinite matrices: an
+strong inequalities can be obtained from positive semidefinite matrices: a
 semidefinite-programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
 why that finite certificate implies an asymptotic bound for the whole graph
 class.  This combination of mathematical abstraction and computer search has been unusually
@@ -403,21 +410,22 @@ studies.
 
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
-constraint is imposed.  In the \emph{built-in constraint semantics} approach, one builds
-a hereditary graph constraint, such as \(H\)-freeness, into the flag algebra
+constraint is imposed.  In the \emph{built-in-constraint} approach, one builds
+a hereditary graph constraint, such as ordinary \(H\)-freeness, into the
+flag algebra
 from the start; this is the traditional way to work in an algebra of
-\(H\)-free graphs.  In the \emph{ensemble semantics approach}, one first works
+\(H\)-free graphs.  In the \emph{ensemble} approach, one first works
 with graph limits and then imposes the constraint post hoc by testing
 inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
-characterizing when they do agree, gives positive results for classes closed
-under vertex blow-ups or more general substitutions, and exhibits a
-counterexample based on induced-\(C_4\)-free graphs.  The ensemble viewpoint is useful
+characterizing when they do agree, gives a positive result for
+blow-up-closed classes that also covers substitution-closed classes, and exhibits a
+counterexample based on ordinary \(C_4\)-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
-to an extremal-density or equality slice.  This is also the semantic viewpoint
-made explicit by our formalization.
+to an extremal-density or equality slice.  This is the semantic viewpoint
+implemented by \lean{forbidLE} in our formalization.
 
 \paragraph{Contributions.}
 The paper makes four main contributions.  First, it gives a Lean
@@ -429,25 +437,28 @@ externally generated rational certificate data into Lean-checked algebraic
 proofs.  Third, it demonstrates the compiler on machine-checked proofs of
 Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
 and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
-semantic comparison between built-in constraint and ensemble approaches to constrained
+semantic comparison between built-in-constraint and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
-generalization beyond hereditary constraints.
+generalization beyond hereditary constraints.  A separate, automatically
+generated Lean development formalizes this meta-theory on top of the manually
+developed flag-algebra library.
 
 \paragraph{Organization.}
 \Cref{sec:background} recalls the mathematical background of flag algebras.
 \Cref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
-\Cref{sec:obstacles} describes the main formalization obstacles:
-well-definedness on quotient classes, comparisons between flag expansions at
-different vertex sizes, and \lean{Fintype}-instance ambiguity, together with
-the bijective proof pattern used for density equalities.
 \Cref{sec:reflection,sec:flagmatic} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the automation layer, elaboration-time theorem generation,
 and the verified results.
-\Cref{sec:unsure,sec:lessons} discuss open design questions and lessons for
-future formalizations, and \Cref{sec:related,sec:conclusion} give related work
-and conclusions.
+\Cref{sec:lowerbounds} explains how the same infrastructure proves lower
+bounds and inequalities outside the certificate pipeline.
+\Cref{sec:obstacles} describes the main formalization obstacles and the
+bijective proof pattern used for density equalities.
+\Cref{sec:metatheory} summarizes our mathematical meta-theory of constrained
+semantics and its separate autoformalization, and \Cref{sec:unsure} records the
+remaining design questions.
+\Cref{sec:related,sec:conclusion} give related work and conclusions.
 
 
 \section{Background: Flag Algebras}
@@ -460,7 +471,10 @@ combinatorics is assumed.  For $n \in \mathbb{N}$ we write
 $[n] = \{1,\ldots,n\}$. All graphs $G$ are undirected, finite and simple,
 and their vertex and edge sets are written $V(G)$ and $E(G)$, respectively.
 Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
-forbidden subgraphs.  If $G$ is a graph and $S\subseteq V(G)$, the
+forbidden graphs.  Throughout the paper, an unqualified \emph{subgraph} is an
+ordinary, not necessarily induced, subgraph; when vertex-induced containment
+is intended, we say \emph{induced subgraph} explicitly.  If $G$ is a graph and
+$S\subseteq V(G)$, the
 \emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
 exactly the edges of $G$ with both endpoints in $S$.  A graph is
 \emph{\(\mathcal{H}\)-free} if it contains no subgraph (not necessarily induced)
@@ -481,7 +495,7 @@ Fix a flag type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ where $M$ is an
 \(\mathcal{H}\)-free finite graph and $\theta_F : [k] \hookrightarrow V(M)$ is an injective map such
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
-(i.e., $\theta_F$ is a graph embedding of $\sigma$ into $M$).
+(that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
 The vertices in $\operatorname{Im}(\theta_F)$ are called the
 \emph{labeled vertices} of $F$; the remaining $|V(F)|-k$ vertices are
@@ -872,9 +886,10 @@ via the assignment $F \mapsto \phi([F])$, so $\poshom{\sigma}$ can be identified
 a subset of $[0,1]^{\mathcal{F}^\sigma}$.  % It is moreover compact.
 
 The following theorem makes precise the sense in which positive homomorphisms
-are exactly the limiting objects of convergent sequences of $\sigma$-flags.
+are exactly the limiting objects of convergent sequences of
+$\sigma$-flags~\cite{lovasz2006limits}.
 
-\begin{theorem}[Lov\'{a}sz--Szegedy~{\cite{lovasz2006limits}}]\label{thm:convergent-hom}
+\begin{theorem}[Lov\'{a}sz--Szegedy]\label{thm:convergent-hom}
   \begin{enumerate}
   \item[\textup{(a)}] For every convergent sequence $\{G_n\}_{n\in\mathbb{N}}$ of
     $\sigma$-flags, $\lim_{n\to\infty} p^{G_n} \in \poshom{\sigma}$.
@@ -927,8 +942,9 @@ lemma shows.
   there exist $\varepsilon > 0$ and an increasing sequence of
   \(\mathcal{H}\)-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
   $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
-  is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and this product space is
-  compact (Tychonoff), the sequence $\{p^{G_k}\}$ has a convergent
+  is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and
+  $\mathcal{F}^\emptyset$ is countable, this product space is compact and
+  metrizable.  Hence the sequence $\{p^{G_k}\}$ has a convergent
   subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
@@ -1144,17 +1160,14 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % We can now connect the algebra back to the combinatorial problems that motivate
 % it.  Here $H$ is an unlabeled forbidden graph and $P$ is an unlabeled target
 % graph.  The finite graphs being optimized over are $H$-free, meaning that they
-% contain no induced subgraph isomorphic to $H$, and the target statistic is the
-% induced density of $P$.
+% contain no ordinary subgraph isomorphic to $H$, and the target statistic is
+% the induced density of $P$.
 %
 % In the algebraic certificate used in this paper, the forbidden-graph
-% assumption is represented as a condition on positive homomorphisms.  Being
-% $H$-free is equivalent to having zero induced density of $H$, so we restrict
-% attention to positive homomorphisms $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$
-% satisfying
-% \[
-%   \phi([H])=0.
-% \]
+% assumption is represented as a condition on positive homomorphisms.  Ordinary
+% $H$-freeness requires zero induced density for every graph containing $H$ as
+% an ordinary subgraph.  When $H$ is complete, this is equivalent to requiring
+% \(\phi([H])=0\).
 % Every convergent sequence of $H$-free graphs gives such a homomorphism.  For
 % $H=K_3$, the condition says precisely that the limiting triangle density is
 % zero.
@@ -1690,7 +1703,7 @@ abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType
 The quotient therefore imposes a family of expansion identities: for every
 flag \lean{F : FinFlag}~$\sigma$ and every size $\ell \geq F.1$, the class of
 \lean{basisVector F} is identified with the class of
-\lean{flagExpansion F}~$\ell$, i.e. with the linear combination of all
+\lean{flagExpansion F}~$\ell$, that is, with the linear combination of all
 size-$\ell$ flags weighted by their densities over \(F\).
 
 Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
@@ -2143,9 +2156,10 @@ Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
 homomorphism \(\phi_0\) such that, viewing graphs and \(\sigma\) as
 empty-type flag-algebra elements,
 \[
-  \phi_0([F])=0 \ \text{ for every graph } F \text{ containing } H
+  \phi_0([F])=0
+  \quad\text{for every graph \(F\) containing \(H\) as a subgraph}
   \qquad\text{and}\qquad
-  \phi_0(\sigma)>0,
+  \phi_0(\langle\sigma\rangle_0)>0,
 \]
 the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 \[
@@ -2169,8 +2183,9 @@ labeled intermediate inequalities, however, the two viewpoints need not agree.
 The built-in \(H\)-free algebra may allow one to place the labels at a specially
 chosen, vanishingly rare vertex configuration, whereas the ensemble order only
 sees configurations that occur with nonzero probability when the labels are
-sampled at random.  Later in the paper we analyze exactly when this difference
-disappears, and we also give examples showing that it can be real.
+sampled at random.  \Cref{thm:support-closure-summary} gives an exact criterion
+for when this difference disappears, and \Cref{sec:metatheory} also gives an
+example showing that it can be real.
 \end{remark}
 
 The first condition says that \(\phi_0\) assigns density zero to every graph
@@ -2246,7 +2261,7 @@ theorem generalizedTuranDensity_le_of_forbidLE
 The hypothesis \lean{h} is an empty-typed \lean{forbidLE} inequality: the target
 graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
-subgraph \(H\).  The conclusion is the corresponding
+graph \(H\).  The conclusion is the corresponding
 Tur\'an-density bound, written in Lean as
 \lean{generalizedTuranDensity H F <= c}; mathematically, it is the assertion
 \[
@@ -2458,7 +2473,7 @@ def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType
     : Prop :=
   -- H.toLabeledSubgraph is the abstract labeled subgraph of G.toLabeledGraph
   -- induced by the vertex set H.verts. This subgraph gets converted to
-  -- the graph by H.toLabeledSubgraph.coe, which fogets the subgraph structure.
+  -- the graph by H.toLabeledSubgraph.coe, which forgets the subgraph structure.
   Nonempty (H.toLabeledSubgraph.coe (*@$\simeq$@*)f F.toLabeledGraph)
 
 /-- The finite edge-set representation turns the predicate into executable code. -/
@@ -3176,13 +3191,14 @@ specification-level $H$-free semantic condition from
 \Cref{def:ensemble-semantic-order}, whereas the host flags were enumerated and
 filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
 two representations: it proves that the flag decoded from $K$ belongs to
-\lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$.
+\lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$
+as an ordinary subgraph.
 Consequently, the $H$-free condition forces the decoded $K$ to have density
 zero, which justifies removing from the objective expansion the host flags
 that the reflection computation found to contain $K$.
 
-For a non-complete $H$, a subgraph copy may have additional edges and therefore
-need not be an induced copy of $H$.  The alternative tactic
+For a non-complete $H$, an ordinary subgraph copy may have additional edges
+and therefore need not be an induced copy of $H$.  The alternative tactic
 \lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
 supergraphs internally.  Thus the two tactics implement the same lifting step
 for two representations of subgraph-freeness; neither introduces additional
@@ -3261,7 +3277,7 @@ The translator itself determines which Lean basis element corresponds to each
 certificate flag and converts the objective, bound, forbidden graph, and matrix
 data into Lean declarations.  These choices are made in Python.  Lean
 typechecks the generated file and verifies its propositions, including the
-final bound, but it does not compare the file with the source JSON.  This
+final bound, but it does not compare the file with the source JSON\@.  This
 distinction between validity of the generated theorem and fidelity of the
 translation is central to the following trust model.
 
@@ -3313,9 +3329,10 @@ the implementation filenames.
 
 \begin{table}
   \centering
-  \caption{Certificates carried end-to-end through the translator.  ``Branch''
-  is A when  the size of the target graph $n_{\mathit{obj}}$ is the same as that of the host graph $N$ and B when $n_{\mathit{obj}}<N$; $T$ is the
-  number of SDP blocks.}
+\caption{Certificates carried end-to-end through the translator.  ``Branch''
+  is A when the target and host have the same size
+  (\(n_{\mathit{obj}}=N\)), and B when \(n_{\mathit{obj}}<N\);
+  \(T\) is the number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lcccccc}
     \toprule
@@ -3427,10 +3444,12 @@ lemma subgraphCount_blowUp_C5_ge (n : Nat) : subgraphCount C5 (blowUp C5 n) >= (
 The proof of this counting lemma builds an injection from
 \lean{(Fin 5 -> Fin n)} to \lean{(blowUp C5 n).Subgraph},
 the set of subgraphs of the blow-up: choosing one vertex in each
-of the five parts determines a copy of $C_5$, and distinct choices give
-distinct subgraphs.  Thus, for every $n$, there is a triangle-free graph on
-$5n$ vertices containing at least $n^5$ induced copies of $C_5$.  Its
-normalized $C_5$ count satisfies
+of the five parts gives a set of vertices that induces a copy of $C_5$, and
+distinct choices give distinct subgraphs.  Thus, for every $n$, there is a
+triangle-free graph on $5n$ vertices containing at least $n^5$ induced copies
+of $C_5$.  More generally, every $C_5$ subgraph of a triangle-free graph is
+induced, since any chord of the cycle would create a triangle.  The normalized
+$C_5$ count of the blow-up satisfies
 \[
   \frac{n^5}{\binom{5n}{5}}
   \;\geq\;
@@ -3853,6 +3872,312 @@ pattern, rather than a claim that no alternative exists.
 
 
 
+\section{A Meta-Theory of Ensemble Semantics}
+\label{sec:metatheory}
+
+The definition of \lean{forbidLE} in \Cref{sec:forbidden} was a deliberate
+departure from the usual presentation of constrained flag algebras.  Rather
+than build a new algebra for each forbidden family, it retains the ambient
+algebra and restricts the graph limits against which an inequality is tested.
+This engineering choice exposed a mathematical problem in its own right:
+when does this \emph{ensemble semantics} validate exactly the same typed
+inequalities as a flag algebra in which the constraint is built in from the
+beginning?  This led us to develop a separate mathematical meta-theory.
+This section gives the definitions and main results needed to state that answer;
+a forthcoming paper will present the full theory and its applications.
+
+\paragraph{The quotient space of constrained limits.}
+Let \(\mathcal G\) be the class of all finite simple graphs, let
+\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
+\(\sigma\).  Here \emph{hereditary} means closed under taking induced
+subgraphs: if \(G\in\mathcal K\) and \(S\subseteq V(G)\), then
+\(G[S]\in\mathcal K\).  This condition does not require closure under deleting
+edges.  In particular, the ordinary \(H\)-free classes used earlier are
+hereditary, because taking an induced subgraph cannot create a new ordinary
+subgraph isomorphic to \(H\).
+
+We write \(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
+\(\sigma\)-typed flag algebra and
+\(\FlagAlg{\sigma}[\mathcal K]\) for the algebra constructed using only graphs
+in \(\mathcal K\).  A \(\sigma\)-flag is \emph{\(\mathcal K\)-forbidden} if its
+underlying unlabeled graph does not belong to \(\mathcal K\).  Because
+\(\mathcal K\) is hereditary, the span of these forbidden flags is an ideal,
+and the usual constrained algebra is canonically isomorphic to the quotient
+of the ambient algebra by this ideal.  We therefore have a canonical quotient
+map
+\[
+  q_\sigma:
+  \FlagAlg{\sigma}[\mathcal G]
+  \twoheadrightarrow
+  \FlagAlg{\sigma}[\mathcal K]
+\]
+that sends every forbidden flag to zero and every other flag to its
+counterpart in the constrained algebra.
+
+Let
+\[
+  X_\sigma
+  :=
+  \mathrm{Hom}^{+}\!\bigl(\FlagAlg{\sigma}[\mathcal G],\R\bigr)
+\]
+be the compact space of positive unital algebra homomorphisms on the ambient
+algebra, with the topology of pointwise convergence on flags.  Here
+\emph{positive} means non-negative on each individual flag.  Pullback along
+\(q_\sigma\) embeds the positive homomorphisms of the constrained algebra into
+\(X_\sigma\).  Its image is
+\begin{equation}\label{eq:Q-sigma}
+  Q_\sigma
+  :=
+  \left\{
+    \psi\circ q_\sigma
+    \;\middle|\;
+    \psi\in
+    \mathrm{Hom}^{+}\!\bigl(\FlagAlg{\sigma}[\mathcal K],\R\bigr)
+  \right\}
+  \subseteq X_\sigma.
+\end{equation}
+Thus \(Q_\sigma\) is the space of all constrained \(\sigma\)-labeled limits
+that the built-in quotient semantics admits.  It imposes no random-rooting
+requirement, so the labels may be fixed at exceptional vertices that a
+uniformly random labeling would miss asymptotically.
+
+There is also an intrinsic description:
+\begin{equation}\label{eq:Q-sigma-intrinsic}
+  Q_\sigma
+  =
+  \left\{
+    \chi\in X_\sigma
+    \;\middle|\;
+    \chi([F])=0
+    \text{ for every \(\mathcal K\)-forbidden \(\sigma\)-flag \(F\)}
+  \right\}.
+\end{equation}
+The role of heredity is to justify the quotient presentation above.  Every
+flag appearing in the product of a forbidden flag with another flag contains
+the first flag as an induced subflag.  It therefore also lies outside
+\(\mathcal K\), since otherwise heredity would put that induced subflag back
+in \(\mathcal K\).  Hence multiplying a forbidden flag by any other flag
+produces a linear combination of forbidden flags, so their span is precisely
+the ideal killed by \(q_\sigma\).  Once this presentation is established, a
+homomorphism vanishing on every forbidden flag vanishes on the whole ideal and
+therefore factors through \(q_\sigma\) by the universal property of the quotient.
+Equation~\eqref{eq:Q-sigma-intrinsic} also shows
+that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
+zero sets of continuous evaluation maps.  We write
+\(Q_0:=Q_{\emptyt}\) for the corresponding space of constrained unlabeled
+limits.
+
+\paragraph{Random extensions and the root-planting space.}
+Assume that \(\sigma\) is non-degenerate for \(\mathcal K\): equivalently,
+there is some \(\phi_0\in Q_0\) for which
+\(\phi_0(\langle\sigma\rangle_0)>0\).  For every such \(\phi_0\), Razborov's
+extension theorem gives a probability measure
+\(\Ext_\sigma(\phi_0)\) on \(X_\sigma\), obtained by choosing a uniformly
+random occurrence of \(\sigma\) in finite graphs approaching \(\phi_0\) and
+passing to the limit.  For a probability measure \(\mu\) on \(X_\sigma\), its
+support \(\operatorname{supp}(\mu)\) consists of those points \(\chi\) for
+which every open neighborhood of \(\chi\) has positive \(\mu\)-measure.
+Define
+\begin{equation}\label{eq:S-sigma}
+  S_\sigma
+  :=
+  \overline{
+    \bigcup_{\substack{\phi_0\in Q_0\\
+                        \phi_0(\langle\sigma\rangle_0)>0}}
+    \operatorname{supp}\!\bigl(\Ext_\sigma(\phi_0)\bigr)
+  }
+  \subseteq X_\sigma,
+\end{equation}
+where the closure is taken in \(X_\sigma\).  Thus \(S_\sigma\) is exactly the
+closed set generated by labeled views that remain visible with positive
+probability under random rooting in constrained unlabeled limits.
+
+Random rooting preserves the constraint:
+\[
+  \operatorname{supp}\!\bigl(\Ext_\sigma(\phi_0)\bigr)
+  \subseteq Q_\sigma
+  \qquad
+  \bigl(\phi_0\in Q_0,
+        \phi_0(\langle\sigma\rangle_0)>0\bigr).
+\]
+Indeed, the downward average of a forbidden \(\sigma\)-flag is a non-negative
+multiple of its forbidden underlying graph.  Every \(\phi_0\in Q_0\) evaluates
+that graph to zero, so the expected density of the forbidden flag under the
+random extension is zero.  Its density is pointwise non-negative and therefore
+zero almost surely.  Applying this argument to the countable collection of
+forbidden flags shows that the random extension lies in \(Q_\sigma\) almost
+surely.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the fundamental
+inclusion
+\begin{equation}\label{eq:S-subset-Q}
+  S_\sigma\subseteq Q_\sigma.
+\end{equation}
+We say that \((\mathcal G,\mathcal K,\sigma)\) is
+\emph{root-plantable} when \(S_\sigma=Q_\sigma\).
+
+\begin{definition}[Quotient and ensemble orders]\label{def:two-constrained-orders}
+For \(f,g\in\FlagAlg{\sigma}[\mathcal G]\), define
+\[
+  f\leq^{\mathrm{quot}}_{\mathcal K,\sigma}g
+  \quad\Longleftrightarrow\quad
+  \chi(f)\leq\chi(g)
+  \quad\text{for every }\chi\in Q_\sigma,
+\]
+and
+\[
+  f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g
+  \quad\Longleftrightarrow\quad
+  \Ext_\sigma(\phi_0)
+  \bigl(\{\chi\in X_\sigma\mid \chi(f)\leq\chi(g)\}\bigr)=1
+\]
+for every \(\phi_0\in Q_0\) satisfying
+\(\phi_0(\langle\sigma\rangle_0)>0\).
+\end{definition}
+
+The first is the ordinary semantic order in the constrained quotient algebra:
+equivalently, every positive homomorphism
+\(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
+\(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second asks for the inequality
+to hold almost surely after randomly labeling a constrained unlabeled limit.
+For the ordinary \(H\)-free class---graphs containing no ordinary subgraph
+isomorphic to \(H\)---
+\(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
+notions of positivity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
+\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\); an arbitrary comparison of
+\(f\) and \(g\) is the positivity comparison for \(g-f\).
+
+\begin{theorem}[Support-closure criterion]\label{thm:support-closure-summary}
+Let \(\mathcal K\) be hereditary and let \(\sigma\) be non-degenerate for
+\(\mathcal K\).  For every \(f,g\in\FlagAlg{\sigma}[\mathcal G]\),
+\[
+  f\leq^{\mathrm{quot}}_{\mathcal K,\sigma}g
+  \quad\Longrightarrow\quad
+  f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g.
+\]
+Moreover, the two orders agree for every pair \(f,g\) if and only if the class
+is root-plantable at \(\sigma\):
+\[
+  \left(
+    \forall f,g,\quad
+    f\leq^{\mathrm{quot}}_{\mathcal K,\sigma}g
+    \ \Longleftrightarrow\
+    f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g
+  \right)
+  \quad\Longleftrightarrow\quad
+  S_\sigma=Q_\sigma.
+\]
+\end{theorem}
+
+The proof explains why support closure is the exact criterion.  Evaluation of
+\(g-f\) defines a continuous function
+\(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
+measure is equivalent to non-negativity on its support; continuity then shows
+that ensemble non-negativity is exactly non-negativity on \(S_\sigma\).
+Quotient non-negativity is, by definition, non-negativity on \(Q_\sigma\).
+The inclusion \eqref{eq:S-subset-Q} proves the forward implication, and
+\(S_\sigma=Q_\sigma\) proves equivalence.
+
+The necessity of root-plantability requires more than this observation.  If
+\(S_\sigma\subsetneq Q_\sigma\), choose
+\(\chi_*\in Q_\sigma\setminus S_\sigma\).  Topological separation gives a
+continuous function that is positive on \(S_\sigma\) and negative at
+\(\chi_*\).  The Stone--Weierstrass theorem then approximates this function by
+evaluation of a flag-algebra element.  The resulting element is ensemble
+positive but not quotient positive, so the two orders cannot agree for all
+elements.  Thus \Cref{thm:support-closure-summary} is a completeness theorem:
+quotient proofs are always sound for ensemble semantics, and they capture all
+ensemble-valid typed inequalities exactly under root-plantability.
+
+\paragraph{When root-plantability holds.}
+The criterion reduces semantic completeness to a structural problem about the
+graph class.  Our main positive result gives a broad answer.  Given
+\(G\in\mathcal K\), a vertex \(v\in V(G)\), and a graph \(J\), write
+\(G[v\mapsto J]\) for the graph obtained by replacing \(v\) by \(J\), keeping
+the edges inside \(J\), and joining every vertex of \(J\) to every former
+neighbor of \(v\).  Call \(\mathcal K\) \emph{blow-up-closed} if, for every
+\(G\in\mathcal K\), \(v\in V(G)\), and \(N\), some graph \(J\) on exactly
+\(N\) vertices satisfies \(G[v\mapsto J]\in\mathcal K\).  For a hereditary
+class, this is equivalent to asking only for \(\lvert J\rvert\geq N\):
+choose an induced \(N\)-vertex subgraph \(J'\) of \(J\), and observe that
+\(G[v\mapsto J']\) is an induced subgraph of \(G[v\mapsto J]\).  The interior
+graph \(J\) may depend on \(G\), \(v\), and \(N\); the definition requires the
+existence of a suitable interior, not that every interior works.
+
+\begin{theorem}[Blow-up closure implies root-plantability]
+\label{thm:blowup-root-plantability-summary}
+Every blow-up-closed hereditary graph class is root-plantable at every
+nonempty type that is non-degenerate for the class.  The empty type is
+root-plantable for every hereditary graph class, independently of blow-up
+closure.  Consequently, quotient and ensemble orders agree at every
+non-degenerate type in a blow-up-closed class.
+\end{theorem}
+
+The proof starts from a labeled limit in \(Q_\sigma\), represented by finite
+rooted graphs in \(\mathcal K\), and enlarges the fibers containing the roots
+until random rooting hits them with probability bounded away from zero.
+When a fixed finite flag is sampled from the resulting blow-up, with
+probability tending to one its sampled vertices lie in distinct fibers.
+Their adjacencies are then determined entirely by the original rooted graph;
+the internal structure of the enlarged fibers is invisible.  The target
+labeled limit therefore lies in the closure of supports defining
+\(S_\sigma\).  This proves \(Q_\sigma\subseteq S_\sigma\), while the opposite
+inclusion is \eqref{eq:S-subset-Q}.
+
+Independent blow-ups, in which every fiber is an independent set, give the
+clone-closed case and cover all ordinary \(K_r\)-free classes for \(r\geq3\),
+including triangle-free graphs.  Complete blow-ups give the true-clone-closed
+case and cover, for example, cluster graphs.  Both are instances of
+\Cref{thm:blowup-root-plantability-summary}.  For infinite hereditary classes,
+substitution-closure is a stronger sufficient condition.
+
+\paragraph{Why the criterion is nontrivial.}
+Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
+class of ordinary \(C_4\)-free graphs---those containing no \(C_4\) as a
+subgraph---and let \(\sigma_1\) be the one-vertex type.
+Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a uniformly random root
+has normalized degree tending to zero.  If \(d\) denotes the one-root flag
+density that the root is adjacent to one additional sampled vertex, then
+\(-d\) is ensemble positive.  On the other hand, arbitrarily large stars are
+\(C_4\)-free, and selecting the center as the root gives \(d=1\).  This
+labeled limit belongs to \(Q_{\sigma_1}\) but not to \(S_{\sigma_1}\), so
+\[
+  S_{\sigma_1}\subsetneq Q_{\sigma_1}.
+\]
+Accordingly, \(-d\) is not quotient positive.  The example exhibits a genuine
+gap between the two typed orders: quotient semantics may select an exceptional
+root, whereas ensemble semantics sees only roots visible to random sampling.
+The gap does not invalidate the final unlabeled density bounds used in this
+paper; it concerns the completeness of the intermediate typed calculus.
+
+\paragraph{Formalization and scope.}
+All the definitions and results stated in this section have been formalized in
+Lean.  The principal statements appear as
+\lean{support\_criterion}, \lean{blowupClosed\_root\_plantable},
+\lean{heredClass\_emptyType\_rootPlantable}, and
+\lean{c4free\_not\_rootPlantable}.  The Lean files for this meta-theory were
+not written manually: Claude agents generated them in an autoformalization
+workflow from an already-developed mathematical account and its theorem
+targets.  Lean checks the resulting proof terms, and the development builds
+without incomplete proofs.  Thus the automation concerns the translation of
+the mathematics into Lean, not the autonomous discovery of the mathematical
+statements.
+
+This autoformalization was feasible in large part because it extended the
+manual formalization reported in the preceding sections.  That library had
+already fixed the representations and semantic interfaces and supplied the
+quotient algebra, positive-homomorphism spaces, random extensions, the
+downward operator, and the density and representation theorems on which the
+meta-theory builds.  The automatic workflow could therefore reuse a mature
+formal theory rather than reconstruct its foundations.
+
+A forthcoming paper will give the complete mathematical and formal account,
+including finite planting criteria, further positive and negative examples,
+pinning obstructions, and the extension of ensemble semantics to
+non-hereditary constraints.  The role of the present section is to record the
+mathematics that arose directly from the design of \lean{forbidLE}: a soundness
+theorem, an exact completeness criterion, and a broad structural theorem
+ensuring completeness.
+
+
 \section{Open Design Questions}
 \label{sec:unsure}
 
@@ -3868,32 +4193,36 @@ The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
 algebra independent of the forbidden graph and imposes the constraint later,
 when a semantic inequality is stated.  Razborov's universal-theory
 presentation instead fixes the forbidden graphs before constructing the
-flags, algebras, and positive homomorphisms.  As \Cref{sec:forbidden}
-explains, this difference is not purely organizational: for intermediate
-statements about labeled flags, the two approaches need not give the same
-notion of validity.  Our case studies, however, use \lean{forbidLE} to derive
-final unlabeled Tur\'an bounds, and the transfer theorem proves that this use
-is sound.
+flags, algebras, and positive homomorphisms.  As
+\Cref{thm:support-closure-summary} makes precise, this difference is not purely
+organizational: for intermediate statements about labeled flags, the two
+approaches agree exactly under the root-plantability condition.  Independently
+of that equivalence, quotient inequalities imply ensemble inequalities.  This
+soundness direction is the one needed by our case studies: their typed
+\lean{forbidLE} derivations are ultimately transferred to final unlabeled
+Tur\'an bounds.
 
 The unresolved question is therefore architectural rather than a claim of
-semantic equivalence.  Deferral lets the core definitions and algebraic lemmas
-be reused across forbidden graphs; fixing the forbidden graphs at the outset
-may make arguments specific to one extremal problem more direct.  Comparing
-the total cost would require carrying comparable case studies through both
-designs.
+semantic equivalence.  Even for a root-plantable class, where the two
+semantics validate the same typed inequalities, the two implementations may
+have very different proof-engineering costs.  Deferral lets the core
+definitions and algebraic lemmas be reused across forbidden graphs; fixing the
+forbidden graphs at the outset may make arguments specific to one extremal
+problem more direct.  Comparing the total cost would require carrying
+comparable case studies through both designs.
 
 \paragraph{Which engineering obstacles are Lean-specific?}
 \Cref{sec:obstacles} contains both representation-independent obligations and
 Lean-specific symptoms.  Proving that a construction respects graph
 isomorphism is an ordinary cost of using quotient objects.  By contrast, the
 need to bind a particular \lean{Fintype} instance arises because Lean can fill
-two occurrences of the same finite type with different instance terms, and
+two occurrences of the same finite carrier with different instance terms, and
 the use of \lean{cast} and \lean{HEq} arises because pointwise-equal dependent
 type families need not be definitionally equal: Lean's type checker may not
 regard them as the same type without an explicit proof.  Other proof
 assistants organize finite enumeration, implicit arguments, and dependent
 equality differently.  We therefore do not know how much of this local
-scaffolding would survive a port to Rocq, Agda, or Isabelle/HOL.  The
+scaffolding would survive a port to Rocq, Agda, or Isabelle/HOL\@.  The
 combinatorial obligations would remain, but their proof-engineering form may
 change.
 
@@ -3911,9 +4240,9 @@ studies are obtained in this way.
 This separation lets us keep the abstract development simple while retaining
 an efficient executable representation.  It also creates a substantial
 bridge of adequacy proofs.  One alternative is to use the abstract
-representation throughout and evaluate its definitions directly; as
-\Cref{sec:lessons} discusses, this was not practical for our largest case
-study.  Another is to use a concrete, canonical representation throughout;
+representation throughout and evaluate its definitions directly; this was
+not practical for our largest case study.  Another is to use a concrete,
+canonical representation throughout;
 this could reduce the bridge but would make representation and
 canonicalization choices visible in the abstract theory.  We have not carried
 either alternative through comparable case studies, so we do not know which
@@ -3941,6 +4270,142 @@ yet determined which of these costs will dominate or how far such
 optimizations will extend the practical range of the formalization.
 
 
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Formalizations of combinatorics.}
+Substantial combinatorial arguments have already been formalized in Lean.
+Dillies and Mehta~\cite{dillies2022szemeredi} formalized a strong form of
+Szemer\'edi's regularity lemma and derived the qualitative form of Roth's
+theorem.  Mehta~\cite{mehta2022kruskal} formalized the Kruskal--Katona theorem.
+Subercaseaux et al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon
+number by connecting a geometric formalization to a SAT certificate.  The
+collaborative PFR project~\cite{gowers2025marton,pfr2023} produced a Lean~4
+formalization of the Gowers--Green--Manners--Tao proof of the polynomial
+Freiman--Ruzsa conjecture in characteristic two.  These developments illustrate several
+ways in which formal combinatorics can depend on computation or a large
+supporting library.  Our distinctive concern is the reconstruction of a
+flag-algebra argument: quotient and measure-theoretic semantics are combined
+with thousands of exact finite-density computations and an externally
+suggested semidefinite certificate.
+
+\paragraph{Proof by reflection in proof assistants.}
+Proof by reflection is a classical technique in the Coq community; Chlipala
+gives an extended treatment~\cite{chlipala2013cpdt}.  Lean likewise supports
+verified computation, for example through Mathlib's \lean{decide} and
+\lean{norm\_num} tactics.  Cohen et al.~\cite{cohen2013refinements} develop
+a systematic methodology for building efficiently computable representations
+alongside their abstract counterparts in Coq; our \lean{Sym2Graph} /
+\lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
+type-class and instance-search mechanism.  Our elaboration-time command
+elaborators play a complementary role: they run the in-Lean finite enumerators
+and specialize the adequacy theorems to produce reusable density and
+multiplication facts (\Cref{sec:reflection-generation}).  The unverified
+certificate translator operates outside this reflected core and emits source
+whose mathematical obligations Lean subsequently checks.
+
+\paragraph{Computer-assisted flag algebra arguments.}
+The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
+of exact and approximate flag-algebra bounds, but it does not produce
+proof-assistant proof terms.  Our work adds a proof-producing reconstruction
+stage: certificate data proposes a calculation, while Lean verifies the
+finite identities, positive-semidefinite matrices, and final combinatorial
+statement.  Razborov's survey~\cite{razborov2013flag} organizes many early
+applications into several connected lines of work.  Their shared use of
+finite density calculations and algebraic certificates suggests that our
+infrastructure may apply beyond the case studies here, subject to the scaling
+limitations in \Cref{sec:unsure}.
+
+\paragraph{SDP certificate verification.}
+The verification of SDP certificates has been studied in the context of
+sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
+positivity certificates for polynomials in HOL Light, with numerical methods
+used to find certificates and the proof assistant used to check them.  We use
+the same discovery-versus-verification separation, but our certificates are
+rational matrices whose claimed LDL$^\top$ factorizations are checked exactly
+in Lean.  Parrilo and Sturmfels~\cite{parrilo2003minimizing} develop
+sum-of-squares and semidefinite relaxations for polynomial optimization.  In
+our setting, positive-semidefinite quadratic forms instead live over finite
+vectors of flags.
+
+\paragraph{Tactic metaprogramming.}
+Lean's metaprogramming framework supports domain-specific tactics that inspect
+and construct expressions~\cite{ebner2017structured}.  Our tactics use this
+facility together with a generated naming convention.  A constant's name
+encodes its enumeration index, which the tactic reads as metadata without
+reducing the graph represented by the constant.  The mechanism is deliberately
+local to our generated declarations; attributes or an explicit metadata table
+could provide the same information in a different design.
+
+\paragraph{Graph limits and Turán densities.}
+The mathematical foundation of flag algebras (convergent graph sequences,
+positive homomorphisms, the graphon limit) is developed in depth by
+Lov\'asz~\cite{lovasz2012large}.  Freer has independently formalized a
+substantial graphon theory in Lean~4, including cut distance, regularity,
+counting and inverse-counting lemmas, compactness, and the equivalence of two
+notions of convergence~\cite{freer2026graphon}.  The core development reported
+in \Cref{sec:abstract,sec:reflection} instead works with convergent flag
+sequences, positive homomorphisms, and random extensions.  The separate
+meta-theory development also contains graphon-specific machinery for later
+applications, including the construction of a positive homomorphism from a
+graphon, but not the converse representation of every positive homomorphism
+by a graphon.  Connecting these developments into a common formal account of
+the flag-algebra/graphon correspondence remains future work.
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have reported on a Lean~4 formalization of Razborov's flag algebra method
+for simple graphs.  The development contains a specification of the
+mathematical theory---flags as quotients modulo isomorphism, the quotient
+algebra of density-expansion relations, positive homomorphisms and the
+semantic non-negativity cone, and the predicate-based forbidden-subgraph
+framework---and reflection and automation layers that turn specifications
+written in this language into proofs that Lean can check.  The case
+studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
+pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
+inequalities, and an inequality bounding the $C_4$-density of triangle-free
+graphs.  A further case study proves a $K_4$-free $P_4$ density bound using the
+same automation layer.  We also summarized a separately developed
+mathematical meta-theory of constrained semantics: quotient non-negativity
+always implies ensemble non-negativity, and the converse holds for every typed
+expression exactly when the constrained class is root-plantable at that type.
+Its Lean development was generated by a Claude-driven autoformalization
+workflow that reused the manually developed flag-algebra library.
+
+We do not claim to have found
+\emph{the} right way to formalize flag algebras.  We have described the
+choices we made for the mathematical specification, the engineering
+obstacles those choices exposed, the executable and automation layers we built
+around them, the recurring proof patterns we observed, the questions our work surfaced but
+did not resolve, and the lessons we believe are transferable beyond flag
+algebras.  In places where an outcome was forced by feasibility rather than
+chosen for principled reasons---the use of \lean{native\_decide} for the
+generated density theorems being the most prominent example---we have said so.
+
+We expect the architecture to transfer to further graph flag algebra
+arguments because the same concerns recur: quotient-level semantics, exact
+finite counting, externally generated but internally checked certificates,
+and large-scale algebraic bookkeeping.  Whether it transfers to richer
+combinatorial structures (hypergraphs, directed graphs, oriented graphs) is
+a question we have not tested.  A formal bridge between our
+positive-homomorphism semantics and graphon theory---in particular, the
+converse representation of every positive homomorphism by a graphon---would
+connect our development more directly to the Lov\'asz theory
+\cite{lovasz2012large} and to the existing Lean graphon formalization
+\cite{freer2026graphon}.
+Automating the discovery of SDP certificates from within Lean (rather than
+importing them from external solvers) remains a longer-term goal.  Most
+immediately, replacing \lean{native\_decide} with \lean{decide +kernel}
+throughout, or with a formally verified external checker, would eliminate
+the remaining dependency on the native compiler.  Its present use is a
+feasibility constraint of the current encoding, not a logical limitation of
+the method.
+
+
+\commentout{
+\appendix
 \section{Lessons for Future Formalizations}
 \label{sec:lessons}
 
@@ -4071,130 +4536,7 @@ kernel-checked PSD step from the bulk density computations that additionally
 trust the native compiler.  More generally, a trust profile should identify
 the mechanism used for each class of obligation, even when performance rather
 than principle determined the placement.
-
-
-\section{Related Work}
-\label{sec:related}
-
-\paragraph{Formalizations of combinatorics.}
-Several combinatorial theorems have been formalized in Lean and related
-systems.  Dillies and Mehta~\cite{dillies2022szemeredi} formalized
-Szemer\'edi's Regularity Lemma in Lean~4 using a graph-theoretic presentation;
-our work faces similar challenges with large Mathlib dependencies but at a
-different point in the proof-engineering spectrum (our main difficulty is
-data-heavy SDP verification rather than epsilon-delta regularity arguments).
-Mehta~\cite{mehta2022kruskal} formalized the Kruskal-Katona theorem.
-Subercaseaux et al.~\cite{subercaseaux2024hexagon} formally verified the
-empty hexagon number using a SAT-based pipeline.  Our work differs in that
-the central method (flag algebras) relies on an algebraic quotient
-construction and measure-theoretic limits, rather than purely combinatorial
-enumeration or SAT solving.  Gowers et al.~\cite{gowers2024formalizing}
-recently announced a Lean~4 formalization of the polynomial Freiman-Ruzsa
-conjecture proof; their experience with large-scale Lean formalization of
-recent combinatorics results is closely related to ours.
-
-\paragraph{Proof by reflection in proof assistants.}
-Proof by reflection is a classical technique in the Coq community (see
-Chlipala~\cite{chlipala2013cpdt} for a survey), and has been used in Lean
-for verified computation (e.g., in Mathlib's \lean{decide} and
-\lean{norm\_num} tactics).  Cohen et al.~\cite{cohen2013refinements} develop
-a systematic methodology for building efficiently computable representations
-alongside their abstract counterparts in Coq; our \lean{Sym2Graph} /
-\lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
-type-class and instance-search mechanism.  Our elaboration-time command
-elaborators play a complementary role: they run the in-Lean finite enumerators
-and specialize the adequacy theorems to produce reusable density and
-multiplication facts (\Cref{sec:reflection-generation}).  The unverified
-certificate translator operates outside this reflected core and emits source
-whose mathematical obligations Lean subsequently checks.
-
-\paragraph{Computer-assisted flag algebra arguments.}
-The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
-of flag-algebra certificates, but it does not itself produce proof-assistant
-proof terms.  To our knowledge, our work provides the first formally verified
-translation from such certificates to combinatorial theorems.
-Razborov~\cite{razborov2013flag} gives a
-comprehensive survey of flag algebra applications; the $\sim$100 results
-catalogued there all involve the same recurring concerns identified in
-\Cref{sec:intro}: abstract structure, extensional finite counting,
-data-heavy computation, and algebraic bookkeeping.  This common shape
-suggests our infrastructure is broadly applicable, although
-\Cref{sec:unsure} flags the scaling question.
-
-\paragraph{SDP certificate verification.}
-The verification of SDP certificates has been studied in the context of
-sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
-positivity certificates for polynomials in HOL Light.  Our LDL$^\top$
-approach is structurally similar but operates over $\mathbb{Q}$ (exact
-arithmetic) rather than $\mathbb{R}$, which is essential for
-kernel-checkable verification.  Parrilo and
-Sturmfels~\cite{parrilo2003minimizing} connect algebraic certificates
-(sum-of-squares) to SDP duality in the polynomial setting; our setting is
-analogous but over the discrete flag algebra rather than the polynomial
-ring.
-
-\paragraph{Tactic metaprogramming.}
-Custom tactics for domain-specific proof automation have been developed in
-many contexts~\cite{ebner2017structured,sozeau2008coq}.  Our tactics exploit
-the naming convention as a form of \emph{reflected metadata}: the name of a
-constant encodes information that the tactic exploits without having to
-reduce the mathematical content of the expression.  This is related to, but
-distinct from, approaches based on type-class inference or user-facing
-attribute annotations, and is most closely analogous to the ``term-mode
-reflection'' pattern described by Malecha and
-Morrisett~\cite{malecha2014towards}.
-
-\paragraph{Graph limits and Turán densities.}
-The mathematical foundation of flag algebras (convergent graph sequences,
-positive homomorphisms, the graphon limit) is developed in depth by
-Lov\'asz~\cite{lovasz2012large}.  To our knowledge, no formalization of
-graph limit theory exists in any proof assistant; our treatment of flag
-sequences and random homomorphisms provides a partial formalization sufficient
-for the flag algebra method, but a full formalization of the graphon theory
-remains an open challenge.
-
-
-\section{Conclusion}
-\label{sec:conclusion}
-
-We have reported on a Lean~4 formalization of Razborov's flag algebra method
-for simple graphs.  The development carries a specification of the
-mathematical theory---flags as quotients modulo isomorphism, the quotient
-algebra of density-expansion relations, positive homomorphisms and the
-semantic non-negativity cone, and the predicate-based forbidden-subgraph
-framework---and reflection and automation layers that turn specifications
-written in this language into proofs that Lean can check.  The case
-studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
-pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
-inequalities, and an inequality bounding the $C_4$-density of triangle-free
-graphs.  A further case study proves a $K_4$-free $P_4$ density bound using the
-same automation layer.
-
-We do not claim to have found
-\emph{the} right way to formalize flag algebras.  We have described the
-choices we made for the mathematical specification, the engineering
-obstacles those choices exposed, the executable and automation layers we built
-around them, the recurring proof patterns we observed, the questions our work surfaced but
-did not resolve, and the lessons we believe are transferable beyond flag
-algebras.  In places where an outcome was forced by feasibility rather than
-chosen for principled reasons---the use of \lean{native\_decide} for the
-generated density theorems being the most prominent example---we have said so.
-
-We expect the architecture to transfer to further graph flag algebra
-arguments because the same concerns recur: quotient-level semantics, exact
-finite counting, externally generated but internally checked certificates,
-and large-scale algebraic bookkeeping.  Whether it transfers to richer
-combinatorial structures (hypergraphs, directed graphs, oriented graphs) is
-a question we have not tested.  A full formalization of graphon theory,
-connecting flag algebra limits to the Lov\'asz theory~\cite{lovasz2012large},
-would provide a richer mathematical foundation for future extensions.
-Automating the discovery of SDP certificates from within Lean (rather than
-importing them from external solvers) remains a longer-term goal.  Most
-immediately, replacing \lean{native\_decide} with \lean{decide +kernel}
-throughout, or with a formally verified external checker, would eliminate
-the remaining dependency on the native compiler---though, as
-\Cref{sec:lessons} notes, this is a feasibility constraint of the
-current encoding, not a logical limitation of the method.
+}
 
 
 % =========================================================================
@@ -4206,17 +4548,12 @@ A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
 
-\bibitem{razborov2008}
-A.~A.~Razborov.
-\newblock On the minimal density of triangles in graphs.
-\newblock \textit{Combinatorics, Probability and Computing},
-  17(4):603--618, 2008.
-
 \bibitem{razborov2013flag}
 A.~A.~Razborov.
 \newblock Flag algebras: An interim report.
-\newblock In \textit{The Mathematics of Paul Erd\H{o}s II}, pages 207--232.
-  Springer, 2013.
+\newblock In R.~L.~Graham, J.~Ne\v{s}et\v{r}il, and S.~Butler, editors,
+  \textit{The Mathematics of Paul Erd\H{o}s II}, 2nd ed., pages 207--232.
+  Springer, 2013. DOI: 10.1007/978-1-4614-7254-4\_16.
 
 \bibitem{grzesik2012}
 A.~Grzesik.
@@ -4225,7 +4562,7 @@ A.~Grzesik.
   102(5):1061--1066, 2012.
 
 \bibitem{hatami2012}
-H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l, S.~Norine, and A.~Razborov.
+H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l', S.~Norine, and A.~Razborov.
 \newblock On the number of pentagons in triangle-free graphs.
 \newblock \textit{Journal of Combinatorial Theory, Series A},
   120(3):722--732, 2013.
@@ -4233,45 +4570,52 @@ H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l, S.~Norine, and A.~Razborov.
 \bibitem{dillies2022szemeredi}
 Y.~Dillies and B.~Mehta.
 \newblock Formalising Szemer\'{e}di's regularity lemma in Lean.
-\newblock In \textit{Proc.\ ITP 2022}, LIPIcs~237, 2022.
+\newblock In \textit{Proc.\ ITP 2022}, LIPIcs~237, pages 9:1--9:19, 2022.
+  DOI: 10.4230/LIPIcs.ITP.2022.9.
 
 \bibitem{mehta2022kruskal}
 B.~Mehta.
-\newblock Formalising the Kruskal-Katona theorem in Lean.
-\newblock In \textit{Proc.\ ITP 2022}, 2022.
+\newblock Formalising the Kruskal--Katona theorem in Lean.
+\newblock In \textit{Intelligent Computer Mathematics (CICM 2022)},
+  LNCS~13467, pages 75--91, 2022.
+  DOI: 10.1007/978-3-031-16681-5\_5.
 
 \bibitem{subercaseaux2024hexagon}
-B.~Subercaseaux, M.~J.~H.~Heule, J.~Mackey, J.~Meadows, R.~Tao, and
-  C.~Wu.
+B.~Subercaseaux, W.~Nawrocki, J.~Gallicchio, C.~Codel, M.~Carneiro, and
+  M.~J.~H.~Heule.
 \newblock Formal verification of the empty hexagon number.
-\newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, 2024.
+\newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, pages 35:1--35:19, 2024.
+  DOI: 10.4230/LIPIcs.ITP.2024.35.
 
-\bibitem{gowers2024formalizing}
+\bibitem{gowers2025marton}
 W.~T.~Gowers, D.~Green, F.~Manners, and T.~Tao.
 \newblock On a conjecture of Marton.
-\newblock \textit{arXiv:2311.05762}, 2023.
-\newblock (Lean formalization by T.~Bloom et al., 2024.)
+\newblock \textit{Annals of Mathematics}, 201(2):515--549, 2025.
+  DOI: 10.4007/annals.2025.201.2.5.
+
+\bibitem{pfr2023}
+T.~Tao, Y.~Dillies, and contributors.
+\newblock The polynomial Freiman--Ruzsa conjecture: A digitisation of the
+  proof in Lean~4.
+\newblock Formalization project, 2023.
+  \url{https://teorth.github.io/pfr/}.
 
 \bibitem{vaughan2013flagmatic}
 E.~R.~Vaughan.
-\newblock Flagmatic 2.0: A user-friendly implementation of flag algebra
-  arguments.
-\newblock Preprint, 2013. Available at \texttt{https://github.com/jsloan/flagmatic}.
+\newblock Flagmatic 2.0.
+\newblock Computer software, 2013. Maintained copy available at
+  \url{https://github.com/jsliacan/flagmatic-2.0}.
 
 \bibitem{chlipala2013cpdt}
 A.~Chlipala.
-\newblock \textit{Certified Programming with Dependent Types}.
+\newblock \textit{Certified Programming with Dependent Types: A Pragmatic
+  Introduction to the Coq Proof Assistant}.
 \newblock MIT Press, 2013.
 
 \bibitem{cohen2013refinements}
-C.~Cohen, M.~Denes, and A.~M\"{o}rtberg.
+C.~Cohen, M.~D\'{e}n\`{e}s, and A.~M\"{o}rtberg.
 \newblock Refinements for free!
 \newblock In \textit{Proc.\ CPP 2013}, LNCS~8307, pages 147--162, 2013.
-
-\bibitem{amin2017collapsing}
-N.~Amin and T.~Rompf.
-\newblock Type soundness proofs with definitional interpreters.
-\newblock In \textit{Proc.\ POPL 2017}, pages 666--679, 2017.
 
 \bibitem{harrison2007verifying}
 J.~Harrison.
@@ -4282,38 +4626,33 @@ J.~Harrison.
 P.~A.~Parrilo and B.~Sturmfels.
 \newblock Minimizing polynomial functions.
 \newblock In \textit{Algorithmic and Quantitative Real Algebraic Geometry},
-  DIMACS Series in Discrete Math., pages 83--99, 2003.
+  DIMACS Series in Discrete Mathematics and Theoretical Computer Science,
+  volume~60, pages 83--99, 2003.
 
 \bibitem{ebner2017structured}
 G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de~Moura.
 \newblock A metaprogramming framework for formal verification.
 \newblock \textit{Proc.\ ACM Program.\ Lang.}, 1(ICFP):34:1--34:29, 2017.
-
-\bibitem{sozeau2008coq}
-M.~Sozeau and N.~Oury.
-\newblock First-class type classes.
-\newblock In \textit{Proc.\ TPHOLs 2008}, LNCS~5170, 2008.
-
-\bibitem{malecha2014towards}
-G.~Malecha and G.~Morrisett.
-\newblock Towards foundational verification of cyber-physical systems.
-\newblock In \textit{Proc.\ SoSyM 2014}, 2014.
-
-\bibitem{billingsley1999convergence}
-P.~Billingsley.
-\newblock \textit{Convergence of Probability Measures}, 2nd ed.
-\newblock Wiley, 1999.
+  DOI: 10.1145/3110278.
 
 \bibitem{lovasz2012large}
 L.~Lov\'{a}sz.
 \newblock \textit{Large Networks and Graph Limits}.
-\newblock American Mathematical Society, 2012.
+\newblock American Mathematical Society Colloquium Publications, volume~60,
+  2012.
 
 \bibitem{lovasz2006limits}
 L.~Lov\'{a}sz and B.~Szegedy.
 \newblock Limits of dense graph sequences.
 \newblock \textit{Journal of Combinatorial Theory, Series~B}, 96(6):933--957,
   2006.
+  DOI: 10.1016/j.jctb.2006.05.002.
+
+\bibitem{freer2026graphon}
+C.~Freer.
+\newblock Graphon theory in Lean~4.
+\newblock Computer software, 2026.
+  \url{https://github.com/cameronfreer/graphon}.
 
 \end{thebibliography}
 
