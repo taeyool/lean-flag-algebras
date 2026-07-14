@@ -918,9 +918,11 @@ theorem linearExtension_basisVector
   := by
   simp only [basisVector, linearExtension_single_one]
 
-instance : NeZero (1 : FlagAlgebra σ) where
-  out := by
-    intro one_eq_zero
+/-- In the flag algebra, `0 ≠ 1`: a linear density functional `φ` separating the
+unit `1` from every generator of `ZeroSpace σ` witnesses nontriviality. -/
+theorem flagAlgebra_zero_ne_one : (0 : FlagAlgebra σ) ≠ 1 := by
+    intro h_zero_eq_one
+    have one_eq_zero : (1 : FlagAlgebra σ) = 0 := h_zero_eq_one.symm
     have h_one_zeroSet : (1 : FlagVector σ) ∈ ZeroSpace σ := by
       rw [← sub_zero 1]
       exact Quotient.exact one_eq_zero
@@ -963,10 +965,13 @@ instance : NeZero (1 : FlagAlgebra σ) where
     have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [← h_φ_1, ← h_φ_sum]
     exact zero_ne_one zero_eq_one
 
-/-- The flag algebra is nontrivial: `0 ≠ 1` (its `NeZero (1 : FlagAlgebra σ)`
-witness is proved via a density functional separating `1` from `ZeroSpace σ`). -/
+instance : NeZero (1 : FlagAlgebra σ) where
+  out := flagAlgebra_zero_ne_one.symm
+
+/-- The flag algebra is nontrivial: `0 ≠ 1`, via the `NeZero (1 : FlagAlgebra σ)`
+witness `flagAlgebra_zero_ne_one`. -/
 instance : Nontrivial (FlagAlgebra σ) where
-  exists_pair_ne := ⟨0, 1, zero_ne_one⟩
+  exists_pair_ne := ⟨0, 1, flagAlgebra_zero_ne_one⟩
 
 /-- The `ℝ`-algebra structure on the flag algebra, with `algebraMap r = r • 1`;
 this is the final structure used by the density-bound proofs. -/
