@@ -53,16 +53,16 @@ theorem flagDensity_forbidden_eq_zero_of_mem (hc : HeredClass) {n₀ : ℕ} {σ 
         show G.graph.Adj u.val v.val ↔
           (LabeledSubgraph.inducedLabeledSubgraph G (↑S) hroot).coe.graph.Adj u v
         rw [LabeledSubgraph.coe_adj_iff]
-        show G.graph.Adj u.val v.val ↔ (inducedSubgraph G.graph (↑S)).Adj u.val v.val
-        simp only [inducedSubgraph]
+        show G.graph.Adj u.val v.val ↔ ((⊤ : G.graph.Subgraph).induce (↑S)).Adj u.val v.val
+        simp only [Subgraph.induce_adj, Subgraph.top_adj]
         constructor
         · intro ha
-          refine ⟨ha, ?_, ?_⟩
+          refine ⟨?_, ?_, ha⟩
           · have := u.property
             simpa only [LabeledSubgraph.inducedLabeledSubgraph_verts] using this
           · have := v.property
             simpa only [LabeledSubgraph.inducedLabeledSubgraph_verts] using this
-        · intro ha; exact ha.1 }
+        · intro ha; exact ha.2.2 }
   -- Compose `Frep.graph ≃g induced.coe.graph ↪g G.graph`.
   have hembed : Frep.graph ↪g G.graph := emb.comp ψ.symm.toEmbedding
   have hmem : hc.Mem Frep.graph := hc.comap hembed hG
@@ -186,9 +186,9 @@ private theorem edgeIso_fwd (n : ℕ) (G : LabeledGraph vtype (Fin (n + 1)))
   have key : ∀ (a b : ↥IG.subgraph.verts), IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   let f : Fin 2 → ↥IG.subgraph.verts := fun i =>
     if i = 0 then ⟨0, hverts ▸ h0S⟩ else ⟨v, hverts ▸ hvS⟩
   have hf0 : (f 0).val = (0 : Fin (n + 1)) := by simp [f]
@@ -258,9 +258,9 @@ private theorem edgeIso_bwd (n : ℕ) (G : LabeledGraph vtype (Fin (n + 1)))
   have key : ∀ (a b : ↥IG.subgraph.verts), IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   let a0 : ↥IG.subgraph.verts := ⟨0, hverts ▸ h0S⟩
   let av : ↥IG.subgraph.verts := ⟨v, hverts ▸ hvS⟩
   have hne : a0 ≠ av := by

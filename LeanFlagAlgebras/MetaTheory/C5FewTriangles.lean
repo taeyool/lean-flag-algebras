@@ -38,33 +38,33 @@ noncomputable def unlabelledTriangleFlag : Flag ∅ₜ (Fin 3) := graphFlag (⊤
 /-- A `3`-subset `S` of `G` induces the complete graph `K₃` exactly when `S` is a triangle of `G`
 (`G.IsNClique 3 S`). -/
 theorem induced_iso_top3_iff {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N)) :
-    Nonempty ((inducedSubgraph G (↑S : Set (Fin N))).coe ≃g (⊤ : SimpleGraph (Fin 3)))
+    Nonempty (((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe ≃g (⊤ : SimpleGraph (Fin 3)))
       ↔ G.IsNClique 3 S := by
   constructor
   · rintro ⟨f⟩
-    have hcard3 : Fintype.card (↑(inducedSubgraph G (↑S : Set (Fin N))).verts) = 3 := by
+    have hcard3 : Fintype.card (↑((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).verts) = 3 := by
       rw [f.card_eq]; simp
-    rw [inducedSubgraph_verts] at hcard3
+    rw [Subgraph.induce_verts] at hcard3
     have hScard : S.card = 3 := by
       rw [← hcard3, ← Set.toFinset_card]; congr 1; ext x; simp
     refine ⟨?_, hScard⟩
     intro u huS w hwS huw
-    have key : (inducedSubgraph G (↑S : Set (Fin N))).coe.Adj ⟨u, huS⟩ ⟨w, hwS⟩ := by
+    have key : ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe.Adj ⟨u, huS⟩ ⟨w, hwS⟩ := by
       rw [← f.map_adj_iff]; simp only [top_adj]; intro h
       apply huw; have := f.injective h; exact congrArg Subtype.val this
     rw [Subgraph.coe_adj] at key
-    simp only [inducedSubgraph] at key
-    exact key.1
+    simp only [Subgraph.induce_adj, Subgraph.top_adj] at key
+    exact key.2.2
   · intro hS
     obtain ⟨hclique, hScard⟩ := hS
-    have hcoe_top : (inducedSubgraph G (↑S : Set (Fin N))).coe = (⊤ : SimpleGraph _) := by
+    have hcoe_top : ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe = (⊤ : SimpleGraph _) := by
       ext a b
-      simp only [Subgraph.coe_adj, inducedSubgraph, top_adj]
+      simp only [Subgraph.coe_adj, Subgraph.induce_adj, Subgraph.top_adj, top_adj]
       constructor
-      · rintro ⟨h, _, _⟩; intro hab; exact G.ne_of_adj h (congrArg Subtype.val hab)
+      · rintro ⟨_, _, h⟩; intro hab; exact G.ne_of_adj h (congrArg Subtype.val hab)
       · intro hab
         have hab' : (a : Fin N) ≠ (b : Fin N) := fun h => hab (Subtype.ext h)
-        exact ⟨hclique a.2 b.2 hab', a.2, b.2⟩
+        exact ⟨a.2, b.2, hclique a.2 b.2 hab'⟩
     have hcard : Fintype.card (↑(↑S : Set (Fin N))) = 3 := by
       have h1 : Fintype.card (↑(↑S : Set (Fin N))) = S.card := by
         rw [← Set.toFinset_card]; congr 1; ext x; simp

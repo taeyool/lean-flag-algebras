@@ -116,7 +116,7 @@ lemma mantelRootedSeq_edge_density_zero (n : ℕ) :
   -- Pull the adjacency back to the host graph.
   have hadj : IG.coe.graph.Adj r w := φ.graph_iso.map_rel_iff.mp hadj_img
   have hadjG : (knnPlusW n).Adj (r : Fin (2 * (n + 1) + 1)) w :=
-    ((LabeledSubgraph.coe_adj_iff IG r w).mp hadj).1
+    ((LabeledSubgraph.coe_adj_iff IG r w).mp hadj).2.2
   -- But the root is the isolated last vertex.
   have hrval : (r : Fin (2 * (n + 1) + 1)) = Fin.last (2 * (n + 1)) := IG.embed_eq 0
   rw [hrval] at hadjG

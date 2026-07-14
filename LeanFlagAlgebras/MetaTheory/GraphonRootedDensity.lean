@@ -2137,17 +2137,17 @@ theorem stdRooted_subset_iso_iff {n ℓ : ℕ} (hn : 2 ≤ n) (hℓ : 2 ≤ ℓ)
     have h1 := heqv_apply (eqv.symm u)
     rw [Equiv.apply_symm_apply] at h1
     exact h1.symm
-  set graph_iso : (inducedSubgraph H (↑S : Set (Fin ℓ))).coe ≃g H.comap ⇑j :=
+  set graph_iso : ((⊤ : H.Subgraph).induce (↑S : Set (Fin ℓ))).coe ≃g H.comap ⇑j :=
     ⟨eqv.symm, by
       intro u v
       show (H.comap ⇑j).Adj (eqv.symm u) (eqv.symm v)
-          ↔ (inducedSubgraph H (↑S : Set (Fin ℓ))).Adj u.1 v.1
-      unfold inducedSubgraph
+          ↔ ((⊤ : H.Subgraph).induce (↑S : Set (Fin ℓ))).Adj u.1 v.1
+      simp only [SimpleGraph.Subgraph.induce_adj, SimpleGraph.Subgraph.top_adj]
       simp only [SimpleGraph.comap_adj]
       rw [hjeqv u, hjeqv v]
       constructor
-      · intro hadj; exact ⟨hadj, u.2, v.2⟩
-      · rintro ⟨hadj, -, -⟩; exact hadj⟩ with hgidef
+      · intro hadj; exact ⟨u.2, v.2, hadj⟩
+      · rintro ⟨-, -, hadj⟩; exact hadj⟩ with hgidef
   have coeIso : (LabeledSubgraph.inducedLabeledSubgraph (mkStdRooted σ' hℓ H hH) (↑S) hRoots).coe
       ≃f mkStdRooted σ' hn (H.comap ⇑j) (rootCompatible_comap_of_rootFixing hn hℓ j hj hH) := by
     refine ⟨graph_iso, ?_⟩

@@ -43,17 +43,17 @@ private def inducedCoeEmbedding (S : Set V) (h : G.type_verts ⊆ S) :
     intro u v
     show G.graph.Adj u.val v.val ↔ (inducedLabeledSubgraph G S h).coe.graph.Adj u v
     rw [LabeledSubgraph.coe_adj_iff]
-    show G.graph.Adj u.val v.val ↔ (inducedSubgraph G.graph S).Adj u.val v.val
-    simp only [inducedSubgraph]
+    show G.graph.Adj u.val v.val ↔ ((⊤ : G.graph.Subgraph).induce S).Adj u.val v.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
     constructor
     · intro ha
-      refine ⟨ha, ?_, ?_⟩
+      refine ⟨?_, ?_, ha⟩
       · have := u.property
         simpa only [inducedLabeledSubgraph_verts] using this
       · have := v.property
         simpa only [inducedLabeledSubgraph_verts] using this
     · intro ha
-      exact ha.1
+      exact ha.2.2
 
 /-- **Positive density yields an inducing vertex subset.**  If the labeled flag
 density of `Hrep` in `Grep` is nonzero, there is a vertex subset `S` of `Grep`

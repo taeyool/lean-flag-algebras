@@ -113,9 +113,9 @@ private lemma twoRootIso_fwd {N : ℕ} (G : LabeledGraph σ2 (Fin N))
       IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   have hcases : ∀ i : Fin 3, i = H.type_embed 0 ∨ i = H.type_embed 1 ∨ i = t₂ := by
     intro i
     by_cases h0 : i = H.type_embed 0
@@ -219,9 +219,9 @@ private lemma twoRootIso_bwd {N : ℕ} (G : LabeledGraph σ2 (Fin N))
       IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph Sset).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce Sset).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   have h0S : u₀ ∈ S := by
     rw [← Finset.mem_coe]
     exact h (LabeledGraph.mem_type_verts.mpr ⟨0, rfl⟩)
@@ -370,9 +370,9 @@ private lemma oneRootEdgeIso_fwd {N : ℕ} (G : LabeledGraph vtype (Fin N)) (v�
       IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce S).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   set f : Fin 2 → ↥IG.subgraph.verts := fun i =>
     if i = 0 then ⟨v₀, hverts ▸ h0S⟩ else ⟨v, hverts ▸ hvS⟩ with hf
   have hf0 : (f 0).val = v₀ := by simp [hf]
@@ -438,9 +438,9 @@ private lemma oneRootEdgeIso_bwd {N : ℕ} (G : LabeledGraph vtype (Fin N)) (v�
       IG.coe.graph.Adj a b ↔ G.graph.Adj a.val b.val := by
     intro a b
     rw [coe_adj_iff]
-    show (inducedSubgraph G.graph Sset).Adj a.val b.val ↔ G.graph.Adj a.val b.val
-    simp only [inducedSubgraph]
-    exact ⟨fun hh => hh.1, fun hh => ⟨hh, memS a, memS b⟩⟩
+    show ((⊤ : G.graph.Subgraph).induce Sset).Adj a.val b.val ↔ G.graph.Adj a.val b.val
+    simp only [Subgraph.induce_adj, Subgraph.top_adj]
+    exact ⟨fun hh => hh.2.2, fun hh => ⟨memS a, memS b, hh⟩⟩
   have h0S : v₀ ∈ S := by
     rw [← Finset.mem_coe]
     exact h (by

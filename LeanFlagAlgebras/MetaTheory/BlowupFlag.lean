@@ -76,15 +76,16 @@ noncomputable def blowupGoodIso (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, 
       map_rel_iff' := by
         intro u v
         rw [coe_adj_iff, coe_adj_iff]
-        simp only [hBsub, hGsub, inducedLabeledSubgraph, inducedSubgraph,
+        simp only [hBsub, hGsub, inducedLabeledSubgraph, SimpleGraph.Subgraph.induce,
           independentBlowup_adj, baseLabeledGraph, blowupLabeledGraph]
         have hu : (↑u : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ u.property
         have hv : (↑v : Σ v : Fin n, Fin (m v)) ∈ S' := hBv ▸ v.property
         rw [he u, he v]
-        refine and_congr_right (fun _ => ?_)
         constructor
-        · intro _; exact ⟨hu, hv⟩
-        · intro _; exact ⟨⟨_, hu, rfl⟩, ⟨_, hv, rfl⟩⟩ }
+        · rintro ⟨_, _, hadj⟩
+          exact ⟨hu, hv, hadj⟩
+        · rintro ⟨_, _, hadj⟩
+          exact ⟨⟨_, hu, rfl⟩, ⟨_, hv, rfl⟩, hadj⟩ }
   refine { graph_iso := graph_iso, type_preserve := ?_ }
   funext t
   apply Subtype.ext

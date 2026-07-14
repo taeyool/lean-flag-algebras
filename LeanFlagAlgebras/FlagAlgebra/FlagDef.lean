@@ -272,7 +272,7 @@ labeled vertices. The canonical way to cut out a sub-flag on a chosen set. -/
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : LabeledSubgraph σ G where
-  subgraph := inducedSubgraph G.graph S
+  subgraph := (⊤ : G.graph.Subgraph).induce S
   type_embed := {
     toFun := by
       intro t
@@ -282,11 +282,12 @@ def inducedLabeledSubgraph
       simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_tu
       exact h_tu
     map_rel_iff' := by
-      intros
-      dsimp [inducedSubgraph]
-      simp only [SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
-      intro _
-      constructor <;> exact h (LabeledGraph.type_verts_contain _ _)
+      intro a b
+      simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj,
+        SimpleGraph.Subgraph.induce_adj, SimpleGraph.Subgraph.top_adj,
+        SimpleGraph.Embedding.map_adj_iff]
+      refine ⟨fun h' => h'.2.2, fun h' => ⟨?_, ?_, h'⟩⟩ <;>
+        exact h (LabeledGraph.type_verts_contain _ _)
   }
   embed_eq := by
     intro; simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
@@ -297,7 +298,7 @@ theorem inducedLabeledSubgraph_verts
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).subgraph.verts = S
   := by
-  simp only [inducedLabeledSubgraph, inducedSubgraph_verts]
+  simp only [inducedLabeledSubgraph, SimpleGraph.Subgraph.induce_verts]
 
 omit [Fintype T] in
 @[simp]
@@ -315,7 +316,7 @@ theorem inducedLabeledSubgraph_isInduced
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).IsInduced
   :=
-  inducedSubgraph_isInduced G.graph S
+  SimpleGraph.Subgraph.induce_top_isInduced G.graph S
 
 omit [Fintype T] in
 theorem inducedLabeledSubgraph_eq
@@ -324,7 +325,7 @@ theorem inducedLabeledSubgraph_eq
   := by
   dsimp [inducedLabeledSubgraph]
   congr!
-  . exact inducedSubgraph_eq h_H_ind
+  . exact (h_H_ind.induce_top_verts).symm
   . simp only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, H.embed_eq]
 
 omit [Fintype T] in
@@ -336,7 +337,7 @@ theorem isInduced_exist_induce_set
   have h : G.type_verts ⊆ S := labeledSubgraph_contain_type_verts G H
   use S, h
   dsimp [inducedLabeledSubgraph]
-  have hH_graph : inducedSubgraph G.graph S = H.subgraph := Eq.symm (inducedSubgraph_eq h_ind)
+  have hH_graph : (⊤ : G.graph.Subgraph).induce S = H.subgraph := h_ind.induce_top_verts
   congr
   · funext t
     congr
@@ -538,20 +539,21 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
       intros u v
       simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
         Equiv.invFun_as_coe, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
-      dsimp [G',H',LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph]
+      dsimp [G',H',LabeledSubgraph.inducedLabeledSubgraph, SimpleGraph.Subgraph.induce]
+      simp only [SimpleGraph.Subgraph.top_adj]
       have := @φ.graph_iso.map_rel_iff _ _ _ _ u.val v.val
       rw [←this, ←h_image_V₀_type_verts_eq_W₀_type_verts]
       simp only [LabeledSubgraph.coe_graph, Set.mem_image, Set.mem_union,
-        exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj,
-        Subtype.coe_prop, and_self, and_true]
+        exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Subgraph.top_adj,
+        Subtype.coe_prop, and_self, and_true, true_and]
       constructor
-      . intro ⟨h_adj, _, _⟩
+      . intro ⟨_, _, h_adj⟩
         rw [h_G₀_ind.adj]
         exact h_adj
       . intro h_adj
-        exact ⟨by simp_all only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj, true_iff, G₀.subgraph.adj_sub],
-          ⟨↑u, by show ↑u ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩,
-          ⟨↑v, by show ↑v ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩⟩
+        exact ⟨⟨↑u, by show ↑u ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩,
+          ⟨↑v, by show ↑v ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩,
+          by simp_all only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj, true_iff, G₀.subgraph.adj_sub]⟩
   }
   have h_type_preserve : graph_iso ∘ H'.coe.type_embed = G'.coe.type_embed := by
     ext u

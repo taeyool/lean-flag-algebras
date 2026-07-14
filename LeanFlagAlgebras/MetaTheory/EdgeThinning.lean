@@ -167,10 +167,10 @@ private lemma coe_induced_adj {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (F
     (LabeledSubgraph.inducedLabeledSubgraph (graphFlagRep G) (↑S) h).coe.graph.Adj a b
       ↔ G.Adj a.val b.val := by
   rw [LabeledSubgraph.coe_adj_iff]
-  simp only [LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph, graphFlagRep]
+  simp only [LabeledSubgraph.inducedLabeledSubgraph, SimpleGraph.Subgraph.induce, Subgraph.top_adj, graphFlagRep]
   constructor
-  · exact fun hh => hh.1
-  · exact fun hh => ⟨hh, a.2, b.2⟩
+  · exact fun hh => hh.2.2
+  · exact fun hh => ⟨a.2, b.2, hh⟩
 
 /-- If two graphs have the same adjacency relation on `S`, the same subsets of `S` induce `M`. -/
 private lemma inducesAt_of_adj_agree {N : ℕ} {G₁ G₂ : SimpleGraph (Fin N)} {S : Finset (Fin N)}
@@ -199,7 +199,7 @@ private lemma inducesAt_of_adj_agree {N : ℕ} {G₁ G₂ : SimpleGraph (Fin N)}
 /-- A subset inducing `M` yields a graph iso between the induced subgraph and `M`'s representative. -/
 private lemma exists_iso_of_inducesAt {N : ℕ} {G : SimpleGraph (Fin N)} {S : Finset (Fin N)}
     {M : FinFlag ∅ₜ} (h : inducesAt M G S) :
-    Nonempty ((inducedSubgraph G (↑S : Set (Fin N))).coe ≃g M.2.out.graph) := by
+    Nonempty (((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe ≃g M.2.out.graph) := by
   obtain ⟨_, ⟨f⟩⟩ := h
   exact ⟨f.graph_iso⟩
 
@@ -215,7 +215,7 @@ private lemma iso_out_sigma {n₀ : ℕ} (σ : FlagType (Fin n₀)) :
 /-- `coinsWithin G S`: the `G`-edges with both endpoints in `S`, viewed as coins. -/
 private noncomputable def coinsWithin {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N)) :
     Finset (Sym2 (Fin N)) :=
-  (inducedSubgraph G (↑S : Set (Fin N))).coe.edgeFinset.image (Sym2.map Subtype.val)
+  ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe.edgeFinset.image (Sym2.map Subtype.val)
 
 /-- If `S` induces `σ`, the number of `G`-edges inside `S` equals `e(σ)`. -/
 private lemma coinsWithin_card_eq {n₀ : ℕ} (σ : FlagType (Fin n₀)) {N : ℕ}
@@ -225,7 +225,7 @@ private lemma coinsWithin_card_eq {n₀ : ℕ} (σ : FlagType (Fin n₀)) {N : �
   rw [coinsWithin, Finset.card_image_of_injective _ (Sym2.map.injective Subtype.val_injective)]
   obtain ⟨g1⟩ := exists_iso_of_inducesAt h
   obtain ⟨g2⟩ := iso_out_sigma σ
-  exact (show (inducedSubgraph G (↑S : Set (Fin N))).coe ≃g σ from g1.trans g2).card_edgeFinset_eq
+  exact (show ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe ≃g σ from g1.trans g2).card_edgeFinset_eq
 
 /-- Membership characterization of `coinsWithin`. -/
 private lemma mem_coinsWithin {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N))
@@ -238,7 +238,7 @@ private lemma mem_coinsWithin {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (F
     induction x with
     | _ u v =>
       rw [mem_edgeSet, Subgraph.coe_adj] at hx
-      obtain ⟨hadj, huS, hvS⟩ := hx
+      obtain ⟨huS, hvS, hadj⟩ := hx
       refine ⟨u.val, v.val, Finset.mem_coe.mp huS, Finset.mem_coe.mp hvS, hadj, ?_⟩
       rw [← hxe, Sym2.map_pair_eq]
   · rintro ⟨a, b, ha, hb, hadj, rfl⟩
@@ -246,7 +246,7 @@ private lemma mem_coinsWithin {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (F
     have hbS : b ∈ (↑S : Set (Fin N)) := Finset.mem_coe.mpr hb
     refine ⟨s(⟨a, haS⟩, ⟨b, hbS⟩), ?_, by rw [Sym2.map_pair_eq]⟩
     rw [mem_edgeFinset, mem_edgeSet, Subgraph.coe_adj]
-    exact ⟨hadj, haS, hbS⟩
+    exact ⟨haS, hbS, hadj⟩
 
 /-- `coinsWithin` is monotone in the graph. -/
 private lemma coinsWithin_mono {N : ℕ} {G₁ G₂ : SimpleGraph (Fin N)} (h : G₁ ≤ G₂)
@@ -266,7 +266,7 @@ private lemma coinsWithin_card_eq' {N : ℕ} {G' : SimpleGraph (Fin N)} {S : Fin
 
 /-- The induced subgraph on `S` has `|S|` vertices. -/
 private lemma card_induced_verts {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N)) :
-    Fintype.card (↑(inducedSubgraph G (↑S : Set (Fin N))).verts) = S.card := by
+    Fintype.card (↑((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).verts) = S.card := by
   rw [← Set.toFinset_card]
   simp
 
@@ -274,8 +274,8 @@ private lemma card_induced_verts {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset
 private lemma coinsWithin_card_le {N : ℕ} (G : SimpleGraph (Fin N)) (S : Finset (Fin N)) :
     (coinsWithin G S).card ≤ S.card.choose 2 := by
   rw [coinsWithin, Finset.card_image_of_injective _ (Sym2.map.injective Subtype.val_injective)]
-  calc (inducedSubgraph G (↑S : Set (Fin N))).coe.edgeFinset.card
-      ≤ (Fintype.card (↑(inducedSubgraph G (↑S : Set (Fin N))).verts)).choose 2 :=
+  calc ((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).coe.edgeFinset.card
+      ≤ (Fintype.card (↑((⊤ : G.Subgraph).induce (↑S : Set (Fin N))).verts)).choose 2 :=
         SimpleGraph.card_edgeFinset_le_card_choose_two
     _ = S.card.choose 2 := by rw [card_induced_verts]
 
@@ -302,7 +302,7 @@ private lemma coinBox_within_subset {N : ℕ} {G : SimpleGraph (Fin N)} {S : Fin
     rw [coinsWithin, Finset.mem_image]
     refine ⟨s(⟨a, haS⟩, ⟨b, hbS⟩), ?_, by rw [Sym2.map_pair_eq]⟩
     rw [mem_edgeFinset, mem_edgeSet, Subgraph.coe_adj]
-    exact ⟨hab, haS, hbS⟩
+    exact ⟨haS, hbS, hab⟩
   have hω' : ∀ e ∈ coinsWithin G S, ω e = true := hω
   exact hω' s(a, b) hmem
 
