@@ -16,4 +16,20 @@ require mathlib from git
 
 @[default_target]
 lean_lib «LeanFlagAlgebras» where
-  -- add any library configuration options here
+  -- Build the root import manifest and every module tree EXCEPT `Archive/`
+  -- (retired experiments, kept for reference but excluded from the build).
+  globs := #[
+    .one `LeanFlagAlgebras,
+    .submodules `LeanFlagAlgebras.Automation,
+    .submodules `LeanFlagAlgebras.ErdosPentagon,
+    .submodules `LeanFlagAlgebras.FlagAlgebra,
+    .submodules `LeanFlagAlgebras.Flagmatic,
+    .submodules `LeanFlagAlgebras.Flags,
+    .submodules `LeanFlagAlgebras.Forbid,
+    .submodules `LeanFlagAlgebras.GraphAlgebra,
+    .submodules `LeanFlagAlgebras.Logic,
+    .submodules `LeanFlagAlgebras.MantelTheorem,
+    .andSubmodules `LeanFlagAlgebras.MetaTheory,
+    .submodules `LeanFlagAlgebras.Turan,
+    .submodules `LeanFlagAlgebras.Utils
+  ]
