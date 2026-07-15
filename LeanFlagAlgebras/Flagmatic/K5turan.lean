@@ -37,13 +37,13 @@ generate_forbid_free_flags 5 3 1 K5
 generate_forbid_free_flags 5 3 2 K5
 generate_forbid_free_flags 5 3 3 K5
 generate_pruned_flag_pair_density_theorems 4 5 3 0 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 0 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
+generate_forbid_free_mul_theorems 4 5 3 0 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 1 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 1 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
+generate_forbid_free_mul_theorems 4 5 3 1 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 2 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 2 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
+generate_forbid_free_mul_theorems 4 5 3 2 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 3 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 3 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
+generate_forbid_free_mul_theorems 4 5 3 3 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

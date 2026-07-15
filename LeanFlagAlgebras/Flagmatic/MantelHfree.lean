@@ -6,7 +6,7 @@
 --   * `generate_forbid_free_empty_typed_flags` / `generate_forbid_free_flags` emit
 --     only the K3-free flags and their filtered-completeness lemma (`flagSetHfree_…_eq`), proved
 --     via `prunedFreeFlags_toFinset_eq` (no full enumeration, no canonical flag);
---   * `generate_pruned_forbid_free_mul_theorems` proves the products
+--   * `generate_forbid_free_mul_theorems` proves the products
 --     `=ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩]` over the forbid-free host set;
 --   * the objective is expanded with the edge-based `flag_expand_hfree 3 K3`
 --     (`basisVector_quot_inducedForbidEq_sum` rewritten onto `flagSetHfree` directly — no full
@@ -50,7 +50,7 @@ generate_forbid_free_flags 3 1 0 K3
 -- Pair densities over the K3-free flags (induced split), consumed by the forbid-free
 -- multiplication theorems below.
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
-generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+generate_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 /-- SDP certificate matrix for block 1 (rational, 2×2), paired with `v`. -/
 def M : Matrix (Fin 2) (Fin 2) ℚ :=
