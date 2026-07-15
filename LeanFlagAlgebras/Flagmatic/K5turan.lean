@@ -25,17 +25,17 @@ namespace K5turan
 -- their completeness, and the forbid-free pair-density / multiplication theorems for all four
 -- σ-types.
 def K5 : Sym2Graph 5 := completeSym2Graph 5
-generate_pruned_forbid_free_empty_typed_flags 2 K5
-generate_pruned_forbid_free_empty_typed_flags 4 K5
-generate_pruned_forbid_free_empty_typed_flags 5 K5
-generate_pruned_forbid_free_flags 4 3 0 K5
-generate_pruned_forbid_free_flags 4 3 1 K5
-generate_pruned_forbid_free_flags 4 3 2 K5
-generate_pruned_forbid_free_flags 4 3 3 K5
-generate_pruned_forbid_free_flags 5 3 0 K5
-generate_pruned_forbid_free_flags 5 3 1 K5
-generate_pruned_forbid_free_flags 5 3 2 K5
-generate_pruned_forbid_free_flags 5 3 3 K5
+generate_forbid_free_empty_typed_flags 2 K5
+generate_forbid_free_empty_typed_flags 4 K5
+generate_forbid_free_empty_typed_flags 5 K5
+generate_forbid_free_flags 4 3 0 K5
+generate_forbid_free_flags 4 3 1 K5
+generate_forbid_free_flags 4 3 2 K5
+generate_forbid_free_flags 4 3 3 K5
+generate_forbid_free_flags 5 3 0 K5
+generate_forbid_free_flags 5 3 1 K5
+generate_forbid_free_flags 5 3 2 K5
+generate_forbid_free_flags 5 3 3 K5
 generate_pruned_flag_pair_density_theorems 4 5 3 0 K5
 generate_pruned_forbid_free_mul_theorems 4 5 3 0 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 1 K5

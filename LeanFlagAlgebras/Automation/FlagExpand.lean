@@ -186,8 +186,8 @@ same identifier passed to `generate_pruned_forbid_free_*`. The forbidden flag is
 from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=ᵢ[ ]`),
 so no canonical forbidden flag / `.toFinFlag` is needed.
 
-Prerequisites: the forbid-free host set must exist (run `generate_pruned_forbid_free_flags N k m F`,
-or the empty-typed `generate_pruned_forbid_free_empty_typed_flags N F` for `k = m = 0`), and the
+Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags N k m F`,
+or the empty-typed `generate_forbid_free_empty_typed_flags N F` for `k = m = 0`), and the
 relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]`.
 -/
 syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident term : tactic

@@ -297,8 +297,8 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 -- is **induced** (`evalInducedFreeMask`); and the proof rewrites the
 -- `basisVector_quot_mul_inducedForbidEq_sum (toFlag ⟦F⟧)` expansion onto the edge-based forbid-free host set
 -- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
--- generators). Prerequisite: run `generate_pruned_forbid_free_empty_typed_flags hostN F`
--- (and, for `k > 0`, `generate_pruned_forbid_free_flags hostN k m F`) first.
+-- generators). Prerequisite: run `generate_forbid_free_empty_typed_flags hostN F`
+-- (and, for `k > 0`, `generate_forbid_free_flags hostN k m F`) first.
 elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident
     HgStx:term:max hmemStx:term:max : command => do
   let k := kS.getNat
@@ -331,7 +331,7 @@ elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num
   unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
     throwError s!"`generate_pruned_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
 edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
-`generate_pruned_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_pruned_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
+`generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
 
   -- Host `FlagAlgebra_*` idents, to unfold the folded RHS to `⟦basisVector⟧` form in the
   -- proof finish (so `abel` can reconcile it with the right-associated, unfolded LHS sum).

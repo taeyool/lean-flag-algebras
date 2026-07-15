@@ -26,13 +26,13 @@ namespace K4turan
 -- flags are never generated (genuine pruning). The pruned commands emit only the K4-free flags,
 -- their completeness, and the forbid-free pair-density / multiplication theorems for both σ-types.
 def K4 : Sym2Graph 4 := completeSym2Graph 4
-generate_pruned_forbid_free_empty_typed_flags 2 K4
-generate_pruned_forbid_free_empty_typed_flags 3 K4
-generate_pruned_forbid_free_empty_typed_flags 4 K4
-generate_pruned_forbid_free_flags 3 2 0 K4
-generate_pruned_forbid_free_flags 3 2 1 K4
-generate_pruned_forbid_free_flags 4 2 0 K4
-generate_pruned_forbid_free_flags 4 2 1 K4
+generate_forbid_free_empty_typed_flags 2 K4
+generate_forbid_free_empty_typed_flags 3 K4
+generate_forbid_free_empty_typed_flags 4 K4
+generate_forbid_free_flags 3 2 0 K4
+generate_forbid_free_flags 3 2 1 K4
+generate_forbid_free_flags 4 2 0 K4
+generate_forbid_free_flags 4 2 1 K4
 generate_pruned_flag_pair_density_theorems 3 4 2 0 K4
 generate_pruned_forbid_free_mul_theorems 3 4 2 0 K4 (completeGraph (Fin 4)) (completeSym2Graph_finFlag_mem_forbiddenFlags 4)
 generate_pruned_flag_pair_density_theorems 3 4 2 1 K4

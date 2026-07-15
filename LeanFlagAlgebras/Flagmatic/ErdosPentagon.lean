@@ -25,15 +25,15 @@ namespace ErdosPentagon
 -- (the pentagon `C₅` objective `FlagAlgebra_5_0_0_19` among them), their completeness, and the
 -- forbid-free pair-density / multiplication theorems for all three σ-types.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
-generate_pruned_forbid_free_empty_typed_flags 3 K3
-generate_pruned_forbid_free_empty_typed_flags 4 K3
-generate_pruned_forbid_free_empty_typed_flags 5 K3
-generate_pruned_forbid_free_flags 4 3 0 K3
-generate_pruned_forbid_free_flags 4 3 1 K3
-generate_pruned_forbid_free_flags 4 3 2 K3
-generate_pruned_forbid_free_flags 5 3 0 K3
-generate_pruned_forbid_free_flags 5 3 1 K3
-generate_pruned_forbid_free_flags 5 3 2 K3
+generate_forbid_free_empty_typed_flags 3 K3
+generate_forbid_free_empty_typed_flags 4 K3
+generate_forbid_free_empty_typed_flags 5 K3
+generate_forbid_free_flags 4 3 0 K3
+generate_forbid_free_flags 4 3 1 K3
+generate_forbid_free_flags 4 3 2 K3
+generate_forbid_free_flags 5 3 0 K3
+generate_forbid_free_flags 5 3 1 K3
+generate_forbid_free_flags 5 3 2 K3
 generate_pruned_flag_pair_density_theorems 4 5 3 0 K3
 generate_pruned_forbid_free_mul_theorems 4 5 3 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 generate_pruned_flag_pair_density_theorems 4 5 3 1 K3

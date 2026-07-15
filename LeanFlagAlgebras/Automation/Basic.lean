@@ -219,7 +219,7 @@ It unfolds `forbidExpand_one` for a graph of size `n` and reduces the resulting
 terms. The tactic is forbid-agnostic (the forbidden flag is read from the goal's
 `forbidExpand_one`); `F` is only used to name the `flagSetHfree_*` lemmas, so it is
 the same identifier (a `Sym2Graph` term, e.g. `K3`) passed to
-`generate_pruned_forbid_free_empty_typed_flags n F`. Prerequisite: run that command first.
+`generate_forbid_free_empty_typed_flags n F`. Prerequisite: run that command first.
 -/
 syntax "expand_one_hfree_at" num ident : tactic
 

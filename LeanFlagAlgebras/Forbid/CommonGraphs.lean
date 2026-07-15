@@ -78,7 +78,7 @@ edge-based commands and the `flag_expand_hfree` / `expand_one_hfree_at` tactics:
 
 ```
 def K4 : Sym2Graph 4 := completeSym2Graph 4        -- or `forbid_complete_graph 4`
-generate_pruned_forbid_free_empty_typed_flags 4 K4
+generate_forbid_free_empty_typed_flags 4 K4
 …
 theorem … ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)] …
 ```

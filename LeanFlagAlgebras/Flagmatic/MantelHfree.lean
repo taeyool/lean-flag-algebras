@@ -3,7 +3,7 @@
 -- `K3 := completeSym2Graph 3` (decision D2 — no canonical forbidden flag), and the K3-containing
 -- flags are *never generated* (genuine pruning). The pipeline runs end-to-end on it:
 --
---   * `generate_pruned_forbid_free_empty_typed_flags` / `generate_pruned_forbid_free_flags` emit
+--   * `generate_forbid_free_empty_typed_flags` / `generate_forbid_free_flags` emit
 --     only the K3-free flags and their filtered-completeness lemma (`flagSetHfree_…_eq`), proved
 --     via `prunedFreeFlags_toFinset_eq` (no full enumeration, no canonical flag);
 --   * `generate_pruned_forbid_free_mul_theorems` proves the products
@@ -43,10 +43,10 @@ def K3 : Sym2Graph 3 := completeSym2Graph 3
 
 -- ── Forbid-free generation (genuine pruning): only the K3-free flags, their filtered
 -- completeness, and the forbid-free multiplication theorems (over `flagSetHfree`). ──
-generate_pruned_forbid_free_empty_typed_flags 2 K3
-generate_pruned_forbid_free_empty_typed_flags 3 K3
-generate_pruned_forbid_free_flags 2 1 0 K3
-generate_pruned_forbid_free_flags 3 1 0 K3
+generate_forbid_free_empty_typed_flags 2 K3
+generate_forbid_free_empty_typed_flags 3 K3
+generate_forbid_free_flags 2 1 0 K3
+generate_forbid_free_flags 3 1 0 K3
 -- Pair densities over the K3-free flags (induced split), consumed by the forbid-free
 -- multiplication theorems below.
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3

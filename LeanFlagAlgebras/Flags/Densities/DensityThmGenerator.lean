@@ -616,7 +616,7 @@ elab "generate_flag_pair_density_theorems_no_forbid" patS:num hostS:num kS:num m
 -- the induced predicate `inducedContains F` (via `evalInducedFreeMask`). The emitted
 -- `flagDensity₂ … = value` `@[simp]` theorems are identical in form — a density is a density; only
 -- *which* pairs are computed differs. Prerequisite: the `F`-free pattern/host flags must exist (run
--- the edge-based generators `generate_pruned_forbid_free_flags …` first).
+-- the edge-based generators `generate_forbid_free_flags …` first).
 elab "generate_pruned_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
     fStx:ident : command => do
   let k := kS.getNat

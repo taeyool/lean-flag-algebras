@@ -31,12 +31,12 @@ set_option maxRecDepth 100000
 -- generated. The pruned commands emit only the K3-free flags, their completeness, and
 -- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
-generate_pruned_forbid_free_empty_typed_flags 4 K3
-generate_pruned_forbid_free_empty_typed_flags 6 K3
-generate_pruned_forbid_free_flags 4 2 0 K3
-generate_pruned_forbid_free_flags 4 2 1 K3
-generate_pruned_forbid_free_flags 6 2 0 K3
-generate_pruned_forbid_free_flags 6 2 1 K3
+generate_forbid_free_empty_typed_flags 4 K3
+generate_forbid_free_empty_typed_flags 6 K3
+generate_forbid_free_flags 4 2 0 K3
+generate_forbid_free_flags 4 2 1 K3
+generate_forbid_free_flags 6 2 0 K3
+generate_forbid_free_flags 6 2 1 K3
 generate_pruned_flag_pair_density_theorems 4 6 2 0 K3
 generate_pruned_forbid_free_mul_theorems 4 6 2 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 generate_pruned_flag_pair_density_theorems 4 6 2 1 K3
