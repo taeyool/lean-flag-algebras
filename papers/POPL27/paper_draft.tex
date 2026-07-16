@@ -411,7 +411,7 @@ studies.
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
 constraint is imposed.  In the \emph{built-in-constraint} approach, one builds
-a hereditary graph constraint, such as ordinary \(H\)-freeness, into the
+a hereditary graph constraint, such as \(H\)-freeness, into the
 flag algebra
 from the start; this is the traditional way to work in an algebra of
 \(H\)-free graphs.  In the \emph{ensemble} approach, one first works
@@ -421,7 +421,7 @@ for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
 characterizing when they do agree, gives a positive result for
 blow-up-closed classes that also covers substitution-closed classes, and exhibits a
-counterexample based on ordinary \(C_4\)-free graphs.  The ensemble viewpoint is useful
+counterexample based on \(C_4\)-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
 to an extremal-density or equality slice.  This is the semantic viewpoint
@@ -3194,12 +3194,12 @@ specification-level $H$-free semantic condition from
 filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
 two representations: it proves that the flag decoded from $K$ belongs to
 \lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$
-as an ordinary subgraph.
+as a subgraph.
 Consequently, the $H$-free condition forces the decoded $K$ to have density
 zero, which justifies removing from the objective expansion the host flags
 that the reflection computation found to contain $K$.
 
-For a non-complete $H$, an ordinary subgraph copy may have additional edges
+For a non-complete $H$, a subgraph copy may have additional edges
 and therefore need not be an induced copy of $H$.  The alternative tactic
 \lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
 supergraphs internally.  Thus the two tactics implement the same lifting step
@@ -3363,11 +3363,11 @@ all with $8\times8$ matrices.  Together, these examples exercise both objective
 branches and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
-forbidden graph.  For a complete forbidden graph, induced containment and ordinary subgraph
+forbidden graph.  For a complete forbidden graph, induced containment and subgraph
 containment coincide, so the compiler may use the induced-graph filter.  They
 do not coincide for $C_5$, and this example therefore uses the
 subgraph-forbidding generators and expansion tactics.  The certificate still
-proves the ordinary statement that graphs containing no $C_5$ subgraph have
+proves the statement that graphs containing no $C_5$ subgraph have
 edge density at most $1/2$.
 
 The generated certificate argument establishes only the upper-bound direction.
@@ -3894,8 +3894,8 @@ Let \(\mathcal G\) be the class of all finite simple graphs, let
 \(\sigma\).  Here \emph{hereditary} means closed under taking induced
 subgraphs: if \(G\in\mathcal K\) and \(S\subseteq V(G)\), then
 \(G[S]\in\mathcal K\).  This condition does not require closure under deleting
-edges.  In particular, the ordinary \(H\)-free classes used earlier are
-hereditary, because taking an induced subgraph cannot create a new ordinary
+edges.  In particular, the \(H\)-free classes used earlier are
+hereditary, because taking an induced subgraph cannot create a new
 subgraph isomorphic to \(H\).
 
 We write \(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
@@ -4040,7 +4040,7 @@ equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
 \(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second asks for the inequality
 to hold almost surely after randomly labeling a constrained unlabeled limit.
-For the ordinary \(H\)-free class---graphs containing no ordinary subgraph
+For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
 \(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
 notions of positivity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
@@ -4125,7 +4125,7 @@ labeled limit therefore lies in the closure of supports defining
 inclusion is \eqref{eq:S-subset-Q}.
 
 Independent blow-ups, in which every fiber is an independent set, give the
-clone-closed case and cover all ordinary \(K_r\)-free classes for \(r\geq3\),
+clone-closed case and cover all \(K_r\)-free classes for \(r\geq3\),
 including triangle-free graphs.  Complete blow-ups give the true-clone-closed
 case and cover, for example, cluster graphs.  Both are instances of
 \Cref{thm:blowup-root-plantability-summary}.  For infinite hereditary classes,
@@ -4133,7 +4133,7 @@ substitution-closure is a stronger sufficient condition.
 
 \paragraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
-class of ordinary \(C_4\)-free graphs---those containing no \(C_4\) as a
+class of \(C_4\)-free graphs---those containing no \(C_4\) as a
 subgraph---and let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a uniformly random root
 has normalized degree tending to zero.  If \(d\) denotes the one-root flag
