@@ -3879,8 +3879,12 @@ pattern, rather than a claim that no alternative exists.
 
 The definition of \lean{forbidLE} in \Cref{sec:forbidden} was a deliberate
 departure from the usual presentation of constrained flag algebras.  Rather
-than build a new algebra for each forbidden family, it retains the ambient
-algebra and restricts the graph limits against which an inequality is tested.
+than building a new algebra for each forbidden family, it retains the same
+ambient algebra and imposes the forbidden-graph condition only when
+interpreting its elements.  It considers only unlabeled positive
+homomorphisms satisfying that condition, chooses an occurrence of the flag
+type at random in the limiting object represented by each homomorphism, and
+requires the desired inequality to hold with probability one over that choice.
 This engineering choice exposed a mathematical problem in its own right:
 when does this \emph{ensemble semantics} validate exactly the same typed
 inequalities as a flag algebra in which the constraint is built in from the
