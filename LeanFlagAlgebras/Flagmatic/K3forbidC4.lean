@@ -31,10 +31,10 @@ generate_forbid_free_flags 3 2 0 K3
 generate_forbid_free_flags 3 2 1 K3
 generate_forbid_free_flags 4 2 0 K3
 generate_forbid_free_flags 4 2 1 K3
-generate_pruned_flag_pair_density_theorems 3 4 2 0 K3
-generate_forbid_free_mul_theorems 3 4 2 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
-generate_pruned_flag_pair_density_theorems 3 4 2 1 K3
-generate_forbid_free_mul_theorems 3 4 2 1 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K3
+generate_forbid_free_mul_theorems 3 4 2 0 K3
+generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K3
+generate_forbid_free_mul_theorems 3 4 2 1 K3
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

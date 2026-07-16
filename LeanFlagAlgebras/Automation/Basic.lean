@@ -245,7 +245,7 @@ elab_rules : tactic
 it unfolds `forbidExpand_one_subgraph` (the family-filter unit expansion) and reduces it onto the
 subgraph-`F`-free flag set `flagSetHfree_n_0_0_<F>` (via its `…_eq` / `…_val_eq`). Same name reuse as
 `expand_one_hfree_at`; only the unfolded definition differs. Prerequisite:
-`generate_subgraph_free_empty_typed_flags n F`.
+`generate_forbid_free_empty_typed_flags n F`.
 -/
 syntax "expand_one_hfree_at_subgraph" num ident : tactic
 

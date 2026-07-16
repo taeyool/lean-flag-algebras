@@ -49,8 +49,8 @@ generate_forbid_free_flags 2 1 0 K3
 generate_forbid_free_flags 3 1 0 K3
 -- Pair densities over the K3-free flags (induced split), consumed by the forbid-free
 -- multiplication theorems below.
-generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
-generate_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3
+generate_forbid_free_mul_theorems 2 3 1 0 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2), paired with `v`. -/
 def M : Matrix (Fin 2) (Fin 2) ℚ :=
@@ -137,7 +137,7 @@ theorem mantel_flagAlgebra
 
 /-! ## What is (and isn't) forbid-free here
 
-The whole file is now edge-based and genuinely pruned. The only non-`generate_pruned_*`
+The whole file is now edge-based and genuinely pruned. The only non-`generate_forbid_free_*`
 declarations are:
 
 * **The forbidden graph** — `def K3 : Sym2Graph 3 := completeSym2Graph 3`. This is the
@@ -150,7 +150,7 @@ declarations are:
   (`Flags/ForbidFreePruned.lean`, Tasks 1/4) — the bridge that earlier blocked this file is
   now proved.
 
-* **Pair densities** — `generate_pruned_flag_pair_density_theorems 2 3 1 0 K3`. The
+* **Pair densities** — `generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3`. The
   forbid-free multiplication generator discharges its goal by `simp`-ing each product
   coefficient to a rational, which needs these `@[simp] flagDensity₂ … = c` lemmas. The
   command computes the densities only for the induced-K3-free pattern/host pairs; a density
