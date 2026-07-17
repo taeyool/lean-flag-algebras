@@ -73,9 +73,13 @@ instance
     {V : Type} [DecidableEq V] [Fintype V] (G : LabeledGraph σ V) [DecidableRel G.graph.Adj]
     {W : Type} [DecidableEq W] [Fintype W] (G' : LabeledGraph σ W) [DecidableRel G'.graph.Adj] :
     Decidable (Nonempty (G ≃f G'))
-  := by
-  rw [← exists_true_iff_nonempty]
-  exact Fintype.decidableExistsFintype
+  :=
+  -- Cast-free (kernel-reducible): `decidable_of_iff` keeps the `Iff` proof in
+  -- a Prop position, where proof irrelevance applies during kernel reduction.
+  -- The previous `by rw [← exists_true_iff_nonempty]; exact …` compiled to an
+  -- `Eq.mpr` cast over `propext`, which the kernel cannot reduce past, forcing
+  -- every downstream density computation onto `native_decide`.
+  decidable_of_iff (∃ _ : G ≃f G', True) exists_true_iff_nonempty
 
 instance
     {T : Type} [Fintype T] {σ : SimpleGraph T}
@@ -391,6 +395,16 @@ theorem Sym2LabeledGraph.mem_type_verts
     G.type_embed t ∈ G.type_verts
   := by
   simp [type_verts]
+
+/-- `type_verts` as a plain `Finset.image`.  The definition itself elaborates
+through `Set.toFinset` with a tactic-built (cast-carrying) `Fintype` instance,
+which the kernel cannot reduce; kernel-reducible decision procedures should
+therefore route through this image form via `decidable_of_iff`. -/
+theorem Sym2LabeledGraph.type_verts_eq_image
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n) :
+    G.type_verts = Finset.univ.image (fun t ↦ G.type_embed t) := by
+  ext v
+  simp [Sym2LabeledGraph.type_verts]
 
 /-- Decodes a `Sym2LabeledGraph` to the abstract `σ`-typed `LabeledGraph`. -/
 def Sym2LabeledGraph.toLabeledGraph
