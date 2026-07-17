@@ -383,37 +383,69 @@ rainbow-triangle density problem~\cite{balogh2017rainbow}, and it gives the
 best known bounds on Tur\'an's tetrahedron
 problem~\cite{razborov2010tetrahedron,baber2012turan}.
 
-\paragraph{From certificates to formal proofs.}
-This paper presents a machine-checked formalization of flag algebras for
-finite simple graphs, together with a certificate-to-proof compiler that
-reconstructs, in Lean, algebraic proofs suggested by external certificate
-data.  The aim is not only to verify a few final inequalities, but to
-formalize enough of the method that certificates found by
-semidefinite-programming search can be checked against the mathematical
-definitions inside the proof assistant.  The formalization therefore covers the
-mathematical content of the method: partially labeled graphs, their densities in
-large graphs, the quotient algebra of density expressions, graph-limit
-semantics through positive homomorphisms, and the downward operator that
-transfers labeled reasoning back to unlabeled graph statements.
+% -- Previous version of the two paragraphs below (commented out) -------------
+% \paragraph{From certificates to formal proofs.}
+% This paper presents a machine-checked formalization of flag algebras for
+% finite simple graphs, together with a certificate-to-proof compiler that
+% reconstructs, in Lean, algebraic proofs suggested by external certificate
+% data.  The aim is not only to verify a few final inequalities, but to
+% formalize enough of the method that certificates found by
+% semidefinite-programming search can be checked against the mathematical
+% definitions inside the proof assistant.  The formalization therefore covers the
+% mathematical content of the method: partially labeled graphs, their densities in
+% large graphs, the quotient algebra of density expressions, graph-limit
+% semantics through positive homomorphisms, and the downward operator that
+% transfers labeled reasoning back to unlabeled graph statements.
+%
+% \paragraph{What Lean has to check.}
+% A flag-algebra certificate is compact, but its soundness is spread across
+% several different kinds of obligation.  First, there is an abstract semantic
+% obligation: graphs and flags are used only up to isomorphism, density
+% expressions are identified when they have the same asymptotic meaning, and a
+% claimed inequality must hold under every positive homomorphism.  Second, there
+% is a data-heavy computation obligation: the external search proposes finite
+% data, including lists of flags, target densities, and rational
+% positive-semidefinite matrices, while Lean must independently compute the
+% density and multiplication facts needed to check them.  Third,
+% there is an algebraic bookkeeping obligation: the proof repeatedly expands
+% flags to common sizes, multiplies typed flags, applies forbidden-graph
+% assumptions, and normalizes large linear combinations.  Our bridge layer
+% separates these concerns.  It connects concrete computable graph
+% representations to quotient definitions in Lean by adequacy theorems, verifies
+% positive-semidefiniteness exactly over $\mathbb{Q}$, and packages the
+% normalization steps into tactics and elaboration macros used by the case
+% studies.
+% -- End previous version -----------------------------------------------------
 
-\paragraph{What Lean has to check.}
-A flag-algebra certificate is compact, but its soundness is spread across
-several different kinds of obligation.  First, there is an abstract semantic
-obligation: graphs and flags are used only up to isomorphism, density
-expressions are identified when they have the same asymptotic meaning, and a
-claimed inequality must hold under every positive homomorphism.  Second, there
-is a data-heavy computation obligation: the external search proposes finite
-data, including lists of flags, target densities, and rational
-positive-semidefinite matrices, while Lean must independently compute the
-density and multiplication facts needed to check them.  Third,
-there is an algebraic bookkeeping obligation: the proof repeatedly expands
-flags to common sizes, multiplies typed flags, applies forbidden-graph
-assumptions, and normalizes large linear combinations.  Our bridge layer
-separates these concerns.  It connects concrete computable graph
-representations to quotient definitions in Lean by adequacy theorems, verifies
-positive-semidefiniteness exactly over $\mathbb{Q}$, and packages the
-normalization steps into tactics and elaboration macros used by the case
-studies.
+\paragraph{Formalizing the method.}
+We formalize the flag algebra framework itself in Lean, following Razborov's
+development: partially labeled graphs and their densities in large graphs, the
+quotient algebra of density expressions, graph-limit semantics through positive
+homomorphisms, and the downward operator that transfers labeled reasoning back
+to unlabeled graph statements.  We call this the \emph{specification layer}
+(\Cref{sec:abstract}).  Its definitions stay close to the mathematics---flags
+are isomorphism classes of labeled graphs, densities are sampling
+probabilities, and the algebra is a quotient by expansion identities---and its
+theorems are the ones a flag-algebra argument actually appeals to, so that such
+an argument can be stated in Lean much as it is stated on paper.
+
+\paragraph{From certificates to formal proofs.}
+Stating the method is not the same as checking its applications.  A certificate
+found by an SDP search is compact to write down but large to audit: the
+Erd\H{o}s pentagon certificate rests on thousands of exact density values and
+on rational matrices whose positive-semidefiniteness must be established
+exactly.  Nobody verifies such data by hand, and a formal proof should neither
+trust it nor replay it as thousands of hand proofs.  Our certificate-to-proof
+compiler closes this gap, supported by two further layers.  The
+\emph{reflection layer} (\Cref{sec:reflection}) supplies executable graph
+representations, together with adequacy theorems proving that the computations
+they support agree with the specification; Lean therefore recomputes the
+density and multiplication facts a certificate needs instead of trusting them.
+The \emph{automation layer} (\Cref{sec:flagmatic}) verifies
+positive-semidefiniteness exactly over $\mathbb{Q}$ and packages the recurring
+algebraic steps---expanding flags to a common size, multiplying typed flags,
+applying the forbidden-graph assumption, and normalizing large linear
+combinations---into tactics and elaboration commands.
 
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
