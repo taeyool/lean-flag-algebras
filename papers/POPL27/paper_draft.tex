@@ -877,6 +877,8 @@ $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
 $\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
 number to each flag-algebra element, respects addition, multiplication, and the unit, and
 never assigns a negative value to a flag basis element.
+Following standard flag-algebra terminology, we call such a homomorphism
+\emph{positive}, although its defining inequalities are non-strict.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
@@ -1865,8 +1867,8 @@ construction.  Mathematically, we read it in the usual set-comprehension form
     \mid \phi([F])\ge 0
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
-In other words, the only extra condition on an algebra homomorphism is the
-positivity condition.  In Lean syntax, this is the
+In other words, the only extra condition on an algebra homomorphism is
+non-negativity on flag basis elements.  In Lean syntax, this is the
 \lean{$\forall$ F : FinFlag $\sigma$} field after the subtype separator.
 Here \lean{basisVector F} is the formal basis vector representing \(F\), and
 the bare quotient brackets send that flag vector to its class in the flag
@@ -4104,7 +4106,7 @@ that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
 For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
 \(\lean{forbidLE H f g}\) in our Lean formalization implements this ensemble order.  The corresponding
-notions of positivity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
+notions of non-negativity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
 \(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\).
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-closure-summary}
@@ -4141,22 +4143,22 @@ The inclusion \eqref{eq:S-subset-Q} proves the forward implication, and
 The necessity of root-plantability requires more than this observation.  If
 \(S_\sigma\subsetneq Q_\sigma\), choose
 \(\chi_*\in Q_\sigma\setminus S_\sigma\).  Topological separation gives a
-continuous function that is positive on \(S_\sigma\) and negative at
-\(\chi_*\).  The Stone--Weierstrass theorem then approximates this function by
-evaluation of a flag-algebra element.  The resulting element is ensemble
-positive but not quotient positive, so the two orders cannot agree for all
-elements.  Thus \Cref{thm:support-closure-summary} is a completeness theorem:
+continuous function that is strictly positive on \(S_\sigma\) and strictly
+negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
+function by evaluation of a flag-algebra element.  The resulting element is
+ensemble non-negative but fails to be quotient non-negative, so the two orders
+cannot agree for all elements.  Thus \Cref{thm:support-closure-summary} is a completeness theorem:
 quotient proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
 \paragraph{When root-plantability holds.}
-The criterion reduces semantic completeness to a structural problem about the
+The criterion in \Cref{thm:support-closure-summary} reduces semantic completeness to a structural problem about the
 graph class.  Our main positive result gives a broad answer.  Given
 \(G\in\mathcal K\), a vertex \(v\in V(G)\), and a graph \(J\), write
 \(G[v\mapsto J]\) for the graph obtained by replacing \(v\) by \(J\), keeping
 the edges inside \(J\), and joining every vertex of \(J\) to every former
 neighbor of \(v\).  Call \(\mathcal K\) \emph{blow-up-closed} if, for every
-\(G\in\mathcal K\), \(v\in V(G)\), and \(N\), some graph \(J\) on exactly
+\(G\in\mathcal K\), \(v\in V(G)\), and \(N \in \mathbb{N}\), some graph \(J\) on exactly
 \(N\) vertices satisfies \(G[v\mapsto J]\in\mathcal K\).  For a hereditary
 class, this is equivalent to asking only for \(\lvert J\rvert\geq N\):
 choose an induced \(N\)-vertex subgraph \(J'\) of \(J\), and observe that
@@ -4173,45 +4175,86 @@ closure.  Consequently, quotient and ensemble orders agree at every
 non-degenerate type in a blow-up-closed class.
 \end{theorem}
 
-The proof starts from a \(\sigma\)-typed positive homomorphism in \(Q_\sigma\),
-represented by a sequence of finite \(\sigma\)-flags whose underlying graphs
-lie in \(\mathcal K\).  It enlarges the fibers containing the labeled vertices
-until a uniformly random occurrence of \(\sigma\) selects vertices from those
-fibers with probability bounded away from zero.
-When a fixed finite flag is sampled from the resulting blow-up, with
-probability tending to one its sampled vertices lie in distinct fibers.
-Their adjacencies are then determined entirely by the original \(\sigma\)-flag;
-the internal structure of the enlarged fibers is invisible.  The target
-positive homomorphism therefore lies in the closure of supports defining
-\(S_\sigma\).  This proves \(Q_\sigma\subseteq S_\sigma\), while the opposite
-inclusion is \eqref{eq:S-subset-Q}.
+The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
+of finite \(\sigma\)-flags whose underlying graphs lie in \(\mathcal K\).  For
+each such flag \((G,\theta)\), the proof repeatedly applies the preceding
+replacement construction, replacing every vertex \(v\in V(G)\) by a graph
+\(J_v\).  The resulting blow-up has a natural projection back to \(G\): every
+vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
+\(v\) under this projection, the \emph{fiber over \(v\)}.
 
-Independent blow-ups, in which every fiber is an independent set, give the
-clone-closed case and cover all \(K_r\)-free classes for \(r\geq3\),
-including triangle-free graphs.  Complete blow-ups give the true-clone-closed
-case and cover, for example, cluster graphs.  Both are instances of
-\Cref{thm:blowup-root-plantability-summary}.  For infinite hereditary classes,
-substitution-closure is a stronger sufficient condition.
+The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
+uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
+corresponding fiber with probability bounded away from zero.  When a fixed
+finite flag is sampled from the blow-up, its sampled vertices lie in distinct
+fibers with probability tending to one.  On this event, their adjacencies are
+determined by the corresponding vertices of \(G\), so the internal structure
+of the replacement graphs \(J_v\) does not affect the sampled flag.
+
+These estimates connect the finite blow-up construction to the definition of
+\(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
+Because \(X_\sigma\) has the topology of pointwise convergence on flags,
+membership in \(U\) can be ensured by approximating the values of finitely many
+\(\sigma\)-flags within a prescribed tolerance.  Choose \((G,\theta)\)
+sufficiently far along the sequence representing \(\chi\), and then choose its
+blow-up sufficiently large.  The construction ensures that a positive fraction
+of the embeddings of \(\sigma\) into the blow-up produce \(\sigma\)-typed
+density profiles lying in \(U\): the labeled vertices enter the designated
+fibers with probability bounded away from zero, while the distinct-fiber
+estimate preserves the required flag densities.
+
+Passing to a limit of these unlabeled blow-ups gives some \(\phi_0\in Q_0\) for
+which
+\[
+  \Ext_\sigma(\phi_0)(U)>0.
+\]
+Therefore \(U\) intersects \(\operatorname{supp}(\Ext_\sigma(\phi_0))\).  Since
+every neighborhood \(U\) of \(\chi\) has this property, \(\chi\) lies in the
+closure of the union of these supports, namely \(S_\sigma\).  Hence
+\(Q_\sigma\subseteq S_\sigma\), while the opposite inclusion is
+\eqref{eq:S-subset-Q}.
+
+Independent blow-ups, in which every replacement graph \(J_v\) is an
+independent set, cover all \(K_r\)-free classes
+for \(r\geq3\), including triangle-free graphs.  Complete blow-ups, in which
+every \(J_v\) is a clique, cover, for example, cluster graphs---that is, graphs
+whose connected components are cliques.  Both are instances of
+\Cref{thm:blowup-root-plantability-summary}.
 
 \paragraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
 class of \(C_4\)-free graphs---those containing no \(C_4\) as a
 subgraph---and let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
-at random has normalized degree tending to zero.  Let \(d\) denote the
-\(\sigma_1\)-flag density that the labeled vertex is adjacent to one additional
-sampled vertex; then \(-d\) is ensemble positive.  On the other hand,
-arbitrarily large stars are \(C_4\)-free, and selecting the center as the
-labeled vertex gives \(d=1\).  This
-positive homomorphism belongs to \(Q_{\sigma_1}\) but not to
-\(S_{\sigma_1}\), so
+at random has normalized degree tending to zero.  Let
+\(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the density expression represented by
+the following two-vertex \(\sigma_1\)-flag:
+\[
+  d :=
+  \begin{tikzpicture}[scale=0.75,baseline=-0.55ex]
+    \draw[graph edge] (0,0) -- (1.2,0);
+    \node[graph root] at (0,0) {};
+    \node[graph vertex] at (1.2,0) {};
+    \node[font=\scriptsize] at (0,-0.32) {\(1\)};
+  \end{tikzpicture}
+\]
+The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus
+the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
+its labeled vertex: the probability that one additional uniformly sampled
+vertex is adjacent to it.  The preceding observation implies that every
+\(\chi\in S_{\sigma_1}\) satisfies \(\chi(d)=0\), so \(-d\) is ensemble
+non-negative.  On the other hand, arbitrarily large stars are \(C_4\)-free.
+Selecting the center of each star as the labeled vertex gives a limiting
+positive homomorphism \(\chi_*\in Q_{\sigma_1}\) with \(\chi_*(d)=1\).  Since
+every point of \(S_{\sigma_1}\) evaluates \(d\) to zero,
+\(\chi_*\notin S_{\sigma_1}\), and hence
 \[
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \]
-Accordingly, \(-d\) is not quotient positive.  The example exhibits a genuine
-gap between the two typed orders: quotient semantics permits a specially
-chosen vertex to carry the label, whereas ensemble semantics obtains the
-labeled vertex by uniform random sampling.
+Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be quotient non-negative.
+The example exhibits a genuine gap between the two typed orders: quotient
+semantics permits a specially chosen vertex to carry the label, whereas
+ensemble semantics obtains the labeled vertex by uniform random sampling.
 The gap does not invalidate the final unlabeled density bounds used in this
 paper; it concerns the completeness of the intermediate typed calculus.
 
@@ -4224,9 +4267,7 @@ Lean.  The principal statements appear as
 not written manually: Claude agents generated them in an autoformalization
 workflow from an already-developed mathematical account and its theorem
 targets.  Lean checks the resulting proof terms, and the development builds
-without incomplete proofs.  Thus the automation concerns the translation of
-the mathematics into Lean, not the autonomous discovery of the mathematical
-statements.
+without incomplete proofs.
 
 This autoformalization was feasible in large part because it extended the
 manual formalization reported in the preceding sections.  That library had
@@ -4386,8 +4427,8 @@ limitations in \Cref{sec:unsure}.
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
 sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
-positivity certificates for polynomials in HOL Light, with numerical methods
-used to find certificates and the proof assistant used to check them.  We use
+sum-of-squares certificates for polynomial inequalities in HOL Light, with
+numerical methods used to find certificates and the proof assistant used to check them.  We use
 the same discovery-versus-verification separation, but our certificates are
 rational matrices whose claimed LDL$^\top$ factorizations are checked exactly
 in Lean.  Parrilo and Sturmfels~\cite{parrilo2003minimizing} develop
