@@ -25,16 +25,23 @@ namespace K3forbidC4
 -- `FlagAlgebra_4_0_0_8` among them), their completeness, and the forbid-free pair-density /
 -- multiplication theorems for both σ-types.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+-- `flagGen.kernelDecide`: generated bridging lemmas proved by `decide +kernel`
+-- (viable at n ≤ 4) — no compiled-evaluation axioms in this file.  Limits are
+-- lifted before the generate commands: the n = 4 batched pair-density bridges
+-- exceed the default 200k-heartbeat elaboration budget.
+set_option flagGen.kernelDecide true
+set_option maxHeartbeats 0
+set_option maxRecDepth 1500
 generate_forbid_free_empty_typed_flags 3 K3
 generate_forbid_free_empty_typed_flags 4 K3
 generate_forbid_free_flags 3 2 0 K3
 generate_forbid_free_flags 3 2 1 K3
 generate_forbid_free_flags 4 2 0 K3
 generate_forbid_free_flags 4 2 1 K3
-generate_pruned_flag_pair_density_theorems 3 4 2 0 K3
-generate_forbid_free_mul_theorems 3 4 2 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
-generate_pruned_flag_pair_density_theorems 3 4 2 1 K3
-generate_forbid_free_mul_theorems 3 4 2 1 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K3
+generate_forbid_free_mul_theorems 3 4 2 0 K3
+generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K3
+generate_forbid_free_mul_theorems 3 4 2 1 K3
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

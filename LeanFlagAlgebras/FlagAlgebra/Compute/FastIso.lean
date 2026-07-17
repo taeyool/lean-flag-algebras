@@ -268,21 +268,24 @@ lemma getNonTypeVerts_length
 
 lemma perm_length_of_mem_getNonTypeVerts_permutations
     {n k : Nat} {embed : Fin k → Fin n} {π : List (Fin n)}
-    (hπ : π ∈ (getNonTypeVerts n k embed).permutations) :
+    (hπ : π ∈ (getNonTypeVerts n k embed).permutations') :
     π.length = (getNonTypeVerts n k embed).length := by
-  exact (List.mem_permutations.mp hπ).length_eq
+  exact (List.mem_permutations'.mp hπ).length_eq
 
 lemma perm_nodup_of_mem_getNonTypeVerts_permutations
     {n k : Nat} {embed : Fin k → Fin n} {π : List (Fin n)}
-    (hπ : π ∈ (getNonTypeVerts n k embed).permutations) :
+    (hπ : π ∈ (getNonTypeVerts n k embed).permutations') :
     π.Nodup := by
-  exact (List.mem_permutations.mp hπ).nodup_iff.mpr (getNonTypeVerts_nodup embed)
+  exact (List.mem_permutations'.mp hπ).nodup_iff.mpr (getNonTypeVerts_nodup embed)
 
 /-- A computable fast isomorphism check for two Sym2Graphs (empty typed) -/
 def isEmptyIsoFast_bool {n : Nat} (G₁ G₂ : Sym2Graph n) : Bool :=
   if G₁.edges.card != G₂.edges.card then false
   else
-    let perms := (List.finRange n).permutations
+    -- `permutations'` (structural recursion) rather than `permutations`
+    -- (well-founded recursion): the kernel cannot reduce `Acc.rec`, so the
+    -- WF version blocks `decide +kernel` on every iso check.
+    let perms := (List.finRange n).permutations'
     let edges := allEdges n
     perms.any fun perm =>
       edges.all fun e =>
@@ -421,7 +424,7 @@ def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGra
   else
     let nonType1 := getNonTypeVerts n k G₁.type_embed
     let nonType2 := getNonTypeVerts n k G₂.type_embed
-    let L2_perms := nonType2.permutations
+    let L2_perms := nonType2.permutations'
     let edges := allEdges n
     L2_perms.any fun p2 =>
       let fullMap := buildFullMap n k G₁.type_embed G₂.type_embed nonType1 p2

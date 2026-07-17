@@ -1,6 +1,7 @@
 import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import LeanFlagAlgebras.Flags.ForbidFreePruned
+import LeanFlagAlgebras.Flags.GeneratorOptions
 import Mathlib.Tactic
 
 /-! # Density theorem generators
@@ -313,7 +314,7 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
             unfold $flagName
             simp [$forbidFlag:ident]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
+            flag_bridge_decide
         ))
         generatedEqZero := generatedEqZero + 1
     else
@@ -328,7 +329,7 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
             unfold $flagName
             simp [$forbidFlag:ident]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
+            flag_bridge_decide
         ))
         generatedNeZero := generatedNeZero + 1
 
@@ -546,7 +547,7 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
     elabUnlessDefined batchName.getId (← `(
         theorem $batchName
             : ([ $(sym2Terms.extract lo hi),* ] : List ℚ) = [ $(valueTerms.extract lo hi),* ] := by
-          native_decide))
+          flag_bridge_decide))
     for li in [0:(hi - lo)] do
       let (thmName, f1Name, f2Name, gName, rhsTerm) := pairs[lo + li]!
       if ¬ (← isDeclaredInScope thmName.getId) then
@@ -609,33 +610,17 @@ elab "generate_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
 elab "generate_flag_pair_density_theorems_no_forbid" patS:num hostS:num kS:num mS:num : command => do
   genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat none
 
--- `generate_pruned_flag_pair_density_theorems patN hostN k m F`
+-- `generate_forbid_free_flag_pair_density_theorems patN hostN k m F`
 --
--- The **edge-based, induced** analogue of `generate_flag_pair_density_theorems`: `F` is a
--- `Sym2Graph mF` *term* (no tag, no canonical flag), and the forbid-free pattern/host split uses
--- the induced predicate `inducedContains F` (via `evalInducedFreeMask`). The emitted
--- `flagDensity₂ … = value` `@[simp]` theorems are identical in form — a density is a density; only
--- *which* pairs are computed differs. Prerequisite: the `F`-free pattern/host flags must exist (run
--- the edge-based generators `generate_forbid_free_flags …` first).
-elab "generate_pruned_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
-    fStx:ident : command => do
-  let k := kS.getNat
-  let m := mS.getNat
-  let patN := patS.getNat
-  let hostN := hostS.getNat
-  let patterns ← evalFlagDataRows k m patN
-  let hosts ← evalFlagDataRows k m hostN
-  let patMask ← evalInducedFreeMask patN fStx
-  let hostMask ← evalInducedFreeMask hostN fStx
-  let patternFree := inducedFreeFlagIndices patMask patterns
-  let hostFree := inducedFreeFlagIndices hostMask hosts
-  genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
-
-/-- `generate_subgraph_free_flag_pair_density_theorems patN hostN k m F`: the **subgraph**-forbidding
-analogue. A density is a density (forbid-independent); only *which* pattern/host pairs are computed
-differs — here via the subgraph mask `evalSubgraphFreeMask` (`subgraphContains F`). Prerequisite: the
-subgraph-`F`-free pattern/host flags must exist (`generate_subgraph_free_flags …` first). -/
-elab "generate_subgraph_free_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
+-- The forbid-free analogue of `generate_flag_pair_density_theorems` for the edge-based
+-- generators: `F` is a `Sym2Graph mF` *term* (no tag, no canonical flag), forbidden as a
+-- (non-induced) **subgraph**. The emitted `flagDensity₂ … = value` `@[simp]` theorems are
+-- identical in form — a density is a density; only *which* pattern/host pairs are computed
+-- differs, via the subgraph mask `evalSubgraphFreeMask` (`subgraphContains F`). For a complete
+-- `F` the subgraph-free and induced-free splits coincide, so this single command serves both
+-- the clique and the general route. Prerequisite: the `F`-free pattern/host flags must exist
+-- (run `generate_forbid_free_flags …` first).
+elab "generate_forbid_free_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
     fStx:ident : command => do
   let k := kS.getNat
   let m := mS.getNat

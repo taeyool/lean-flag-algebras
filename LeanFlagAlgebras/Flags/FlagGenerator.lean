@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
 import «LeanFlagAlgebras».FlagAlgebra.Compute.FlagEnumeration
+import «LeanFlagAlgebras».Flags.GeneratorOptions
 import Mathlib.Tactic
 
 /-! # Flag generation macros
@@ -35,6 +36,10 @@ time and build the syntax for the generated terms.
 
 open Sym2 Lean Elab Command
 open FlagAlgebras.Compute
+
+-- The `flagGen.kernelDecide` option and the `flag_bridge_decide` dispatch
+-- tactic the emitted lemmas use live in `Flags/GeneratorOptions.lean` (shared
+-- with the density / forbid-free generators).
 
 /-- Build a `Finset` of edges from a list of `Sym2 (Fin n)` (used in generated
 `Sym2Graph`/`Sym2LabeledGraph` definitions). -/
@@ -282,7 +287,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
       theorem $flagListEqName :
           ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n)))
             = FlagAlgebras.Compute.genEmptyTypedFlags $(Quote.quote n) := by
-        native_decide
+        flag_bridge_decide
     ))
 
   elabUnlessDefined setEqUnivName.getId (← `(
@@ -462,7 +467,7 @@ Add `generate_empty_typed_flags {n}` before this command."
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName :
           ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide
+        flag_bridge_decide
     ))
 
   for i in [0:count] do
@@ -523,7 +528,7 @@ Add `generate_empty_typed_flags {n}` before this command."
       theorem $flagListEqName :
           ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
             = FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n) := by
-        native_decide
+        flag_bridge_decide
     ))
 
   elabUnlessDefined setEqUnivName.getId (← `(

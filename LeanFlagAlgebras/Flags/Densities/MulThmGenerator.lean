@@ -5,12 +5,15 @@ import Mathlib.Tactic
 
 /-! # Flag multiplication theorem generators
 
-This module provides two elaboration-time commands that synthesize flag-product
+This module provides elaboration-time commands that synthesize flag-product
 ("multiplication") theorems for a fixed flag type, expanding the product of two
 pattern flags into the basis of larger host flags:
 
 * `generate_forbid_mul_theorems patN hostN k m Forbid` — products modulo a
   forbidden subgraph (right-hand side holds up to `=ᵢ[Forbid.toFinFlag]`).
+* `generate_forbid_free_mul_theorems patN hostN k m F` — forbid-free products for the
+  edge-based generators (`F` a `Sym2Graph` term forbidden as a subgraph; dispatches
+  internally on whether `F` is a complete graph).
 * `generate_mul_theorems patN hostN k m` — plain products (`=`), no forbid.
 
 See each command's documentation below for the meaning of the parameters and
@@ -175,18 +178,17 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
 
   logInfo s!"Generated {generated} {forbidS.getId.toString}-free multiplication theorem(s): pattern {patternTag}"
 
--- `generate_forbid_free_mul_theorems patN hostN k m F`
---
--- The **edge-based** analogue of `generate_forbid_free_mul_theorems`: `F` is a `Sym2Graph mF`
--- *term* (no tag, no canonical forbidden flag). The forbid flag in the emitted
+-- Clique-route implementation of `generate_forbid_free_mul_theorems` (see the dispatching
+-- command below); only reached for a complete forbid `F = completeSym2Graph r`, where the
+-- induced and subgraph splits coincide. The forbid flag in the emitted
 -- `=ᵢ[Sym2EmptyTypedFlag.toFlag ⟦F⟧]` theorems is `⟦F⟧` directly; the forbid-free pattern/host split
 -- is **induced** (`evalInducedFreeMask`); and the proof rewrites the
 -- `basisVector_quot_mul_inducedForbidEq_sum (toFlag ⟦F⟧)` expansion onto the edge-based forbid-free host set
 -- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
--- generators). Prerequisite: run `generate_forbid_free_empty_typed_flags hostN F`
--- (and, for `k > 0`, `generate_forbid_free_flags hostN k m F`) first.
-elab "generate_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident
-    HgStx:term:max hmemStx:term:max : command => do
+-- generators). `HgStx`/`hmemStx` are the hereditary-class witnesses (`completeGraph (Fin r)`
+-- and `completeSym2Graph_finFlag_mem_forbiddenFlags r`), synthesized by the dispatcher.
+private def runForbidFreeMulClique (patS hostS kS mS : TSyntax `num) (fStx : TSyntax `ident)
+    (HgStx hmemStx : TSyntax `term) : CommandElabM Unit := do
   let k := kS.getNat
   let m := mS.getNat
   let patN := patS.getNat
@@ -287,15 +289,14 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 
   logInfo s!"Generated {generated} {tag}-free (edge-based, forbid-free-host) multiplication theorem(s): pattern {patternTag}"
 
-/-- `generate_subgraph_free_mul_theorems patN hostN k m F`: the **subgraph**-forbidding analogue of
-`generate_forbid_free_mul_theorems`. The emitted `… =[F.toLabeledGraph.graph] …` theorems use
+/-- Subgraph-route implementation of `generate_forbid_free_mul_theorems` (see the dispatching
+command below). The emitted `… =[F.toLabeledGraph.graph] …` theorems use
 the subgraph capstone `basisVector_quot_mul_forbidEq_sum_subgraph` (no canonical forbidden flag / `hmem`
 needed — the capstone derives the membership from `supergraphFamily`), the subgraph free split
 (`evalSubgraphFreeMask`), and rewrite onto the subgraph-`F`-free host set
-`flagSetHfree_hostN_k_m_<F>` whose `…_eq` filter matches the capstone's exactly. Prerequisite: run
-`generate_subgraph_free_empty_typed_flags hostN F` (and, for `k > 0`,
-`generate_subgraph_free_flags hostN k m F`) first. -/
-elab "generate_subgraph_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident : command => do
+`flagSetHfree_hostN_k_m_<F>` whose `…_eq` filter matches the capstone's exactly. -/
+private def runForbidFreeMulSubgraph (patS hostS kS mS : TSyntax `num)
+    (fStx : TSyntax `ident) : CommandElabM Unit := do
   let k := kS.getNat
   let m := mS.getNat
   let patN := patS.getNat
@@ -319,9 +320,9 @@ elab "generate_subgraph_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx
   let flagSetHfreeValEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_val_eq")
   let ns ← getCurrNamespace
   unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
-    throwError s!"`generate_subgraph_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
+    throwError s!"`generate_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
 subgraph-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
-`generate_subgraph_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_subgraph_free_flags {hostN} {k} {m} {tag}`" else ""} first."
+`generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
 
   let hostIdents : Array (TSyntax `ident) :=
     (hostFree.map (fun h => mkIdent (Name.mkSimple s!"FlagAlgebra_{hostTag}_{h}"))).toArray
@@ -387,6 +388,31 @@ subgraph-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
         generated := generated + 1
 
   logInfo s!"Generated {generated} subgraph-{tag}-free (forbid-free-host) multiplication theorem(s): pattern {patternTag}"
+
+-- `generate_forbid_free_mul_theorems patN hostN k m F`
+--
+-- Generate the forbid-free multiplication theorems for the edge-based generators: `F` is a
+-- `Sym2Graph mF` *term* (no tag, no canonical forbidden flag), forbidden as a (non-induced)
+-- **subgraph**. Dispatches on `F`: a complete graph `completeSym2Graph r` takes the clique
+-- route (for cliques the induced and subgraph splits coincide; the hereditary-class witnesses
+-- `completeGraph (Fin r)` / `completeSym2Graph_finFlag_mem_forbiddenFlags r` are synthesized
+-- automatically), any other `F` the subgraph-capstone route. Prerequisite: run
+-- `generate_forbid_free_empty_typed_flags hostN F` (and, for `k > 0`,
+-- `generate_forbid_free_flags hostN k m F`) first.
+--
+-- Example — K₃-free products of 2-vertex flags of type `FlagType_1_0` over 3-vertex hosts
+-- (the Mantel setup): `generate_forbid_free_mul_theorems 2 3 1 0 K3`
+elab "generate_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident : command => do
+  match ← detectCompleteR fStx with
+  | some r =>
+    -- Synthesize the witnesses as scope-free identifiers (`mkIdent`), resolved at the call
+    -- site like every other generated reference — the caller has them in scope.
+    let Hg := mkIdent (Name.mkSimple "completeGraph")
+    let hmem := mkIdent (Name.mkSimple "completeSym2Graph_finFlag_mem_forbiddenFlags")
+    let HgStx ← `($Hg (Fin $(Quote.quote r)))
+    let hmemStx ← `($hmem $(Quote.quote r))
+    runForbidFreeMulClique patS hostS kS mS fStx HgStx hmemStx
+  | none => runForbidFreeMulSubgraph patS hostS kS mS fStx
 
 -- `generate_mul_theorems patN hostN k m`
 --

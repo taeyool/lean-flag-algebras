@@ -225,21 +225,25 @@ end FlagAlgebras.Compute
 
 namespace Flags.Densities
 
-/-! ### Edge-based, pruning-backed empty-typed generation (Task 5b)
+/-! ### Edge-based, pruning-backed empty-typed generation (clique route)
 
-`generate_forbid_free_empty_typed_flags n F` is the arbitrary-`F` analogue of
-`generate_forbid_free_empty_typed_flags`, with two differences:
+`runForbidFreeEmptyTypedClique` is the clique-route implementation of
+`generate_forbid_free_empty_typed_flags` (see the dispatching command below); it is only
+reached for a complete forbid `F = completeSym2Graph r`, where the induced-free and
+subgraph-free splits coincide, so the induced machinery below realizes the
+subgraph-forbidding semantics:
 
 * the forbidden graph is a **`Sym2Graph m` term** `F` read directly (D2) — no
   `generate_complete_graph`, no canonical forbidden flag, no tag resolution;
-* the forbid-free split uses the **induced** predicate `inducedContains F` (correct for arbitrary
-  `F`, not only complete graphs), and the completeness lemma cites
+* the forbid-free split uses the cheap `hasClique` scan (with a generic `inducedContains`
+  fallback), and the completeness lemma cites
   `prunedFreeFlags_toFinset_eq` (genuine pruning) — **no full enumeration**.
 
 (The `evalBoolList` / `evalInducedFreeMask` helpers live in `Densities.DensityThmGenerator`, shared
 with the edge-based pair-density / mul commands.) -/
 
-elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => do
+private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax `ident) :
+    CommandElabM Unit := do
   let n := nStx.getNat
   let tagFull := toString fStx.getId
   let tag := (tagFull.splitOn ".").getLastD tagFull
@@ -307,7 +311,7 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => d
     | some r => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedCliqueFreeFlags $(Quote.quote r) $(Quote.quote n)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned, FlagAlgebras.Compute.prunedCliqueFreeFlags_toFinset_eq $fStx
             (FlagAlgebras.Compute.completeSym2Graph_edges_iff $(Quote.quote r)) (by decide) $(Quote.quote n)]
         ext S
@@ -315,7 +319,7 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => d
     | none => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedFreeFlags $fStx $(Quote.quote n)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned, FlagAlgebras.Compute.prunedFreeFlags_toFinset_eq $fStx (by decide) $(Quote.quote n)]
         ext S
         simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq])
@@ -363,7 +367,7 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => d
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
             = [ $freeBridgeTerms,* ]) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
@@ -387,13 +391,15 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => d
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}) by genuine \
 pruning (edge-based, induced) via the {pathDesc}; flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
 
-/-- `generate_subgraph_free_empty_typed_flags n F`: the **subgraph**-forbidding analogue of
-`generate_forbid_free_empty_typed_flags`. Emits the empty-typed `n`-vertex flags that are
-*subgraph*-`F`-free (computed by `subgraphContains`), the analytic test `isHfree` (zero density of
-every supergraph of `F`), the completeness `sym2FlagSetHfree…_eq` (direct `native_decide`), and the
-`FinFlag`-side bridge `flagSetHfree…_eq` to the filter the subgraph capstone
-`basisVector_quot_forbidEq_sum_subgraph` expands over (via `supergraphFamily_filter_iff`). -/
-elab "generate_subgraph_free_empty_typed_flags" nStx:num fStx:ident : command => do
+/-- Subgraph-route implementation of `generate_forbid_free_empty_typed_flags` (see the
+dispatching command below), for a non-complete forbid `F`. Emits the empty-typed `n`-vertex
+flags that are *subgraph*-`F`-free (computed by `subgraphContains`), the analytic test `isHfree`
+(zero density of every supergraph of `F`), the completeness `sym2FlagSetHfree…_eq` (direct
+`native_decide`), and the `FinFlag`-side bridge `flagSetHfree…_eq` to the filter the subgraph
+capstone `basisVector_quot_forbidEq_sum_subgraph` expands over (via
+`supergraphFamily_filter_iff`). -/
+private def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSyntax `ident) :
+    CommandElabM Unit := do
   let n := nStx.getNat
   let tagFull := toString fStx.getId
   let tag := (tagFull.splitOn ".").getLastD tagFull
@@ -448,7 +454,7 @@ elab "generate_subgraph_free_empty_typed_flags" nStx:num fStx:ident : command =>
 
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide
     ))
 
   elabUnlessDefined flagSetName.getId (← `(
@@ -488,7 +494,7 @@ elab "generate_subgraph_free_empty_typed_flags" nStx:num fStx:ident : command =>
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
             = [ $freeBridgeTerms,* ]) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
@@ -509,13 +515,26 @@ elab "generate_subgraph_free_empty_typed_flags" nStx:num fStx:ident : command =>
   logInfo s!"Generated {freeIndices.length} subgraph-{tag}-free empty-typed flags (n = {n}); \
 flagSetHfree_{n}_0_0_{tag} completeness + capstone-filter bridge + val_eq proved."
 
-/-- `generate_forbid_free_flags n k m F`: the **edge-based** σ-typed analogue of
-`generate_forbid_free_empty_typed_flags`. `F` is a `Sym2Graph mF` *term* (no canonical
-forbidden flag, no tag); the forbid-free split is **induced** (`inducedContains F` on each flag's
-underlying graph), and the forbid-free test is the analytic density on `⟦F⟧`. Requires the
-underlying `F`-free empty-typed flags (run `generate_forbid_free_empty_typed_flags n F`
-first). Completeness routes through the graph-level `genFlagsHfree` + `genFlagsHfree_toFinset_eq`. -/
-elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : command => do
+-- `generate_forbid_free_empty_typed_flags n F`
+--
+-- Emit the `n`-vertex empty-typed flags avoiding `F` — a `Sym2Graph m` *term* — as a
+-- (non-induced) **subgraph**, together with the completeness lemma `flagSetHfree_n_0_0_<F>`
+-- and its `…_val_eq` form. Dispatches on `F`: a complete graph `completeSym2Graph r` takes
+-- the pruned clique route (induced ≡ subgraph for cliques; cheap `hasClique` split, pruned
+-- completeness — no full enumeration), any other `F` the subgraph-capstone route
+-- (`subgraphContains` split, `native_decide` completeness).
+elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => do
+  match ← detectCompleteR fStx with
+  | some _ => runForbidFreeEmptyTypedClique nStx fStx
+  | none => runForbidFreeEmptyTypedSubgraph nStx fStx
+
+/-- Clique-route implementation of `generate_forbid_free_flags` (see the dispatching command
+at the end of this file); only reached for a complete forbid `F`, where the induced and
+subgraph splits coincide. The forbid-free split is **induced** (`inducedContains F` on each
+flag's underlying graph), and the forbid-free test is the analytic density on `⟦F⟧`.
+Completeness routes through the graph-level `genFlagsHfree` + `genFlagsHfree_toFinset_eq`. -/
+private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
+    CommandElabM Unit := do
   let k := kStx.getNat
   let m := mStx.getNat
   let n := nStx.getNat
@@ -604,7 +623,7 @@ elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : comman
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide))
+        flag_bridge_decide))
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -665,7 +684,7 @@ elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : comman
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
                 (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned]
         exact FlagAlgebras.Compute.genFlagsHfreePruned_toFinset_eq (FlagAlgebras.Compute.qFree $fStx)
           $isHfreeName
@@ -710,7 +729,7 @@ elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : comman
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
@@ -732,13 +751,14 @@ elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : comman
   logInfo s!"Generated {freeArr.size} {tag}-free σ-typed flags (n = {n}, type {k}_{m}) edge-based \
 (induced); flagSetHfree_{n}_{k}_{m}_{tag} completeness + val_eq proved."
 
-/-- `generate_subgraph_free_flags n k m F`: the **subgraph**-forbidding σ-typed analogue. Identical
-flag/type/downward emission to `generate_forbid_free_flags`; only the forbid-free split
-(`subgraphContains`), the analytic test `isHfree` (zero density of every supergraph of `F`), the
-completeness (direct `native_decide`), and the `FinFlag`-bridge `flagSetHfree…_eq` (to the subgraph
-capstone's filter, via `supergraphFamily_filter_iff`) differ. Requires the subgraph-`F`-free
-empty-typed flags first (`generate_subgraph_free_empty_typed_flags n F`). -/
-elab "generate_subgraph_free_flags" nStx:num kStx:num mStx:num fStx:ident : command => do
+/-- Subgraph-route implementation of `generate_forbid_free_flags` (see the dispatching command
+at the end of this file), for a non-complete forbid `F`. Identical flag/type/downward emission
+to the clique route; only the forbid-free split (`subgraphContains`), the analytic test
+`isHfree` (zero density of every supergraph of `F`), the completeness (direct `native_decide`),
+and the `FinFlag`-bridge `flagSetHfree…_eq` (to the subgraph capstone's filter, via
+`supergraphFamily_filter_iff`) differ. -/
+private def runForbidFreeTypedSubgraph (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
+    CommandElabM Unit := do
   let k := kStx.getNat
   let m := mStx.getNat
   let n := nStx.getNat
@@ -746,8 +766,8 @@ elab "generate_subgraph_free_flags" nStx:num kStx:num mStx:num fStx:ident : comm
   let tag := (tagFull.splitOn ".").getLastD tagFull
 
   unless (← isDeclaredInScope (Name.mkSimple s!"Flag_{n}_0_0_0")) do
-    throwError s!"`generate_subgraph_free_flags {n} {k} {m} {tag}` requires the underlying \
-subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_flags {n} {tag}` first."
+    throwError s!"`generate_forbid_free_flags {n} {k} {m} {tag}` requires the underlying \
+subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_flags {n} {tag}` first."
 
   let allTypeEdges ← evalCanonicalEdgeLists k
   let typeEdges := allTypeEdges.getD m []
@@ -822,7 +842,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_f
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide))
+        flag_bridge_decide))
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -868,7 +888,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_f
 
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide))
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
@@ -904,7 +924,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_f
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
@@ -925,5 +945,19 @@ subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_f
 
   logInfo s!"Generated {freeArr.size} subgraph-{tag}-free σ-typed flags (n = {n}, type {k}_{m}); \
 flagSetHfree_{n}_{k}_{m}_{tag} completeness + capstone-filter bridge + val_eq proved."
+
+-- `generate_forbid_free_flags n k m F`
+--
+-- The σ-typed analogue of `generate_forbid_free_empty_typed_flags` (flag size `n` first,
+-- matching `generate_flags n k m`): emit the σ-typed `n`-vertex flags `Flag_n_k_m_i` avoiding
+-- `F` — a `Sym2Graph mF` *term* — as a (non-induced) **subgraph**, their `unlabel`/`downward`
+-- bridges, and the completeness `flagSetHfree_n_k_m_<F>`. Dispatches on `F` exactly like the
+-- empty-typed command (complete graph → pruned clique route, any other `F` → subgraph-capstone
+-- route). Requires the matching `F`-free empty-typed flags (run
+-- `generate_forbid_free_empty_typed_flags n F` first).
+elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident : command => do
+  match ← detectCompleteR fStx with
+  | some _ => runForbidFreeTypedClique nStx kStx mStx fStx
+  | none => runForbidFreeTypedSubgraph nStx kStx mStx fStx
 
 end Flags.Densities

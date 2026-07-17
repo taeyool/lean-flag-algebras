@@ -6,10 +6,10 @@
 #   * the forbidden graph as a `Sym2Graph` term  `def K{r} := completeSym2Graph r`
 #     (decision D2 -- no canonical forbidden flag, no `generate_complete_graph`);
 #   * the edge-based pruned generation / density / multiplication commands
-#       generate_pruned_forbid_free_empty_typed_flags <n> K{r}
-#       generate_pruned_forbid_free_flags             <n> <k> <m> K{r}
-#       generate_pruned_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
-#       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r} (completeGraph (Fin r)) (completeSym2Graph_finFlag_mem_forbiddenFlags r)
+#       generate_forbid_free_empty_typed_flags <n> K{r}
+#       generate_forbid_free_flags             <n> <k> <m> K{r}
+#       generate_forbid_free_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
+#       generate_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
 #     (densities are computed inside Lean -- no `*.json`, no Python regeneration);
 #   * M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the σ_t / v_t flag vectors, the forbid-free
 #     objective expansion (branch B, closed by `flag_expand_hfree`), and the
@@ -22,10 +22,12 @@
 # `Certificates/*_cert.json` reproduces the committed `Flagmatic/*.lean` (modulo
 # cosmetics) and `lake build` accepts the generated proofs.
 #
-# Scope: any forbidden graph. A complete graph K_r takes Route A (`completeSym2Graph`,
-# `generate_pruned_*`); any other graph takes Route B (an explicit edge set forbidden as a
-# non-induced subgraph, `generate_subgraph_free_*`). Both are auto-generated end to end
-# (see the K3/K4/K5 and C5 examples in this directory).
+# Scope: any forbidden graph, always forbidden as a (non-induced) subgraph. A complete
+# graph K_r takes Route A (a `completeSym2Graph r` term); any other graph takes Route B
+# (an explicit edge set). Both routes emit the *same* `generate_forbid_free_*` commands —
+# the Lean commands dispatch on clique-ness internally (for cliques the induced and
+# subgraph splits coincide, enabling the pruned fast path). Both are auto-generated end
+# to end (see the K3/K4/K5 and C5 examples in this directory).
 # `inspect` reports against those generation commands too: it dumps the
 # cert -> Lean-identifier mapping (every flag string resolved via the in-memory
 # enumeration) and prints the command block -- there are no JSON
@@ -65,12 +67,12 @@ This file has two layers:
   (2) CLI subcommands — used as a script. Four are provided:
 
         inspect       certificate -> Lean-identifier mapping dump + the
-                      `generate_pruned_*` command block it maps to (every
+                      `generate_forbid_free_*` command block it maps to (every
                       flagmatic string is resolved via the in-memory
                       enumeration, so this also validates the cert)
         gen-skeleton  write a complete starter Lean file: imports + opens +
                       namespace + `def K{r} := completeSym2Graph r` + the
-                      `generate_pruned_*` commands + M_t/dM_t/LM_t with PSD
+                      `generate_forbid_free_*` commands + M_t/dM_t/LM_t with PSD
                       lemmas + σ_t/v_t + auto-proved main theorem (branch A) or
                       forbid-free expand lemma (`flag_expand_hfree`) + main
                       theorem (branch B). For an unsupported description
@@ -676,7 +678,7 @@ def _expansion_coefficients(
 
     The split is computed **in-memory** (no JSON): a host graph is *forbidden*
     iff it contains the forbid graph as a **(non-induced) subgraph**
-    (`subgraph_contains`) — the same semantics the `generate_subgraph_free_*`
+    (`subgraph_contains`) — the same semantics the `generate_forbid_free_*`
     pruned generators use. For a complete forbid `K_r` this coincides with
     `induced_density(K_r; host) ≠ 0`, so complete-graph examples are unchanged.
     """
@@ -792,7 +794,7 @@ def render_expand_under_forbid(
     # is skipped (not just the nonzero-objective-density ones in `forbidden`): the
     # pruned commands never generate its `Flag_N_0_0_i`, so naming one — even in a
     # `= 0` lemma — would reference an undefined constant. Uses subgraph containment
-    # so the skip set exactly matches the `generate_subgraph_free_*` output.
+    # so the skip set exactly matches the `generate_forbid_free_*` output.
     skip = frozenset(
         i for i, he in enumerate(load_graphs(N))
         if subgraph_contains(forbid_n, forbid_edges, N, he))
@@ -1108,9 +1110,9 @@ def render_pruned_commands(cert: dict) -> str:
     """Emit the `def K{r}` forbid graph + the edge-based pruned generation /
     density / multiplication commands this certificate needs.
 
-    Command-set rule (derived from the `generate_pruned_*` elab prerequisites):
+    Command-set rule (derived from the `generate_forbid_free_*` elab prerequisites):
       * empty-typed sizes = {objective size} ∪ {host N} ∪ {pattern size per block}
-        (a σ-typed `generate_pruned_forbid_free_flags n …` needs empty-typed at n;
+        (a σ-typed `generate_forbid_free_flags n …` needs empty-typed at n;
         the objective + host expansion name `FlagAlgebra_{n_obj/N}_0_0_*`);
       * typed flags        = (patN, k, m) and (N, k, m) per block;
       * pair-density + mul = (patN, N, k, m) per block.
@@ -1145,24 +1147,24 @@ def render_pruned_commands(cert: dict) -> str:
 
     if subgraph_mode:
         # Non-complete forbid → *subgraph* semantics (Route B). The forbidden graph is an explicit
-        # `Sym2Graph` term, and the `generate_subgraph_free_*` commands emit the subgraph-`F`-free
+        # `Sym2Graph` term, and the `generate_forbid_free_*` commands emit the subgraph-`F`-free
         # flags whose completeness bridges to the subgraph capstone's filter.
         edge_terms = ", ".join(f"s({u}, {v})" for (u, v) in sorted(forbid_edges))
         lines = [
             f"-- Subgraph-forbidding generation (Route B): `{tag}` is forbidden as a (non-induced)",
-            f"-- subgraph. The `generate_subgraph_free_*` commands emit only the subgraph-`{tag}`-free",
+            f"-- subgraph. The `generate_forbid_free_*` commands emit only the subgraph-`{tag}`-free",
             f"-- flags + completeness bridging to the subgraph capstone filter (`supergraphFamily`).",
             f"def {tag} : Sym2Graph {forbid_n} where",
             f"  edges := {{{edge_terms}}}",
             f"  edges_valid := by decide",
         ]
         for n in sorted(empty_sizes):
-            lines.append(f"generate_subgraph_free_empty_typed_flags {n} {tag}")
+            lines.append(f"generate_forbid_free_empty_typed_flags {n} {tag}")
         for (n, k, m) in sorted(typed_triples):
-            lines.append(f"generate_subgraph_free_flags {n} {k} {m} {tag}")
+            lines.append(f"generate_forbid_free_flags {n} {k} {m} {tag}")
         for (patN, k, m) in block_params:
-            lines.append(f"generate_subgraph_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
-            lines.append(f"generate_subgraph_free_mul_theorems {patN} {N} {k} {m} {tag}")
+            lines.append(f"generate_forbid_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
+            lines.append(f"generate_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
         return "\n".join(lines)
 
     lines = [
@@ -1174,15 +1176,14 @@ def render_pruned_commands(cert: dict) -> str:
         f"def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}",
     ]
     for n in sorted(empty_sizes):
-        lines.append(f"generate_pruned_forbid_free_empty_typed_flags {n} {tag}")
+        lines.append(f"generate_forbid_free_empty_typed_flags {n} {tag}")
     for (n, k, m) in sorted(typed_triples):
-        lines.append(f"generate_pruned_forbid_free_flags {n} {k} {m} {tag}")
+        lines.append(f"generate_forbid_free_flags {n} {k} {m} {tag}")
     for (patN, k, m) in block_params:
         lines.append(
-            f"generate_pruned_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
+            f"generate_forbid_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
         lines.append(
-            f"generate_pruned_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}"
-            f" (completeGraph (Fin {forbid_n})) (completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})")
+            f"generate_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
     return "\n".join(lines)
 
 
@@ -1225,7 +1226,7 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
 
 def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> str:
     """Render a complete starter Lean API file for the edge-based pruned pipeline:
-    imports, opens, namespace, `def K{r}` + `generate_pruned_*` commands, the
+    imports, opens, namespace, `def K{r}` + `generate_forbid_free_*` commands, the
     matrix/PSD defs, σ_t / v_t definitions, the forbid-free objective expansion
     (branch B), and the auto-proved main theorem."""
     opens = "\n".join(LEAN_OPENS)

@@ -280,22 +280,25 @@ machine-checked formalization of flag algebras for finite simple graphs,
 together with a certificate-to-proof compiler that reconstructs, in Lean,
 algebraic proofs suggested by external certificate data.
 
-The formalization covers the mathematical layer of the method: partially
+The formalization covers the mathematical content of the method: partially
 labeled graphs, their densities in large graphs, the quotient algebra of
 density expressions, graph-limit semantics through positive homomorphisms, and
 the downward operators used to average out labels.  The external search is
 used only to suggest finite data: lists of flags, target-density data, and
 rational positive-semidefinite matrices.  Lean independently computes the
-required density and multiplication facts, connects these computations to the
-quotient definitions, verifies positive-semidefiniteness exactly over
-$\mathbb{Q}$, and automates the algebraic normalization steps that occur in
-flag-algebra proofs.  As case studies, we obtain machine-checked proofs of Mantel's
-theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
-a $C_4$-density bound for triangle-free graphs.
+required density and multiplication facts, proves that these computations
+agree with the mathematical definitions, verifies positive-semidefiniteness
+exactly over $\mathbb{Q}$, and automates the algebraic normalization steps
+that occur in flag-algebra proofs.  As case studies, the compiler yields machine-checked
+proofs of several Tur\'an-type bounds, including Mantel's theorem, a
+$C_4$-density bound for triangle-free graphs, edge-density bounds for
+$K_4$-free, $K_5$-free, and $C_5$-free graphs, and, most notably, the
+Erd\H{o}s pentagon theorem, for which no proof avoiding flag algebras is
+known.
 
 The design of the formalization also led us to new theoretical results about
 constrained flag algebras.  We distinguish the built-in-constraint approach,
-which builds a hereditary graph constraint, such as ordinary \(H\)-freeness,
+which builds a hereditary graph constraint, such as \(H\)-freeness,
 into the
 flag algebra from the start, from the ensemble approach, which
 imposes constraints afterwards by testing inequalities on random labeled views
@@ -304,7 +307,7 @@ but not in general for all densities of finite labeled patterns.  We prove a
 root-planting criterion characterizing when they do agree, establish a
 positive result for blow-up-closed classes that also covers
 substitution-closed classes, and exhibit a counterexample based on
-ordinary \(C_4\)-free graphs.  This
+\(C_4\)-free graphs.  This
 post hoc ensemble viewpoint also points beyond Razborov's original hereditary
 setting: it can impose constraints on graph limits that are not themselves
 hereditary, such as restricting to an extremal-density or equality slice.
@@ -319,30 +322,30 @@ library reported in the main part of the paper.
 
 \paragraph{Why flag algebras matter.}
 Many central questions in extremal combinatorics ask how often one finite
-pattern can occur when another pattern is forbidden.  Let $P$ be a finite
+pattern can occur when another pattern is forbidden.  Let $F$ be a finite
 simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 \[
-  \mathrm{ex}(n,\,P;\,\mathcal{H})
+  \mathrm{ex}(n,\,F;\,\mathcal{H})
   :=
   \max\bigl\{
-    \text{number of induced copies of }P\text{ in }G
+    \text{number of induced copies of }F\text{ in }G
     \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
   \bigr\},
 \]
-where an \emph{induced copy} of $P$ in $G$ is a vertex subset
-$S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
+where an \emph{induced copy} of $F$ in $G$ is a vertex subset
+$S\subseteq V(G)$ with $|S|=|V(F)|$ and $G[S]\cong F$, and
 \emph{\(\mathcal{H}\)-free} means that $G$ contains no copy of any
 member of $\mathcal{H}$ as a (not necessarily induced) subgraph.  The corresponding asymptotic
-question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit; we call this the \emph{Tur\'an density} of $P$ with
+question normalizes by the number of possible $|V(F)|$-vertex subsets and
+takes a limit; we call this the \emph{Tur\'an density} of $F$ with
 respect to $\mathcal{H}$:
 \[
-  \tdensity{P}{\mathcal{H}}
+  \tdensity{F}{\mathcal{H}}
   :=
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
 \]
-For example, Mantel's theorem states that a triangle-free graph on $n$
+For example, Mantel's theorem~\cite{mantel} states that a triangle-free graph on $n$
 vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
 $\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
 complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
@@ -356,9 +359,9 @@ records that, in any sufficiently large triangle-free graph, at most half of
 all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
-Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
+Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
 about \emph{all} sufficiently large \(\mathcal{H}\)-free graphs: a valid upper
-bound must guarantee that the proportion of induced copies of $P$ never exceeds
+bound must guarantee that the proportion of induced copies of $F$ never exceeds
 the claimed value, asymptotically, no matter how large the host graph is.  No
 finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
@@ -384,7 +387,7 @@ data.  The aim is not only to verify a few final inequalities, but to
 formalize enough of the method that certificates found by
 semidefinite-programming search can be checked against the mathematical
 definitions inside the proof assistant.  The formalization therefore covers the
-mathematical layer of the method: partially labeled graphs, their densities in
+mathematical content of the method: partially labeled graphs, their densities in
 large graphs, the quotient algebra of density expressions, graph-limit
 semantics through positive homomorphisms, and the downward operator that
 transfers labeled reasoning back to unlabeled graph statements.
@@ -411,7 +414,7 @@ studies.
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
 constraint is imposed.  In the \emph{built-in-constraint} approach, one builds
-a hereditary graph constraint, such as ordinary \(H\)-freeness, into the
+a hereditary graph constraint, such as \(H\)-freeness, into the
 flag algebra
 from the start; this is the traditional way to work in an algebra of
 \(H\)-free graphs.  In the \emph{ensemble} approach, one first works
@@ -421,7 +424,7 @@ for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
 characterizing when they do agree, gives a positive result for
 blow-up-closed classes that also covers substitution-closed classes, and exhibits a
-counterexample based on ordinary \(C_4\)-free graphs.  The ensemble viewpoint is useful
+counterexample based on \(C_4\)-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
 to an extremal-density or equality slice.  This is the semantic viewpoint
@@ -434,9 +437,11 @@ flags, densities, the quotient algebra, positive homomorphisms, semantic
 order, and the downward/random-homomorphism machinery used in flag-algebra
 proofs.  Second, it builds a certificate-to-proof compiler that turns
 externally generated rational certificate data into Lean-checked algebraic
-proofs.  Third, it demonstrates the compiler on machine-checked proofs of
-Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
-and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
+proofs.  Third, it demonstrates the compiler on seven certificates, including
+machine-checked proofs of Mantel's theorem, the Erd\H{o}s pentagon theorem,
+and a $C_4$-density bound for triangle-free graphs; outside the certificate
+pipeline, the same infrastructure proves Goodman-type inequalities and the
+matching lower bounds.  Fourth, it develops the
 semantic comparison between built-in-constraint and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
 generalization beyond hereditary constraints.  A separate, automatically
@@ -500,7 +505,7 @@ that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
 (that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
 The vertices in $\operatorname{Im}(\theta_F)$ are called the
-\emph{labeled vertices} of $F$; the remaining $|V(F)|-k$ vertices are
+\emph{labeled vertices}, or \emph{roots}, of $F$; the remaining $|V(F)|-k$ vertices are
 \emph{unlabeled}.
 For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
 we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
@@ -621,8 +626,8 @@ In a density calculation, flags play two roles.  The \emph{pattern flag} is the
 small local configuration whose occurrence is being measured, while the
 \emph{host flag} is the larger flag in which we sample vertices.  These are
 roles in the calculation, not different kinds of flags.  We use \(F\), or
-\(F_i\), for pattern flags, \(G\) for host flags, and \(H\) for an intermediate
-flag when a third flag variable is needed.
+\(F_i\), for pattern flags, \(G\) for host flags, and \(G'\) for an intermediate
+host flag when a third flag variable is needed.
 
 % Once pattern flags have been named, the basic question is simple: if we sample
 % a few extra vertices in a larger host flag, what smaller flag do we see?
@@ -678,7 +683,7 @@ When $n < m$, we set $\den{F}{G} := 0$ by convention.
 \paragraph{Chain rule.}
 The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling a larger
-intermediate flag $H$ of size $n$ inside $G$ and then sampling $F$ inside $H$.
+intermediate flag $G'$ of size $n$ inside $G$ and then sampling~$F$ inside $G'$.
 These two procedures are the same experiment, which gives the following identity.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
@@ -687,7 +692,7 @@ These two procedures are the same experiment, which gives the following identity
   \[
     \den{F}{G}
     \;=\;
-    \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,\den{H}{G}.
+    \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,\den{G'}{G}.
   \]
 \end{lemma}
 
@@ -732,7 +737,7 @@ Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
   \label{eq:zero-element}
-  \mathbf e_F - \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H,
+  \mathbf e_F - \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'},
   \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
 The \emph{flag algebra} is the quotient module
@@ -740,7 +745,7 @@ The \emph{flag algebra} is the quotient module
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 We write $[F]$ for the class of $\mathbf e_F$ in $\mathcal{A}^\sigma$.
-Throughout the paper, capital letters $F,G,H$ denote finite flags, while
+Throughout the paper, capital letters $F,G$ denote finite flags, while
 lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.  Thus a
 positive homomorphism is applied to $[F]$, not directly to the finite flag
 $F$.  For familiar named or pictorial flags, such as $K_2$ or
@@ -748,7 +753,7 @@ $\fKtwobull$, we retain the standard shorthand of omitting the brackets in
 algebraic formulas; there the surrounding algebraic context makes the
 canonical image unambiguous.
 
-We call $\sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H$ the
+We call $\sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'}$ the
 \emph{expansion of $F$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
@@ -757,7 +762,7 @@ equality
 \[
   [F]
   =
-  \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,[H]
+  \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,[G']
   \qquad\text{in }\mathcal{A}^\sigma .
 \]
 We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
@@ -800,7 +805,7 @@ $\ell \geq m_1 + m_2 - k$ and define
   \label{eq:mul}
   [F_1] \cdot [F_2]
   \;:=\;
-  \sum_{H \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{H} \cdot [H]
+  \sum_{G' \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G'} \cdot [G']
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance this definition appears to depend on both the choice of $\ell$
@@ -931,35 +936,35 @@ since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}
 Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
-The problem of bounding the Tur\'an density $\tdensity{P}{\mathcal{H}}$ from above
+The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  If $[P] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
-  $\tdensity{P}{\mathcal{H}} \leq c$.
+  If $[F] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
-  Suppose for contradiction that $\tdensity{P}{\mathcal{H}} > c$.  Then
+  Suppose for contradiction that $\tdensity{F}{\mathcal{H}} > c$.  Then
   there exist $\varepsilon > 0$ and an increasing sequence of
   \(\mathcal{H}\)-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
-  $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
+  $\den{F}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
   is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and
   $\mathcal{F}^\emptyset$ is countable, this product space is compact and
   metrizable.  Hence the sequence $\{p^{G_k}\}$ has a convergent
   subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
-  $\phi([P]) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $[P] \leq c \cdot \mathbf{1}$ means $\phi([P]) \leq c$ for every
+  $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
+  $[F] \leq c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
-whose $P$-density approaches $c$, pinning down $\tdensity{P}{\mathcal{H}}$ exactly.
+whose $F$-density approaches~$c$, pinning down $\tdensity{F}{\mathcal{H}}$ exactly.
 Two classical results illustrate how this looks in flag algebra language.
 
-\begin{example}[Mantel's theorem]\label{ex:mantel}
+\begin{example}[Mantel's theorem~\cite{mantel}]\label{ex:mantel}
   Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$, meaning
   asymptotically at most half of all vertex pairs in a triangle-free graph
   are edges.  The upper bound translates into the flag algebra inequality
@@ -1032,6 +1037,18 @@ is then defined on flag basis elements by
   q_\sigma(F)\cdot [F|_\emptyset],
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
+For $f\in\mathcal{A}^\sigma$, we call
+$\llbracket f\rrbracket_\sigma$ the \emph{downward image} of $f$.
+
+We write $\langle\sigma\rangle_0\in\mathcal{A}^\emptyset$ for the empty-type
+flag-algebra basis element represented by the underlying graph of the type
+$\sigma$, with its vertex labels forgotten.  Applying the downward operator to
+the typed unit therefore gives
+\[
+  \llbracket \mathbf{1}_\sigma \rrbracket_\sigma
+  =
+  q_\sigma(\mathbf{1}_\sigma)\,\langle\sigma\rangle_0.
+\]
 
 \paragraph{Random homomorphisms.}
 A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ represents a limiting
@@ -1039,9 +1056,10 @@ object for unlabeled graph sequences.  Given such a $\phi_0$ and a non-empty
 flag type $\sigma$, one can generate a \emph{random positive homomorphism} on
 $\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
 limiting object.
-Whenever $\phi_0(\sigma) > 0$ (i.e., $\sigma$ has positive density as an unlabeled graph in the limiting object),
+Whenever $\phi_0(\langle\sigma\rangle_0) > 0$ (i.e., $\sigma$ has positive
+density as an unlabeled graph in the limiting object),
 the following holds~\cite{razborov2007flag}:
-there exists a unique probability distribution on $\poshom{\sigma}$,
+there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
 such that for every $f \in \mathcal{A}^\sigma$, the random positive
 homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
@@ -1051,9 +1069,11 @@ homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
   \frac{\phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)}
        {\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)}.
 \end{equation}
-Note that the denominator is positive by the assumption $\phi_0(\sigma) > 0$, since
-$\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr) = q_\sigma(\mathbf{1}_\sigma)\cdot\phi_0(\sigma)$
-and $q_\sigma(\mathbf{1}_\sigma) > 0$ always.
+Note that the denominator is positive by the assumption
+$\phi_0(\langle\sigma\rangle_0)>0$, since
+$\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)
+=q_\sigma(\mathbf{1}_\sigma)\cdot
+\phi_0(\langle\sigma\rangle_0)$ and $q_\sigma(\mathbf{1}_\sigma)>0$ always.
 
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
@@ -1065,7 +1085,8 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
 \end{theorem}
 \begin{proof}[Proof sketch]
   Let $\phi_0 \in \poshom{\emptyset}$; we show $\phi_0(\llbracket f \rrbracket_\sigma) \geq 0$.
-  If $\phi_0(\sigma) = 0$, then the flag type $\sigma$ has zero density in the limiting object, and every $\sigma$-flag density also
+  If $\phi_0(\langle\sigma\rangle_0) = 0$, then the flag type $\sigma$ has zero
+  density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
   Since $0 \leq_\sigma f$, every positive homomorphism on
@@ -1083,13 +1104,13 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $[P] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
+A flag algebra proof of $[F] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
 first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
 non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
-then, one adds $\llbracket f \rrbracket_\sigma$ to $[P]$ or an expansion of $[P]$
+then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
-\eqref{eq:sum-to-one} to conclude $[P] \leq c\cdot\mathbf{1}$.
+\eqref{eq:sum-to-one} to conclude $[F] \leq c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
@@ -1142,7 +1163,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % \end{proof}
 %
 % The corollary says that every positive homomorphism on
-% $\mathcal{A}^\emptyset$ evaluates the downward-averaged quadratic expression
+% $\mathcal{A}^\emptyset$ evaluates the downward image of the quadratic expression
 % as a non-negative real number.  This is the engine behind flag algebra bounds
 % based on positive semidefinite matrices.  Given a target element
 % $x_0 \in \mathcal{A}^\emptyset$ and a claimed bound $c \in \mathbb{R}$, if
@@ -2045,17 +2066,19 @@ random sample.  The Lean expression
 homomorphism represented by \(\phi\) on \(f\).
 
 The hypothesis named \lean{h$\sigma$} in the theorem is the Lean assumption
-that \(\phi_0(\langle\sigma\rangle_0)>0\).  It says that the type \(\sigma\),
-viewed as an empty-type flag-algebra element, has positive density under
-\(\phi_0\).  Under this hypothesis Lean constructs a probability measure
+that \(\phi_0(\langle\sigma\rangle_0)>0\).  By the notation introduced in
+\Cref{sec:background-downward}, \(\langle\sigma\rangle_0\) is the empty-type
+basis element represented by the underlying graph of \(\sigma\), so the
+hypothesis says that this graph has positive density under \(\phi_0\).  Under
+this hypothesis Lean constructs a probability measure
 \(\mathbb{P}\) on \lean{PositiveHomSpace} with argument \(\sigma\).  This
 \(\mathbb{P}\) is the formal
-random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
+random extension \(\Ext_\sigma(\phi_0)\): it is the measure obtained by
 randomly choosing an occurrence of the type \(\sigma\) in the limiting object
 represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
 \(\mathbb{P}\) is present, a point of this measurable space may be regarded as
-a random positive homomorphism drawn from this distribution.  The
-displayed theorem states the defining identity of that distribution:
+a random positive homomorphism drawn from this measure.  The
+displayed theorem states the defining identity of that measure:
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -2087,13 +2110,13 @@ Equation~\eqref{eq:ensemble}:
        {\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)} .
 \]
 The denominator is the normalizing value of the typed unit after applying the
-downward operator, and it is positive under the hypothesis
-\(\phi_0(\langle\sigma\rangle_0)>0\).  Thus the theorem gives a concrete way
-to compute the unlabeled value \(\phi_0(\llbracket f\rrbracket_0)\) from typed
-evaluations: randomly label the limiting object represented by \(\phi_0\) with
-a copy of \(\sigma\), evaluate \(f\) in the resulting \(\sigma\)-typed positive
-homomorphism, average these values, and multiply by the positive normalizing
-denominator.
+downward operator.  It is a positive scalar multiple of
+\(\phi_0(\langle\sigma\rangle_0)\), so it is positive under the hypothesis
+above.  Thus the theorem gives a concrete way to compute the unlabeled value
+\(\phi_0(\llbracket f\rrbracket_0)\) from typed evaluations: randomly label the
+limiting object represented by \(\phi_0\) with a copy of \(\sigma\), evaluate
+\(f\) in the resulting \(\sigma\)-typed positive homomorphism, average these
+values, and multiply by the positive normalizing denominator.
 
 The payoff is the Lean transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: if \(f\) is non-negative under every positive
@@ -2295,8 +2318,8 @@ The second approach is computation-oriented.  Instead of proving each finite
 calculation from scratch, we prove once that an algorithm correctly performs the
 kind of calculation we need, and then we let Lean run that algorithm inside later
 proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
-Lean formalization is the computable counterpart of the abstract flag-algebra
-layer described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
+Lean formalization is the computable counterpart of the specification layer
+described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
 such as testing whether two labeled graphs represent the same flag, computing a
 density, or expanding a product,
 it provides a program that carries out the calculation and a theorem saying that
@@ -2804,8 +2827,8 @@ uses that table to automate complete flag-algebra arguments.
 
 All certificate problems considered in this section have the same form: among
 graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
-element $[P]$ of a target graph $P$ satisfies
-$[P]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
+element $[F]$ of a target graph $F$ satisfies
+$[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
 the flags whose basis elements enter the proof, together with the rational
 matrices needed to rewrite the difference between the
@@ -2832,19 +2855,19 @@ trust model and evaluate the compiler on seven certificates.
 \label{sec:flagmatic-background}
 
 At a high level, a flag-algebra proof of
-$[P] \leq_{\mathcal H} c\cdot\mathbf 1$ supplies downward quadratic forms $Q_t$
+$[F] \leq_{\mathcal H} c\cdot\mathbf 1$ supplies downward quadratic forms $Q_t$
 and a remainder $r$ that, under the $\mathcal H$-free condition, justify the
 forward chain
 \[
-  [P]
-  \leq_{\mathcal H} [P]+\sum_t Q_t
+  [F]
+  \leq_{\mathcal H} [F]+\sum_t Q_t
   = c\cdot\mathbf 1-r
   \leq_{\mathcal H} c\cdot\mathbf 1.
 \]
 The first inequality uses the non-negativity of the $Q_t$, the equality is the
 finite calculation recorded by the certificate, and the final inequality uses
 the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
-$c\cdot\mathbf 1-[P]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
+$c\cdot\mathbf 1-[F]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
 searches for this data using an SDP solver and outputs it as a certificate.  Our
 compiler consumes the certificate as untrusted input and asks Lean to verify
 the non-negativity of the $Q_t$ and $r$ and the intervening equality.
@@ -2885,7 +2908,7 @@ $K_2$ in this basis gives
 The coefficients in the second identity are simply the edge densities of the
 three host graphs: $0$, $1/3$, and $2/3$.
 
-It remains to expand the square in the rooted three-vertex basis and apply the
+It remains to expand the square in the labeled three-vertex basis and apply the
 downward operator term by term:
 \begin{align*}
   \bigl\llbracket
@@ -2910,7 +2933,7 @@ downward operator term by term:
 \end{align*}
 The fractions in the second line are the downward normalizing factors: they
 record whether one, two, or all three choices of the labeled vertex produce
-the displayed rooted flag.
+the displayed labeled flag.
 
 Write
 \[
@@ -2943,13 +2966,13 @@ inequality follows because the
 remainder $\tfrac13\cdot\fbarPthree$ is non-negative.
 
 The essential certificate data for this example are precisely the nontrivial
-terms in this derivation: the two rooted flags $\fKtwobull$ and
+terms in this derivation: the two labeled flags $\fKtwobull$ and
 $\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
 the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
 analogous flags, PSD matrices, and remainder coefficients.
-Checking even this certificate requires expanding a product, computing a
-downward average, expanding the objective and the unit to a common host size,
+Checking even this certificate requires expanding a product, computing its
+downward image, expanding the objective and the unit to a common host size,
 and collecting coefficients.  These calculations remain suitable for
 automation but become impractical to perform and transcribe by hand for larger
 certificates; they are exactly what our compiler automates.
@@ -2985,16 +3008,16 @@ In general, write
 The resulting certificate specifies an identity, modulo the $\mathcal H$-free
 condition, of the form
 \[
-  [P] + \sum_t Q_t
+  [F] + \sum_t Q_t
   =
   c\cdot\mathbf{1} - r,
 \]
 where every $M_t$ is PSD and $r$ has non-negative coefficients.  Equivalently,
 the certificate justifies the forward derivation
 \begin{align*}
-  [P]
+  [F]
   \leq_{\mathcal H}
-  \bigl([P]+\sum_t Q_t\bigr)
+  \bigl([F]+\sum_t Q_t\bigr)
   =
   \bigl(c\cdot\mathbf 1-r\bigr)
   \leq_{\mathcal H} c\cdot\mathbf 1.
@@ -3036,19 +3059,19 @@ parts are:
     a list of $\sigma_t$-flags $E_{t,i}$; their basis elements
     $e_{t,i}:=[E_{t,i}]$ form the vector $v_t$ and the quadratic form
     $\langle v_t, M_t\, v_t\rangle$.
-  \item \textbf{Lifting the objective (when needed).}  If the target graph $P$
-    has fewer than $N$ vertices, one auxiliary lemma first lifts $[P]$ to the
+  \item \textbf{Lifting the objective (when needed).}  If the target graph $F$
+    has fewer than $N$ vertices, one auxiliary lemma first lifts $[F]$ to the
     host-size basis, dropping the contributions that contain a copy of the
     forbidden graph.
   \item \textbf{The main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
     and $r$ the certificate's non-negative remainder, the compiler assembles
-    the bound $[P] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
+    the bound $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
     in \Cref{sec:flagmatic-background}:
     \[
-      [P]
+      [F]
       \;\leq_{\mathcal H}\;
-      [P] + \sum_t Q_t
+      [F] + \sum_t Q_t
       \;=\;
       c\cdot\mathbf 1-r
       \;\leq_{\mathcal H}\;
@@ -3194,12 +3217,12 @@ specification-level $H$-free semantic condition from
 filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
 two representations: it proves that the flag decoded from $K$ belongs to
 \lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$
-as an ordinary subgraph.
+as a subgraph.
 Consequently, the $H$-free condition forces the decoded $K$ to have density
 zero, which justifies removing from the objective expansion the host flags
 that the reflection computation found to contain $K$.
 
-For a non-complete $H$, an ordinary subgraph copy may have additional edges
+For a non-complete $H$, a subgraph copy may have additional edges
 and therefore need not be an induced copy of $H$.  The alternative tactic
 \lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
 supergraphs internally.  Thus the two tactics implement the same lifting step
@@ -3209,7 +3232,7 @@ forbidden graphs into the certificate.
 \paragraph{The main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward
 chain from \Cref{sec:flagmatic-background}.  The certificate identity
-$[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
+$[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
 non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
 Mantel example, there is one $Q_t$---the downward image of the halved
 square---and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
@@ -3217,7 +3240,7 @@ define $r$ explicitly; it appears as the coefficientwise difference left after
 the two sides are expanded in a common basis.
 
 The first step is to prove
-$[P]\leq_H[P]+\sum_tQ_t$.  It uses the following general lemma:
+$[F]\leq_H[F]+\sum_tQ_t$.  It uses the following general lemma:
 \begin{lstlisting}
 theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} 
     {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
@@ -3231,13 +3254,13 @@ The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
 vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
 semidefiniteness generated in Part~2.  
-The proof starts from the reflexive inequality $[P]\leq_H[P]$ and applies this
+The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
-$[P]\leq_H[P]+\sum_tQ_t$.
+$[F]\leq_H[F]+\sum_tQ_t$.
 
-It remains to prove $[P]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
+It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
 this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
-flags.  When necessary, the Part~3 lemma first expands $[P]$ to host size.
+flags.  When necessary, the Part~3 lemma first expands $[F]$ to host size.
 Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
 and downward identities generated in Part~1.  The appropriate
@@ -3251,7 +3274,7 @@ exactly the remainder $r$ from the certificate calculation.  The tactic
 \lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
 the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
 the normalization and the final non-negativity check together verify the
-conceptual equality $[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
+conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
 $c\cdot\mathbf 1-r\leq_H c\cdot\mathbf 1$.
 
 \paragraph{The translator.}
@@ -3363,11 +3386,11 @@ all with $8\times8$ matrices.  Together, these examples exercise both objective
 branches and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
-forbidden graph.  For a complete forbidden graph, induced containment and ordinary subgraph
+forbidden graph.  For a complete forbidden graph, induced containment and subgraph
 containment coincide, so the compiler may use the induced-graph filter.  They
 do not coincide for $C_5$, and this example therefore uses the
 subgraph-forbidding generators and expansion tactics.  The certificate still
-proves the ordinary statement that graphs containing no $C_5$ subgraph have
+proves the statement that graphs containing no $C_5$ subgraph have
 edge density at most $1/2$.
 
 The generated certificate argument establishes only the upper-bound direction.
@@ -3585,8 +3608,8 @@ common ambient type.  We therefore use the dependent sum
   \mathop{\Sigma}_{\ell : \mathbb{N}}
     \text{\lean{Flag}}~\sigma~(\text{\lean{Fin}}~\ell).
 \]
-A size-$\ell_1$ flag $H$ is therefore stored as the tagged pair
-$\langle\ell_1,H\rangle$, while a size-$\ell_2$ flag $G$ is stored as
+A size-$\ell_1$ flag $G'$ is therefore stored as the tagged pair
+$\langle\ell_1,G'\rangle$, while a size-$\ell_2$ flag $G$ is stored as
 $\langle\ell_2,G\rangle$.  The second components have different types, but
 both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
 Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
@@ -3606,24 +3629,24 @@ the two product expansions has yet been proved.
 The missing bridge is the zero-space expansion identity.  It relates linear
 combinations in the common flag algebra without equating their vertex types.
 For every
-$H\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
+$G'\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
 \[
-  [H]
+  [G']
   =
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
-    \den{H}{G}\,[G]
+    \den{G'}{G}\,[G]
   \qquad\text{in }\mathcal{A}^{\sigma}.
 \]
 Substituting this identity into the size-$\ell_1$ product gives
 \[
 \begin{aligned}
-  \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
-    \den{F_1,F_2}{H}\,[H]
+  \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
+    \den{F_1,F_2}{G'}\,[G']
   &=
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
     \left(
-      \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
-        \den{F_1,F_2}{H}\,\den{H}{G}
+      \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
+        \den{F_1,F_2}{G'}\,\den{G'}{G}
     \right)[G] \\
   &=
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
@@ -3879,8 +3902,12 @@ pattern, rather than a claim that no alternative exists.
 
 The definition of \lean{forbidLE} in \Cref{sec:forbidden} was a deliberate
 departure from the usual presentation of constrained flag algebras.  Rather
-than build a new algebra for each forbidden family, it retains the ambient
-algebra and restricts the graph limits against which an inequality is tested.
+than building a new algebra for each forbidden family, it retains the same
+ambient algebra and imposes the forbidden-graph condition only when
+interpreting its elements.  It considers only unlabeled positive
+homomorphisms satisfying that condition, chooses an occurrence of the flag
+type at random in the limiting object represented by each homomorphism, and
+requires the desired inequality to hold with probability one over that choice.
 This engineering choice exposed a mathematical problem in its own right:
 when does this \emph{ensemble semantics} validate exactly the same typed
 inequalities as a flag algebra in which the constraint is built in from the
@@ -3888,45 +3915,49 @@ beginning?  This led us to develop a separate mathematical meta-theory.
 This section gives the definitions and main results needed to state that answer;
 a forthcoming paper will present the full theory and its applications.
 
-\paragraph{The quotient space of constrained limits.}
+\paragraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let
 \(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
 \(\sigma\).  Here \emph{hereditary} means closed under taking induced
 subgraphs: if \(G\in\mathcal K\) and \(S\subseteq V(G)\), then
-\(G[S]\in\mathcal K\).  This condition does not require closure under deleting
-edges.  In particular, the ordinary \(H\)-free classes used earlier are
-hereditary, because taking an induced subgraph cannot create a new ordinary
+\(G[S]\in\mathcal K\).  In particular, the \(H\)-free classes used earlier are
+hereditary, because taking an induced subgraph cannot create a new
 subgraph isomorphic to \(H\).
 
-We write \(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
+To make the underlying graph class explicit, we write
+\(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
 \(\sigma\)-typed flag algebra and
 \(\FlagAlg{\sigma}[\mathcal K]\) for the algebra constructed using only graphs
-in \(\mathcal K\).  A \(\sigma\)-flag is \emph{\(\mathcal K\)-forbidden} if its
-underlying unlabeled graph does not belong to \(\mathcal K\).  Because
-\(\mathcal K\) is hereditary, the span of these forbidden flags is an ideal,
-and the usual constrained algebra is canonically isomorphic to the quotient
-of the ambient algebra by this ideal.  We therefore have a canonical quotient
-map
+in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
+belong to \(\mathcal K\) occur in this constrained algebra.  Because
+\(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags---those whose
+underlying graphs lie outside \(\mathcal K\)---span an ideal,\footnote{An ideal \(I\) in a
+commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace---hence closed
+under addition and real scalar multiplication---that is also closed under
+multiplication by arbitrary elements of \(A\): if \(x\in I\) and \(a\in A\),
+then \(ax\in I\).  This property makes the quotient \(A/I\) an algebra in which
+every element of \(I\) is identified with zero.} and the usual constrained
+algebra is canonically isomorphic to the quotient of the ambient algebra by
+this ideal.  We therefore have a canonical quotient map
 \[
   q_\sigma:
   \FlagAlg{\sigma}[\mathcal G]
   \twoheadrightarrow
   \FlagAlg{\sigma}[\mathcal K]
 \]
-that sends every forbidden flag to zero and every other flag to its
-counterpart in the constrained algebra.
+that sends every \(\sigma\)-flag outside \(\mathcal K\) to zero and every
+remaining flag to its counterpart in the constrained algebra.
 
 Let
 \[
   X_\sigma
   :=
-  \mathrm{Hom}^{+}\!\bigl(\FlagAlg{\sigma}[\mathcal G],\R\bigr)
+  \mathrm{Hom}^{+}\bigl(\FlagAlg{\sigma}[\mathcal G],\R\bigr)
 \]
-be the compact space of positive unital algebra homomorphisms on the ambient
-algebra, with the topology of pointwise convergence on flags.  Here
-\emph{positive} means non-negative on each individual flag.  Pullback along
-\(q_\sigma\) embeds the positive homomorphisms of the constrained algebra into
-\(X_\sigma\).  Its image is
+be the compact space of positive homomorphisms on the ambient
+algebra, with the topology of pointwise convergence on \(\sigma\)-flags.
+Pullback along \(q_\sigma\) embeds the positive homomorphisms of the constrained
+algebra into \(X_\sigma\).  Its image is
 \begin{equation}\label{eq:Q-sigma}
   Q_\sigma
   :=
@@ -3934,14 +3965,12 @@ algebra, with the topology of pointwise convergence on flags.  Here
     \psi\circ q_\sigma
     \;\middle|\;
     \psi\in
-    \mathrm{Hom}^{+}\!\bigl(\FlagAlg{\sigma}[\mathcal K],\R\bigr)
+    \mathrm{Hom}^{+}\bigl(\FlagAlg{\sigma}[\mathcal K],\R\bigr)
   \right\}
   \subseteq X_\sigma.
 \end{equation}
-Thus \(Q_\sigma\) is the space of all constrained \(\sigma\)-labeled limits
-that the built-in quotient semantics admits.  It imposes no random-rooting
-requirement, so the labels may be fixed at exceptional vertices that a
-uniformly random labeling would miss asymptotically.
+Thus \(Q_\sigma\) is the space of all \(\sigma\)-typed positive homomorphisms
+admitted by the constrained quotient.
 
 There is also an intrinsic description:
 \begin{equation}\label{eq:Q-sigma-intrinsic}
@@ -3951,34 +3980,38 @@ There is also an intrinsic description:
     \chi\in X_\sigma
     \;\middle|\;
     \chi([F])=0
-    \text{ for every \(\mathcal K\)-forbidden \(\sigma\)-flag \(F\)}
+    \text{ for every \(\sigma\)-flag \(F\) whose underlying graph lies outside
+    \(\mathcal K\)}
   \right\}.
 \end{equation}
 The role of heredity is to justify the quotient presentation above.  Every
-flag appearing in the product of a forbidden flag with another flag contains
-the first flag as an induced subflag.  It therefore also lies outside
-\(\mathcal K\), since otherwise heredity would put that induced subflag back
-in \(\mathcal K\).  Hence multiplying a forbidden flag by any other flag
-produces a linear combination of forbidden flags, so their span is precisely
-the ideal killed by \(q_\sigma\).  Once this presentation is established, a
-homomorphism vanishing on every forbidden flag vanishes on the whole ideal and
-therefore factors through \(q_\sigma\) by the universal property of the quotient.
+flag $F$ appearing in the product of a flag $F'$ outside \(\mathcal K\) with another
+flag $F''$ contains the first flag $F'$ as an induced subflag.  It therefore also lies
+outside \(\mathcal K\), since otherwise heredity would put that induced subflag $F'$
+back in \(\mathcal K\).  Hence multiplying a flag outside \(\mathcal K\) by any
+other flag produces a linear combination of flags outside \(\mathcal K\), so
+their span is precisely the ideal killed by \(q_\sigma\).  Once this
+presentation is established, a homomorphism vanishing on every flag outside
+\(\mathcal K\) vanishes on the whole ideal and therefore factors through
+\(q_\sigma\) by the universal property of the quotient.
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
-\(Q_0:=Q_{\emptyt}\) for the corresponding space of constrained unlabeled
-limits.
+\(Q_0:=Q_{\emptyset}\) for the corresponding space of constrained empty-type
+positive homomorphisms.
 
 \paragraph{Random extensions and the root-planting space.}
-Assume that \(\sigma\) is non-degenerate for \(\mathcal K\): equivalently,
+Assume that \(\sigma\) is \emph{non-degenerate} for \(\mathcal K\): that is,
 there is some \(\phi_0\in Q_0\) for which
-\(\phi_0(\langle\sigma\rangle_0)>0\).  For every such \(\phi_0\), Razborov's
-extension theorem gives a probability measure
-\(\Ext_\sigma(\phi_0)\) on \(X_\sigma\), obtained by choosing a uniformly
-random occurrence of \(\sigma\) in finite graphs approaching \(\phi_0\) and
-passing to the limit.  For a probability measure \(\mu\) on \(X_\sigma\), its
-support \(\operatorname{supp}(\mu)\) consists of those points \(\chi\) for
-which every open neighborhood of \(\chi\) has positive \(\mu\)-measure.
+\(\phi_0(\langle\sigma\rangle_0)>0\).  By Razborov's random-extension result
+recalled in \Cref{sec:background-downward}, every such \(\phi_0\) determines a
+unique probability measure \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\).  It is
+obtained by choosing a uniformly random occurrence of \(\sigma\) in finite
+graphs approaching \(\phi_0\) and passing to the limit.  For a probability
+measure \(\mu\) on \(X_\sigma\), its
+support \(\operatorname{supp}(\mu)\) consists of those points
+\(\chi\in X_\sigma\) for which every open neighborhood of \(\chi\) has positive
+\(\mu\)-measure.
 Define
 \begin{equation}\label{eq:S-sigma}
   S_\sigma
@@ -3986,35 +4019,57 @@ Define
   \overline{
     \bigcup_{\substack{\phi_0\in Q_0\\
                         \phi_0(\langle\sigma\rangle_0)>0}}
-    \operatorname{supp}\!\bigl(\Ext_\sigma(\phi_0)\bigr)
+    \operatorname{supp}\bigl(\Ext_\sigma(\phi_0)\bigr)
   }
   \subseteq X_\sigma,
 \end{equation}
-where the closure is taken in \(X_\sigma\).  Thus \(S_\sigma\) is exactly the
-closed set generated by labeled views that remain visible with positive
-probability under random rooting in constrained unlabeled limits.
+Thus, to form \(S_\sigma\), we first collect the supports of
+\(\Ext_\sigma(\phi_0)\) over all \(\phi_0\in Q_0\) for which \(\sigma\) has
+positive density.  We then take the closure in \(X_\sigma\), adding every point
+that can be approximated arbitrarily closely by points in those supports.
 
-Random rooting preserves the constraint:
+The support of each random-extension measure is contained in the constrained
+space:
 \[
-  \operatorname{supp}\!\bigl(\Ext_\sigma(\phi_0)\bigr)
+  \operatorname{supp}\bigl(\Ext_\sigma(\phi_0)\bigr)
   \subseteq Q_\sigma
   \qquad
   \bigl(\phi_0\in Q_0,
         \phi_0(\langle\sigma\rangle_0)>0\bigr).
 \]
-Indeed, the downward average of a forbidden \(\sigma\)-flag is a non-negative
-multiple of its forbidden underlying graph.  Every \(\phi_0\in Q_0\) evaluates
-that graph to zero, so the expected density of the forbidden flag under the
-random extension is zero.  Its density is pointwise non-negative and therefore
-zero almost surely.  Applying this argument to the countable collection of
-forbidden flags shows that the random extension lies in \(Q_\sigma\) almost
-surely.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the fundamental
-inclusion
+Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
+downward operator to \([F]\) produces a non-negative multiple of
+\([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
+Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if
+\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
+identity~\eqref{eq:ensemble} gives
+\[
+  \mathbb{E}[\phi([F])]=0.
+\]
+Since every positive homomorphism \(\phi'\) satisfies \(\phi'([F])\geq0\), it
+follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
+\(\phi([F])=0\) with probability one.  Applying this argument to
+the countable collection of flags outside \(\mathcal K\) shows that a positive
+homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
+probability one.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the
+fundamental inclusion
 \begin{equation}\label{eq:S-subset-Q}
   S_\sigma\subseteq Q_\sigma.
 \end{equation}
 We say that \((\mathcal G,\mathcal K,\sigma)\) is
-\emph{root-plantable} when \(S_\sigma=Q_\sigma\).
+\emph{root-plantable}\footnote{The vertices distinguished by the type
+\(\sigma\) are often called the \emph{roots}.  A finite \(\sigma\)-flag
+\((G,\theta)\) records the flag-density profile around a specified embedding
+\(\theta:\sigma\to G\) of these roots.  To \emph{plant} this rooted profile in
+a larger graph \(H\in\mathcal K\), with no roots fixed in advance, is to produce
+many embeddings \(\widehat\theta:\sigma\to H\) whose flag-density profiles
+approximate the profile specified by \((G,\theta)\).  Here ``many'' means that
+these embeddings form a fraction bounded away from zero of all embeddings of
+\(\sigma\) in \(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\)
+reproduces the prescribed profile with non-vanishing probability.  The equality
+\(S_\sigma=Q_\sigma\) says that every constrained \(\sigma\)-typed positive
+homomorphism can be approximated by finite constructions of this kind.} when
+\(S_\sigma=Q_\sigma\).
 
 \begin{definition}[Quotient and ensemble orders]\label{def:two-constrained-orders}
 For \(f,g\in\FlagAlg{\sigma}[\mathcal G]\), define
@@ -4038,14 +4093,19 @@ for every \(\phi_0\in Q_0\) satisfying
 The first is the ordinary semantic order in the constrained quotient algebra:
 equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
-\(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second asks for the inequality
-to hold almost surely after randomly labeling a constrained unlabeled limit.
-For the ordinary \(H\)-free class---graphs containing no ordinary subgraph
+\(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second quantifies over each
+\(\phi_0\in Q_0\) appearing at the end of the definition.  For such a
+\(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
+on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
+\(\sigma\) into finite graphs approximating \(\phi_0\), using the embedded
+vertices as labels, and passing to the limit.  Thus the second display requires
+that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
+\(\chi(f)\leq\chi(g)\) with probability one.
+For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
-\(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
+\(\lean{forbidLE H f g}\) in our Lean formalization implements this ensemble order.  The corresponding
 notions of positivity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
-\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\); an arbitrary comparison of
-\(f\) and \(g\) is the positivity comparison for \(g-f\).
+\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\).
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-closure-summary}
 Let \(\mathcal K\) be hereditary and let \(\sigma\) be non-degenerate for
@@ -4055,7 +4115,7 @@ Let \(\mathcal K\) be hereditary and let \(\sigma\) be non-degenerate for
   \quad\Longrightarrow\quad
   f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g.
 \]
-Moreover, the two orders agree for every pair \(f,g\) if and only if the class
+Moreover, the two orders agree for every pair \((f,g)\) if and only if the class
 is root-plantable at \(\sigma\):
 \[
   \left(
@@ -4113,19 +4173,21 @@ closure.  Consequently, quotient and ensemble orders agree at every
 non-degenerate type in a blow-up-closed class.
 \end{theorem}
 
-The proof starts from a labeled limit in \(Q_\sigma\), represented by finite
-rooted graphs in \(\mathcal K\), and enlarges the fibers containing the roots
-until random rooting hits them with probability bounded away from zero.
+The proof starts from a \(\sigma\)-typed positive homomorphism in \(Q_\sigma\),
+represented by a sequence of finite \(\sigma\)-flags whose underlying graphs
+lie in \(\mathcal K\).  It enlarges the fibers containing the labeled vertices
+until a uniformly random occurrence of \(\sigma\) selects vertices from those
+fibers with probability bounded away from zero.
 When a fixed finite flag is sampled from the resulting blow-up, with
 probability tending to one its sampled vertices lie in distinct fibers.
-Their adjacencies are then determined entirely by the original rooted graph;
+Their adjacencies are then determined entirely by the original \(\sigma\)-flag;
 the internal structure of the enlarged fibers is invisible.  The target
-labeled limit therefore lies in the closure of supports defining
+positive homomorphism therefore lies in the closure of supports defining
 \(S_\sigma\).  This proves \(Q_\sigma\subseteq S_\sigma\), while the opposite
 inclusion is \eqref{eq:S-subset-Q}.
 
 Independent blow-ups, in which every fiber is an independent set, give the
-clone-closed case and cover all ordinary \(K_r\)-free classes for \(r\geq3\),
+clone-closed case and cover all \(K_r\)-free classes for \(r\geq3\),
 including triangle-free graphs.  Complete blow-ups give the true-clone-closed
 case and cover, for example, cluster graphs.  Both are instances of
 \Cref{thm:blowup-root-plantability-summary}.  For infinite hereditary classes,
@@ -4133,20 +4195,23 @@ substitution-closure is a stronger sufficient condition.
 
 \paragraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
-class of ordinary \(C_4\)-free graphs---those containing no \(C_4\) as a
+class of \(C_4\)-free graphs---those containing no \(C_4\) as a
 subgraph---and let \(\sigma_1\) be the one-vertex type.
-Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a uniformly random root
-has normalized degree tending to zero.  If \(d\) denotes the one-root flag
-density that the root is adjacent to one additional sampled vertex, then
-\(-d\) is ensemble positive.  On the other hand, arbitrarily large stars are
-\(C_4\)-free, and selecting the center as the root gives \(d=1\).  This
-labeled limit belongs to \(Q_{\sigma_1}\) but not to \(S_{\sigma_1}\), so
+Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
+at random has normalized degree tending to zero.  Let \(d\) denote the
+\(\sigma_1\)-flag density that the labeled vertex is adjacent to one additional
+sampled vertex; then \(-d\) is ensemble positive.  On the other hand,
+arbitrarily large stars are \(C_4\)-free, and selecting the center as the
+labeled vertex gives \(d=1\).  This
+positive homomorphism belongs to \(Q_{\sigma_1}\) but not to
+\(S_{\sigma_1}\), so
 \[
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \]
 Accordingly, \(-d\) is not quotient positive.  The example exhibits a genuine
-gap between the two typed orders: quotient semantics may select an exceptional
-root, whereas ensemble semantics sees only roots visible to random sampling.
+gap between the two typed orders: quotient semantics permits a specially
+chosen vertex to carry the label, whereas ensemble semantics obtains the
+labeled vertex by uniform random sampling.
 The gap does not invalidate the final unlabeled density bounds used in this
 paper; it concerns the completeness of the intermediate typed calculus.
 
@@ -4405,6 +4470,18 @@ the remaining dependency on the native compiler.  Its present use is a
 feasibility constraint of the current encoding, not a logical limitation of
 the method.
 
+\subsection*{Use of AI Assistance}
+The layers of this development used AI assistance to different degrees.  The
+specification and reflection layers of \Cref{sec:abstract,sec:reflection},
+including the quotient constructions, their interface theorems, and the
+adequacy proofs, were formalized manually by the authors.  In the
+certificate-to-proof compiler of \Cref{sec:flagmatic}, most of the required
+metaprogramming---the elaboration-time generation commands, the custom
+tactics, and the certificate translator---was developed with the help of
+Claude Code.  Finally, the mathematical results of the meta-theory
+summarized in \Cref{sec:metatheory} were obtained with the help of GPT~Pro,
+and their Lean development was autoformalized entirely by Claude Code.
+
 \section*{Acknowledgments}
 We would like to thank Taeyoung Kim, Joonkyung Lee, and Jineon Baek for helpful discussions on
 Razborov's flag algebras and Lean formalization.
@@ -4578,6 +4655,9 @@ Y.~Dillies and B.~Mehta.
 \newblock Formalising Szemer\'{e}di's regularity lemma in Lean.
 \newblock In \textit{Proc.\ ITP 2022}, LIPIcs~237, pages 9:1--9:19, 2022.
   DOI: 10.4230/LIPIcs.ITP.2022.9.
+
+\bibitem{mantel}
+W.~Mantel, Problem 28, Wiskundige Opgaven, 10:60--61, 1907.
 
 \bibitem{mehta2022kruskal}
 B.~Mehta.

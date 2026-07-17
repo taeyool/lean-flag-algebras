@@ -66,8 +66,8 @@ elab "generate_complete_graph " rStx:num idxStx:num : command => do
 
 /-! ## Edge-based complete graphs (Task 6)
 
-The edge-based, pruning-backed forbid-free commands (`generate_pruned_forbid_free_*`,
-`generate_pruned_*_theorems`) forbid a `Sym2Graph m` **term** directly (decision D2), rather
+The edge-based, pruning-backed forbid-free commands (`generate_forbid_free_*`)
+forbid a `Sym2Graph m` **term** directly (decision D2), rather
 than a `SimpleGraph` tag resolved off a canonical flag. `completeSym2Graph r` is the complete
 graph `K_r` in that representation: every non-loop pair of `Fin r` is an edge. Forbidding it
 captures *induced* `K_r`-freeness, which for a complete graph coincides with ordinary

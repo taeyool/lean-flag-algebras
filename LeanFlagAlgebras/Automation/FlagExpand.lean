@@ -182,7 +182,7 @@ explicitly-generated forbid-free set `flagSetHfree_N_k_m_<F>` (via its filtered-
 automatically (no manual `basisVector_inducedForbidEq_zero` step).
 
 `F` is the **edge-based** forbidden graph: a `Sym2Graph mF` term (e.g. `K3 : Sym2Graph 3`), the
-same identifier passed to `generate_pruned_forbid_free_*`. The forbidden flag is built directly
+same identifier passed to `generate_forbid_free_*`. The forbidden flag is built directly
 from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=ᵢ[ ]`),
 so no canonical forbidden flag / `.toFinFlag` is needed.
 
@@ -197,7 +197,7 @@ elab_rules : tactic
       withMainContext do
         let nVal := N.getNat
         -- Strip any namespace qualifier so the tag matches the generated `flagSetHfree_*` names
-        -- (the `generate_pruned_*` commands use the same last-dotted-component convention).
+        -- (the `generate_forbid_free_*` commands use the same last-dotted-component convention).
         let tagFull := forbid.getId.toString
         let tag := (tagFull.splitOn ".").getLastD tagFull
         let target ← getMainTarget
@@ -255,8 +255,8 @@ On a goal `FlagAlgebra_n_k_m_i =[F.toLabeledGraph.graph] (its size-`N` subgraph-
 it expands the flag with the subgraph capstone `basisVector_quot_forbidEq_sum_subgraph` rewritten onto
 the subgraph-`F`-free set `flagSetHfree_N_k_m_<F>` (via its `…_eq` / `…_val_eq`). Unlike the induced
 `flag_expand_hfree`, it needs **no** membership argument — the capstone derives it from
-`supergraphFamily`. Prerequisite: run `generate_subgraph_free_flags N k m F` (or the empty-typed
-`generate_subgraph_free_empty_typed_flags N F`).
+`supergraphFamily`. Prerequisite: run `generate_forbid_free_flags N k m F` (or the empty-typed
+`generate_forbid_free_empty_typed_flags N F`).
 -/
 syntax (name := flagExpandHfreeSubgraphTac) "flag_expand_hfree_subgraph " num ident : tactic
 

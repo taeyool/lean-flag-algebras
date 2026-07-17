@@ -20,30 +20,30 @@ open FlagAlgebras.Compute
 namespace C5turan
 
 -- Subgraph-forbidding generation (Route B): `ForbidGraph` is forbidden as a (non-induced)
--- subgraph. The `generate_subgraph_free_*` commands emit only the subgraph-`ForbidGraph`-free
+-- subgraph. The `generate_forbid_free_*` commands emit only the subgraph-`ForbidGraph`-free
 -- flags + completeness bridging to the subgraph capstone filter (`supergraphFamily`).
 def ForbidGraph : Sym2Graph 5 where
   edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}
   edges_valid := by decide
-generate_subgraph_free_empty_typed_flags 2 ForbidGraph
-generate_subgraph_free_empty_typed_flags 4 ForbidGraph
-generate_subgraph_free_empty_typed_flags 5 ForbidGraph
-generate_subgraph_free_flags 4 3 0 ForbidGraph
-generate_subgraph_free_flags 4 3 1 ForbidGraph
-generate_subgraph_free_flags 4 3 2 ForbidGraph
-generate_subgraph_free_flags 4 3 3 ForbidGraph
-generate_subgraph_free_flags 5 3 0 ForbidGraph
-generate_subgraph_free_flags 5 3 1 ForbidGraph
-generate_subgraph_free_flags 5 3 2 ForbidGraph
-generate_subgraph_free_flags 5 3 3 ForbidGraph
-generate_subgraph_free_flag_pair_density_theorems 4 5 3 0 ForbidGraph
-generate_subgraph_free_mul_theorems 4 5 3 0 ForbidGraph
-generate_subgraph_free_flag_pair_density_theorems 4 5 3 1 ForbidGraph
-generate_subgraph_free_mul_theorems 4 5 3 1 ForbidGraph
-generate_subgraph_free_flag_pair_density_theorems 4 5 3 2 ForbidGraph
-generate_subgraph_free_mul_theorems 4 5 3 2 ForbidGraph
-generate_subgraph_free_flag_pair_density_theorems 4 5 3 3 ForbidGraph
-generate_subgraph_free_mul_theorems 4 5 3 3 ForbidGraph
+generate_forbid_free_empty_typed_flags 2 ForbidGraph
+generate_forbid_free_empty_typed_flags 4 ForbidGraph
+generate_forbid_free_empty_typed_flags 5 ForbidGraph
+generate_forbid_free_flags 4 3 0 ForbidGraph
+generate_forbid_free_flags 4 3 1 ForbidGraph
+generate_forbid_free_flags 4 3 2 ForbidGraph
+generate_forbid_free_flags 4 3 3 ForbidGraph
+generate_forbid_free_flags 5 3 0 ForbidGraph
+generate_forbid_free_flags 5 3 1 ForbidGraph
+generate_forbid_free_flags 5 3 2 ForbidGraph
+generate_forbid_free_flags 5 3 3 ForbidGraph
+generate_forbid_free_flag_pair_density_theorems 4 5 3 0 ForbidGraph
+generate_forbid_free_mul_theorems 4 5 3 0 ForbidGraph
+generate_forbid_free_flag_pair_density_theorems 4 5 3 1 ForbidGraph
+generate_forbid_free_mul_theorems 4 5 3 1 ForbidGraph
+generate_forbid_free_flag_pair_density_theorems 4 5 3 2 ForbidGraph
+generate_forbid_free_mul_theorems 4 5 3 2 ForbidGraph
+generate_forbid_free_flag_pair_density_theorems 4 5 3 3 ForbidGraph
+generate_forbid_free_mul_theorems 4 5 3 3 ForbidGraph
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

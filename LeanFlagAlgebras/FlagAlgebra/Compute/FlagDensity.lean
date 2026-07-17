@@ -136,32 +136,51 @@ def predIsoSym2Hl
     (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
     ∧ predDisjointSym2InducedSubgraphList Gl
 
+/-- Adjacency in the coerced induced subgraph, characterised by membership in
+the *ambient* edge set: both endpoints already lie in `H.verts`, so the filter
+defining `H.edges` is redundant.  Stated as an `Iff` so the `DecidablePred`
+instance below can bridge with `decidable_of_iff` (the proof stays in a Prop
+position) instead of a data-position `simp` cast, which would block kernel
+reduction and force `native_decide`. -/
+lemma Sym2InducedSubgraph.coe_adj_iff_mem
+    {n : ℕ} {G : Sym2Graph n} (H : Sym2InducedSubgraph G)
+    (u v : ↥(H.toLabeledSubgraph.subgraph.verts)) :
+    Sym2.mk (u.1, v.1) ∈ G.edges ↔ H.toLabeledSubgraph.coe.graph.Adj u v := by
+  rw [LabeledSubgraph.coe_adj_iff]
+  show Sym2.mk (u.1, v.1) ∈ G.edges ↔ Sym2.mk (u.1, v.1) ∈ H.edges
+  simp only [Sym2InducedSubgraph.edges, Finset.mem_filter]
+  constructor
+  · intro h
+    refine ⟨h, ?_⟩
+    intro w hw
+    rcases Sym2.mem_iff.mp hw with rfl | rfl
+    · exact u.2
+    · exact v.2
+  · exact fun h => h.1
+
 instance
     {t : ℕ} {n : ℕ} {G : Sym2Graph n} {Vl : Fin t → ℕ} (Hl : Sym2GraphList t Vl) :
     DecidablePred (fun (Gl : Sym2InducedSubgraphList t G) ↦ predIsoSym2Hl Hl Gl)
-  := fun Gl ↦ by
-  refine @instDecidableAnd _ _ ?_ ?_
-  · refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro i
-    simp only
-    have : Fintype (Gl i).toLabeledSubgraph.subgraph.verts := by
-      simp [Sym2InducedSubgraph.toLabeledSubgraph]
-      exact (Gl i).verts.fintypeCoeSort
-    have : DecidableRel (Gl i).toLabeledSubgraph.coe.graph.Adj := by
-      simp [Sym2InducedSubgraph.toLabeledSubgraph, Subgraph.coe]
-      intro ⟨a, ha⟩ ⟨b, hb⟩
-      exact Finset.decidableMem s(a, b) (Gl i).edges
-    have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
-      intro a b
-      simp [Sym2Graph.toLabeledGraph]
-      exact instDecidableAnd
-    infer_instance
-  · simp [predDisjointSym2InducedSubgraphList]
-    refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro i
-    refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro j
-    exact instDecidableForall
+  := fun Gl ↦
+  -- Cast-free assembly (kernel-reducible): no data-position `simp`/`rw`; all
+  -- propositional bridging goes through `decidable_of_iff`, so densities built
+  -- on this instance are provable by `decide +kernel`.
+  @instDecidableAnd _ _
+    (@Fintype.decidableForallFintype _
+      (fun i : Fin t ↦
+        Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
+      (fun i ↦
+        haveI : Fintype ↥((Gl i).toLabeledSubgraph.subgraph.verts) :=
+          FinsetCoe.fintype (Gl i).verts
+        haveI : DecidableRel ((Gl i).toLabeledSubgraph.coe.graph.Adj) := fun u v ↦
+          decidable_of_iff _ (Sym2InducedSubgraph.coe_adj_iff_mem (Gl i) u v)
+        haveI : DecidableRel ((Hl i).toLabeledGraph.graph.Adj) := fun u v ↦
+          decidable_of_iff _ ((Hl i).toLabeledGraph_adj_iff u v).symm
+        decidable_of_iff
+          (∃ _ : (Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph, True)
+          exists_true_iff_nonempty) _)
+    (inferInstanceAs
+      (Decidable (∀ i j : Fin t, i ≠ j → (Gl i).verts ∩ (Gl j).verts = ∅)))
 
 def finsetOfSym2InducedSubgraphListIsoHl
     {t : ℕ} {n : ℕ} (G : Sym2Graph n) {Vl : Fin t → ℕ} (Hl : Sym2GraphList t Vl)
@@ -604,6 +623,12 @@ instance
     (G : Sym2LabeledGraph σ n) :
     Fintype (Sym2InducedLabeledSubgraph G) where
   elems := (@Finset.univ (Finset (Fin n))).filterMap (fun V ↦
+    -- decide `type_verts ⊆ V` through the kernel-reducible image form
+    -- (`type_verts` itself carries a cast-built `Fintype`; see
+    -- `Sym2LabeledGraph.type_verts_eq_image`)
+    haveI : Decidable (G.type_verts ⊆ V) :=
+      decidable_of_iff ((Finset.univ.image fun t ↦ G.type_embed t) ⊆ V)
+        (by rw [← Sym2LabeledGraph.type_verts_eq_image])
     if hV : G.type_verts ⊆ V
     then .some ⟨V, hV⟩
     else .none) (by grind)
@@ -738,35 +763,55 @@ theorem verts_card_of_coe_iso
   have hcard := Fintype.card_congr e
   simpa using hcard
 
+/-- Labeled analogue of `Sym2InducedSubgraph.coe_adj_iff_mem`: adjacency in
+the coerced induced labeled subgraph, characterised by ambient edge
+membership. -/
+lemma Sym2InducedLabeledSubgraph.coe_adj_iff_mem
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    {G : Sym2LabeledGraph σ n} (H : Sym2InducedLabeledSubgraph G)
+    (u v : ↥(H.toLabeledSubgraph.subgraph.verts)) :
+    Sym2.mk (u.1, v.1) ∈ G.edges ↔ H.toLabeledSubgraph.coe.graph.Adj u v := by
+  rw [LabeledSubgraph.coe_adj_iff]
+  show Sym2.mk (u.1, v.1) ∈ G.edges ↔ Sym2.mk (u.1, v.1) ∈ H.edges
+  simp only [Sym2InducedLabeledSubgraph.edges, Finset.mem_filter]
+  constructor
+  · intro h
+    refine ⟨h, ?_⟩
+    intro w hw
+    rcases Sym2.mem_iff.mp hw with rfl | rfl
+    · exact u.2
+    · exact v.2
+  · exact fun h => h.1
+
 instance
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} {Vl : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl) :
     DecidablePred (fun (Gl : Sym2InducedLabeledSubgraphList t G) ↦ predIsoSym2LabeledHl Hl Gl)
-  := fun Gl ↦ by
-  refine @instDecidableAnd _ _ ?_ ?_
-  · refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro i
-    simp only
-    have : Fintype (Gl i).toLabeledSubgraph.subgraph.verts := by
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
-      exact (Gl i).verts.fintypeCoeSort
-    have : DecidableRel (Gl i).toLabeledSubgraph.coe.graph.Adj := by
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph, Subgraph.coe]
-      intro ⟨a, ha⟩ ⟨b, hb⟩
-      exact Finset.decidableMem s(a, b) (Gl i).edges
-    have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
-      intro a b
-      simp [Sym2LabeledGraph.toLabeledGraph]
-      exact instDecidableAnd
-    by_cases hc : (Gl i).verts.card = Vl i
-    · infer_instance
-    · exact isFalse (fun hiso => hc (verts_card_of_coe_iso (Gl i) (Hl i) hiso))
-  · simp [predDisjointSym2InducedLabeledSubgraphList]
-    refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro i
-    refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
-    intro j
-    exact instDecidableForall
+  := fun Gl ↦
+  -- Cast-free assembly (kernel-reducible); mirrors the empty-typed instance
+  -- above, keeping the O(1) size prefilter as a `dite` on `Nat.decEq`.
+  @instDecidableAnd _ _
+    (@Fintype.decidableForallFintype _
+      (fun i : Fin t ↦
+        Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
+      (fun i ↦
+        if hc : (Gl i).verts.card = Vl i then
+          haveI : Fintype ↥((Gl i).toLabeledSubgraph.subgraph.verts) :=
+            FinsetCoe.fintype (Gl i).verts
+          haveI : DecidableRel ((Gl i).toLabeledSubgraph.coe.graph.Adj) := fun u v ↦
+            decidable_of_iff _ (Sym2InducedLabeledSubgraph.coe_adj_iff_mem (Gl i) u v)
+          haveI : DecidableRel ((Hl i).toLabeledGraph.graph.Adj) := fun u v ↦
+            decidable_of_iff _ ((Hl i).toLabeledGraph_adj_iff u v).symm
+          decidable_of_iff
+            (∃ _ : (Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph, True)
+            exists_true_iff_nonempty
+        else
+          isFalse (fun hiso ↦ hc (verts_card_of_coe_iso (Gl i) (Hl i) hiso))) _)
+    (decidable_of_iff
+      (∀ i j : Fin t, i ≠ j →
+        ((Gl i).verts \ Finset.univ.image (fun x ↦ G.type_embed x)) ∩
+          ((Gl j).verts \ Finset.univ.image (fun x ↦ G.type_embed x)) = ∅)
+      (by rw [← Sym2LabeledGraph.type_verts_eq_image]; exact Iff.rfl))
 
 def finsetOfSym2InducedLabeledSubgraphListIsoHl
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}

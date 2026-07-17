@@ -26,6 +26,14 @@ namespace K4turan
 -- flags are never generated (genuine pruning). The pruned commands emit only the K4-free flags,
 -- their completeness, and the forbid-free pair-density / multiplication theorems for both σ-types.
 def K4 : Sym2Graph 4 := completeSym2Graph 4
+-- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
+-- `decide +kernel` (viable at n ≤ 4), so this file carries no
+-- compiled-evaluation axioms.  The heartbeat/recursion limits must be lifted
+-- *before* the generate commands: at n = 4 the batched pair-density bridges
+-- exceed the default 200k-heartbeat elaboration budget.
+set_option flagGen.kernelDecide true
+set_option maxHeartbeats 0
+set_option maxRecDepth 1500
 generate_forbid_free_empty_typed_flags 2 K4
 generate_forbid_free_empty_typed_flags 3 K4
 generate_forbid_free_empty_typed_flags 4 K4
@@ -33,10 +41,10 @@ generate_forbid_free_flags 3 2 0 K4
 generate_forbid_free_flags 3 2 1 K4
 generate_forbid_free_flags 4 2 0 K4
 generate_forbid_free_flags 4 2 1 K4
-generate_pruned_flag_pair_density_theorems 3 4 2 0 K4
-generate_forbid_free_mul_theorems 3 4 2 0 K4 (completeGraph (Fin 4)) (completeSym2Graph_finFlag_mem_forbiddenFlags 4)
-generate_pruned_flag_pair_density_theorems 3 4 2 1 K4
-generate_forbid_free_mul_theorems 3 4 2 1 K4 (completeGraph (Fin 4)) (completeSym2Graph_finFlag_mem_forbiddenFlags 4)
+generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K4
+generate_forbid_free_mul_theorems 3 4 2 0 K4
+generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K4
+generate_forbid_free_mul_theorems 3 4 2 1 K4
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -109,7 +117,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_0
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_0]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_1
@@ -117,7 +125,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_1
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_1]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_2
@@ -125,7 +133,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_2
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_2]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_3
@@ -133,7 +141,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_3
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_3]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_4
@@ -141,7 +149,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_4
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_4]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_5
@@ -149,7 +157,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_5
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_5]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_6
@@ -157,7 +165,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_6
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_6]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_7
@@ -165,7 +173,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_7
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_7]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_8
@@ -173,7 +181,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_8
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_8]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_4_0_0_9
@@ -181,7 +189,7 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_9
   := by
   dsimp [Flag_2_0_0_1, Flag_4_0_0_9]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 /-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
 over the K4-free 4-vertex flags via `flag_expand_hfree 4 K4` (`basisVector_quot_inducedForbidEq_sum`
