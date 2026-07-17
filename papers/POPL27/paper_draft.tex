@@ -4418,6 +4418,18 @@ the remaining dependency on the native compiler.  Its present use is a
 feasibility constraint of the current encoding, not a logical limitation of
 the method.
 
+\subsection*{Use of AI Assistance}
+The layers of this development used AI assistance to different degrees.  The
+specification and reflection layers of \Cref{sec:abstract,sec:reflection},
+including the quotient constructions, their interface theorems, and the
+adequacy proofs, were formalized manually by the authors.  In the
+certificate-to-proof compiler of \Cref{sec:flagmatic}, most of the required
+metaprogramming---the elaboration-time generation commands, the custom
+tactics, and the certificate translator---was developed with the help of
+Claude Code.  Finally, the mathematical results of the meta-theory
+summarized in \Cref{sec:metatheory} were obtained with the help of GPT~Pro,
+and their Lean development was autoformalized entirely by Claude Code.
+
 \section*{Acknowledgments}
 We would like to thank Taeyoung Kim, Joonkyung Lee, and Jineon Baek for helpful discussions on
 Razborov's flag algebras and Lean formalization.
