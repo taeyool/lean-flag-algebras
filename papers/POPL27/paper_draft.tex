@@ -322,28 +322,28 @@ library reported in the main part of the paper.
 
 \paragraph{Why flag algebras matter.}
 Many central questions in extremal combinatorics ask how often one finite
-pattern can occur when another pattern is forbidden.  Let $P$ be a finite
+pattern can occur when another pattern is forbidden.  Let $F$ be a finite
 simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 \[
-  \mathrm{ex}(n,\,P;\,\mathcal{H})
+  \mathrm{ex}(n,\,F;\,\mathcal{H})
   :=
   \max\bigl\{
-    \text{number of induced copies of }P\text{ in }G
+    \text{number of induced copies of }F\text{ in }G
     \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
   \bigr\},
 \]
-where an \emph{induced copy} of $P$ in $G$ is a vertex subset
-$S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
+where an \emph{induced copy} of $F$ in $G$ is a vertex subset
+$S\subseteq V(G)$ with $|S|=|V(F)|$ and $G[S]\cong F$, and
 \emph{\(\mathcal{H}\)-free} means that $G$ contains no copy of any
 member of $\mathcal{H}$ as a (not necessarily induced) subgraph.  The corresponding asymptotic
-question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit; we call this the \emph{Tur\'an density} of $P$ with
+question normalizes by the number of possible $|V(F)|$-vertex subsets and
+takes a limit; we call this the \emph{Tur\'an density} of $F$ with
 respect to $\mathcal{H}$:
 \[
-  \tdensity{P}{\mathcal{H}}
+  \tdensity{F}{\mathcal{H}}
   :=
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
 \]
 For example, Mantel's theorem~\cite{mantel} states that a triangle-free graph on $n$
 vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
@@ -359,9 +359,9 @@ records that, in any sufficiently large triangle-free graph, at most half of
 all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
-Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
+Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
 about \emph{all} sufficiently large \(\mathcal{H}\)-free graphs: a valid upper
-bound must guarantee that the proportion of induced copies of $P$ never exceeds
+bound must guarantee that the proportion of induced copies of $F$ never exceeds
 the claimed value, asymptotically, no matter how large the host graph is.  No
 finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
@@ -626,8 +626,8 @@ In a density calculation, flags play two roles.  The \emph{pattern flag} is the
 small local configuration whose occurrence is being measured, while the
 \emph{host flag} is the larger flag in which we sample vertices.  These are
 roles in the calculation, not different kinds of flags.  We use \(F\), or
-\(F_i\), for pattern flags, \(G\) for host flags, and \(H\) for an intermediate
-flag when a third flag variable is needed.
+\(F_i\), for pattern flags, \(G\) for host flags, and \(G'\) for an intermediate
+host flag when a third flag variable is needed.
 
 % Once pattern flags have been named, the basic question is simple: if we sample
 % a few extra vertices in a larger host flag, what smaller flag do we see?
@@ -683,7 +683,7 @@ When $n < m$, we set $\den{F}{G} := 0$ by convention.
 \paragraph{Chain rule.}
 The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling a larger
-intermediate flag $H$ of size $n$ inside $G$ and then sampling~$F$ inside $H$.
+intermediate flag $G'$ of size $n$ inside $G$ and then sampling~$F$ inside $G'$.
 These two procedures are the same experiment, which gives the following identity.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
@@ -692,7 +692,7 @@ These two procedures are the same experiment, which gives the following identity
   \[
     \den{F}{G}
     \;=\;
-    \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,\den{H}{G}.
+    \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,\den{G'}{G}.
   \]
 \end{lemma}
 
@@ -737,7 +737,7 @@ Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
   \label{eq:zero-element}
-  \mathbf e_F - \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H,
+  \mathbf e_F - \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'},
   \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
 The \emph{flag algebra} is the quotient module
@@ -745,7 +745,7 @@ The \emph{flag algebra} is the quotient module
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 We write $[F]$ for the class of $\mathbf e_F$ in $\mathcal{A}^\sigma$.
-Throughout the paper, capital letters $F,G,H$ denote finite flags, while
+Throughout the paper, capital letters $F,G$ denote finite flags, while
 lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.  Thus a
 positive homomorphism is applied to $[F]$, not directly to the finite flag
 $F$.  For familiar named or pictorial flags, such as $K_2$ or
@@ -753,7 +753,7 @@ $\fKtwobull$, we retain the standard shorthand of omitting the brackets in
 algebraic formulas; there the surrounding algebraic context makes the
 canonical image unambiguous.
 
-We call $\sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H$ the
+We call $\sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'}$ the
 \emph{expansion of $F$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
@@ -762,7 +762,7 @@ equality
 \[
   [F]
   =
-  \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,[H]
+  \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,[G']
   \qquad\text{in }\mathcal{A}^\sigma .
 \]
 We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
@@ -805,7 +805,7 @@ $\ell \geq m_1 + m_2 - k$ and define
   \label{eq:mul}
   [F_1] \cdot [F_2]
   \;:=\;
-  \sum_{H \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{H} \cdot [H]
+  \sum_{G' \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G'} \cdot [G']
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance this definition appears to depend on both the choice of $\ell$
@@ -936,32 +936,32 @@ since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}
 Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
-The problem of bounding the Tur\'an density $\tdensity{P}{\mathcal{H}}$ from above
+The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  If $[P] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
-  $\tdensity{P}{\mathcal{H}} \leq c$.
+  If $[F] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
-  Suppose for contradiction that $\tdensity{P}{\mathcal{H}} > c$.  Then
+  Suppose for contradiction that $\tdensity{F}{\mathcal{H}} > c$.  Then
   there exist $\varepsilon > 0$ and an increasing sequence of
   \(\mathcal{H}\)-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
-  $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
+  $\den{F}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
   is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and
   $\mathcal{F}^\emptyset$ is countable, this product space is compact and
   metrizable.  Hence the sequence $\{p^{G_k}\}$ has a convergent
   subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
-  $\phi([P]) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $[P] \leq c \cdot \mathbf{1}$ means $\phi([P]) \leq c$ for every
+  $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
+  $[F] \leq c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
-whose $P$-density approaches~$c$, pinning down $\tdensity{P}{\mathcal{H}}$ exactly.
+whose $F$-density approaches~$c$, pinning down $\tdensity{F}{\mathcal{H}}$ exactly.
 Two classical results illustrate how this looks in flag algebra language.
 
 \begin{example}[Mantel's theorem~\cite{mantel}]\label{ex:mantel}
@@ -1104,13 +1104,13 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $[P] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
+A flag algebra proof of $[F] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
 first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
 non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
-then, one adds $\llbracket f \rrbracket_\sigma$ to $[P]$ or an expansion of $[P]$
+then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
-\eqref{eq:sum-to-one} to conclude $[P] \leq c\cdot\mathbf{1}$.
+\eqref{eq:sum-to-one} to conclude $[F] \leq c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
@@ -2827,8 +2827,8 @@ uses that table to automate complete flag-algebra arguments.
 
 All certificate problems considered in this section have the same form: among
 graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
-element $[P]$ of a target graph $P$ satisfies
-$[P]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
+element $[F]$ of a target graph $F$ satisfies
+$[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
 the flags whose basis elements enter the proof, together with the rational
 matrices needed to rewrite the difference between the
@@ -2855,19 +2855,19 @@ trust model and evaluate the compiler on seven certificates.
 \label{sec:flagmatic-background}
 
 At a high level, a flag-algebra proof of
-$[P] \leq_{\mathcal H} c\cdot\mathbf 1$ supplies downward quadratic forms $Q_t$
+$[F] \leq_{\mathcal H} c\cdot\mathbf 1$ supplies downward quadratic forms $Q_t$
 and a remainder $r$ that, under the $\mathcal H$-free condition, justify the
 forward chain
 \[
-  [P]
-  \leq_{\mathcal H} [P]+\sum_t Q_t
+  [F]
+  \leq_{\mathcal H} [F]+\sum_t Q_t
   = c\cdot\mathbf 1-r
   \leq_{\mathcal H} c\cdot\mathbf 1.
 \]
 The first inequality uses the non-negativity of the $Q_t$, the equality is the
 finite calculation recorded by the certificate, and the final inequality uses
 the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
-$c\cdot\mathbf 1-[P]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
+$c\cdot\mathbf 1-[F]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
 searches for this data using an SDP solver and outputs it as a certificate.  Our
 compiler consumes the certificate as untrusted input and asks Lean to verify
 the non-negativity of the $Q_t$ and $r$ and the intervening equality.
@@ -3008,16 +3008,16 @@ In general, write
 The resulting certificate specifies an identity, modulo the $\mathcal H$-free
 condition, of the form
 \[
-  [P] + \sum_t Q_t
+  [F] + \sum_t Q_t
   =
   c\cdot\mathbf{1} - r,
 \]
 where every $M_t$ is PSD and $r$ has non-negative coefficients.  Equivalently,
 the certificate justifies the forward derivation
 \begin{align*}
-  [P]
+  [F]
   \leq_{\mathcal H}
-  \bigl([P]+\sum_t Q_t\bigr)
+  \bigl([F]+\sum_t Q_t\bigr)
   =
   \bigl(c\cdot\mathbf 1-r\bigr)
   \leq_{\mathcal H} c\cdot\mathbf 1.
@@ -3059,19 +3059,19 @@ parts are:
     a list of $\sigma_t$-flags $E_{t,i}$; their basis elements
     $e_{t,i}:=[E_{t,i}]$ form the vector $v_t$ and the quadratic form
     $\langle v_t, M_t\, v_t\rangle$.
-  \item \textbf{Lifting the objective (when needed).}  If the target graph $P$
-    has fewer than $N$ vertices, one auxiliary lemma first lifts $[P]$ to the
+  \item \textbf{Lifting the objective (when needed).}  If the target graph $F$
+    has fewer than $N$ vertices, one auxiliary lemma first lifts $[F]$ to the
     host-size basis, dropping the contributions that contain a copy of the
     forbidden graph.
   \item \textbf{The main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
     and $r$ the certificate's non-negative remainder, the compiler assembles
-    the bound $[P] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
+    the bound $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
     in \Cref{sec:flagmatic-background}:
     \[
-      [P]
+      [F]
       \;\leq_{\mathcal H}\;
-      [P] + \sum_t Q_t
+      [F] + \sum_t Q_t
       \;=\;
       c\cdot\mathbf 1-r
       \;\leq_{\mathcal H}\;
@@ -3232,7 +3232,7 @@ forbidden graphs into the certificate.
 \paragraph{The main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward
 chain from \Cref{sec:flagmatic-background}.  The certificate identity
-$[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
+$[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
 non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
 Mantel example, there is one $Q_t$---the downward image of the halved
 square---and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
@@ -3240,7 +3240,7 @@ define $r$ explicitly; it appears as the coefficientwise difference left after
 the two sides are expanded in a common basis.
 
 The first step is to prove
-$[P]\leq_H[P]+\sum_tQ_t$.  It uses the following general lemma:
+$[F]\leq_H[F]+\sum_tQ_t$.  It uses the following general lemma:
 \begin{lstlisting}
 theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} 
     {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
@@ -3254,13 +3254,13 @@ The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
 vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
 semidefiniteness generated in Part~2.  
-The proof starts from the reflexive inequality $[P]\leq_H[P]$ and applies this
+The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
-$[P]\leq_H[P]+\sum_tQ_t$.
+$[F]\leq_H[F]+\sum_tQ_t$.
 
-It remains to prove $[P]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
+It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
 this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
-flags.  When necessary, the Part~3 lemma first expands $[P]$ to host size.
+flags.  When necessary, the Part~3 lemma first expands $[F]$ to host size.
 Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
 and downward identities generated in Part~1.  The appropriate
@@ -3274,7 +3274,7 @@ exactly the remainder $r$ from the certificate calculation.  The tactic
 \lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
 the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
 the normalization and the final non-negativity check together verify the
-conceptual equality $[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
+conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
 $c\cdot\mathbf 1-r\leq_H c\cdot\mathbf 1$.
 
 \paragraph{The translator.}
@@ -3608,8 +3608,8 @@ common ambient type.  We therefore use the dependent sum
   \mathop{\Sigma}_{\ell : \mathbb{N}}
     \text{\lean{Flag}}~\sigma~(\text{\lean{Fin}}~\ell).
 \]
-A size-$\ell_1$ flag $H$ is therefore stored as the tagged pair
-$\langle\ell_1,H\rangle$, while a size-$\ell_2$ flag $G$ is stored as
+A size-$\ell_1$ flag $G'$ is therefore stored as the tagged pair
+$\langle\ell_1,G'\rangle$, while a size-$\ell_2$ flag $G$ is stored as
 $\langle\ell_2,G\rangle$.  The second components have different types, but
 both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
 Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
@@ -3629,24 +3629,24 @@ the two product expansions has yet been proved.
 The missing bridge is the zero-space expansion identity.  It relates linear
 combinations in the common flag algebra without equating their vertex types.
 For every
-$H\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
+$G'\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
 \[
-  [H]
+  [G']
   =
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
-    \den{H}{G}\,[G]
+    \den{G'}{G}\,[G]
   \qquad\text{in }\mathcal{A}^{\sigma}.
 \]
 Substituting this identity into the size-$\ell_1$ product gives
 \[
 \begin{aligned}
-  \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
-    \den{F_1,F_2}{H}\,[H]
+  \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
+    \den{F_1,F_2}{G'}\,[G']
   &=
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
     \left(
-      \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
-        \den{F_1,F_2}{H}\,\den{H}{G}
+      \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
+        \den{F_1,F_2}{G'}\,\den{G'}{G}
     \right)[G] \\
   &=
   \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
