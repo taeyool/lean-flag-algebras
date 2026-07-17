@@ -304,7 +304,7 @@ flag algebra from the start, from the ensemble approach, which
 imposes constraints afterwards by testing inequalities on random labeled views
 of constrained graph limits.  The two approaches agree for important classes,
 but not in general for all densities of finite labeled patterns.  We prove a
-root-planting criterion characterizing when they do agree, establish a
+root-plantability criterion characterizing when they do agree, establish a
 positive result for blow-up-closed classes that also covers
 substitution-closed classes, and exhibit a counterexample based on
 \(C_4\)-free graphs.  This
@@ -457,7 +457,7 @@ from the start; this is the traditional way to work in an algebra of
 with graph limits and then imposes the constraint post hoc by testing
 inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
-finite labeled pattern.  Our investigation proves a root-planting criterion
+finite labeled pattern.  Our investigation proves a root-plantability criterion
 characterizing when they do agree, gives a positive result for
 blow-up-closed classes that also covers substitution-closed classes, and exhibits a
 counterexample based on \(C_4\)-free graphs.  The ensemble viewpoint is useful
@@ -479,7 +479,7 @@ and a $C_4$-density bound for triangle-free graphs; outside the certificate
 pipeline, the same infrastructure proves Goodman-type inequalities and the
 matching lower bounds.  Fourth, it develops the
 semantic comparison between built-in-constraint and ensemble approaches to constrained
-flag algebras, including the root-planting criterion and the resulting
+flag algebras, including the root-plantability criterion and the resulting
 generalization beyond hereditary constraints.  A separate, automatically
 generated Lean development formalizes this meta-theory on top of the manually
 developed flag-algebra library.  The complete Lean formalization, including
@@ -541,8 +541,8 @@ that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
 (that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
 The vertices in $\operatorname{Im}(\theta_F)$ are called the
-\emph{labeled vertices}, or \emph{roots}, of $F$; the remaining $|V(F)|-k$ vertices are
-\emph{unlabeled}.
+\emph{labeled vertices} of $F$; they are also often called its \emph{roots}.
+The remaining $|V(F)|-k$ vertices are \emph{unlabeled}.
 For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
 we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
 \emph{$\sigma$-flag induced by $F$ on $S$}.
@@ -4096,15 +4096,17 @@ fundamental inclusion
 \end{equation}
 We say that \((\mathcal G,\mathcal K,\sigma)\) is
 \emph{root-plantable}\footnote{The vertices distinguished by the type
-\(\sigma\) are often called the \emph{roots}.  A finite \(\sigma\)-flag
-\((G,\theta)\) records the flag-density profile around a specified embedding
-\(\theta:\sigma\to G\) of these roots.  To \emph{plant} this rooted profile in
-a larger graph \(H\in\mathcal K\), with no roots fixed in advance, is to produce
-many embeddings \(\widehat\theta:\sigma\to H\) whose flag-density profiles
-approximate the profile specified by \((G,\theta)\).  Here ``many'' means that
-these embeddings form a fraction bounded away from zero of all embeddings of
-\(\sigma\) in \(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\)
-reproduces the prescribed profile with non-vanishing probability.  The equality
+\(\sigma\) are often called the \emph{roots}, which explains the first part of
+the term \emph{root-plantable}.  A finite \(\sigma\)-flag \((G,\theta)\)
+records a flag-density profile relative to a specified embedding
+\(\theta:\sigma\to G\), whose image consists of the labeled vertices.  To
+\emph{plant} this profile in a larger graph \(H\in\mathcal K\), without
+specifying labels in advance, is to produce many embeddings
+\(\widehat\theta:\sigma\to H\) whose flag-density profiles approximate the
+profile specified by \((G,\theta)\).  Here ``many'' means that these embeddings
+form a fraction bounded away from zero of all embeddings of \(\sigma\) in
+\(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\) reproduces
+the prescribed profile with non-vanishing probability.  The equality
 \(S_\sigma=Q_\sigma\) says that every constrained \(\sigma\)-typed positive
 homomorphism can be approximated by finite constructions of this kind.} when
 \(S_\sigma=Q_\sigma\).
@@ -4301,17 +4303,22 @@ in the public release of our flag-algebra development linked in
 constrained space \(Q_\sigma\) in \eqref{eq:Q-sigma}, the root-planting space
 \(S_\sigma\) in \eqref{eq:S-sigma}, and the condition
 \(S_\sigma=Q_\sigma\) are formalized as \lean{Q$\sigma$}, \lean{S$\sigma$}, and
-\lean{RootPlantable}, respectively.  The quotient and ensemble non-negativity
-notions induced by \Cref{def:two-constrained-orders} are formalized as
-\lean{QuotientNonneg} and \lean{EnsembleNonneg}.  At the theorem level,
-\lean{support\_criterion} formalizes
-\Cref{thm:support-closure-summary};
+\lean{RootPlantable}, respectively.  The special cases
+\(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
+\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\) of the two orders in
+\Cref{def:two-constrained-orders} are formalized as \lean{QuotientNonneg} and
+\lean{EnsembleNonneg}, respectively; the general comparison \(f\leq g\) is
+expressed by applying these predicates to \(g-f\).  At the theorem level,
+\lean{quotient\_implies\_ensemble} formalizes the unconditional implication in
+\Cref{thm:support-closure-summary}, while \lean{support\_criterion} formalizes
+its characterization of when the two orders agree;
 \lean{blowupClosed\_root\_plantable} and
 \lean{heredClass\_emptyType\_rootPlantable} formalize, respectively, the
 nonempty-type and empty-type claims of
 \Cref{thm:blowup-root-plantability-summary}; and
-\lean{c4free\_not\_rootPlantable} formalizes the strict inclusion
-in \eqref{eq:c4-strict-inclusion}.
+\lean{c4free\_not\_rootPlantable}, together with
+\lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion in
+\eqref{eq:c4-strict-inclusion}.
 
 These Lean files were generated by Claude agents from an already-developed
 mathematical account and its theorem targets.  Lean checks the resulting proof
@@ -4326,22 +4333,23 @@ meta-theory builds.  The automatic workflow could therefore reuse a mature
 formal theory rather than reconstruct its foundations.
 
 A forthcoming paper will give the complete mathematical and formal account.
-It will develop finite planting criteria, which describe finite-graph conditions that certify
+It will develop finite planting criteria: finite-graph conditions that certify
 root-plantability by constructing, within the constrained class, larger graphs
-in which a positive fraction of the embeddings of \(\sigma\) have rooted
-flag-density profiles approximating a prescribed profile.  It will also study
-further graph classes for which quotient and ensemble semantics agree or
-disagree.  One source of disagreement is a pinning obstruction: every
- randomly-extended positive homomorphism has a labeled flag density fixed to
-one value, while the constrained quotient admits a positive homomorphism 
-with a different flag density.
-Finally, the forthcoming work will extend ensemble
-semantics to restrictions imposed directly on positive homomorphisms, such as fixing
-their edge density to a particular value, which need not arise from a hereditary graph
-class.  The present section records only the core results arising from the
-design of \lean{forbidLE}: quotient inequalities always imply ensemble
-inequalities, root-plantability characterizes when the converse holds, and
-blow-up closure is a broad sufficient condition for root-plantability.
+in which a positive fraction of the embeddings \(\theta:\sigma\to H\) have
+flag-density profiles approximating the profile of a given sufficiently large
+\(\sigma\)-flag in the class.  It will also study further graph classes for which
+quotient and ensemble semantics agree or disagree.  One source of disagreement
+is a pinning obstruction: under every admissible random-extension measure, the
+density of a particular labeled flag takes one fixed value with probability
+one, while the constrained quotient contains a positive homomorphism at which
+that flag has a different density.  Finally, the forthcoming work will extend
+ensemble semantics to restrictions imposed directly on positive homomorphisms,
+such as fixing their edge density to a particular value, rather than requiring
+the restriction to arise from a hereditary graph class.  The present section
+records only the core results arising from the design of \lean{forbidLE}:
+quotient inequalities always imply ensemble inequalities, root-plantability
+characterizes when the converse holds, and blow-up closure is a broad
+sufficient condition for root-plantability.
 
 
 \section{Open Design Questions}
