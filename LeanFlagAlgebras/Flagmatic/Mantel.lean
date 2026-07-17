@@ -25,6 +25,10 @@ namespace Mantel
 -- commands emit only the K3-free flags, their completeness, and the forbid-free pair-density /
 -- multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+-- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
+-- `decide +kernel` (viable at n ≤ 3), so this file carries no
+-- compiled-evaluation axioms.
+set_option flagGen.kernelDecide true
 generate_forbid_free_empty_typed_flags 2 K3
 generate_forbid_free_empty_typed_flags 3 K3
 generate_forbid_free_flags 2 1 0 K3
@@ -67,7 +71,7 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_0
   := by
   dsimp [Flag_2_0_0_1, Flag_3_0_0_0]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_3_0_0_1
@@ -75,7 +79,7 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_1
   := by
   dsimp [Flag_2_0_0_1, Flag_3_0_0_1]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
@@ -83,7 +87,7 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
   := by
   dsimp [Flag_2_0_0_1, Flag_3_0_0_2]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  decide +kernel
 
 /-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
 over the K3-free 3-vertex flags via `flag_expand_hfree 3 K3` (`basisVector_quot_inducedForbidEq_sum`

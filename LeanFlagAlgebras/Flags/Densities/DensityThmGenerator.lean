@@ -1,6 +1,7 @@
 import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import LeanFlagAlgebras.Flags.ForbidFreePruned
+import LeanFlagAlgebras.Flags.GeneratorOptions
 import Mathlib.Tactic
 
 /-! # Density theorem generators
@@ -313,7 +314,7 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
             unfold $flagName
             simp [$forbidFlag:ident]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
+            flag_bridge_decide
         ))
         generatedEqZero := generatedEqZero + 1
     else
@@ -328,7 +329,7 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
             unfold $flagName
             simp [$forbidFlag:ident]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
+            flag_bridge_decide
         ))
         generatedNeZero := generatedNeZero + 1
 
@@ -546,7 +547,7 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
     elabUnlessDefined batchName.getId (← `(
         theorem $batchName
             : ([ $(sym2Terms.extract lo hi),* ] : List ℚ) = [ $(valueTerms.extract lo hi),* ] := by
-          native_decide))
+          flag_bridge_decide))
     for li in [0:(hi - lo)] do
       let (thmName, f1Name, f2Name, gName, rhsTerm) := pairs[lo + li]!
       if ¬ (← isDeclaredInScope thmName.getId) then

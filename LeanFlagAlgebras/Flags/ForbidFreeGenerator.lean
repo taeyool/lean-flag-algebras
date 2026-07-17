@@ -311,7 +311,7 @@ private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax 
     | some r => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedCliqueFreeFlags $(Quote.quote r) $(Quote.quote n)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned, FlagAlgebras.Compute.prunedCliqueFreeFlags_toFinset_eq $fStx
             (FlagAlgebras.Compute.completeSym2Graph_edges_iff $(Quote.quote r)) (by decide) $(Quote.quote n)]
         ext S
@@ -319,7 +319,7 @@ private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax 
     | none => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedFreeFlags $fStx $(Quote.quote n)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned, FlagAlgebras.Compute.prunedFreeFlags_toFinset_eq $fStx (by decide) $(Quote.quote n)]
         ext S
         simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq])
@@ -367,7 +367,7 @@ private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax 
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
             = [ $freeBridgeTerms,* ]) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
@@ -454,7 +454,7 @@ private def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSynta
 
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide
     ))
 
   elabUnlessDefined flagSetName.getId (← `(
@@ -494,7 +494,7 @@ private def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSynta
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
             = [ $freeBridgeTerms,* ]) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
@@ -623,7 +623,7 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide))
+        flag_bridge_decide))
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -684,7 +684,7 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
                 (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
-          native_decide
+          flag_bridge_decide
         rw [hpruned]
         exact FlagAlgebras.Compute.genFlagsHfreePruned_toFinset_eq (FlagAlgebras.Compute.qFree $fStx)
           $isHfreeName
@@ -729,7 +729,7 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
@@ -842,7 +842,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide))
+        flag_bridge_decide))
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -888,7 +888,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
 
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide))
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
@@ -924,7 +924,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          native_decide
+          flag_bridge_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=

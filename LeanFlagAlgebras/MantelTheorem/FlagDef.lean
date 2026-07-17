@@ -16,6 +16,11 @@ namespace MantelTheorem
 -- `Flags/FlagDef.lean`): the empty-typed flags of sizes 0–3 and the σ-typed (1-labelled)
 -- flags of sizes 1–3. These produce the `MantelTheorem.Flag_*` / `MantelTheorem.FlagAlgebra_*`
 -- constants the abbreviations below and the rest of the development refer to.
+-- `flagGen.kernelDecide`: prove the generator's bridging lemmas by
+-- `decide +kernel` (viable at n ≤ 3), so the whole Mantel chain carries no
+-- compiled-evaluation axioms.
+set_option flagGen.kernelDecide true
+
 generate_empty_typed_flags 0
 generate_empty_typed_flags 1
 generate_empty_typed_flags 2
