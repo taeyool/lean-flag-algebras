@@ -1033,13 +1033,24 @@ is then defined on flag basis elements by
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
 
+We write $\langle\sigma\rangle_0\in\mathcal{A}^\emptyset$ for the empty-type
+flag-algebra basis element represented by the underlying graph of the type
+$\sigma$, with its vertex labels forgotten.  Applying the downward operator to
+the typed unit therefore gives
+\[
+  \llbracket \mathbf{1}_\sigma \rrbracket_\sigma
+  =
+  q_\sigma(\mathbf{1}_\sigma)\,\langle\sigma\rangle_0.
+\]
+
 \paragraph{Random homomorphisms.}
 A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ represents a limiting
 object for unlabeled graph sequences.  Given such a $\phi_0$ and a non-empty
 flag type $\sigma$, one can generate a \emph{random positive homomorphism} on
 $\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
 limiting object.
-Whenever $\phi_0(\sigma) > 0$ (i.e., $\sigma$ has positive density as an unlabeled graph in the limiting object),
+Whenever $\phi_0(\langle\sigma\rangle_0) > 0$ (i.e., $\sigma$ has positive
+density as an unlabeled graph in the limiting object),
 the following holds~\cite{razborov2007flag}:
 there exists a unique probability distribution on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
@@ -1051,9 +1062,11 @@ homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
   \frac{\phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)}
        {\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)}.
 \end{equation}
-Note that the denominator is positive by the assumption $\phi_0(\sigma) > 0$, since
-$\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr) = q_\sigma(\mathbf{1}_\sigma)\cdot\phi_0(\sigma)$
-and $q_\sigma(\mathbf{1}_\sigma) > 0$ always.
+Note that the denominator is positive by the assumption
+$\phi_0(\langle\sigma\rangle_0)>0$, since
+$\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)
+=q_\sigma(\mathbf{1}_\sigma)\cdot
+\phi_0(\langle\sigma\rangle_0)$ and $q_\sigma(\mathbf{1}_\sigma)>0$ always.
 
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
@@ -1065,7 +1078,8 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
 \end{theorem}
 \begin{proof}[Proof sketch]
   Let $\phi_0 \in \poshom{\emptyset}$; we show $\phi_0(\llbracket f \rrbracket_\sigma) \geq 0$.
-  If $\phi_0(\sigma) = 0$, then the flag type $\sigma$ has zero density in the limiting object, and every $\sigma$-flag density also
+  If $\phi_0(\langle\sigma\rangle_0) = 0$, then the flag type $\sigma$ has zero
+  density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
   Since $0 \leq_\sigma f$, every positive homomorphism on
@@ -2045,9 +2059,11 @@ random sample.  The Lean expression
 homomorphism represented by \(\phi\) on \(f\).
 
 The hypothesis named \lean{h$\sigma$} in the theorem is the Lean assumption
-that \(\phi_0(\langle\sigma\rangle_0)>0\).  It says that the type \(\sigma\),
-viewed as an empty-type flag-algebra element, has positive density under
-\(\phi_0\).  Under this hypothesis Lean constructs a probability measure
+that \(\phi_0(\langle\sigma\rangle_0)>0\).  By the notation introduced in
+\Cref{sec:background-downward}, \(\langle\sigma\rangle_0\) is the empty-type
+basis element represented by the underlying graph of \(\sigma\), so the
+hypothesis says that this graph has positive density under \(\phi_0\).  Under
+this hypothesis Lean constructs a probability measure
 \(\mathbb{P}\) on \lean{PositiveHomSpace} with argument \(\sigma\).  This
 \(\mathbb{P}\) is the formal
 random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
@@ -2087,13 +2103,13 @@ Equation~\eqref{eq:ensemble}:
        {\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)} .
 \]
 The denominator is the normalizing value of the typed unit after applying the
-downward operator, and it is positive under the hypothesis
-\(\phi_0(\langle\sigma\rangle_0)>0\).  Thus the theorem gives a concrete way
-to compute the unlabeled value \(\phi_0(\llbracket f\rrbracket_0)\) from typed
-evaluations: randomly label the limiting object represented by \(\phi_0\) with
-a copy of \(\sigma\), evaluate \(f\) in the resulting \(\sigma\)-typed positive
-homomorphism, average these values, and multiply by the positive normalizing
-denominator.
+downward operator.  It is a positive scalar multiple of
+\(\phi_0(\langle\sigma\rangle_0)\), so it is positive under the hypothesis
+above.  Thus the theorem gives a concrete way to compute the unlabeled value
+\(\phi_0(\llbracket f\rrbracket_0)\) from typed evaluations: randomly label the
+limiting object represented by \(\phi_0\) with a copy of \(\sigma\), evaluate
+\(f\) in the resulting \(\sigma\)-typed positive homomorphism, average these
+values, and multiply by the positive normalizing denominator.
 
 The payoff is the Lean transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: if \(f\) is non-negative under every positive
@@ -3962,9 +3978,9 @@ There is also an intrinsic description:
   \right\}.
 \end{equation}
 The role of heredity is to justify the quotient presentation above.  Every
-flag appearing in the product of a flag outside \(\mathcal K\) with another
-flag contains the first flag as an induced subflag.  It therefore also lies
-outside \(\mathcal K\), since otherwise heredity would put that induced subflag
+flag $F$ appearing in the product of a flag $F'$ outside \(\mathcal K\) with another
+flag $F''$ contains the first flag $F'$ as an induced subflag.  It therefore also lies
+outside \(\mathcal K\), since otherwise heredity would put that induced subflag $F'$
 back in \(\mathcal K\).  Hence multiplying a flag outside \(\mathcal K\) by any
 other flag produces a linear combination of flags outside \(\mathcal K\), so
 their span is precisely the ideal killed by \(q_\sigma\).  Once this
@@ -3974,7 +3990,7 @@ presentation is established, a homomorphism vanishing on every flag outside
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
-\(Q_0:=Q_{\emptyt}\) for the corresponding space of constrained empty-type
+\(Q_0:=Q_{\emptyset}\) for the corresponding space of constrained empty-type
 positive homomorphisms.
 
 \paragraph{Random extensions and the root-planting space.}
