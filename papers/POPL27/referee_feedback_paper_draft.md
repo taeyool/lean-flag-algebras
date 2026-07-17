@@ -5,6 +5,19 @@
   (`LeanFlagAlgebras/`) 실제 코드와 1:1 대조 + 수식 재검산 + 참고문헌 사실 확인.
 - 관점: formalization 논문(POPL/ITP/CPP류) 심사자.
 
+### 대응 로그 (Revision Log)
+
+| 날짜 | 조치 | 상태 | 커밋 |
+|---|---|---|---|
+| 2026-07-16 | **용어 정리: 본문의 "ordinary" 수식어 제거** — 보고서 제출 이후 저자 요청으로 수행한 후속 정리. subgraph 구분용 `ordinary` 15곳 중 본문 12곳(§1 l.414·424, §5.2 l.3197·3202, §5.4 l.3366·3370, §8 l.3897·3898·4043×2·4128·4136)을 제거. §2 l.477의 규약 문장("an unqualified *subgraph* is an ordinary, not necessarily induced, subgraph")과 abstract 2곳(l.298, 307)은 유지, 다른 의미("보통의")의 `ordinary` 18곳은 불변. 수정 전후 라인 수 동일(11행 교체)이라 본 보고서의 행 번호 인용은 계속 유효함. | 반영 완료 | `d190e61` |
+| 2026-07-16 | **§3-3 반영: §8 "non-degenerate" 정의 문구 수정** — l.3972의 "is non-degenerate for \(\mathcal K\): equivalently,"를 "is \emph{non-degenerate} for \(\mathcal K\): that is,"로 교체. 매달린 "equivalently"를 제거하고, 정의부임을 드러내기 위해 논문의 정의 관례(\emph{hereditary}, \emph{root-plantable} 등)에 맞춰 용어를 이탤릭 처리. 행 수 변화 없음(행 번호 인용 계속 유효). | 반영 완료 | `400f8a5` |
+| 2026-07-16 | **용어 통일: `Ext_σ`를 "probability measure"로 통일** — 보고서 제출 이후 저자 요청으로 수행한 후속 정리. Ext_σ를 명사로 지칭할 때 distribution(4곳)/measure(5곳)가 혼용되던 것을 measure로 통일: §2.5 l.1044("a unique probability distribution"→"measure", Ext_σ 정의부), §3.5 l.2053("the distribution obtained by"→"the measure obtained by")·l.2057("drawn from this distribution"→"this measure")·l.2058("that distribution:"→"that measure:"). 근거: Definition 8.1의 집합 적용 `Ext_σ(φ₀)({χ|…})=1`과 §8의 supp() 정의(l.3978)가 measure 전제, Lean 타입 `ProbabilityMeasure`와의 정합, Razborov(2007) 원 정식화와의 정합. §3.4의 flag 표집 분포 3곳(l.1885·1902·1909)은 Ext_σ와 별개 대상이라 "distribution" 유지. 행 수 변화 없음(행 번호 인용 계속 유효). | 반영 완료 | `400f8a5` |
+| 2026-07-16 | **용어 정리: root 어휘 앵커 + §5 "rooted" 제거** — (i) §2.1 라벨 정점 정의에 동의어 앵커 추가: "the \emph{labeled vertices}, or \emph{roots}, of F" — 이로써 §8의 root/rooted/random rooting 어휘와 "root-planting" 명명이 해독 가능해짐. (ii) §8 Q_σ 문단의 정의-전 사용 "It imposes no random-rooting requirement"는 저자의 §8 개정(커밋 4ecdbef 등)에서 해당 문단이 재작성되며 문장 자체가 삭제되어 자연 해소됨 — 리베이스 시 원격안 채택, 최종 반영분은 (i)+(iii). (iii) §5.1의 "rooted" 3곳을 "labeled"로 교체: "rooted three-vertex basis"→"labeled three-vertex basis", "the displayed rooted flag"→"the displayed labeled flag", "the two rooted flags"→"the two labeled flags" — §5에서 root 계열 어휘 전부 제거(grep 검증). §8의 "random rooting"을 정식 용어로 정의하는 방안은 저자 결정으로 채택하지 않음(§2.1 앵커로 갈음). | 반영 완료 | `400f8a5` |
+
+- 미결(이 건 관련): abstract 2곳(l.298, 307)의 처리 방향 — 유지 / "(not necessarily induced)" 괄호 주석 / 제거 — 저자 결정 대기.
+- 참고: "ordinary" 정리는 M2(induced-forbid 관계 `≤ᵢ[·]` 미서술)와 인접한 용어 문제이지만 **M2 자체를 해소하지는 않음**. 그 외 보고서 항목은 아직 미대응 — 개별 반영 현황은 위 표와 각 항목의 ✅ 표기 참조.
+- 주의: 검토 이후 논문 개정이 계속되고 있어(§8 재작성, Mantel 인용 추가 등) 본 보고서의 행 번호 인용(검토 시점 4,665행 기준)은 어긋날 수 있음. 항목을 찾을 때는 섹션 태그와 인용 문구를 기준으로 할 것.
+
 ### 논문 섹션 구성 (아래 태그의 기준)
 
 | 태그 | 섹션 |
@@ -319,6 +332,8 @@ import해 컴파일되는 훌륭한 장치이므로, lake 빌드/CI에 포함해
    space" 문단): "Assume that σ is non-degenerate for K:
    **equivalently**, there is some φ₀ ∈ Q₀ …" — 앞선 정의가 없는데 "equivalently"라고 쓴다.
    "that is" 또는 "meaning"으로 교체.
+   **→ ✅ 반영 완료(2026-07-16, `400f8a5`):** "equivalently" → "that is" 교체 +
+   `\emph{non-degenerate}` 강조 추가(정의부 표시). 대응 로그 참조.
 4. **[§8]** **C₄-free 반례 문단** (§8 "Why the criterion is nontrivial"): "Every large C₄-free
    graph has o(n²) edges"는 Kővári–Sós–Turán(또는 Reiman) 인용이 필요하다.
 5. **[§2.1 그림 1; §2.3–2.5의 예시들]** **기호 중의성**: 밑그래프가 P̄₃인 1-정점 타입 flag는
