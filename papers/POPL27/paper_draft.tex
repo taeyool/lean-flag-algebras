@@ -367,17 +367,21 @@ finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
 
 Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
-for exactly this setting.  A flag is a finite graph together with a
-distinguished labeled induced subgraph.  By treating the densities of such partially
-labeled patterns as algebraic objects, the method turns a global asymptotic
-problem into a finite inequality in a quotient algebra.  Crucially, many
-strong inequalities can be obtained from positive semidefinite matrices: a
-semidefinite-programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
-why that finite certificate implies an asymptotic bound for the whole graph
-class.  This combination of mathematical abstraction and computer search has been unusually
-effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
+for exactly this setting: it reduces the infinitely many graphs one has to
+reason about to a finite semidefinite-programming certificate.  A
+semidefinite-programming (SDP) solver searches for that certificate, and the
+flag algebra framework explains why it implies an asymptotic bound for the
+whole graph class.
+
+This combination of mathematical abstraction and computer search has been
+unusually effective.  It resolved the Erd\H{o}s pentagon
 problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
-density of pentagons in triangle-free graphs.
+density of pentagons in triangle-free graphs, and it determined the minimum
+triangle density for a given edge density~\cite{razborov2008triangles}.  It
+settled the maximum induced $C_5$ density~\cite{balogh2016induced5} and the
+rainbow-triangle density problem~\cite{balogh2017rainbow}, and it gives the
+best known bounds on Tur\'an's tetrahedron
+problem~\cite{razborov2010tetrahedron,baber2012turan}.
 
 \paragraph{From certificates to formal proofs.}
 This paper presents a machine-checked formalization of flag algebras for
@@ -4649,6 +4653,37 @@ H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l', S.~Norine, and A.~Razborov.
 \newblock On the number of pentagons in triangle-free graphs.
 \newblock \textit{Journal of Combinatorial Theory, Series A},
   120(3):722--732, 2013.
+
+\bibitem{razborov2008triangles}
+A.~A.~Razborov.
+\newblock On the minimal density of triangles in graphs.
+\newblock \textit{Combinatorics, Probability and Computing}, 17(4):603--618,
+  2008. DOI: 10.1017/S0963548308009085.
+
+\bibitem{razborov2010tetrahedron}
+A.~A.~Razborov.
+\newblock On 3-hypergraphs with forbidden 4-vertex configurations.
+\newblock \textit{SIAM Journal on Discrete Mathematics}, 24(3):946--963, 2010.
+  DOI: 10.1137/090747476.
+
+\bibitem{baber2012turan}
+R.~Baber and J.~Talbot.
+\newblock New Tur\'{a}n densities for 3-graphs.
+\newblock \textit{Electronic Journal of Combinatorics}, 19(2):\#P22, 2012.
+  DOI: 10.37236/2160.
+
+\bibitem{balogh2016induced5}
+J.~Balogh, P.~Hu, B.~Lidick\'{y}, and F.~Pfender.
+\newblock Maximum density of induced 5-cycle is achieved by an iterated blow-up
+  of 5-cycle.
+\newblock \textit{European Journal of Combinatorics}, 52:47--58, 2016.
+  DOI: 10.1016/j.ejc.2015.08.006.
+
+\bibitem{balogh2017rainbow}
+J.~Balogh, P.~Hu, B.~Lidick\'{y}, F.~Pfender, J.~Volec, and M.~Young.
+\newblock Rainbow triangles in three-colored graphs.
+\newblock \textit{Journal of Combinatorial Theory, Series B}, 126:83--113,
+  2017. DOI: 10.1016/j.jctb.2017.04.002.
 
 \bibitem{dillies2022szemeredi}
 Y.~Dillies and B.~Mehta.
