@@ -24,6 +24,9 @@ namespace K3forbidP3
 -- flags are never generated. The pruned commands emit only the K3-free flags, their completeness,
 -- and the forbid-free pair-density / multiplication theorems.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+-- `flagGen.kernelDecide`: generated bridging lemmas proved by `decide +kernel`
+-- (viable at n ≤ 3) — no compiled-evaluation axioms in this file.
+set_option flagGen.kernelDecide true
 generate_forbid_free_empty_typed_flags 2 K3
 generate_forbid_free_empty_typed_flags 3 K3
 generate_forbid_free_flags 2 1 0 K3
