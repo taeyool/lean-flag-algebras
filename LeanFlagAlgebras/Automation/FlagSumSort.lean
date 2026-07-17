@@ -26,16 +26,24 @@ private def parseTrailingNat? (s : String) : Option Nat :=
   else
     (String.ofList revDigits.reverse).toNat?
 
+/-- Extracts `(index, tie-break key)` from a term's base expression, keyed off the trailing
+numeral of the applied head symbol's name (e.g. `FlagAlgebra_5_0_0_7` ↦ `7`). The head-constant
+name is checked first since it is free (no `MetaM` work); the full pretty-printer only runs as a
+fallback when the head isn't a plain numbered constant, since `ppExpr` is comparatively expensive
+and most terms in a flag sum resolve via the cheap path. -/
 private def baseIndexKey (e : Expr) : MetaM (Nat × String) := do
   let e := e.consumeMData
-  let pp ← ppExpr e
-  let keyStr := pp.pretty
-  let idx?
-    :=
-      match e.getAppFn.consumeMData with
-      | Expr.const nm _ => parseTrailingNat? nm.toString
-      | _ => parseTrailingNat? keyStr
-  pure (idx?.getD 1000000000, keyStr)
+  match e.getAppFn.consumeMData with
+  | Expr.const nm _ =>
+      let nmStr := nm.toString
+      match parseTrailingNat? nmStr with
+      | some idx => pure (idx, nmStr)
+      | none =>
+          let keyStr := (← ppExpr e).pretty
+          pure ((parseTrailingNat? keyStr).getD 1000000000, keyStr)
+  | _ =>
+      let keyStr := (← ppExpr e).pretty
+      pure ((parseTrailingNat? keyStr).getD 1000000000, keyStr)
 
 private def getBinaryOpArgs? (opName : Name) (e : Expr) : Option (Expr × Expr) :=
   let e := e.consumeMData
@@ -269,11 +277,16 @@ elab "sort_at_timer" : conv => do
 
 /-! ## 3) Definitions for `ac_sort` and `ac_sort` Implementation -/
 
-private partial def flattenAddTerms (e : Expr) : Array Expr :=
+/-- Accumulator-passing flatten: pushes onto a single growing array instead of `++`-ing
+subresults, so a long left-associated chain of `n` summands costs `O(n)` instead of `O(n²)`. -/
+private partial def flattenAddTermsInto (acc : Array Expr) (e : Expr) : Array Expr :=
   let e := e.consumeMData
   match getAddArgs? e with
-  | some (a, b) => (flattenAddTerms a) ++ (flattenAddTerms b)
-  | none => #[e]
+  | some (a, b) => flattenAddTermsInto (flattenAddTermsInto acc a) b
+  | none => acc.push e
+
+private def flattenAddTerms (e : Expr) : Array Expr :=
+  flattenAddTermsInto #[] e
 
 private def addTermKey (e : Expr) : MetaM (Nat × String) := do
   let e := e.consumeMData
@@ -285,12 +298,7 @@ private def sortAddTermsByKey (terms : Array Expr) : MetaM (Array Expr) := do
   let keyed ← terms.mapM fun t => do
     let (idx, key) ← addTermKey t
     pure (idx, key, t)
-  let mut sorted : Array (Nat × String × Expr) := #[]
-  for item in keyed do
-    sorted := insertSortedBy
-      (fun a b => a.1 < b.1 || (a.1 = b.1 && a.2.1 < b.2.1))
-      item
-      sorted
+  let sorted := keyed.qsort (fun a b => a.1 < b.1 || (a.1 = b.1 && a.2.1 < b.2.1))
   pure <| sorted.map fun (_, _, t) => t
 
 private partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
@@ -301,13 +309,55 @@ private partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
       let rest ← mkRightAssocAdd ts
       mkAppM ``HAdd.hAdd #[t, rest]
 
-private def rebuildAddExprRightAssoc (terms : Array Expr) : MetaM Expr :=
-  mkRightAssocAdd terms.toList
+/-- The `+`-application with its type/instance implicit args already filled in but its two
+explicit operands left open, extracted from an existing `HAdd`/`Add` application. Reapplying it
+via `mkAppN` (pure term construction) avoids repeating typeclass instance search for every pair
+that `mkAppM` would otherwise perform. -/
+private def getBinaryOpPrefixFn? (opName : Name) (e : Expr) : Option Expr :=
+  let e := e.consumeMData
+  let fn := e.getAppFn.consumeMData
+  if !fn.isConstOf opName then
+    none
+  else
+    let args := e.getAppArgs
+    if args.size < 2 then none else some (mkAppN fn (args.extract 0 (args.size - 2)))
+
+private def getAddPrefixFn? (e : Expr) : Option Expr :=
+  match getBinaryOpPrefixFn? ``HAdd.hAdd e with
+  | some fn => some fn
+  | none => getBinaryOpPrefixFn? ``Add.add e
+
+private partial def mkRightAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
+  match terms with
+  | [] => panic! "mkRightAssocAddFast: empty term list"
+  | [t] => t
+  | t :: ts => mkAppN prefixFn #[t, mkRightAssocAddFast prefixFn ts]
+
+/-- Same as `mkRightAssocAddFast` but left-associated (`(...(t1+t2)+t3...)+tn`). Downstream
+consumers of `flagsum_ac_sort_rhs_pipeline`'s output (e.g. `flag_nonneg`'s
+`repeat apply add_nonneg`, which — absent `all_goals`/`<;>` — only ever recurses into the first
+of the two goals `add_nonneg` produces) rely on this specific shape: for a right-associated sum
+`t1 + (t2 + (... + tn))`, splitting peels off only `t1` before getting stuck on the untouched
+`t2 + (... + tn)` remainder, whereas a left-associated sum fully decomposes (see
+`FLAGSUMSORT_PERF_PROGRESS.md` for how this was diagnosed). -/
+private partial def mkLeftAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
+  match terms with
+  | [] => panic! "mkLeftAssocAddFast: empty term list"
+  | t :: ts => ts.foldl (fun acc t' => mkAppN prefixFn #[acc, t']) t
+
+/-- Rebuild the sorted terms into a right-associated sum. `topE` is the original (pre-sort)
+expression, used only to harvest a reusable `+`-instance prefix (see `getAddPrefixFn?`); when
+that harvest fails (e.g. `terms` has a single element and `topE` was never an add-application to
+begin with) falls back to the slower `mkAppM`-based construction. -/
+private def rebuildAddExprRightAssoc (topE : Expr) (terms : Array Expr) : MetaM Expr :=
+  match getAddPrefixFn? topE with
+  | some prefixFn => pure (mkRightAssocAddFast prefixFn terms.toList)
+  | none => mkRightAssocAdd terms.toList
 
 private def normalizeByAddPermutation (e : Expr) : MetaM Expr := do
   let terms := flattenAddTerms e
   let sorted ← sortAddTermsByKey terms
-  rebuildAddExprRightAssoc sorted
+  rebuildAddExprRightAssoc e sorted
 
 private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
   let goalType ← mkEq lhs rhs
@@ -320,6 +370,148 @@ private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
     throwError m!"proveEqByAddAC: failed to close side-goal\noriginal lhs: {lhs}\nsorted lhs: {rhs}"
   setGoals savedGoals
   instantiateMVars mvar
+
+/-! ### Merging same-base terms after the sort
+
+`acSortNormalizeConv` only permutes terms; once sorted, terms sharing a base are guaranteed
+adjacent, but coefficients aren't combined yet (`c₁ • x + c₂ • x` stays as two summands). The
+original pipeline left finding and combining such pairs to a `simp only [← add_assoc, ← add_smul]`
+search over the whole (possibly huge) rebuilt tree, which dominated the pipeline's cost even when
+there was nothing to merge (see `FLAGSUMSORT_PERF_PROGRESS.md`). Since the sort already tells us
+exactly which entries are adjacent-and-equal, we merge them directly instead: each merge step's
+proof goal is `O(1)`-sized (the unmerged "rest" of the sum, `R`, is left as one opaque black-box
+subterm — `simp` never descends into it), so the cost is independent of how large the surrounding
+sum is.
+
+A prior version of this built each merge step's proof via raw `mkAppM ``add_smul`/``add_assoc``
+term construction; that caused a real regression in `K5turan.lean` (`flag_nonneg`'s
+`repeat apply add_nonneg` got stuck on a merged term, likely an instance-path mismatch — see
+`FLAGSUMSORT_PERF_PROGRESS.md`). This version instead proves each merge step via a small
+tactic-mode goal (`mkMergeStepProof`, the same "synthetic mvar + evalTactic" pattern
+`proveEqByAddAC` already uses), so `add_smul`/`add_assoc` go through the ordinary elaborator
+instead of being hand-assembled. -/
+
+private def mkSmul (coeff base : Expr) : MetaM Expr :=
+  mkAppM ``HSMul.hSMul #[coeff, base]
+
+/-- Reconstructs the actual term from a `(coeff, base)` pair: `some c, b ↦ c • b`, but
+`none, t ↦ t` *unchanged* — a term that wasn't `smul`-headed to begin with (e.g. a bare negated
+flag `-x` left over from something `pre-simp`'s lemma set didn't fully absorb into a coefficient)
+must be rebuilt exactly as `t`, not wrapped as `(1 : _) • t`: that wrapper is syntactically
+different (even though `one_smul`-defeq) and broke `K3forbidP3.lean`'s proof term downstream —
+see `FLAGSUMSORT_PERF_PROGRESS.md`. Terms with `none` therefore also never participate in
+merging (`mergeableCoeffs` below always rejects them), since merging would require synthesizing
+exactly this kind of coefficient wrapper. -/
+private def termOf (coeff : Option Expr) (base : Expr) : MetaM Expr :=
+  match coeff with
+  | some c => mkSmul c base
+  | none => pure base
+
+/-- `h : a = b` ↦ proof of `head + a = head + b`. Pure `congrArg` — no typeclass-sensitive lemma
+involved, so (unlike `add_smul`/`add_assoc`) there's no suspected reason to route this through
+tactic-mode instead of direct term construction. -/
+private def congrArgAddLeft (prefixFn head h : Expr) : MetaM Expr := do
+  let some (ty, _, _) := (← inferType h).eq? | throwError "congrArgAddLeft: expected an Eq proof"
+  withLocalDeclD `x ty fun x => do
+    let f ← mkLambdaFVars #[x] (mkAppN prefixFn #[head, x])
+    mkAppM ``congrArg #[f, h]
+
+/-- Proves `lhs = rhs` via a small, self-contained tactic-mode goal (mirroring `proveEqByAddAC`'s
+"synthetic mvar + evalTactic" pattern) instead of assembling the proof by hand from
+`add_assoc`/`add_smul` applied directly. Any opaque subterm shared between `lhs` and `rhs` (e.g.
+the unmerged "rest" of the sum) is never descended into by `simp`, so this stays `O(1)` regardless
+of how large that shared subterm is. -/
+private def mkMergeStepProof (lhs rhs : Expr) : TacticM Expr := do
+  let goalType ← mkEq lhs rhs
+  let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
+  let savedGoals ← getGoals
+  setGoals [mvar.mvarId!]
+  evalTactic (← `(tactic| simp only [add_assoc, add_smul]))
+  let remaining ← getGoals
+  if !remaining.isEmpty then
+    throwError m!"mkMergeStepProof: failed to close merge step\nlhs: {lhs}\nrhs: {rhs}"
+  setGoals savedGoals
+  instantiateMVars mvar
+
+/-- Two adjacent entries are mergeable only when *both* have an explicit coefficient (see
+`termOf`) and, after a cheap key pre-filter, their bases are confirmed `isDefEq`. Returns the two
+coefficients when mergeable. -/
+private def mergeableCoeffs (key1 key2 : String) (coeff1 coeff2 : Option Expr) (base1 base2 : Expr) :
+    MetaM (Option (Expr × Expr)) := do
+  match coeff1, coeff2 with
+  | some c1, some c2 =>
+      if key1 != key2 then
+        pure none
+      else if ← isDefEq base1 base2 then
+        pure (some (c1, c2))
+      else
+        pure none
+  | _, _ => pure none
+
+/-- Walks a sorted `(key, coeff?, base)` list left to right, merging maximal adjacent runs that
+share a base (only among entries with an explicit `coeff`). Returns the merged list together with
+a proof that the right-associated sum of the input equals the right-associated sum of the merged
+list. -/
+private partial def mergeAdjacentAndProve (prefixFn : Expr) :
+    List (String × Option Expr × Expr) → TacticM (List (String × Option Expr × Expr) × Expr)
+  | [] => throwError "mergeAdjacentAndProve: empty term list"
+  | [(k, oc, b)] => do
+      pure ([(k, oc, b)], ← mkEqRefl (← termOf oc b))
+  | (k1, oc1, b1) :: (k2, oc2, b2) :: rest => do
+      match ← mergeableCoeffs k1 k2 oc1 oc2 b1 b2 with
+      | some (c1, c2) => do
+          let c12 ← mkAppM ``HAdd.hAdd #[c1, c2]
+          let t1 ← mkSmul c1 b1
+          let t2 ← mkSmul c2 b1
+          let t12 ← mkSmul c12 b1
+          match rest with
+          | [] => do
+              let step ← mkMergeStepProof (← mkAppM ``HAdd.hAdd #[t1, t2]) t12
+              pure ([(k1, some c12, b1)], step)
+          | _ :: _ => do
+              let (mergedRest, eq2) ← mergeAdjacentAndProve prefixFn ((k1, some c12, b1) :: rest)
+              let restTerms ← rest.mapM fun (_, oc, b) => termOf oc b
+              let restRebuilt := mkRightAssocAddFast prefixFn restTerms
+              let lhs ← mkAppM ``HAdd.hAdd #[t1, ← mkAppM ``HAdd.hAdd #[t2, restRebuilt]]
+              let rhs ← mkAppM ``HAdd.hAdd #[t12, restRebuilt]
+              let bridge ← mkMergeStepProof lhs rhs
+              pure (mergedRest, ← mkEqTrans bridge eq2)
+      | none => do
+          let (mergedRest, restEq) ← mergeAdjacentAndProve prefixFn ((k2, oc2, b2) :: rest)
+          let t1 ← termOf oc1 b1
+          pure ((k1, oc1, b1) :: mergedRest, ← congrArgAddLeft prefixFn t1 restEq)
+
+/-- `conv`-mode step: after `acSortNormalizeConv` has sorted the current focus by base index,
+merge adjacent same-base runs (coefficient consolidation), then re-associate the result to
+*left*-associated (`(...(t1+t2)+t3...)+tn`) via `proveEqByAddAC`/`ac_rfl` — already-measured-fast
+for pure reassociation, no `simp` search. The left-assoc reshape happens unconditionally (even
+with nothing to merge) since downstream consumers like `flag_nonneg`'s
+`repeat apply add_nonneg` depend on it (see `mkLeftAssocAddFast`'s docstring). `norm_num` (to fold
+the resulting literal coefficient sums) only runs when a merge actually happened. -/
+private def mergeSameBaseTermsConv : TacticM Unit :=
+  withMainContext do
+    let goal ← getMainGoal
+    let target ← goal.getType
+    let (focus, rhs) ← getEqSides target
+    let terms := flattenAddTerms focus
+    let pairs ← terms.mapM fun t => do
+      let key := (← addTermKey t).2
+      match getSmulArgs? t with
+      | some (c, b) => pure (key, some c, b)
+      | none => pure (key, none, t)
+    match getAddPrefixFn? focus with
+    | none => pure ()
+    | some prefixFn =>
+        let (merged, mergeProof) ← mergeAdjacentAndProve prefixFn pairs.toList
+        let didMerge := merged.length < pairs.size
+        let mergedTerms ← merged.mapM fun (_, oc, b) => termOf oc b
+        let mergedExprRight := mkRightAssocAddFast prefixFn mergedTerms
+        let mergedExprLeft := mkLeftAssocAddFast prefixFn mergedTerms
+        let assocProof ← proveEqByAddAC mergedExprRight mergedExprLeft
+        let fullProof ← mkEqTrans mergeProof assocProof
+        replaceGoalUsingLhsEq goal mergedExprLeft rhs fullProof
+        if didMerge then
+          evalTactic (← `(tactic| try norm_num))
 
 /-- Shared implementation: normalizes the current conv focus using add-AC only. -/
 private def acSortNormalizeConv : TacticM Unit :=
@@ -368,9 +560,7 @@ elab "ac_sort_at_pipeline" : conv => do
     (try (simp (config := { maxSteps := 10000000 }) only
       [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
   acSortNormalizeConv
-  evalTactic (← `(tactic|
-    (try (simp (config := { maxSteps := 10000000 }) only [← add_assoc, ← add_smul]);
-     try norm_num)))
+  mergeSameBaseTermsConv
 
 /--
 Run the common pipeline on the left side of an equality goal:
@@ -388,6 +578,13 @@ Run the common pipeline on the right side of an equality goal:
 -/
 elab "flagsum_ac_sort_rhs_pipeline" : tactic =>
   do
+    evalTactic (← `(tactic|
+      (conv_rhs =>
+         ac_sort_at_pipeline)))
+
+/-- Timed variant of `flagsum_ac_sort_rhs_pipeline` (logs elapsed ms). Benchmarking aid. -/
+elab "flagsum_ac_sort_rhs_pipeline_timer" : tactic => do
+  withTimer "flagsum_ac_sort_rhs_pipeline" do
     evalTactic (← `(tactic|
       (conv_rhs =>
          ac_sort_at_pipeline)))
