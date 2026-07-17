@@ -500,7 +500,7 @@ that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
 (that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
 The vertices in $\operatorname{Im}(\theta_F)$ are called the
-\emph{labeled vertices} of $F$; the remaining $|V(F)|-k$ vertices are
+\emph{labeled vertices}, or \emph{roots}, of $F$; the remaining $|V(F)|-k$ vertices are
 \emph{unlabeled}.
 For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
 we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
@@ -1041,7 +1041,7 @@ $\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
 limiting object.
 Whenever $\phi_0(\sigma) > 0$ (i.e., $\sigma$ has positive density as an unlabeled graph in the limiting object),
 the following holds~\cite{razborov2007flag}:
-there exists a unique probability distribution on $\poshom{\sigma}$,
+there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
 such that for every $f \in \mathcal{A}^\sigma$, the random positive
 homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
@@ -2050,12 +2050,12 @@ viewed as an empty-type flag-algebra element, has positive density under
 \(\phi_0\).  Under this hypothesis Lean constructs a probability measure
 \(\mathbb{P}\) on \lean{PositiveHomSpace} with argument \(\sigma\).  This
 \(\mathbb{P}\) is the formal
-random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
+random extension \(\Ext_\sigma(\phi_0)\): it is the measure obtained by
 randomly choosing an occurrence of the type \(\sigma\) in the limiting object
 represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
 \(\mathbb{P}\) is present, a point of this measurable space may be regarded as
-a random positive homomorphism drawn from this distribution.  The
-displayed theorem states the defining identity of that distribution:
+a random positive homomorphism drawn from this measure.  The
+displayed theorem states the defining identity of that measure:
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -2885,7 +2885,7 @@ $K_2$ in this basis gives
 The coefficients in the second identity are simply the edge densities of the
 three host graphs: $0$, $1/3$, and $2/3$.
 
-It remains to expand the square in the rooted three-vertex basis and apply the
+It remains to expand the square in the labeled three-vertex basis and apply the
 downward operator term by term:
 \begin{align*}
   \bigl\llbracket
@@ -2910,7 +2910,7 @@ downward operator term by term:
 \end{align*}
 The fractions in the second line are the downward normalizing factors: they
 record whether one, two, or all three choices of the labeled vertex produce
-the displayed rooted flag.
+the displayed labeled flag.
 
 Write
 \[
@@ -2943,7 +2943,7 @@ inequality follows because the
 remainder $\tfrac13\cdot\fbarPthree$ is non-negative.
 
 The essential certificate data for this example are precisely the nontrivial
-terms in this derivation: the two rooted flags $\fKtwobull$ and
+terms in this derivation: the two labeled flags $\fKtwobull$ and
 $\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
 the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
@@ -3947,7 +3947,7 @@ algebra into \(X_\sigma\).  Its image is
   \subseteq X_\sigma.
 \end{equation}
 Thus \(Q_\sigma\) is the space of all \(\sigma\)-typed positive homomorphisms
-admitted by the constrained quotient. 
+admitted by the constrained quotient.
 
 There is also an intrinsic description:
 \begin{equation}\label{eq:Q-sigma-intrinsic}
@@ -3978,14 +3978,14 @@ zero sets of continuous evaluation maps.  We write
 positive homomorphisms.
 
 \paragraph{Random extensions and the root-planting space.}
-Assume that \(\sigma\) is non-degenerate for \(\mathcal K\): equivalently,
+Assume that \(\sigma\) is \emph{non-degenerate} for \(\mathcal K\): that is,
 there is some \(\phi_0\in Q_0\) for which
 \(\phi_0(\langle\sigma\rangle_0)>0\).  For every such \(\phi_0\), Razborov's
 extension theorem gives a probability measure
 \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\), obtained by choosing a uniformly
 random occurrence of \(\sigma\) in finite graphs approaching \(\phi_0\) and
 passing to the limit.  For a probability measure \(\mu\) on \(X_\sigma\), its
-support \(\operatorname{supp}(\mu)\) consists of those points \(\chi\) for
+support \(\operatorname{supp}(\mu)\) consists of those points \(\chi\in X_\sigma\) for
 which every open neighborhood of \(\chi\) has positive \(\mu\)-measure.
 Define
 \begin{equation}\label{eq:S-sigma}
