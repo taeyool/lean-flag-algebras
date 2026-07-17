@@ -346,8 +346,8 @@ respect to $\mathcal{H}$:
   \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
 \]
 For example, Mantel's theorem~\cite{mantel} states that a triangle-free graph on $n$
-vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
-$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
+vertices has at most $\lfloor n^2/4\rfloor$ edges.  Equivalently,
+$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$, and the bound is achieved by the
 complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
 asymptotic value
 \[
@@ -379,9 +379,10 @@ problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
 density of pentagons in triangle-free graphs, and it determined the minimum
 triangle density for a given edge density~\cite{razborov2008triangles}.  It
 settled the maximum induced $C_5$ density~\cite{balogh2016induced5} and the
-rainbow-triangle density problem~\cite{balogh2017rainbow}, and it gives the
-best known bounds on Tur\'an's tetrahedron
-problem~\cite{razborov2010tetrahedron,baber2012turan}.
+rainbow-triangle density problem~\cite{balogh2017rainbow}.  It also gives the
+best known upper bound on Tur\'an's tetrahedron
+problem~\cite{razborov2010tetrahedron}, and has produced several exact
+Tur\'an-density results for 3-uniform hypergraphs~\cite{baber2012turan}.
 
 % -- Previous version of the two paragraphs below (commented out) -------------
 % \paragraph{From certificates to formal proofs.}
@@ -423,10 +424,10 @@ development: partially labeled graphs and their densities in large graphs, the
 quotient algebra of density expressions, graph-limit semantics through positive
 homomorphisms, and the downward operator that transfers labeled reasoning back
 to unlabeled graph statements.  We call this the \emph{specification layer}
-(\Cref{sec:abstract}).  Its definitions stay close to the mathematics---flags
+(\Cref{sec:abstract}).  Its definitions stay close to the mathematics: flags
 are isomorphism classes of labeled graphs, densities are sampling
-probabilities, and the algebra is a quotient by expansion identities---and its
-theorems are the ones a flag-algebra argument actually appeals to, so that such
+probabilities, and the algebra is a quotient by expansion identities.  Its
+theorems are the ones a flag-algebra argument actually appeals to, so such
 an argument can be stated in Lean much as it is stated on paper.
 
 \paragraph{From certificates to formal proofs.}
@@ -443,9 +444,9 @@ they support agree with the specification; Lean therefore recomputes the
 density and multiplication facts a certificate needs instead of trusting them.
 The \emph{automation layer} (\Cref{sec:flagmatic}) verifies
 positive-semidefiniteness exactly over $\mathbb{Q}$ and packages the recurring
-algebraic steps---expanding flags to a common size, multiplying typed flags,
-applying the forbidden-graph assumption, and normalizing large linear
-combinations---into tactics and elaboration commands.
+algebraic steps, including expanding flags to a common size, multiplying typed
+flags, applying the forbidden-graph assumption, and normalizing large linear
+combinations, into tactics and elaboration commands.
 
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
@@ -932,12 +933,15 @@ a subset of $[0,1]^{\mathcal{F}^\sigma}$.  % It is moreover compact.
 
 The following theorem makes precise the sense in which positive homomorphisms
 are exactly the limiting objects of convergent sequences of
-$\sigma$-flags~\cite{lovasz2006limits}.
+$\sigma$-flags~\cite{razborov2007flag}.
 
-\begin{theorem}[Lov\'{a}sz--Szegedy]\label{thm:convergent-hom}
+\begin{theorem}[Razborov]\label{thm:convergent-hom}
   \begin{enumerate}
-  \item[\textup{(a)}] For every convergent sequence $\{G_n\}_{n\in\mathbb{N}}$ of
-    $\sigma$-flags, $\lim_{n\to\infty} p^{G_n} \in \poshom{\sigma}$.
+  \item[\textup{(a)}] If $\{G_n\}_{n\in\mathbb{N}}$ is a convergent sequence of
+    $\sigma$-flags, then
+    \[
+      \lim_{n\to\infty} p^{G_n} \in \poshom{\sigma}.
+    \]
   \item[\textup{(b)}] Conversely, every $\phi \in \poshom{\sigma}$ satisfies
     $\phi = \lim_{n\to\infty} p^{G_n}$ for some convergent sequence
     $\{G_n\}_{n\in\mathbb{N}}$ of $\sigma$-flags.
@@ -1362,10 +1366,10 @@ the resulting equality can be used as a proof step only because previously
 proved theorems connect the computation to the mathematical definitions.  We
 call the interface supporting these proof-producing computations the
 \emph{specification layer}.  It formalizes the objects from
-\Cref{sec:background}---flags as isomorphism classes of labeled graphs,
+\Cref{sec:background}: flags as isomorphism classes of labeled graphs,
 densities as finite sampling probabilities, the flag algebra as a quotient by
 expansion identities, and positive homomorphisms as semantic interpretations of
-algebra elements---and proves their basic interface theorems.  Once this layer
+algebra elements.  It also proves their basic interface theorems.  Once this layer
 has been established, certificate proofs can manipulate algebraic expressions
 without repeatedly returning to graph representatives and finite sampling
 definitions.
@@ -1590,14 +1594,14 @@ tuples, and finally package the result as a function on \lean{FlagList}.  The
 congruence proofs, omitted below, show that the density is unchanged when the
 target or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
-def labeledGraphListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
+def flagListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
   (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
 
 instance labeledGraphListSetoid {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
     : Setoid (LabeledGraphList (*@$\sigma$@*) t Vl) where
-  r     := labeledGraphListEqv
+  r     := flagListEqv
   iseqv := ... -- proof that the entrywise isomorphism is an equivalence
 
 def QuotLabeledGraphList {T : Type} [Fintype T]
@@ -1640,7 +1644,7 @@ noncomputable def flagListDensity
     : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   fun Fl => quotLabeledGraphListDensity (FlagList.coe Fl)
 \end{lstlisting}
-Here \lean{labeledGraphListEqv} says that two concrete tuples are equivalent exactly
+Here \lean{flagListEqv} says that two concrete tuples are equivalent exactly
 when their entries are isomorphic as labeled graphs: for each index \lean{i},
 there must exist an isomorphism \lean{Gl i}~\(\simeq_f\)~\lean{Gl' i}.  The
 instance \lean{labeledGraphListSetoid} supplies the setoid required by
@@ -1951,7 +1955,7 @@ identity
   \phi\left(\sum_{G\in\mathcal{F}^{\sigma}_{\ell}} [G]\right)
   =
   \phi(\mathbf{1}_\sigma)
-  = 
+  =
   1.
 \]
 One then samples an entire sequence
@@ -2003,7 +2007,7 @@ The rational number \(q_\sigma(F)\) is implemented as
 \lean{downwardNormalizingFactor}; before it can be used on flags, it is defined
 on concrete \lean{LabeledGraph}s and proved invariant under labeled-graph
 isomorphism.  The operation \(F|_\emptyset\), which forgets the type embedding,
-is implemented first as \lean{unlabel\_labeledGraph} on concrete labeled graphs and
+is implemented first as \lean{unlabeledGraph} on concrete labeled graphs and
 then lifted to \lean{unlabel} on \lean{Flag}s.  The map \lean{downwardFlag}
 combines the two: it sends a typed flag to the basis vector of its unlabeling,
 scaled by the normalizing factor.
@@ -2029,12 +2033,12 @@ noncomputable def downwardNormalizingFactor {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)}
     : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G) (...)
 
-def unlabel_labeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (G : LabeledGraph (*@$\sigma$@*) V)
+def unlabeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (G : LabeledGraph (*@$\sigma$@*) V)
     : LabeledGraph (*@$\emptyt$@*) V := ...
 
 noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
-  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabel_labeledGraph G(*@$\rrbracket$@*)) (...)
+  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabeledGraph G(*@$\rrbracket$@*)) (...)
 
 noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : Flag (*@$\sigma$@*) (Fin n))
     : FlagVector (*@$\emptyt$@*) :=
@@ -2474,7 +2478,7 @@ induced subflag of \(G\), which can be tested for isomorphism with \(F\).
 The following \lean{Fintype} instance provides the enumeration used to range
 over these possible placements:
 \begin{lstlisting}
-structure Sym2InducedLabeledSubgraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} 
+structure Sym2InducedLabeledSubgraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) where
   verts : Finset (Fin n)
   -- G.type_verts is the image of G.type_embed: the labeled vertices of G.
@@ -2489,7 +2493,7 @@ def Sym2InducedLabeledSubgraph.edges {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : 
 instance {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     : Fintype (Sym2InducedLabeledSubgraph G) where
   -- This Finset.univ enumerates all vertex subsets V : Finset (Fin n).
-  elems := (Finset.univ : Finset (Finset (Fin n))).filterMap 
+  elems := (Finset.univ : Finset (Finset (Fin n))).filterMap
     (fun (V : Finset (Fin n)) =>
       if hV : G.type_verts (*@$\subseteq$@*) V
       then some ({ verts := V, verts_subset := hV } : Sym2InducedLabeledSubgraph G)
@@ -2520,17 +2524,19 @@ This is the second basic ingredient: a decidable predicate on candidates which,
 given \(H\), decides whether the labeled graph associated to \(H\) is
 isomorphic to \(F\), with the type labels respected.
 
-The predicate \lean{candidateMatches F H} below is exactly this test.  It turns the
-induced subgraph \(H\) into its associated labeled graph and asks whether the
-result is isomorphic to \(F\), with the type labels respected.  As a
-mathematical statement this is still a proposition, not a program.  The
+The schematic predicate \lean{candidateMatches F H} below isolates this test.
+It is a one-pattern presentation of the isomorphism check that appears inside
+the implementation's tuple-level predicate \lean{predIsoSym2LabeledHl}.  It
+turns the induced subgraph \(H\) into its associated labeled graph and asks
+whether the result is isomorphic to \(F\), with the type labels respected.  As
+a mathematical statement this is still a proposition, not a program.  The
 reflection step is to show Lean how to decide the proposition from the concrete
 data stored in \(F\), \(G\), and \(H\).  The following small instance displays
 the mechanism used in the implementation: expose the finite vertex set of the
 candidate, read adjacency from explicit edge membership, reject candidates of
 the wrong size, and then invoke the finite isomorphism search.
 \begin{lstlisting}
-/-- The induced candidate H is isomorphic to the concrete pattern F. -/
+/-- Schematic one-pattern helper: H is isomorphic to the concrete pattern F. -/
 def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
     : Prop :=
@@ -2571,47 +2577,47 @@ generic inference step.  It asks typeclass search to decide the
 \lean{Nonempty} proposition that such a label-preserving graph isomorphism
 exists.  The generic decidability instance does this by enumerating finitely
 many graph isomorphisms and checking the type-preservation condition.
-The predicate \lean{candidateMatches F H} has therefore been compiled into a
-finite search.  The size branch is not conceptually necessary for the
+The schematic predicate \lean{candidateMatches F H} has therefore been reduced
+to a finite search.  The size branch is not conceptually necessary for the
 definition, but it matches the implementation's computation-oriented proof: a
 candidate whose vertex set has the wrong cardinality cannot be isomorphic to
 \(F\), so it is rejected before the isomorphism search is run.
 
-Once \lean{candidateMatches F H} is decidable, the density computation is just
-ordinary finite evaluation.  The definition \lean{sym2LabeledGraphDensity}$_1$
+Once the matching predicate is decidable, the density computation is ordinary
+finite evaluation.  The illustrative definition
+\lean{sym2LabeledGraphDensity}$_1$
 enumerates all candidates \(H : \lean{Sym2InducedLabeledSubgraph G}\), filters
 them by \lean{candidateMatches F H}, counts the survivors, and divides by the
 number of ways to choose the non-type vertices.  The same pattern is used for
 the multi-argument density \(\den{F_1,\ldots,F_t}{G}\) formalized in
 \Cref{sec:formal-subflag-densities}.  There the numerator counts tuples of
 induced subgraphs that realize \(F_1,\ldots,F_t\) inside \(G\), with the
-chosen non-type vertices pairwise disjoint.  The predicate
-\lean{predIsoSym2LabeledHl} is the computable version of exactly this
-conditon for tuples.  Given the tuple of patterns \lean{Hl}
+chosen non-type vertices pairwise disjoint.  The actual predicate
+\lean{predIsoSym2LabeledHl} is the computable version of this
+condition for tuples.  Given the tuple of patterns \lean{Hl}
 and a tuple of candidate induced subgraphs \lean{Gl}, it checks, for every
 \lean{i : Fin t}, that \lean{Gl i} matches the corresponding pattern
 \lean{Hl i}, using the same decidable matching test as above, and that the
 candidates are disjoint away from the shared type vertices.  Our
 computable implementation of \(\den{F_1,\ldots,F_t}{G}\) uses this
 predicate to filter the finite set of candidate tuples, and then counts the
-surviving tuples. In particular, the computable counterparts
+surviving tuples.  In particular, the computable counterparts
 of the specification-level densities \(\mathtt{flagDensity}_1\) and
 \(\mathtt{flagDensity}_2\) are:
 \begin{lstlisting}
-def sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)} 
+def sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
     (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
 
-def sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)} 
+def sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
 \end{lstlisting}
 Note that unlike the specification-level density functions, these definitions do not
 carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
 evaluating them.  But computability alone does not say that they implement the
-density functions from the specification layer. 
- The correspondence between this implementation and
-our non-computable formalization of \(\den{F_1,\ldots,F_t}{G}\) is established by
-the adequacy theorems explained in
-the next subsection. 
+density functions from the specification layer.  The correspondence between
+this implementation and our noncomputable specification of
+\(\den{F_1,\ldots,F_t}{G}\) is established by the adequacy theorems explained
+in the next subsection.
 
 \subsection{Adequacy Theorems for Reflection}
 \label{sec:reflection-adequacy}
@@ -2645,9 +2651,9 @@ specification layer, we need an explicit map from the latter representation to
 the former.  We call this map \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
 def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n) : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
-  Quotient.lift 
+  Quotient.lift
     (fun G : Sym2LabeledGraph (*@$\sigma$@*) n => (*@$\llbracket$@*)G.toLabeledGraph(*@$\rrbracket$@*))
-    ... -- proof that the lift respects the equivalence relation of the quotient 
+    ... -- proof that the lift respects the equivalence relation of the quotient
     G
 \end{lstlisting}
 
@@ -2655,17 +2661,17 @@ Our
 \emph{adequacy theorems} state that the reflected computations in
 \lean{sym2FlagDensity$_1$} and \lean{sym2FlagDensity$_2$}
 agree
-with the abstract definitions 
+with the abstract definitions
 of \lean{flagDensity$_1$} and \lean{flagDensity$_2$}
 after we decode \lean{Sym2Flag}s back to ordinary
 \lean{Flag}s using \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
 theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) 
+    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
 
 theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
-    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) 
+    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
 With these adequacy theorems in place, a proof about a density in the
@@ -2679,8 +2685,8 @@ check the claimed value.  For example, the density
 \]
 from \Cref{ex:typed-edge-nonedge-product} is proved as follows:
 \begin{lstlisting}
-example : flagDensity(*@$_2$@*) 
-             Sym2Flag_2_1_0_0.toFlag 
+example : flagDensity(*@$_2$@*)
+             Sym2Flag_2_1_0_0.toFlag
              Sym2Flag_2_1_0_1.toFlag
              Sym2Flag_3_1_0_1.toFlag = 1 / 2
   := by
@@ -2723,23 +2729,23 @@ number \(n!/(n-k)!\) of injections from $[k]$ to $[n]$.
 The resulting computation is invariant under flag equivalence, so it can then
 be lifted through the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
-def isoEmbeddingCount_Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+def isoEmbeddingCount_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
   (isoSym2TypeEmbeddingSetWithSameGraph G).card
   -- isoSym2TypeEmbeddingSetWithSameGraph G is a finite set of embeddings
   -- whose elements can be enumerated by an algorithm, so its cardinality
   -- can be computed.
 
-def downwardNormalizingFactor_Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+def downwardNormalizingFactor_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - k).factorial
-  isoEmbeddingCount_Sym2LabeledGraph G / num_of_all_injections
+  isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
 
 def downwardNormalizingFactor_Sym2Flag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
   Quotient.lift
-    (fun G => downwardNormalizingFactor_Sym2LabeledGraph G)
-    ... -- proof that downwardNormalizingFactor_Sym2LabeledGraph respects the equivalence relation
+    (fun G => downwardNormalizingFactor_sym2LabeledGraph G)
+    ... -- proof that downwardNormalizingFactor_sym2LabeledGraph respects the equivalence relation
     F
 \end{lstlisting}
 These are executable \lean{def}s, rather than specification-level
@@ -2799,8 +2805,8 @@ combination used by the later algebraic proof.
 We automate this repetition using Lean's metaprogramming facilities.  More
 precisely, the generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
-elaboration---the phase in which Lean processes source commands and produces
-checked definitions and theorems---they run the finite enumerators and
+elaboration, the phase in which Lean processes source commands and produces
+checked definitions and theorems, they run the finite enumerators and
 generate statements and proofs for the required specialized facts.  The
 resulting theorems are both a reusable interface and a cache: each finite
 computation is performed when its theorem family is generated, and later
@@ -3175,8 +3181,8 @@ forbidden as a subgraph uses the parallel
 \lean{generate\_subgraph\_free\_*} commands.  During elaboration, both routes
 enumerate the flags that avoid the forbidden graph, with isomorphic flags
 appearing only once.  For each enumerated flag, the commands emit a concrete
-reflection-layer constant---a \lean{Sym2EmptyTypedFlag} at the empty type or a
-\lean{Sym2Flag} at a nonempty type---together with its decoded
+reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty type
+or a \lean{Sym2Flag} at a nonempty type, together with its decoded
 specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
 
 After emitting these flags, Part 1 generates
@@ -3272,15 +3278,15 @@ Part~4 assembles the outputs of the preceding parts and realizes the forward
 chain from \Cref{sec:flagmatic-background}.  The certificate identity
 $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
 non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
-Mantel example, there is one $Q_t$---the downward image of the halved
-square---and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
+Mantel example, there is one $Q_t$, namely the downward image of the halved
+square, and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
 define $r$ explicitly; it appears as the coefficientwise difference left after
 the two sides are expanded in a common basis.
 
 The first step is to prove
 $[F]\leq_H[F]+\sum_tQ_t$.  It uses the following general lemma:
 \begin{lstlisting}
-theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} 
+theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
     (M : Matrix (Fin n) (Fin n) (*@$\mathbb{R}$@*)) (hM : M.PosSemidef) (v : FlagAlgebraVec (*@$\sigma$@*) n)
     : forbidLEWith C f g -> (*@$\,$@*) forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
@@ -3291,7 +3297,7 @@ forbidding a single graph $H$, it is \lean{forbiddenCondition H}.  Thus
 The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
 vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
-semidefiniteness generated in Part~2.  
+semidefiniteness generated in Part~2.
 The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
 $[F]\leq_H[F]+\sum_tQ_t$.
@@ -3439,7 +3445,7 @@ and~\ref{ex:pentagon}.
 
 \paragraph{Limitations.}
 \label{sec:flagmatic-open}
-We point out two limitations of the current translator.  
+We point out two limitations of the current translator.
 First, this evaluation establishes coverage of the seven cases above, not
 completeness of the translator.  The current input language assumes the
 supported simple-graph certificate format, a parseable objective and singleton
@@ -3496,7 +3502,7 @@ $n$ vertices and each edge by a complete bipartite graph) is
 triangle-free.  We prove this in Lean by transporting any
 hypothetical triangle in the blow-up back to a triangle in the base graph:
 \begin{lstlisting}
-theorem blowUp_K3_free {m : Nat} {G : SimpleGraph (Fin m)} (n : Nat) (hfree : K3.Free G) 
+theorem blowUp_K3_free {m : Nat} {G : SimpleGraph (Fin m)} (n : Nat) (hfree : K3.Free G)
     : K3.Free (blowUp G n) := ...
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ has $5n$ vertices,
@@ -3921,10 +3927,10 @@ have count_eq : S0.toFinset.card = S1.toFinset.card := by
   exact card_eq
 \end{lstlisting}
 
-The broader lesson is that explicit bijections provide a common interface
-between combinatorial reasoning and Lean's handling of finite cardinalities.
-The bijection isolates the mathematical step---exhibiting a one-to-one
-correspondence between the objects counted on the two sides---while the
+In our development, explicit bijections provide a common interface between
+combinatorial reasoning and Lean's handling of finite cardinalities.  The
+bijection isolates the mathematical step of exhibiting a one-to-one
+correspondence between the objects counted on the two sides, while the
 subsequent code handles \lean{Fintype} instances and rewrites the resulting
 counts.  We do not claim that explicit bijections are the only possible
 approach.  What surprised us is that the same pattern worked across chain
@@ -3968,10 +3974,10 @@ To make the underlying graph class explicit, we write
 \(\FlagAlg{\sigma}[\mathcal K]\) for the algebra constructed using only graphs
 in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
 belong to \(\mathcal K\) occur in this constrained algebra.  Because
-\(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags---those whose
-underlying graphs lie outside \(\mathcal K\)---span an ideal,\footnote{An ideal \(I\) in a
-commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace---hence closed
-under addition and real scalar multiplication---that is also closed under
+\(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
+graphs lie outside \(\mathcal K\), span an ideal,\footnote{An ideal \(I\) in a
+commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace, and hence is closed
+under addition and real scalar multiplication, that is also closed under
 multiplication by arbitrary elements of \(A\): if \(x\in I\) and \(a\in A\),
 then \(ax\in I\).  This property makes the quotient \(A/I\) an algebra in which
 every element of \(I\) is identified with zero.} and the usual constrained
@@ -4141,8 +4147,8 @@ on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
 vertices as labels, and passing to the limit.  Thus the second display requires
 that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
 \(\chi(f)\leq\chi(g)\) with probability one.
-For the \(H\)-free class---graphs containing no subgraph
-isomorphic to \(H\)---
+For the \(H\)-free class, consisting of graphs containing no subgraph
+isomorphic to \(H\),
 \(\lean{forbidLE H f g}\) in our Lean formalization implements this ensemble order.  The corresponding
 notions of non-negativity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
 \(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\).
@@ -4255,14 +4261,14 @@ closure of the union of these supports, namely \(S_\sigma\).  Hence
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
 for \(r\geq3\), including triangle-free graphs.  Complete blow-ups, in which
-every \(J_v\) is a clique, cover, for example, cluster graphs---that is, graphs
-whose connected components are cliques.  Both are instances of
+every \(J_v\) is a clique, cover, for example, graphs whose connected
+components are cliques.  Both are instances of
 \Cref{thm:blowup-root-plantability-summary}.
 
 \paragraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
-class of \(C_4\)-free graphs---those containing no \(C_4\) as a
-subgraph---and let \(\sigma_1\) be the one-vertex type.
+class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
+let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
 at random has normalized degree tending to zero.  Let
 \(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the density expression represented by
@@ -4359,7 +4365,7 @@ The development discharges the proof obligations needed by our case studies,
 but it does not determine which architecture would work best for a larger
 library.  The remaining uncertainties concern semantic design, portability,
 and scale rather than gaps in the checked case-study theorems.  We record four
-questions and state what the present development does---and does not---show
+questions and state what the present development does and does not show
 about each one.
 
 \paragraph{When should a forbidden-graph constraint enter the formalization?}
@@ -4514,7 +4520,8 @@ could provide the same information in a different design.
 \paragraph{Graph limits and Turán densities.}
 The mathematical foundation of flag algebras (convergent graph sequences,
 positive homomorphisms, the graphon limit) is developed in depth by
-Lov\'asz~\cite{lovasz2012large}.  Freer has independently formalized a
+Lov\'asz and Szegedy and by Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.
+Freer has independently formalized a
 substantial graphon theory in Lean~4, including cut distance, regularity,
 counting and inverse-counting lemmas, compactness, and the equivalence of two
 notions of convergence~\cite{freer2026graphon}.  The core development reported
@@ -4532,10 +4539,10 @@ the flag-algebra/graphon correspondence remains future work.
 
 We have reported on a Lean~4 formalization of Razborov's flag algebra method
 for simple graphs.  The development contains a specification of the
-mathematical theory---flags as quotients modulo isomorphism, the quotient
+mathematical theory: flags as quotients modulo isomorphism, the quotient
 algebra of density-expansion relations, positive homomorphisms and the
 semantic non-negativity cone, and the predicate-based forbidden-subgraph
-framework---and reflection and automation layers that turn specifications
+framework.  It also contains reflection and automation layers that turn specifications
 written in this language into proofs that Lean can check.  The case
 studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
 pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
@@ -4555,8 +4562,8 @@ obstacles those choices exposed, the executable and automation layers we built
 around them, the recurring proof patterns we observed, the questions our work surfaced but
 did not resolve, and the lessons we believe are transferable beyond flag
 algebras.  In places where an outcome was forced by feasibility rather than
-chosen for principled reasons---the use of \lean{native\_decide} for the
-generated density theorems being the most prominent example---we have said so.
+chosen for principled reasons, most prominently the use of
+\lean{native\_decide} for the generated density theorems, we have said so.
 
 We expect the architecture to transfer to further graph flag algebra
 arguments because the same concerns recur: quotient-level semantics, exact
@@ -4564,8 +4571,8 @@ finite counting, externally generated but internally checked certificates,
 and large-scale algebraic bookkeeping.  Whether it transfers to richer
 combinatorial structures (hypergraphs, directed graphs, oriented graphs) is
 a question we have not tested.  A formal bridge between our
-positive-homomorphism semantics and graphon theory---in particular, the
-converse representation of every positive homomorphism by a graphon---would
+positive-homomorphism semantics and graphon theory, in particular the
+converse representation of every positive homomorphism by a graphon, would
 connect our development more directly to the Lov\'asz theory
 \cite{lovasz2012large} and to the existing Lean graphon formalization
 \cite{freer2026graphon}.
@@ -4583,19 +4590,20 @@ specification and reflection layers of \Cref{sec:abstract,sec:reflection},
 including the quotient constructions, their interface theorems, and the
 adequacy proofs, were formalized manually by the authors.  In the
 certificate-to-proof compiler of \Cref{sec:flagmatic}, most of the required
-metaprogramming---the elaboration-time generation commands, the custom
-tactics, and the certificate translator---was developed with the help of
+metaprogramming, including the elaboration-time generation commands, the custom
+tactics, and the certificate translator, was developed with the help of
 Claude Code.  Finally, the mathematical results of the meta-theory
 summarized in \Cref{sec:metatheory} were obtained with the help of GPT~Pro,
 and their Lean development was autoformalized entirely by Claude Code.
 
 \section*{Acknowledgments}
 We would like to thank Taeyoung Kim, Joonkyung Lee, and Jineon Baek for helpful discussions on
-Razborov's flag algebras and Lean formalization. We are also grateful to 
-Ross Kang and Sidharth Hariharan for 
-encouraing us to work harder to remove
+Razborov's flag algebras and their Lean formalization.  We are also grateful to
+Ross Kang and Sidharth Hariharan for encouraging us to work harder to remove
 \lean{native\_decide} in our Lean formalization.
-This work was supported by the National Research Foundation of Korea(NRF) grant funded by the Korean Government(MSIT) (No. RS-2023-00279680) and also by the Institute for Basic Science (IBS-R029-C1).
+This work was supported by the National Research Foundation of Korea (NRF)
+grant funded by the Korean Government (MSIT) (No.~RS-2023-00279680) and by the
+Institute for Basic Science (IBS-R029-C1).
 
 \commentout{
 \appendix
@@ -4740,6 +4748,7 @@ than principle determined the placement.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+  DOI: 10.2178/jsl/1203350785.
 
 \bibitem{razborov2013flag}
 A.~A.~Razborov.
@@ -4752,13 +4761,13 @@ A.~A.~Razborov.
 A.~Grzesik.
 \newblock On the maximum number of five-cycles in a triangle-free graph.
 \newblock \textit{Journal of Combinatorial Theory, Series B},
-  102(5):1061--1066, 2012.
+  102(5):1061--1066, 2012. DOI: 10.1016/j.jctb.2012.04.001.
 
 \bibitem{hatami2012}
 H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l', S.~Norine, and A.~Razborov.
 \newblock On the number of pentagons in triangle-free graphs.
 \newblock \textit{Journal of Combinatorial Theory, Series A},
-  120(3):722--732, 2013.
+  120(3):722--732, 2013. DOI: 10.1016/j.jcta.2012.12.008.
 
 \bibitem{razborov2008triangles}
 A.~A.~Razborov.
@@ -4776,7 +4785,7 @@ A.~A.~Razborov.
 R.~Baber and J.~Talbot.
 \newblock New Tur\'{a}n densities for 3-graphs.
 \newblock \textit{Electronic Journal of Combinatorics}, 19(2):\#P22, 2012.
-  DOI: 10.37236/2160.
+  DOI: 10.37236/2360.
 
 \bibitem{balogh2016induced5}
 J.~Balogh, P.~Hu, B.~Lidick\'{y}, and F.~Pfender.
@@ -4821,10 +4830,9 @@ W.~T.~Gowers, D.~Green, F.~Manners, and T.~Tao.
   DOI: 10.4007/annals.2025.201.2.5.
 
 \bibitem{pfr2023}
-T.~Tao, Y.~Dillies, and contributors.
-\newblock The polynomial Freiman--Ruzsa conjecture: A digitisation of the
-  proof in Lean~4.
-\newblock Formalization project, 2023.
+A.~Anderson et al.
+\newblock Formalization of the polynomial Freiman--Ruzsa conjecture of Marton.
+\newblock Formalization project, version 0.1.0, 2023.
   \url{https://teorth.github.io/pfr/}.
 
 \bibitem{vaughan2013flagmatic}
@@ -4843,11 +4851,13 @@ A.~Chlipala.
 C.~Cohen, M.~D\'{e}n\`{e}s, and A.~M\"{o}rtberg.
 \newblock Refinements for free!
 \newblock In \textit{Proc.\ CPP 2013}, LNCS~8307, pages 147--162, 2013.
+  DOI: 10.1007/978-3-319-03545-1\_10.
 
 \bibitem{harrison2007verifying}
 J.~Harrison.
 \newblock Verifying nonlinear real formulas via sums of squares.
 \newblock In \textit{Proc.\ TPHOLs 2007}, LNCS~4732, pages 102--118, 2007.
+  DOI: 10.1007/978-3-540-74591-4\_9.
 
 \bibitem{parrilo2003minimizing}
 P.~A.~Parrilo and B.~Sturmfels.
