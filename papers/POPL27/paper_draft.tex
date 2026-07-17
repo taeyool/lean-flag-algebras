@@ -3892,33 +3892,38 @@ beginning?  This led us to develop a separate mathematical meta-theory.
 This section gives the definitions and main results needed to state that answer;
 a forthcoming paper will present the full theory and its applications.
 
-\paragraph{The quotient space of constrained limits.}
+\paragraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let
 \(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
 \(\sigma\).  Here \emph{hereditary} means closed under taking induced
 subgraphs: if \(G\in\mathcal K\) and \(S\subseteq V(G)\), then
-\(G[S]\in\mathcal K\).  This condition does not require closure under deleting
-edges.  In particular, the \(H\)-free classes used earlier are
+\(G[S]\in\mathcal K\).  In particular, the \(H\)-free classes used earlier are
 hereditary, because taking an induced subgraph cannot create a new
 subgraph isomorphic to \(H\).
 
-We write \(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
+To make the underlying graph class explicit, we write
+\(\FlagAlg{\sigma}[\mathcal G]\) for the ambient
 \(\sigma\)-typed flag algebra and
 \(\FlagAlg{\sigma}[\mathcal K]\) for the algebra constructed using only graphs
-in \(\mathcal K\).  A \(\sigma\)-flag is \emph{\(\mathcal K\)-forbidden} if its
-underlying unlabeled graph does not belong to \(\mathcal K\).  Because
-\(\mathcal K\) is hereditary, the span of these forbidden flags is an ideal,
-and the usual constrained algebra is canonically isomorphic to the quotient
-of the ambient algebra by this ideal.  We therefore have a canonical quotient
-map
+in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
+belong to \(\mathcal K\) occur in this constrained algebra.  Because
+\(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags---those whose
+underlying graphs lie outside \(\mathcal K\)---span an ideal,\footnote{An ideal \(I\) in a
+commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace---hence closed
+under addition and real scalar multiplication---that is also closed under
+multiplication by arbitrary elements of \(A\): if \(x\in I\) and \(a\in A\),
+then \(ax\in I\).  This property makes the quotient \(A/I\) an algebra in which
+every element of \(I\) is identified with zero.} and the usual constrained
+algebra is canonically isomorphic to the quotient of the ambient algebra by
+this ideal.  We therefore have a canonical quotient map
 \[
   q_\sigma:
   \FlagAlg{\sigma}[\mathcal G]
   \twoheadrightarrow
   \FlagAlg{\sigma}[\mathcal K]
 \]
-that sends every forbidden flag to zero and every other flag to its
-counterpart in the constrained algebra.
+that sends every \(\sigma\)-flag outside \(\mathcal K\) to zero and every
+remaining flag to its counterpart in the constrained algebra.
 
 Let
 \[
@@ -3926,11 +3931,10 @@ Let
   :=
   \mathrm{Hom}^{+}\!\bigl(\FlagAlg{\sigma}[\mathcal G],\R\bigr)
 \]
-be the compact space of positive unital algebra homomorphisms on the ambient
-algebra, with the topology of pointwise convergence on flags.  Here
-\emph{positive} means non-negative on each individual flag.  Pullback along
-\(q_\sigma\) embeds the positive homomorphisms of the constrained algebra into
-\(X_\sigma\).  Its image is
+be the compact space of positive homomorphisms on the ambient
+algebra, with the topology of pointwise convergence on \(\sigma\)-flags.
+Pullback along \(q_\sigma\) embeds the positive homomorphisms of the constrained
+algebra into \(X_\sigma\).  Its image is
 \begin{equation}\label{eq:Q-sigma}
   Q_\sigma
   :=
@@ -3942,10 +3946,8 @@ algebra, with the topology of pointwise convergence on flags.  Here
   \right\}
   \subseteq X_\sigma.
 \end{equation}
-Thus \(Q_\sigma\) is the space of all constrained \(\sigma\)-labeled limits
-that the built-in quotient semantics admits.  It imposes no random-rooting
-requirement, so the labels may be fixed at exceptional vertices that a
-uniformly random labeling would miss asymptotically.
+Thus \(Q_\sigma\) is the space of all \(\sigma\)-typed positive homomorphisms
+admitted by the constrained quotient. 
 
 There is also an intrinsic description:
 \begin{equation}\label{eq:Q-sigma-intrinsic}
@@ -3955,23 +3957,25 @@ There is also an intrinsic description:
     \chi\in X_\sigma
     \;\middle|\;
     \chi([F])=0
-    \text{ for every \(\mathcal K\)-forbidden \(\sigma\)-flag \(F\)}
+    \text{ for every \(\sigma\)-flag \(F\) whose underlying graph lies outside
+    \(\mathcal K\)}
   \right\}.
 \end{equation}
 The role of heredity is to justify the quotient presentation above.  Every
-flag appearing in the product of a forbidden flag with another flag contains
-the first flag as an induced subflag.  It therefore also lies outside
-\(\mathcal K\), since otherwise heredity would put that induced subflag back
-in \(\mathcal K\).  Hence multiplying a forbidden flag by any other flag
-produces a linear combination of forbidden flags, so their span is precisely
-the ideal killed by \(q_\sigma\).  Once this presentation is established, a
-homomorphism vanishing on every forbidden flag vanishes on the whole ideal and
-therefore factors through \(q_\sigma\) by the universal property of the quotient.
+flag appearing in the product of a flag outside \(\mathcal K\) with another
+flag contains the first flag as an induced subflag.  It therefore also lies
+outside \(\mathcal K\), since otherwise heredity would put that induced subflag
+back in \(\mathcal K\).  Hence multiplying a flag outside \(\mathcal K\) by any
+other flag produces a linear combination of flags outside \(\mathcal K\), so
+their span is precisely the ideal killed by \(q_\sigma\).  Once this
+presentation is established, a homomorphism vanishing on every flag outside
+\(\mathcal K\) vanishes on the whole ideal and therefore factors through
+\(q_\sigma\) by the universal property of the quotient.
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
-\(Q_0:=Q_{\emptyt}\) for the corresponding space of constrained unlabeled
-limits.
+\(Q_0:=Q_{\emptyt}\) for the corresponding space of constrained empty-type
+positive homomorphisms.
 
 \paragraph{Random extensions and the root-planting space.}
 Assume that \(\sigma\) is non-degenerate for \(\mathcal K\): equivalently,
@@ -3996,7 +4000,8 @@ Define
 \end{equation}
 where the closure is taken in \(X_\sigma\).  Thus \(S_\sigma\) is exactly the
 closed set generated by labeled views that remain visible with positive
-probability under random rooting in constrained unlabeled limits.
+probability under random rooting from constrained empty-type positive
+homomorphisms.
 
 Random rooting preserves the constraint:
 \[
@@ -4006,13 +4011,14 @@ Random rooting preserves the constraint:
   \bigl(\phi_0\in Q_0,
         \phi_0(\langle\sigma\rangle_0)>0\bigr).
 \]
-Indeed, the downward average of a forbidden \(\sigma\)-flag is a non-negative
-multiple of its forbidden underlying graph.  Every \(\phi_0\in Q_0\) evaluates
-that graph to zero, so the expected density of the forbidden flag under the
-random extension is zero.  Its density is pointwise non-negative and therefore
-zero almost surely.  Applying this argument to the countable collection of
-forbidden flags shows that the random extension lies in \(Q_\sigma\) almost
-surely.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the fundamental
+Indeed, the downward average of a \(\sigma\)-flag outside \(\mathcal K\) is a
+non-negative multiple of its underlying graph, which also lies outside
+\(\mathcal K\).  Every \(\phi_0\in Q_0\) evaluates that graph to zero, so the
+expected density of the flag under the random extension is zero.  Its density
+is pointwise non-negative and therefore zero almost surely.  Applying this
+argument to the countable collection of flags outside \(\mathcal K\) shows that
+the random extension lies in \(Q_\sigma\) almost surely.  Since \(Q_\sigma\) is
+closed, \Cref{eq:S-sigma} yields the fundamental
 inclusion
 \begin{equation}\label{eq:S-subset-Q}
   S_\sigma\subseteq Q_\sigma.
@@ -4043,7 +4049,8 @@ The first is the ordinary semantic order in the constrained quotient algebra:
 equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
 \(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second asks for the inequality
-to hold almost surely after randomly labeling a constrained unlabeled limit.
+to hold almost surely after randomly labeling the limiting object represented
+by a constrained empty-type positive homomorphism.
 For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
 \(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
@@ -4117,14 +4124,15 @@ closure.  Consequently, quotient and ensemble orders agree at every
 non-degenerate type in a blow-up-closed class.
 \end{theorem}
 
-The proof starts from a labeled limit in \(Q_\sigma\), represented by finite
-rooted graphs in \(\mathcal K\), and enlarges the fibers containing the roots
-until random rooting hits them with probability bounded away from zero.
+The proof starts from a \(\sigma\)-typed positive homomorphism in \(Q_\sigma\),
+represented by finite rooted graphs in \(\mathcal K\), and enlarges the fibers
+containing the roots until random rooting hits them with probability bounded
+away from zero.
 When a fixed finite flag is sampled from the resulting blow-up, with
 probability tending to one its sampled vertices lie in distinct fibers.
 Their adjacencies are then determined entirely by the original rooted graph;
 the internal structure of the enlarged fibers is invisible.  The target
-labeled limit therefore lies in the closure of supports defining
+positive homomorphism therefore lies in the closure of supports defining
 \(S_\sigma\).  This proves \(Q_\sigma\subseteq S_\sigma\), while the opposite
 inclusion is \eqref{eq:S-subset-Q}.
 
@@ -4144,7 +4152,8 @@ has normalized degree tending to zero.  If \(d\) denotes the one-root flag
 density that the root is adjacent to one additional sampled vertex, then
 \(-d\) is ensemble positive.  On the other hand, arbitrarily large stars are
 \(C_4\)-free, and selecting the center as the root gives \(d=1\).  This
-labeled limit belongs to \(Q_{\sigma_1}\) but not to \(S_{\sigma_1}\), so
+positive homomorphism belongs to \(Q_{\sigma_1}\) but not to
+\(S_{\sigma_1}\), so
 \[
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \]
