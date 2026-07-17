@@ -4093,20 +4093,19 @@ for every \(\phi_0\in Q_0\) satisfying
 The first is the ordinary semantic order in the constrained quotient algebra:
 equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
-\(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second quantifies over each
+\(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second quantifies over each
 \(\phi_0\in Q_0\) appearing at the end of the definition.  For such a
 \(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
 on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
 \(\sigma\) into finite graphs approximating \(\phi_0\), using the embedded
 vertices as labels, and passing to the limit.  Thus the second display requires
-that a positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
+that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
 \(\chi(f)\leq\chi(g)\) with probability one.
 For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
-\(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
+\(\lean{forbidLE H f g}\) in our Lean formalization implements this ensemble order.  The corresponding
 notions of positivity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
-\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\); an arbitrary comparison of
-\(f\) and \(g\) is the positivity comparison for \(g-f\).
+\(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\).
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-closure-summary}
 Let \(\mathcal K\) be hereditary and let \(\sigma\) be non-degenerate for
@@ -4116,7 +4115,7 @@ Let \(\mathcal K\) be hereditary and let \(\sigma\) be non-degenerate for
   \quad\Longrightarrow\quad
   f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g.
 \]
-Moreover, the two orders agree for every pair \(f,g\) if and only if the class
+Moreover, the two orders agree for every pair \((f,g)\) if and only if the class
 is root-plantable at \(\sigma\):
 \[
   \left(
