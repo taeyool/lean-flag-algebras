@@ -4037,14 +4037,19 @@ space:
   \bigl(\phi_0\in Q_0,
         \phi_0(\langle\sigma\rangle_0)>0\bigr).
 \]
-Indeed, applying the downward operator to a \(\sigma\)-flag outside
-\(\mathcal K\) produces a non-negative multiple of its underlying graph, which
-also lies outside \(\mathcal K\).  Every \(\phi_0\in Q_0\) evaluates that graph
-to zero.  Therefore, the expected value of the flag under
-\(\Ext_\sigma(\phi_0)\) is zero.  Since every
-positive homomorphism evaluates the flag non-negatively, its value is zero
-with probability one under this measure.  Applying this argument to the
-countable collection of flags outside \(\mathcal K\) shows that a positive
+Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
+downward operator to \([F]\) produces a non-negative multiple of
+\([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
+Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if
+\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
+identity~\eqref{eq:ensemble} gives
+\[
+  \mathbb{E}[\phi([F])]=0.
+\]
+Since every positive homomorphism \(\phi'\) satisfies \(\phi'([F])\geq0\), it
+follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
+\(\phi([F])=0\) with probability one.  Applying this argument to
+the countable collection of flags outside \(\mathcal K\) shows that a positive
 homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
 probability one.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the
 fundamental inclusion
@@ -4052,7 +4057,19 @@ fundamental inclusion
   S_\sigma\subseteq Q_\sigma.
 \end{equation}
 We say that \((\mathcal G,\mathcal K,\sigma)\) is
-\emph{root-plantable} when \(S_\sigma=Q_\sigma\).
+\emph{root-plantable}\footnote{The vertices distinguished by the type
+\(\sigma\) are often called the \emph{roots}.  A finite \(\sigma\)-flag
+\((G,\theta)\) records the flag-density profile around a specified embedding
+\(\theta:\sigma\to G\) of these roots.  To \emph{plant} this rooted profile in
+a larger graph \(H\in\mathcal K\), with no roots fixed in advance, is to produce
+many embeddings \(\widehat\theta:\sigma\to H\) whose flag-density profiles
+approximate the profile specified by \((G,\theta)\).  Here ``many'' means that
+these embeddings form a fraction bounded away from zero of all embeddings of
+\(\sigma\) in \(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\)
+reproduces the prescribed profile with non-vanishing probability.  The equality
+\(S_\sigma=Q_\sigma\) says that every constrained \(\sigma\)-typed positive
+homomorphism can be approximated by finite constructions of this kind.} when
+\(S_\sigma=Q_\sigma\).
 
 \begin{definition}[Quotient and ensemble orders]\label{def:two-constrained-orders}
 For \(f,g\in\FlagAlg{\sigma}[\mathcal G]\), define
@@ -4076,9 +4093,14 @@ for every \(\phi_0\in Q_0\) satisfying
 The first is the ordinary semantic order in the constrained quotient algebra:
 equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
-\(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second asks for the inequality
-to hold almost surely after randomly labeling the limiting object represented
-by a constrained empty-type positive homomorphism.
+\(\psi(q_\sigma f)\leq\psi(q_\sigma g)\).  The second quantifies over each
+\(\phi_0\in Q_0\) appearing at the end of the definition.  For such a
+\(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
+on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
+\(\sigma\) into finite graphs approximating \(\phi_0\), using the embedded
+vertices as labels, and passing to the limit.  Thus the second display requires
+that a positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
+\(\chi(f)\leq\chi(g)\) with probability one.
 For the \(H\)-free class---graphs containing no subgraph
 isomorphic to \(H\)---
 \(\lean{forbidLE H f g}\) implements this ensemble order.  The corresponding
