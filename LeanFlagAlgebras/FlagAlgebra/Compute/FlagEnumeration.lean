@@ -77,7 +77,9 @@ def relabeledEdgeList {n : ℕ} (perm : List (Fin n)) (G : Sym2Graph n) : List (
 /-- The canonical (lexicographically smallest over all `n!` relabelings) edge
 list of `G`, matching `get_canonical_edges` in `generate_graphs.py`. -/
 def canonicalEdgeList {n : ℕ} (G : Sym2Graph n) : List (ℕ × ℕ) :=
-  match (List.finRange n).permutations with
+  -- `permutations'` (structural) for kernel reducibility; the min over all
+  -- relabelings is order-independent, so the result is unchanged.
+  match (List.finRange n).permutations' with
   | [] => []
   | p :: ps => ps.foldl (fun best perm =>
       let cand := relabeledEdgeList perm G
@@ -696,7 +698,7 @@ def applyPermToPairs (p : List ℕ) (edges : List (ℕ × ℕ)) : List (ℕ × �
 
 /-- The automorphisms of the canonical edge list, as permutations of `[0, n)`. -/
 def autPerms (n : ℕ) (edges : List (ℕ × ℕ)) : List (List ℕ) :=
-  (List.range n).permutations.filter
+  (List.range n).permutations'.filter
     (fun p => sortPairs (applyPermToPairs p edges) == sortPairs edges)
 
 /-- Post-compose an embedding tuple with a permutation (relabel its images). -/
@@ -1059,7 +1061,7 @@ def rawPairsNat {n : ℕ} (G : Sym2Graph n) : List (ℕ × ℕ) :=
 Any two such perms differ by an automorphism of the canonical graph, so the
 orbit-min computed from it (below) is independent of which one `find?` returns. -/
 def canonicalizingPerm {n : ℕ} (G : Sym2Graph n) : List ℕ :=
-  ((List.range n).permutations.find?
+  ((List.range n).permutations'.find?
     (fun p => sortPairs (applyPermToPairs p (rawPairsNat G)) == canonicalEdgeList G)).getD
     (List.range n)
 

@@ -36,6 +36,24 @@ time and build the syntax for the generated terms.
 open Sym2 Lean Elab Command
 open FlagAlgebras.Compute
 
+/-- When `true`, the `generate_*` commands prove their bridging lemmas
+(`Sym2FlagList_*_eq`, `downwardFactors_*_eq`) by `decide +kernel` instead of
+`native_decide`, so the generated flag layer adds no compiled-evaluation
+axioms (`Lean.ofReduceBool`/`Lean.trustCompiler`).  Kernel reduction is viable
+for small enumerations (e.g. Mantel's `n ≤ 3`); leave `false` for larger ones
+(e.g. the pentagon's `n = 5`). -/
+register_option flagGen.kernelDecide : Bool := {
+  defValue := false
+  descr := "flag generators: prove bridging lemmas by `decide +kernel` instead of `native_decide`"
+}
+
+/-- The bridging tactic selected by `flagGen.kernelDecide`. -/
+def bridgeDecideTac : CommandElabM (TSyntax `tactic) := do
+  if flagGen.kernelDecide.get (← getOptions) then
+    `(tactic| decide +kernel)
+  else
+    `(tactic| native_decide)
+
 /-- Build a `Finset` of edges from a list of `Sym2 (Fin n)` (used in generated
 `Sym2Graph`/`Sym2LabeledGraph` definitions). -/
 def mkEdgeFinset (n : ℕ) (l : List (Sym2 (Fin n))) : Finset (Sym2 (Fin n)) :=
@@ -278,11 +296,12 @@ elab "generate_empty_typed_flags" nStx:num : command => do
   -- that removes the quadratic blowup and keeps the bridge tractable at `n = 7`
   -- (g = 1044). Both completeness lemmas below rewrite through it, then close via
   -- the math theorems on `genEmptyTypedFlags`.
+  let bridgeTac ← bridgeDecideTac
   elabUnlessDefined flagListEqName.getId (← `(
       theorem $flagListEqName :
           ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n)))
             = FlagAlgebras.Compute.genEmptyTypedFlags $(Quote.quote n) := by
-        native_decide
+        $bridgeTac:tactic
     ))
 
   elabUnlessDefined setEqUnivName.getId (← `(
@@ -459,10 +478,11 @@ Add `generate_empty_typed_flags {n}` before this command."
           ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
     coeffTerms := coeffTerms.push (← coeffQTerm coeffNum coeffDen)
 
+  let bridgeTac ← bridgeDecideTac
   elabUnlessDefined downwardFactorsEqName.getId (← `(
       theorem $downwardFactorsEqName :
           ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        native_decide
+        $bridgeTac:tactic
     ))
 
   for i in [0:count] do
@@ -523,7 +543,7 @@ Add `generate_empty_typed_flags {n}` before this command."
       theorem $flagListEqName :
           ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
             = FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n) := by
-        native_decide
+        $bridgeTac:tactic
     ))
 
   elabUnlessDefined setEqUnivName.getId (← `(

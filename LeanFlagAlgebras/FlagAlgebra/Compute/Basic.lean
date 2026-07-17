@@ -86,9 +86,11 @@ instance
     {V : Type} [DecidableEq V] [Fintype V]
     (G G' : LabeledGraph σ V) [DecidableRel G.graph.Adj] [DecidableRel G'.graph.Adj] :
     Decidable (G ∼f G')
-  := by
-  rw [flagEqv]
-  infer_instance
+  :=
+  -- `flagEqv` is definitionally `Nonempty (G ≃f G')`; deciding at that type is
+  -- cast-free.  (The previous `by rw [flagEqv]; infer_instance` compiled to a
+  -- kernel-blocking `Eq.mpr` cast, like the `Nonempty` instance above.)
+  inferInstanceAs (Decidable (Nonempty (G ≃f G')))
 
 /- Empty-typed flags --/
 
