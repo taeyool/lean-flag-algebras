@@ -280,18 +280,21 @@ machine-checked formalization of flag algebras for finite simple graphs,
 together with a certificate-to-proof compiler that reconstructs, in Lean,
 algebraic proofs suggested by external certificate data.
 
-The formalization covers the mathematical layer of the method: partially
+The formalization covers the mathematical content of the method: partially
 labeled graphs, their densities in large graphs, the quotient algebra of
 density expressions, graph-limit semantics through positive homomorphisms, and
 the downward operators used to average out labels.  The external search is
 used only to suggest finite data: lists of flags, target-density data, and
 rational positive-semidefinite matrices.  Lean independently computes the
-required density and multiplication facts, connects these computations to the
-quotient definitions, verifies positive-semidefiniteness exactly over
-$\mathbb{Q}$, and automates the algebraic normalization steps that occur in
-flag-algebra proofs.  As case studies, we obtain machine-checked proofs of Mantel's
-theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
-a $C_4$-density bound for triangle-free graphs.
+required density and multiplication facts, proves that these computations
+agree with the mathematical definitions, verifies positive-semidefiniteness
+exactly over $\mathbb{Q}$, and automates the algebraic normalization steps
+that occur in flag-algebra proofs.  As case studies, the compiler yields machine-checked
+proofs of several Tur\'an-type bounds, including Mantel's theorem, a
+$C_4$-density bound for triangle-free graphs, edge-density bounds for
+$K_4$-free, $K_5$-free, and $C_5$-free graphs, and, most notably, the
+Erd\H{o}s pentagon theorem, for which no proof avoiding flag algebras is
+known.
 
 The design of the formalization also led us to new theoretical results about
 constrained flag algebras.  We distinguish the built-in-constraint approach,
@@ -384,7 +387,7 @@ data.  The aim is not only to verify a few final inequalities, but to
 formalize enough of the method that certificates found by
 semidefinite-programming search can be checked against the mathematical
 definitions inside the proof assistant.  The formalization therefore covers the
-mathematical layer of the method: partially labeled graphs, their densities in
+mathematical content of the method: partially labeled graphs, their densities in
 large graphs, the quotient algebra of density expressions, graph-limit
 semantics through positive homomorphisms, and the downward operator that
 transfers labeled reasoning back to unlabeled graph statements.
@@ -434,9 +437,11 @@ flags, densities, the quotient algebra, positive homomorphisms, semantic
 order, and the downward/random-homomorphism machinery used in flag-algebra
 proofs.  Second, it builds a certificate-to-proof compiler that turns
 externally generated rational certificate data into Lean-checked algebraic
-proofs.  Third, it demonstrates the compiler on machine-checked proofs of
-Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
-and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
+proofs.  Third, it demonstrates the compiler on seven certificates, including
+machine-checked proofs of Mantel's theorem, the Erd\H{o}s pentagon theorem,
+and a $C_4$-density bound for triangle-free graphs; outside the certificate
+pipeline, the same infrastructure proves Goodman-type inequalities and the
+matching lower bounds.  Fourth, it develops the
 semantic comparison between built-in-constraint and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
 generalization beyond hereditary constraints.  A separate, automatically
@@ -2311,8 +2316,8 @@ The second approach is computation-oriented.  Instead of proving each finite
 calculation from scratch, we prove once that an algorithm correctly performs the
 kind of calculation we need, and then we let Lean run that algorithm inside later
 proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
-Lean formalization is the computable counterpart of the abstract flag-algebra
-layer described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
+Lean formalization is the computable counterpart of the specification layer
+described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
 such as testing whether two labeled graphs represent the same flag, computing a
 density, or expanding a product,
 it provides a program that carries out the calculation and a theorem saying that
