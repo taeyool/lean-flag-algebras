@@ -677,8 +677,10 @@ host flag when a third flag variable is needed.
 % to machine checking: the coefficients in a certificate are not analytic
 % guesses, but rational numbers obtained by finite enumeration.
 
+Let $\sigma$ be a flag type of size $k$.  
+
 \paragraph{Single-flag density.}
-Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $F$ of size $m$
+For a $\sigma$-flag $F$ of size $m$
 (the pattern flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
 (the host flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
@@ -785,7 +787,7 @@ The \emph{flag algebra} is the quotient module
 We write $[F]$ for the class of $\mathbf e_F$ in $\mathcal{A}^\sigma$.
 Throughout the paper, capital letters $F,G$ denote finite flags, while
 lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.  Thus a
-positive homomorphism is applied to $[F]$, not directly to the finite flag
+positive homomorphism is applied to~$[F]$, not directly to the finite flag
 $F$.  For familiar named or pictorial flags, such as $K_2$ or
 $\fKtwobull$, we retain the standard shorthand of omitting the brackets in
 algebraic formulas; there the surrounding algebraic context makes the
@@ -847,12 +849,12 @@ $\ell \geq m_1 + m_2 - k$ and define
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance, this definition appears to depend on both the choice of $\ell$
-and the choice of representatives for $[F_1]$ and $[F_2]$.  The zero-space
+and the choice of representatives for~$[F_1]$ and $[F_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
 respects isomorphism classes of the input flags.  Extending bilinearly to all
 of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
 The unit of this algebra is the basis element represented by the $\sigma$-flag
-$(\sigma, \operatorname{id}_{[k]})$ of size $k$, in which the underlying graph
+$(\sigma, \operatorname{id}_{[k]})$ of size~$k$, in which the underlying graph
 is $\sigma$ itself and every vertex is labeled; we write it as
 $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
@@ -888,11 +890,11 @@ $\sigma=\emptyset$.
 % The quotient algebra is syntax for density expressions.  To use such an
 % expression in an extremal argument, we need to say how it is evaluated in a
 % limiting graph sequence.  That role is played by positive homomorphisms.
-
+Fix a flag type $\sigma$.  
 The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
 densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 \emph{asymptotic} statements: rather than a single finite host flag, we
-consider increasing sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
+consider increasing sequences~$\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the flag-algebra elements
@@ -909,7 +911,7 @@ converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
 equivalently, if $\lim_{n\to\infty}\den{F}{G_n}$ exists for every $\sigma$-flag $F$.
 
 \paragraph{Positive homomorphisms.}
-Fix a flag type $\sigma$.  A \emph{positive homomorphism} on
+A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
 $\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
@@ -973,7 +975,7 @@ elements and squares.  Every $\sigma$-flag $F$ gives an element
 $[F]\in\mathcal{C}^\sigma$, because positive homomorphisms send every flag
 basis element to a non-negative real by definition.
 For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_\sigma f^2$,
-because $\phi(f^2) = \phi(f)^2 \geq 0$ for every $\phi \in \poshom{\sigma}$.
+because $\phi(f^2) = \phi(f)^2 \geq 0$ for every~$\phi \in \poshom{\sigma}$.
 Moreover, if $0 \leq_\sigma f$ and $0 \leq_\sigma g$, then $0 \leq_\sigma f + g$,
 since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}$.
 Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
