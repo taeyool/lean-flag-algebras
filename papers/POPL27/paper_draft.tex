@@ -4749,6 +4749,45 @@ than principle determined the placement.
 
 
 % =========================================================================
+\appendix
+\section{Compilation Times}
+\label{sec:compile-times}
+
+Table~\ref{tab:compile-times} reports end-to-end compilation times for all seven
+compiler examples, compiled with Lean~4 (v4.27.0).
+Each time covers the complete source file: flag enumeration, pair-density and
+multiplication lemma generation, PSD certificate checking, and the main theorem.
+For host size $N\leq 4$, pair-density lemmas are proved by \lean{decide +kernel}
+(via the \lean{flagGen.kernelDecide} option), so those five files carry no
+\lean{native\_decide} axioms.
+For $N=5$, the times were measured using \lean{native\_decide}.
+
+\begin{table}[h]
+  \centering
+  \caption{End-to-end Lean compilation times for all seven examples.
+    ``Density lemmas'' is the total count of generated
+    \lean{flagDensity\char`\_2} simp lemmas.
+    ${}^\dagger$\,\lean{decide +kernel};
+    ${}^\ddagger$\,\lean{native\_decide}.}
+  \label{tab:compile-times}
+  \begin{tabular}{lccrl}
+    \toprule
+    Case & Forbid & $N$ & Density lemmas & Build time (s) \\
+    \midrule
+    Mantel ($K_2$, induced route)    & $K_3$ & 3 &    $15^\dagger$ &  30 \\
+    Mantel ($K_2$, H-free route)     & $K_3$ & 3 &    $15^\dagger$ &  19 \\
+    $P_3$ density                    & $K_3$ & 3 &    $15^\dagger$ &  19 \\
+    $C_4$ density                    & $K_3$ & 4 &   $210^\dagger$ &  84 \\
+    Edge density ($K_4$-Tur\'an)     & $K_4$ & 4 &   $390^\dagger$ & 149 \\
+    \midrule
+    Erd\H{o}s pentagon ($C_5$)       & $K_3$ & 5 &  $2832^\ddagger$ & 147 \\
+    Edge density ($K_5$-Tur\'an)     & $K_5$ & 5 & $10332^\ddagger$ & 378 \\
+    Edge density ($C_5$-free)        & $C_5$ & 5 &  $8172^\ddagger$ & 590 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% =========================================================================
 \bibliographystyle{ACM-Reference-Format}
 \begin{thebibliography}{99}
 
