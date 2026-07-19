@@ -1,16 +1,21 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 6:121324354656 density; forbid 3:121323').
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
 
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Automation.FinSumUniv
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Automation.FinSumUniv
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public meta import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+
+@[expose] public section
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix

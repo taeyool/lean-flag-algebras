@@ -1,6 +1,10 @@
-import Mathlib.MeasureTheory.Constructions.UnitInterval
-import Mathlib.MeasureTheory.Integral.Prod
-import Mathlib.MeasureTheory.Function.L2Space
+module
+
+public import Mathlib.MeasureTheory.Constructions.UnitInterval
+public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.MeasureTheory.Function.L2Space
+
+@[expose] public section
 
 /-! # Graphons and their degree/codegree kernels (paper §11.7 preliminaries)
 

@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-import Lean.Data.Json
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+public import Lean.Data.Json
+public import Mathlib.Tactic
+
+@[export] public section
 
 /-! # Density theorem loaders
 

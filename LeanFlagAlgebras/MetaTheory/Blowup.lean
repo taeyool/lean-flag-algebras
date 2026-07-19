@@ -1,5 +1,12 @@
-import Mathlib.Combinatorics.SimpleGraph.Clique
-import Mathlib.Tactic
+module
+
+public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Rat
+public import Mathlib.Combinatorics.SimpleGraph.Clique
+public import Mathlib.Tactic.NormNum.OfScientific
+
+@[expose] public section
 
 /-! # Independent blow-ups (paper §5)
 

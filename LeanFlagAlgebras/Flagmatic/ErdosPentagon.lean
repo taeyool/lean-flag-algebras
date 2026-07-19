@@ -3,15 +3,21 @@
 -- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
 -- theorem body still needs to be written (see TODO at the bottom).
 
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public meta import LeanFlagAlgebras.Forbid.CommonGraphs
+public meta import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+
+@[expose] public section
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix

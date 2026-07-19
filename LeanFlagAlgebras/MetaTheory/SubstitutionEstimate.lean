@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
-import LeanFlagAlgebras.MetaTheory.PlantedEstimate
+module
+
+public import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
+public import LeanFlagAlgebras.MetaTheory.PlantedEstimate
+
+@[expose] public section
 
 /-! # Planted mass and planted estimate for the generalised blow-up (paper §6–§7)
 

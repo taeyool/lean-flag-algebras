@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.DownwardAverage
-import LeanFlagAlgebras.MetaTheory.VanishingIdeal
-import Mathlib.Algebra.Ring.SumsOfSquares
+module
+
+public import LeanFlagAlgebras.MetaTheory.DownwardAverage
+public import LeanFlagAlgebras.MetaTheory.VanishingIdeal
+public import Mathlib.Algebra.Ring.SumsOfSquares
+
+@[expose] public section
 
 /-! # No closed certificate gap (paper §10, `thm:no-closed-certificate-gap`)
 

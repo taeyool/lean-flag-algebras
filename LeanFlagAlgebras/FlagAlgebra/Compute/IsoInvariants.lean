@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
-import Mathlib.Data.List.Permutation
-import Mathlib.Data.List.Sort
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+public import Mathlib.Data.List.Permutation
+public import Mathlib.Data.List.Sort
+
+@[expose] public section
 
 /-! # Isomorphism invariants for computable graph encodings
 

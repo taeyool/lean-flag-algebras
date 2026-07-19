@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
-import LeanFlagAlgebras.MetaTheory.GraphonHom
+module
+
+public import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+public import LeanFlagAlgebras.MetaTheory.GraphonHom
+
+@[expose] public section
 
 /-! # The `ω_Zyk` route of parametric quantitative stability (Thm 112(iv))
 

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.CertificateCones
+module 
+
+public import LeanFlagAlgebras.MetaTheory.CertificateCones
+
+@[expose] public section
 
 /-! # The relative Positivstellensatz (paper §11.4, `thm:relative-positivstellensatz`)
 

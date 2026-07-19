@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.RelativeSlackness
-import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativeSlackness
+public import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
+
+@[expose] public section
 
 /-! # Kernel form of complementary slackness (paper §11.3, `thm:kernel-slackness`)
 
@@ -257,7 +261,7 @@ theorem kernel_slackness_exact_ae
       φ₀ h + (∑ i, φ₀ (⟦flagQuadraticForm (Qs i) (vs i)⟧₀ : FlagAlgebra ∅ₜ)) + φ₀ n ≤ c)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Y) (hattain : φ₀ h = c) (i : Fin m)
     (hσi : φ₀ ⟨σs i⟩₀ > 0) :
-    ∀ᵐ ψ ∂(ℙ[φ₀] : Measure (PositiveHomSpace (σs i))),
+    ∀ᵐ ψ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace (σs i))) : Measure _),
       (Qs i) *ᵥ (fun a => (PositiveHomSpace.toPosHom ψ) (vs i a)) = 0 := by
   -- `relative_slackness_exact_ae` (`lam := 1`) gives
   -- `ψ (flagQuadraticForm (Qs i) (vs i)) = 0` a.e.; rewrite by

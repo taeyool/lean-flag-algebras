@@ -1,7 +1,11 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
-import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensityProp
-import Mathlib.Algebra.Algebra.Hom
-import Mathlib.Algebra.Order.Monoid.Defs
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+public import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensityProp
+public import Mathlib.Algebra.Algebra.Hom
+public import Mathlib.Algebra.Order.Monoid.Defs
+
+@[expose] public section
 
 /-! # Positive algebra homomorphisms and the semantic order
 

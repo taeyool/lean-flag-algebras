@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.C5Free
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import Mathlib.Combinatorics.SimpleGraph.Clique
-import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+module
+
+public import LeanFlagAlgebras.MetaTheory.C5Free
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import Mathlib.Combinatorics.SimpleGraph.Clique
+public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+
+@[expose] public section
 
 /-! # Few triangles in `C₅`-free graphs (paper §9.5, `lem:c5-few-triangles`)
 

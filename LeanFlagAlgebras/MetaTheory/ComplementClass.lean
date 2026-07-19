@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.ComplementHom
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.ComplementHom
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+
+@[expose] public section
 
 /-! # Complementation transfers the constrained quotient space (paper `lem:complementation`, Layer 3)
 

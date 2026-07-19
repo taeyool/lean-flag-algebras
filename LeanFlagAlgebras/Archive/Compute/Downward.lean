@@ -1,4 +1,8 @@
-import «LeanFlagAlgebras».Archive.Compute.Basic
+module
+
+public import «LeanFlagAlgebras».Archive.Compute.Basic
+
+@[export] public section
 
 /-!
 # (Archived) Computable downward (unlabeling) normalizing factor

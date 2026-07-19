@@ -1,4 +1,8 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
+
+@[expose] public section
 
 /-! # Computable subflag-density and multiplication coefficients
 

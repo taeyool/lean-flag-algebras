@@ -1,5 +1,10 @@
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Flags.ForbidFreePruned
+module
+
+public import LeanFlagAlgebras.Flags.ForbidFreePruned
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
+public meta import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+
+@[expose] public section
 
 /-! # Forbid-free flag generation
 
@@ -242,7 +247,7 @@ subgraph-forbidding semantics:
 (The `evalBoolList` / `evalInducedFreeMask` helpers live in `Densities.DensityThmGenerator`, shared
 with the edge-based pair-density / mul commands.) -/
 
-private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax `ident) :
+private meta def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax `ident) :
     CommandElabM Unit := do
   let n := nStx.getNat
   let tagFull := toString fStx.getId
@@ -398,7 +403,7 @@ flags that are *subgraph*-`F`-free (computed by `subgraphContains`), the analyti
 `native_decide`), and the `FinFlag`-side bridge `flagSetHfree…_eq` to the filter the subgraph
 capstone `basisVector_quot_forbidEq_sum_subgraph` expands over (via
 `supergraphFamily_filter_iff`). -/
-private def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSyntax `ident) :
+private meta def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSyntax `ident) :
     CommandElabM Unit := do
   let n := nStx.getNat
   let tagFull := toString fStx.getId
@@ -533,7 +538,7 @@ at the end of this file); only reached for a complete forbid `F`, where the indu
 subgraph splits coincide. The forbid-free split is **induced** (`inducedContains F` on each
 flag's underlying graph), and the forbid-free test is the analytic density on `⟦F⟧`.
 Completeness routes through the graph-level `genFlagsHfree` + `genFlagsHfree_toFinset_eq`. -/
-private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
+private meta def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
     CommandElabM Unit := do
   let k := kStx.getNat
   let m := mStx.getNat
@@ -757,7 +762,7 @@ to the clique route; only the forbid-free split (`subgraphContains`), the analyt
 `isHfree` (zero density of every supergraph of `F`), the completeness (direct `native_decide`),
 and the `FinFlag`-bridge `flagSetHfree…_eq` (to the subgraph capstone's filter, via
 `supergraphFamily_filter_iff`) differ. -/
-private def runForbidFreeTypedSubgraph (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
+private meta def runForbidFreeTypedSubgraph (nStx kStx mStx : TSyntax `num) (fStx : TSyntax `ident) :
     CommandElabM Unit := do
   let k := kStx.getNat
   let m := mStx.getNat

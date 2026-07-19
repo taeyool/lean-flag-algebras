@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+module
+
+public import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+
+@[expose] public section
 
 /-! # The edgeless and complete limit points at the one-vertex type (paper §10 groundwork)
 

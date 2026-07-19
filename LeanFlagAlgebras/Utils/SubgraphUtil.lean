@@ -1,7 +1,11 @@
-import «LeanFlagAlgebras».Utils.Combinations
-import «LeanFlagAlgebras».Utils.QuotientGraph
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Algebra.BigOperators.Field
+module
+
+public import «LeanFlagAlgebras».Utils.Combinations
+public import «LeanFlagAlgebras».Utils.QuotientGraph
+public import Mathlib.Combinatorics.SimpleGraph.Subgraph
+public import Mathlib.Algebra.BigOperators.Field
+
+@[expose] public section
 
 /-! # Subgraph utilities: induced subgraphs and transport along isomorphisms
 

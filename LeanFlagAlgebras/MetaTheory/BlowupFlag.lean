@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.Blowup
-import LeanFlagAlgebras.FlagAlgebra.FlagDef
+module
+
+public import LeanFlagAlgebras.MetaTheory.Blowup
+public import LeanFlagAlgebras.FlagAlgebra.FlagDef
+
+@[expose] public section
 
 /-! # The blow-up as a labelled graph, and the good-event flag isomorphism
 

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.SupportClosure
+module
+
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+
+@[expose] public section
 
 /-! # Pinning obstructions (paper §9)
 
@@ -27,7 +31,7 @@ extension, then the whole root-planting set `S_σ` lies in the same level set. -
 theorem Sσ_subset_eval_eq_of_ae_pinned (T : Constraint σ) (g : FlagAlgebra σ) (c : ℝ)
     (hpin : ∀ (φ₀ : PositiveHom ∅ₜ), posHomPoint φ₀ ∈ Qσ T.forb0 →
       ∀ (hσ : φ₀ ⟨σ⟩₀ > 0),
-        ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)),
+        ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _),
           (PositiveHomSpace.toPosHom χ) g = c) :
     Sσ T ⊆ {χ : PositiveHomSpace σ | (PositiveHomSpace.toPosHom χ) g = c} := by
   refine closure_minimal ?_ (isClosed_eq (continuous_eval g) continuous_const)
@@ -59,7 +63,7 @@ more general. -/
 theorem pinning_obstruction (T : Constraint σ) (g : FlagAlgebra σ) (c : ℝ)
     (hpin : ∀ (φ₀ : PositiveHom ∅ₜ), posHomPoint φ₀ ∈ Qσ T.forb0 →
       ∀ (hσ : φ₀ ⟨σ⟩₀ > 0),
-        ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)),
+        ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _),
           (PositiveHomSpace.toPosHom χ) g = c)
     (hψ : ∃ ψ ∈ Qσ T.forbσ, (PositiveHomSpace.toPosHom ψ) g ≠ c) :
     ¬ RootPlantable T :=

@@ -1,7 +1,11 @@
-import «LeanFlagAlgebras».FlagAlgebra.SubflagDensity
-import Mathlib.Data.Real.Basic
-import Mathlib.Tactic.Linarith.Frontend
-import Mathlib.Data.Finset.Basic
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.SubflagDensity
+public import Mathlib.Data.Real.Basic
+public import Mathlib.Tactic.Linarith.Frontend
+public import Mathlib.Data.Finset.Basic
+
+@[expose] public section
 
 /-!
 # (Archived) Comparing two definitions of the labeled-subgraph-list set

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MantelTheorem.FlagDensity
-import LeanFlagAlgebras.Automation.FlagMulReduce
+module
+
+public import LeanFlagAlgebras.MantelTheorem.FlagDensity
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+
+@[expose] public section
 
 /-! # Mantel's theorem: flag products
 

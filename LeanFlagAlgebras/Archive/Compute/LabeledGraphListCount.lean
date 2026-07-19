@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.Archive.Compute.Basic_
-import LeanFlagAlgebras.FlagAlgebra.SubflagListDensity
+module
+
+public import LeanFlagAlgebras.Archive.Compute.Basic_
+public import LeanFlagAlgebras.FlagAlgebra.SubflagListDensity
+
+@[export] public section
 
 /-!
 # (Archived) Experimental labeled-graph-list count

@@ -1,20 +1,11 @@
-import «LeanFlagAlgebras».Utils.Partitions
-import «LeanFlagAlgebras».FlagAlgebra.SubflagDensity
-import Batteries.Logic
-import Mathlib.Algebra.BigOperators.Field
-import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Data.Fintype.EquivFin
-import Mathlib.Data.Nat.Choose.Basic
-import Mathlib.Data.Nat.Factorial.BigOperators
-import Mathlib.Data.Set.Finite.Lattice
-import Mathlib.Data.Set.Pairwise.Basic
-import Mathlib.Data.Set.Subset
-import Mathlib.Tactic.FieldSimp
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.Ring
+module
 
+public import LeanFlagAlgebras.FlagAlgebra.SubflagDensity
+public import LeanFlagAlgebras.Utils.Partitions
+public import Mathlib.Data.Set.Subset
+public import Mathlib.Tactic.FieldSimp
+
+@[expose] public section
 
 /-!
 # Densities of flags relative to a list of subflags
@@ -434,9 +425,8 @@ noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F�
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
 
-omit [DecidableEq T] in
 /-! ## Bridging representatives and quotients; basic invariants -/
-
+omit [DecidableEq T] in
 /-- Computing list density on labeled-graph representatives equals computing
 `flagListDensity` on their quotient images. -/
 theorem labeledGraphListDensity_eq_flagListDensity
@@ -955,9 +945,8 @@ theorem flagTripleDensity_empty'
   exact flagTripleDensity_empty F₁ F₂ G
 
 
-omit [DecidableEq T] in
 /-! ## Density is a probability: bounds in `[0, 1]` -/
-
+omit [DecidableEq T] in
 /-- List density is nonnegative. -/
 theorem labeledGraphListDensity_ge_zero
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
@@ -1755,12 +1744,13 @@ noncomputable def
     have h_Vl''_disj_type_verts : ∀ i : Fin 2, (Vl'' i) ∩ G.type_verts = ∅ := by
       intro i
       dsimp [Vl'']
-      split
-      · dsimp [V']
+      match i with
+      | ⟨0, _⟩ =>
+        dsimp [V']
         rw [Set.union_inter_distrib_right, Set.union_inter_distrib_right]
         rw [h_Vl_disj_G_type_verts 0, h_Vl_disj_G_type_verts 1, h_V_disj_G_type_verts]
         simp only [Set.union_empty]
-      · exact h_Vl_disj_G_type_verts 2
+      | ⟨1, _⟩ => exact h_Vl_disj_G_type_verts 2
 
     have h_Vl'_disj_pairwise : Set.univ.PairwiseDisjoint Vl' := by
       intro i _ j _ h_neq_ij
@@ -1797,10 +1787,25 @@ noncomputable def
         simp only [Set.union_self]
       have h_disj_symm : (Vl 2) ∩ (Vl 0 ∪ Vl 1 ∪ V) = ∅ := by
         rw [Set.inter_comm]; exact h_disj
-      split <;> split
-            <;> simp_all only [Fin.isValue, Set.toFinset_union, Finset.union_assoc,
-              Subtype.forall, Prod.forall, Set.toFinset_card, Fintype.card_ofFinset, Set.mem_univ,
-              ne_eq, Fin.one_eq_zero_iff, OfNat.ofNat_ne_one, not_false_eq_true]
+      match i, j with
+      | ⟨0, _⟩, ⟨0, _⟩ =>
+        simp_all only [Fin.isValue, Set.toFinset_union, Finset.union_assoc, Subtype.forall,
+          Prod.forall, Set.toFinset_card, Fintype.card_ofFinset, Fin.forall_fin_two, Fin.zero_eta,
+          Set.mem_univ, ne_eq, not_true_eq_false]
+      | ⟨0, _⟩, ⟨1, _⟩ =>
+        simp_all only [Fin.isValue, Set.toFinset_union, Finset.union_assoc, Subtype.forall,
+          Prod.forall, Set.toFinset_card, Fintype.card_ofFinset, Fin.forall_fin_two, Fin.zero_eta,
+          Set.mem_univ, Fin.mk_one, ne_eq, Fin.zero_eq_one_iff, Nat.reduceAdd, OfNat.ofNat_ne_one,
+          not_false_eq_true]
+      | ⟨1, _⟩, ⟨0, _⟩ =>
+        simp_all only [Fin.isValue, Set.toFinset_union, Finset.union_assoc, Subtype.forall,
+          Prod.forall, Set.toFinset_card, Fintype.card_ofFinset, Fin.forall_fin_two, Fin.mk_one,
+          Set.mem_univ, Fin.zero_eta, ne_eq, Fin.one_eq_zero_iff, zero_add, OfNat.ofNat_ne_one,
+          not_false_eq_true]
+      | ⟨1, _⟩, ⟨1, _⟩ =>
+        simp_all only [Fin.isValue, Set.toFinset_union, Finset.union_assoc, Subtype.forall,
+          Prod.forall, Set.toFinset_card, Fintype.card_ofFinset, Fin.forall_fin_two, Fin.mk_one,
+          Set.mem_univ, ne_eq, not_true_eq_false]
     have h_Vl'_iso :
         ∀ i : Fin 2,
           Nonempty ((inducedLabeledSubgraph F.out (Vl' i ∪ F.out.type_verts) Set.subset_union_right).coe ≃f [H₁, H₂]ᵍ i)

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
-import LeanFlagAlgebras.MetaTheory.GraphonCounting
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
+public import LeanFlagAlgebras.MetaTheory.GraphonCounting
+
+@[expose] public section
 
 /-! # The paper-verbatim tripartite theorem
 

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.FlagAlgebra.PositiveHom
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.PositiveHom
+
+@[expose] public section
 
 /-! # An embedded assertion DSL for flag algebras
 

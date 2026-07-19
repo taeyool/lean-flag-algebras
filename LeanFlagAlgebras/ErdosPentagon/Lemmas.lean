@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.ErdosPentagon.FlagDef
-import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Forbid.Basic
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.ErdosPentagon.FlagDef
+public import LeanFlagAlgebras.ErdosPentagon.FlagMul
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Forbid.Basic
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-! # Erdős pentagon problem: certificate lemmas
 

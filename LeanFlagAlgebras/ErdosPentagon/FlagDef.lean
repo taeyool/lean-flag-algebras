@@ -1,7 +1,12 @@
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Forbid.TuranDensity
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.ErdosPentagon.MatrixDef
+module
+
+public import LeanFlagAlgebras.Forbid.TuranDensity
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.ErdosPentagon.MatrixDef
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
+public meta import LeanFlagAlgebras.Flags.FlagGenerator
+
+@[expose] public section
 
 /-! # Erdős pentagon problem: flags and certificate vectors
 

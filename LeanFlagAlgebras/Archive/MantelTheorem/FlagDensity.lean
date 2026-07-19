@@ -1,5 +1,9 @@
+module
+
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import «LeanFlagAlgebras».Archive.Compute.FlagDensity
+
+@[export] public section
 
 /-!
 # (Archived) Precomputed densities of the hand-written Mantel flags

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.FlagAlgebra.FlagSequence
-import Mathlib.RingTheory.Ideal.Quotient.Operations
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.FlagSequence
+public import Mathlib.RingTheory.Ideal.Quotient.Operations
+
+@[expose] public section
 
 /-! # Constrained classes, the quotient algebra, and the supported space `Q_σ`
 

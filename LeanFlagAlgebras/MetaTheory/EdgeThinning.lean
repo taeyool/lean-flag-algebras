@@ -1,10 +1,14 @@
-import LeanFlagAlgebras.MetaTheory.NoInterior
-import LeanFlagAlgebras.MetaTheory.LabeledCount
-import Mathlib.Probability.ProbabilityMassFunction.Constructions
-import Mathlib.MeasureTheory.Constructions.Pi
-import Mathlib.MeasureTheory.Integral.Bochner.Set
-import Mathlib.Probability.Moments.Variance
-import Mathlib.Probability.Independence.Basic
+module
+
+public import LeanFlagAlgebras.MetaTheory.NoInterior
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+public import Mathlib.Probability.ProbabilityMassFunction.Constructions
+public import Mathlib.MeasureTheory.Constructions.Pi
+public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.Probability.Moments.Variance
+public import Mathlib.Probability.Independence.Basic
+
+@[expose] public section
 
 /-! # Random edge-thinning of a finite graph (paper §9.4, probabilistic core)
 
@@ -35,16 +39,16 @@ attribute [local instance] Classical.propDecidable
 abbrev ThinCoins (N : ℕ) : Type := Sym2 (Fin N) → Bool
 
 /-- The `ℝ≥0` clamp of `λ` used by `PMF.bernoulli` (valid once `0 ≤ λ`). -/
-private noncomputable def lamNN (lam : ℝ) : ℝ≥0 := lam.toNNReal
+protected noncomputable def lamNN (lam : ℝ) : ℝ≥0 := lam.toNNReal
 
-private lemma lamNN_le_one {lam : ℝ} (h1 : lam ≤ 1) : lamNN lam ≤ 1 := by
-  rw [lamNN, Real.toNNReal_le_iff_le_coe, NNReal.coe_one]
+protected lemma lamNN_le_one {lam : ℝ} (h1 : lam ≤ 1) : MetaTheory.lamNN lam ≤ 1 := by
+  rw [MetaTheory.lamNN, Real.toNNReal_le_iff_le_coe, NNReal.coe_one]
   exact h1
 
 /-- Bernoulli(`λ`) product measure on the coins (`λ` clamped to `[0,1]` via the PMF). -/
 noncomputable def thinMeasure (N : ℕ) (lam : ℝ) (_h0 : 0 ≤ lam) (h1 : lam ≤ 1) :
     Measure (ThinCoins N) :=
-  Measure.pi (fun _ : Sym2 (Fin N) => (PMF.bernoulli (lamNN lam) (lamNN_le_one h1)).toMeasure)
+  Measure.pi (fun _ : Sym2 (Fin N) => (PMF.bernoulli (MetaTheory.lamNN lam) (MetaTheory.lamNN_le_one h1)).toMeasure)
 
 instance thinMeasure_isProbabilityMeasure (N : ℕ) (lam : ℝ) (h0 : 0 ≤ lam) (h1 : lam ≤ 1) :
     IsProbabilityMeasure (thinMeasure N lam h0 h1) := by
@@ -140,9 +144,9 @@ private lemma coinBox_measure_toReal (N : ℕ) (lam : ℝ) (h0 : 0 ≤ lam) (h1 
       exact this
   rw [thinMeasure, hset, Measure.pi_pi]
   have hfac : ∀ e : Sym2 (Fin N),
-      ((PMF.bernoulli (lamNN lam) (lamNN_le_one h1)).toMeasure)
+      ((PMF.bernoulli (MetaTheory.lamNN lam) (MetaTheory.lamNN_le_one h1)).toMeasure)
           (if e ∈ T then ({true} : Set Bool) else Set.univ)
-        = (if e ∈ T then (lamNN lam : ℝ≥0∞) else 1) := by
+        = (if e ∈ T then (MetaTheory.lamNN lam : ℝ≥0∞) else 1) := by
     intro e
     by_cases he : e ∈ T
     · simp only [he, if_true]
@@ -152,9 +156,9 @@ private lemma coinBox_measure_toReal (N : ℕ) (lam : ℝ) (h0 : 0 ≤ lam) (h1 
       exact measure_univ
   rw [Finset.prod_congr rfl (fun e _ => hfac e), ← Finset.prod_filter, Finset.filter_univ_mem,
     Finset.prod_const, ENNReal.toReal_pow]
-  have hco : ((lamNN lam : ℝ≥0∞)).toReal = lam := by
+  have hco : ((MetaTheory.lamNN lam : ℝ≥0∞)).toReal = lam := by
     rw [ENNReal.coe_toReal]
-    simp only [lamNN]
+    simp only [MetaTheory.lamNN]
     exact Real.coe_toNNReal lam h0
   rw [hco]
 
@@ -686,7 +690,7 @@ private lemma thinInd_indepFun (M : FinFlag ∅ₜ) (lam : ℝ) (h0 : 0 ≤ lam)
   have hcoord : iIndepFun (fun (e : Sym2 (Fin N)) (ω : ThinCoins N) => ω e)
       (thinMeasure N lam h0 h1) :=
     iIndepFun_pi
-      (μ := fun _ : Sym2 (Fin N) => (PMF.bernoulli (lamNN lam) (lamNN_le_one h1)).toMeasure)
+      (μ := fun _ : Sym2 (Fin N) => (PMF.bernoulli (MetaTheory.lamNN lam) (MetaTheory.lamNN_le_one h1)).toMeasure)
       (X := fun _ : Sym2 (Fin N) => (id : Bool → Bool)) (fun _ => aemeasurable_id)
   have hfacS : thinInd M G S
       = (fun r : ↥(coinsWithin G S) → Bool =>

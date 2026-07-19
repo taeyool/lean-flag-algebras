@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.CloneCount
+module
+
+public import LeanFlagAlgebras.MetaTheory.CloneCount
+
+@[expose] public section
 
 /-! # Total clone count
 

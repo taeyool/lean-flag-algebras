@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.TrueClone
+module
+
+public import LeanFlagAlgebras.MetaTheory.TrueClone
+
+@[expose] public section
 
 /-! # Cluster graphs are root-plantable (paper §6, `cor:cluster-graphs`)
 

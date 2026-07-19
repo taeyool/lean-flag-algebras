@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.C4Free
+module
+
+public import LeanFlagAlgebras.MetaTheory.C4Free
+
+@[expose] public section
 
 /-! # A dense obstruction: complements of `C₄`-free graphs (paper §9.2, `cor:codegenerate`)
 
@@ -105,7 +109,7 @@ theorem downwardNormalizingFactor_edge_eq_one :
 /-- An induced embedding `f : H ↪g G` complements to an induced embedding `Hᶜ ↪g Gᶜ`: it has the
 same underlying (injective) map, and `Gᶜ.Adj (f a) (f b) ↔ Hᶜ.Adj a b` since complementation only
 negates adjacency and `f` preserves both adjacency and distinctness. -/
-private def complEmbedding {V W : Type} {H : SimpleGraph V} {G : SimpleGraph W} (f : H ↪g G) :
+protected def complEmbedding {V W : Type} {H : SimpleGraph V} {G : SimpleGraph W} (f : H ↪g G) :
     Hᶜ ↪g Gᶜ where
   toFun := f
   inj' := f.injective
@@ -119,7 +123,7 @@ private def complEmbedding {V W : Type} {H : SimpleGraph V} {G : SimpleGraph W} 
 hereditary because an induced embedding `H ↪g G` complements to an induced embedding `Hᶜ ↪g Gᶜ`. -/
 def coC4FreeClass : HeredClass where
   Mem {_V} _ _ G := C4g.Free Gᶜ
-  comap {_V _W} _ _ _ _ {_G} {_H} e hG := fun hc4 => hG (hc4.trans ⟨(complEmbedding e).toCopy⟩)
+  comap {_V _W} _ _ _ _ {_G} {_H} e hG := fun hc4 => hG (hc4.trans ⟨(MetaTheory.complEmbedding e).toCopy⟩)
 
 /-- The complement of the co-star `K_n ⊎ K_1` (rooted at the isolated vertex) is the star `K_{1,n}`;
 hence each co-star lies in the complement-of-`C₄`-free class. -/

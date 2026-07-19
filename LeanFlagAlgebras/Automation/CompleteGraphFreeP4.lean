@@ -1,10 +1,14 @@
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+
+@[expose] public section
 
 /-! # Automation.CompleteGraphFreeP4 — P₄ density bound in K_{r+1}-free graphs
 
@@ -97,17 +101,6 @@ generate_mul_theorems 3 4 2 0
 -- σ₂-type (edge-label) products, needed for `f₂_expand` / `f₃_expand`.
 generate_flag_pair_density_theorems_no_forbid 3 4 2 1
 generate_mul_theorems 3 4 2 1
-
-
-example : FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_3 =
-    (1 / 2 : ℝ) • FlagAlgebra_4_2_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_2_0_10
-  := by
-  dsimp only [FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_3]
-  rw [basisVector_quot_mul_eq_flagMul_quot]
-  simp [flagMul, flagMulWithSize]
-  rw [Finset.sum_eq_multiset_sum, ← flagSet_4_2_0_eq_univ, flagSet_4_2_0_val_eq]
-  simp [add_quot, smul_quot]
-  rfl
 
 -- Expansion of f₁(r) in the basis of 4-vertex graph densities.
 -- Coefficients computed from the flag algebra product structure (σ₁-type averaging).

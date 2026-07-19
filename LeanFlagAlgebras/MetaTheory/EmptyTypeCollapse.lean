@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.DownwardAverage
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
-import LeanFlagAlgebras.MetaTheory.HeredClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.DownwardAverage
+public import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+
+@[expose] public section
 
 /-! # The empty-type collapse (paper §10, `prop:empty-type` and `cor:confined`)
 
@@ -65,7 +69,7 @@ probability measure at `posHomPoint φ₀`.  The left integrals are
 `(toPosHom (posHomPoint φ₀)) f = φ₀ f` (`integral_dirac'` with
 `(continuous_eval f).stronglyMeasurable`, then `toPosHom_posHomPoint`). -/
 theorem extend_emptyType_eq_dirac (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨∅ₜ⟩₀ > 0) :
-    (ℙ[φ₀] : Measure (PositiveHomSpace ∅ₜ)) = Measure.dirac (posHomPoint φ₀) := by
+    (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace ∅ₜ)) = Measure.dirac (posHomPoint φ₀) := by
   have hdirac : IsProbabilityMeasure
       (Measure.dirac (posHomPoint φ₀) : Measure (PositiveHomSpace ∅ₜ)) :=
     Measure.dirac.isProbabilityMeasure

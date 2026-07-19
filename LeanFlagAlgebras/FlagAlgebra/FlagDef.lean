@@ -1,4 +1,8 @@
-import «LeanFlagAlgebras».Utils.SubgraphUtil
+module
+
+public import «LeanFlagAlgebras».Utils.SubgraphUtil
+
+@[expose] public section
 
 /-! # Flag Algebra: Core Definitions
 
@@ -324,9 +328,8 @@ theorem inducedLabeledSubgraph_eq
     : H = inducedLabeledSubgraph G H.subgraph.verts (labeledSubgraph_contain_type_verts G H)
   := by
   dsimp [inducedLabeledSubgraph]
-  congr!
-  . exact (h_H_ind.induce_top_verts).symm
-  . simp only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, H.embed_eq]
+  congr! <;> try exact h_H_ind.induce_top_verts.symm
+  simp only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, H.embed_eq]
 
 omit [Fintype T] in
 theorem isInduced_exist_induce_set

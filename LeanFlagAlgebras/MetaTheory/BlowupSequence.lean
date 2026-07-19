@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.MetaTheory.SupportClosure
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import LeanFlagAlgebras.Forbid.TuranDensity
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+public import LeanFlagAlgebras.Forbid.TuranDensity
+
+@[expose] public section
 
 /-! # The uniform blow-up flag sequence and its base limit (paper §5, capstone part 2)
 

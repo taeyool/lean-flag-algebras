@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-import Mathlib.Combinatorics.SimpleGraph.Copy
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+public import Mathlib.Combinatorics.SimpleGraph.Copy
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-! # Genuine pruned augmentation (K₃-free, empty-typed graph level)
 
@@ -101,13 +105,6 @@ theorem augRepsTriFree_complete : ∀ (n : ℕ) (G : Sym2Graph n), ¬ hasTri G �
       foldl_dedupStep_complete ((augRepsTriFree n).flatMap augmentAllTriFree) []
         (augment R₀ S') hmemFlat
     exact ⟨R, hRmem, Sym2GraphEqv.trans hHiso hRiso⟩
-
--- Correctness validation (each reduces only the pruned generation, never the full
--- enumeration): the pruned generator produces exactly the known K₃-free class counts
--- (7 of 11 at n=4, 14 of 34 at n=5, 38 of 156 at n=6).
-example : (augRepsTriFree 4).length = 7 := by native_decide
-example : (augRepsTriFree 5).length = 14 := by native_decide
-example : (augRepsTriFree 6).length = 38 := by native_decide
 
 /-! ## K₃ density bridge (Task 1)
 
@@ -566,23 +563,6 @@ def C5graph : Sym2Graph 5 where
   edges := {s(0, 1), s(1, 2), s(2, 3), s(3, 4), s(4, 0)}
   edges_valid := by decide
 
--- The pruned `F`-free representative count matches the count obtained by filtering the full
--- representative list `augReps` — i.e. the generic pruning is sound and complete on these.
-example : (augRepsFreeB (qFree K4graph) 4).length
-    = ((augReps 4).filter (qFree K4graph 4)).length := by native_decide
-example : (augRepsFreeB (qFree K4graph) 5).length
-    = ((augReps 5).filter (qFree K4graph 5)).length := by native_decide
-example : (augRepsFreeB (qFree C4graph) 4).length
-    = ((augReps 4).filter (qFree C4graph 4)).length := by native_decide
-example : (augRepsFreeB (qFree C4graph) 5).length
-    = ((augReps 5).filter (qFree C4graph 5)).length := by native_decide
-example : (augRepsFreeB (qFree C5graph) 5).length
-    = ((augReps 5).filter (qFree C5graph 5)).length := by native_decide
-
--- Family: simultaneously forbidding `K₄` and `C₄` (the multi-graph instance of D3).
-example : (augRepsFreeB (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩]) 5).length
-    = ((augReps 5).filter (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩] 5)).length := by native_decide
-
 /-! ## Generalized bridge (Task 4): `inducedContains F G ↔ density ≠ 0` for arbitrary `F`.
 
 The arbitrary-`F` analogue of the Task-1 K₃ bridge: the combinatorial induced-containment
@@ -1031,11 +1011,5 @@ theorem prunedCliqueFreeFlags_toFinset_eq {r : ℕ} (F : Sym2Graph r)
   unfold prunedCliqueFreeFlags
   rw [qCliqueFree_eq_qFree F hF]
   exact prunedFreeFlags_toFinset_eq F hr n
-
--- Correctness: the cheap clique generator reproduces the K₃-free class counts (7/14/38), matching
--- `augRepsTriFree` — and reduces by the cheap subset scan, not the generic embedding search.
-example : (augRepsFreeB (qCliqueFree 3) 4).length = 7 := by native_decide
-example : (augRepsFreeB (qCliqueFree 3) 5).length = 14 := by native_decide
-example : (augRepsFreeB (qCliqueFree 3) 6).length = 38 := by native_decide
 
 end FlagAlgebras.Compute

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+module
+
+public import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+
+@[expose] public section
 
 /-! # Blow-up-closed hereditary classes — the common generalisation of §5–§7 (paper §7)
 

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.GraphonMoments
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonMoments
+
+@[expose] public section
 
 /-! # Quantitative stability at the kernel level (paper §11.8,
 `thm:k4free-p4-quant-stability`, `thm:parametric-quant-stability`)

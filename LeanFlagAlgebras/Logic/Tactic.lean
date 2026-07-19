@@ -1,5 +1,8 @@
-import Mathlib.Tactic
-import LeanFlagAlgebras.Logic.Defs
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+
+@[expose] public section
 
 /-! # Proof tactics for the flag-algebra assertion DSL
 
@@ -15,7 +18,7 @@ open Lean Elab Tactic Meta
 namespace FlagLogic
 
 /-- Find a constant name containing `FlagAlgebra_...` in an expression. -/
-partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
+meta def findFlagAlgebraConst? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
       if nm.toString.contains "FlagAlgebra_" then some nm else none
@@ -34,7 +37,7 @@ partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
   | _ => none
 
 /-- Parse `(n,k,m,i)` from names like `...FlagAlgebra_n_k_m_i`. -/
-def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
+meta def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
   let s := nm.toString
   let tail ← match s.splitOn "FlagAlgebra_" with
     | _ :: t :: _ => some t
@@ -50,7 +53,7 @@ def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := 
   pure (n, k, m, i)
 
 /-- Find a constant name containing `Flag_...` in an expression. -/
-partial def findFlagConst? (e : Expr) : Option Name :=
+meta def findFlagConst? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
     if nm.toString.contains "Flag_" then some nm else none
@@ -69,7 +72,7 @@ partial def findFlagConst? (e : Expr) : Option Name :=
   | _ => none
 
 /-- Parse `(n,k,m,i)` from names like `...Flag_n_k_m_i`. -/
-def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
+meta def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
   let s := nm.toString
   let tail ← match s.splitOn "Flag_" with
     | _ :: t :: _ => some t
@@ -84,7 +87,7 @@ def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
   let i ← String.toNat? iStr
   pure (n, k, m, i)
 
-partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name :=
+meta def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name :=
   let rec collectAux (e : Expr) (acc : Array Name) : Array Name :=
     match e with
     | .const n _ =>
@@ -106,7 +109,7 @@ partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name 
 /--
 Executes the core logic for `prove_flag_expand_with_forbidden_flag N`.
 -/
-def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
+meta def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))
     let some nVal ← (Meta.evalNat nExpr).run
@@ -173,7 +176,7 @@ def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
 /--
 Executes the core logic for `prove_flag_mul_with_forbidden_flag N`.
 -/
-def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :=
+meta def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))
     let some nVal ← (Meta.evalNat nExpr).run

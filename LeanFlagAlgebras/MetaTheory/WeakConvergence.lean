@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+public import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+
+@[expose] public section
 
 /-! # Weak convergence of σ-rooting measures of an arbitrary convergent flag sequence
 

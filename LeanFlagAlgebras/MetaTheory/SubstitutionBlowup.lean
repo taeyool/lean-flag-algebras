@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.BlowupFlag
+module
+
+public import LeanFlagAlgebras.MetaTheory.BlowupFlag
+
+@[expose] public section
 
 /-! # The generalised (substitution) blow-up (paper §6–§7)
 

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.Forbid.Basic
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Forbid.Basic
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+
+@[expose] public section
 
 /-! # Automation.Basic — core flag-algebra proof automation
 
@@ -128,7 +132,7 @@ corresponding `FlagAlgebra_n_k_m_i` constant.  No arguments needed.
 
 /-- Recursively collect the names of all `Flag_*` constants occurring in `e`
 (helper for `fold_basis_vectors`). -/
-private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
+private meta partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
   let e := e.consumeMData
   let fromChildren : Array Name := match e with
     | .app f a => collectFlagConstNamesInExpr f ++ collectFlagConstNamesInExpr a
@@ -146,7 +150,7 @@ private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
   | _ => fromChildren
 
 /-- Map a `Flag_<suffix>` constant name to the matching `FlagAlgebra_<suffix>`. -/
-private def flagConstToAlgebraName (nm : Name) : Option Name :=
+private meta def flagConstToAlgebraName (nm : Name) : Option Name :=
   match nm with
   | .str parent s =>
     if s.startsWith "Flag_" then some (.str parent ("FlagAlgebra_" ++ s.drop 5))
@@ -155,7 +159,7 @@ private def flagConstToAlgebraName (nm : Name) : Option Name :=
 
 /-- Inverse of `flagConstToAlgebraName`: map `FlagAlgebra_<suffix>` back to
 `Flag_<suffix>`. -/
-private def algebraNameToFlagConstName (nm : Name) : Option Name :=
+private meta def algebraNameToFlagConstName (nm : Name) : Option Name :=
   match nm with
   | .str parent s =>
     if s.startsWith "FlagAlgebra_" then some (.str parent ("Flag_" ++ s.drop 12))
@@ -278,13 +282,13 @@ It automates the standard closing step in flag algebra Automation-layer proofs:
 macro "flag_nonneg" : tactic =>
   `(tactic| (
     intro φ
-    try simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
-    repeat apply add_nonneg
-    all_goals (
-      try simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left,
-                 mul_nonneg_iff_of_pos_left, one_div, inv_pos]
-      apply positiveHom_basisVector_ge_zero
-    )
+    try simp only [sub_zero, ge_iff_le, PositiveHom.map_add, PositiveHom.map_smul, smul_eq_mul]
+    repeat' first
+      | apply add_nonneg
+      | apply mul_nonneg
+      | exact φ.2 _
+      | apply positiveHom_basisVector_ge_zero
+      | positivity
   ))
 
 end FlagAlgebras.Automation

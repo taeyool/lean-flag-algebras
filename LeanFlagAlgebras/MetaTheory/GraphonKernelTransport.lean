@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
-import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
-import LeanFlagAlgebras.MetaTheory.GraphonRigidity
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
+public import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+public import LeanFlagAlgebras.MetaTheory.GraphonRigidity
+
+@[expose] public section
 
 /-! # From slice identities to kernel equations
 

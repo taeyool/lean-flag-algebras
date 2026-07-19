@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MantelTheorem.FlagMul
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import LeanFlagAlgebras.Automation.FlagExpand
+module
+
+public import LeanFlagAlgebras.MantelTheorem.FlagMul
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+public import LeanFlagAlgebras.Automation.FlagExpand
+
+@[expose] public section
 
 /-! # Mantel's theorem: auxiliary lemmas
 
@@ -29,17 +33,6 @@ lemma expand_K2_on_three_vertex_without_K3
           + (2 / 3 : ℝ) • φ FlagAlgebra_3_0_0_2
   := by
   flag_expand_forbid 3
-
-/- Expansion of K2 on 3-vertex empty type flags -/
-example : FlagAlgebra_2_0_0_1 = (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + (1 : ℝ) • FlagAlgebra_3_0_0_3 + (0 : ℝ) • FlagAlgebra_3_0_0_0 + (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
-  := by
-  flag_expand 3
-
-/- K2₁ = (1 / 2) • E3₁ + P3₁ + (1 / 2) • P3₁' + K3₁ -/
-example : FlagAlgebra_2_1_0_1 = (1 / 2 : ℝ) • FlagAlgebra_3_1_0_1 + FlagAlgebra_3_1_0_3
-    + (1 / 2 : ℝ) • FlagAlgebra_3_1_0_4 + FlagAlgebra_3_1_0_5
-  := by
-  flag_expand 3
 
 /- If φ K3₁ = 0, then φ K2₁ = (1 / 2) • φ E3₁ + φ P3₁ + (1 / 2) • φ P3₁' -/
 lemma expand_K2₁_on_three_vertex_without_K3

@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.RelativePlanted
-import LeanFlagAlgebras.MetaTheory.TuranLimit
-import LeanFlagAlgebras.MetaTheory.DenseObstruction
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativePlanted
+public import LeanFlagAlgebras.MetaTheory.TuranLimit
+public import LeanFlagAlgebras.MetaTheory.DenseObstruction
+
+@[expose] public section
 
 /-! # Slices break root-plantability: the Mantel slice (paper §11.4,
 `prop:mantel-not-plantable`)

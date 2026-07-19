@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
-import LeanFlagAlgebras.MetaTheory.BlowupSequence
+module
+
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
+public import LeanFlagAlgebras.MetaTheory.BlowupSequence
+
+@[expose] public section
 
 /-! # The uniform generalised-blow-up flag sequence and its base limit (paper §6–§7)
 

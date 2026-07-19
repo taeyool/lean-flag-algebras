@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.MantelTheorem.Lemmas
-import Mathlib.Combinatorics.SimpleGraph.Extremal.TuranDensity
-import Mathlib.Combinatorics.SimpleGraph.Clique
-import Mathlib.Combinatorics.SimpleGraph.Coloring
-import Mathlib.Combinatorics.SimpleGraph.CompleteMultipartite
+module
+
+public import LeanFlagAlgebras.MantelTheorem.Lemmas
+public import Mathlib.Combinatorics.SimpleGraph.Extremal.TuranDensity
+public import Mathlib.Combinatorics.SimpleGraph.Clique
+public import Mathlib.Combinatorics.SimpleGraph.Coloring
+public import Mathlib.Combinatorics.SimpleGraph.CompleteMultipartite
+
+@[expose] public section
 
 /-! # Mantel's theorem (Turán density of `K₃`)
 

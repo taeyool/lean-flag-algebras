@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.PairSubsetCount
-import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
+module
+
+public import LeanFlagAlgebras.MetaTheory.PairSubsetCount
+public import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
+
+@[expose] public section
 
 /-! # Standard-rooted flags on `Fin n`: the two-root bridge
 

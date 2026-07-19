@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
-import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
-import LeanFlagAlgebras.MetaTheory.C4Free
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
+public import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
+public import LeanFlagAlgebras.MetaTheory.C4Free
+
+@[expose] public section
 
 /-! # Every graphon is a positive homomorphism: `φ_W`
 

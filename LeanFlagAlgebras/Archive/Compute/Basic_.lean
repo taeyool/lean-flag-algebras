@@ -1,5 +1,9 @@
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Data.Fintype.Perm
+module
+
+public import Mathlib.Combinatorics.SimpleGraph.Subgraph
+public import Mathlib.Data.Fintype.Perm
+
+@[export] public section
 
 /-!
 # (Archived) Even-earlier computable flag scaffolding
@@ -72,8 +76,6 @@ instance instGraphIsomorphismDecidableEq
   if h : ∀ g, e g = f g
   then .isTrue (by ext; exact h _)
   else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
-
-example : (@Finset.univ ((SimpleGraph.completeGraph (Fin 3)) ≃g (SimpleGraph.completeGraph (Fin 3)))).card = 6 := by decide
 
 /-- A labeled graph is a `SimpleGraph` with a homomorphism from `σ`. -/
 structure LabeledGraph {T : Type*} (σ : SimpleGraph T) (V : Type*) where

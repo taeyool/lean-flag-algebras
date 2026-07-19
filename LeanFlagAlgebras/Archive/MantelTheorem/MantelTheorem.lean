@@ -1,11 +1,15 @@
-import «LeanFlagAlgebras».FlagAlgebra.PositiveHom
-import «LeanFlagAlgebras».FlagAlgebra.RandomHom
-import «LeanFlagAlgebras».Archive.MantelTheorem.Downward
-import «LeanFlagAlgebras».Archive.MantelTheorem.FlagMuls
-import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
-import Mathlib.Data.Real.ConjExponents
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.Integral.MeanInequalities
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.PositiveHom
+public import «LeanFlagAlgebras».FlagAlgebra.RandomHom
+public import «LeanFlagAlgebras».Archive.MantelTheorem.Downward
+public import «LeanFlagAlgebras».Archive.MantelTheorem.FlagMuls
+public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import Mathlib.Data.Real.ConjExponents
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.Integral.MeanInequalities
+
+@[export] public section
 
 /-!
 # (Archived) Early Mantel's-theorem proof via the flag algebra

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.GraphonStep
-import LeanFlagAlgebras.FlagAlgebra.FlagSequence
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonStep
+public import LeanFlagAlgebras.FlagAlgebra.FlagSequence
+
+@[expose] public section
 
 /-! # The step-graphon counting lemma and density of the graphon range
 

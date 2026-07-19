@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.C5FewTriangles
-import LeanFlagAlgebras.MetaTheory.StarWitness
+module
+
+public import LeanFlagAlgebras.MetaTheory.C5FewTriangles
+public import LeanFlagAlgebras.MetaTheory.StarWitness
+
+@[expose] public section
 
 /-! # The `C₅`-free edge-type obstruction (paper §9.5)
 
@@ -140,7 +144,7 @@ almost surely `0`: a `[0,1]`-valued variable of mean `0` vanishes a.s.  (The mea
 theorem ae_Ftri_eq_zero_of_pinned {φ₀ : PositiveHom ∅ₜ}
     (hφ₀ : posHomPoint φ₀ ∈ Qσ (c5FreeClass.constraintOf edgeType).forb0)
     (hσ : φ₀ ⟨edgeType⟩₀ > 0) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace edgeType)),
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace edgeType)) : Measure _),
       (PositiveHomSpace.toPosHom χ) F_tri = 0 := by
   set g : PositiveHomSpace edgeType → ℝ := fun χ => (PositiveHomSpace.toPosHom χ) F_tri with hg
   have fpos : ∀ χ, 0 ≤ g χ := fun χ => F_tri_eval_nonneg _

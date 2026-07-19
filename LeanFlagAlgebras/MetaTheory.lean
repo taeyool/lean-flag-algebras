@@ -1,98 +1,100 @@
-import LeanFlagAlgebras.MetaTheory.MeasureSupport
-import LeanFlagAlgebras.MetaTheory.EvalAlgebra
-import LeanFlagAlgebras.MetaTheory.ConstrainedClass
-import LeanFlagAlgebras.MetaTheory.SupportClosure
-import LeanFlagAlgebras.MetaTheory.Blowup
-import LeanFlagAlgebras.MetaTheory.ProductTV
-import LeanFlagAlgebras.MetaTheory.DensityBridge
-import LeanFlagAlgebras.MetaTheory.LabeledCount
-import LeanFlagAlgebras.MetaTheory.BlowupFlag
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
-import LeanFlagAlgebras.MetaTheory.CloneCount
-import LeanFlagAlgebras.MetaTheory.PlantedCount
-import LeanFlagAlgebras.MetaTheory.CloneTotal
-import LeanFlagAlgebras.MetaTheory.PlantedEstimate
-import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.InducedContainment
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.MetaTheory.BinomialRatio
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import LeanFlagAlgebras.MetaTheory.RootingUniform
-import LeanFlagAlgebras.MetaTheory.BlowupSequence
-import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.CloneClosed
-import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
-import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
-import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
-import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
-import LeanFlagAlgebras.MetaTheory.BlowupClosed
-import LeanFlagAlgebras.MetaTheory.TrueClone
-import LeanFlagAlgebras.MetaTheory.Substitution
-import LeanFlagAlgebras.MetaTheory.ClusterGraph
-import LeanFlagAlgebras.MetaTheory.C5Free
-import LeanFlagAlgebras.MetaTheory.FinitePlanting
-import LeanFlagAlgebras.MetaTheory.SparseRootRepair
-import LeanFlagAlgebras.MetaTheory.C5OneRoot
-import LeanFlagAlgebras.MetaTheory.C5TwoRootNonEdge
-import LeanFlagAlgebras.MetaTheory.C5Blowup
-import LeanFlagAlgebras.MetaTheory.Pinning
-import LeanFlagAlgebras.MetaTheory.EdgeObstruction
-import LeanFlagAlgebras.MetaTheory.StarWitness
-import LeanFlagAlgebras.MetaTheory.C4Free
-import LeanFlagAlgebras.MetaTheory.DegenerateFamily
-import LeanFlagAlgebras.MetaTheory.DenseObstruction
-import LeanFlagAlgebras.MetaTheory.FlagComplement
-import LeanFlagAlgebras.MetaTheory.ComplementHom
-import LeanFlagAlgebras.MetaTheory.ComplementClass
-import LeanFlagAlgebras.MetaTheory.ComplementInvariance
-import LeanFlagAlgebras.MetaTheory.C5FewTriangles
-import LeanFlagAlgebras.MetaTheory.C5EdgeObstruction
-import LeanFlagAlgebras.MetaTheory.NoInterior
-import LeanFlagAlgebras.MetaTheory.EdgeThinning
-import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
-import LeanFlagAlgebras.MetaTheory.NoInteriorThinning
-import LeanFlagAlgebras.MetaTheory.DownwardAverage
-import LeanFlagAlgebras.MetaTheory.EmptyTypeCollapse
-import LeanFlagAlgebras.MetaTheory.CertificateCones
-import LeanFlagAlgebras.MetaTheory.VanishingIdeal
-import LeanFlagAlgebras.MetaTheory.BooleanPoint
-import LeanFlagAlgebras.MetaTheory.SinglePoint
-import LeanFlagAlgebras.MetaTheory.C5EdgeInert
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import LeanFlagAlgebras.MetaTheory.RelativeClosure
-import LeanFlagAlgebras.MetaTheory.RelativeSlackness
-import LeanFlagAlgebras.MetaTheory.KernelSlackness
-import LeanFlagAlgebras.MetaTheory.RelativePlanted
-import LeanFlagAlgebras.MetaTheory.RelativeCertificateGap
-import LeanFlagAlgebras.MetaTheory.RelativePositivstellensatz
-import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
-import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
-import LeanFlagAlgebras.MetaTheory.TuranLimit
-import LeanFlagAlgebras.MetaTheory.MantelNotPlantable
-import LeanFlagAlgebras.MetaTheory.SliceRecovery
-import LeanFlagAlgebras.MetaTheory.GraphonBasic
-import LeanFlagAlgebras.MetaTheory.GraphonMoments
-import LeanFlagAlgebras.MetaTheory.GraphonRigidity
-import LeanFlagAlgebras.MetaTheory.GraphonQuantStability
-import LeanFlagAlgebras.MetaTheory.TuranAut
-import LeanFlagAlgebras.MetaTheory.TuranDirac
-import LeanFlagAlgebras.MetaTheory.TuranSliceIdentities
-import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
-import LeanFlagAlgebras.MetaTheory.PairSubsetCount
-import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
-import LeanFlagAlgebras.MetaTheory.GraphonHom
-import LeanFlagAlgebras.MetaTheory.StdRootedBridge
-import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
-import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
-import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
-import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
-import LeanFlagAlgebras.MetaTheory.GraphonStep
-import LeanFlagAlgebras.MetaTheory.GraphonCounting
-import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
-import LeanFlagAlgebras.MetaTheory.GraphonParametricTransport
-import LeanFlagAlgebras.MetaTheory.ParametricStabilityModulus
+module
+
+public import LeanFlagAlgebras.MetaTheory.MeasureSupport
+public import LeanFlagAlgebras.MetaTheory.EvalAlgebra
+public import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+public import LeanFlagAlgebras.MetaTheory.Blowup
+public import LeanFlagAlgebras.MetaTheory.ProductTV
+public import LeanFlagAlgebras.MetaTheory.DensityBridge
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+public import LeanFlagAlgebras.MetaTheory.BlowupFlag
+public import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+public import LeanFlagAlgebras.MetaTheory.CloneCount
+public import LeanFlagAlgebras.MetaTheory.PlantedCount
+public import LeanFlagAlgebras.MetaTheory.CloneTotal
+public import LeanFlagAlgebras.MetaTheory.PlantedEstimate
+public import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import LeanFlagAlgebras.MetaTheory.InducedContainment
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+public import LeanFlagAlgebras.MetaTheory.BinomialRatio
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import LeanFlagAlgebras.MetaTheory.RootingUniform
+public import LeanFlagAlgebras.MetaTheory.BlowupSequence
+public import LeanFlagAlgebras.MetaTheory.CapstoneShared
+public import LeanFlagAlgebras.MetaTheory.CloneClosed
+public import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
+public import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
+public import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
+public import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+public import LeanFlagAlgebras.MetaTheory.BlowupClosed
+public import LeanFlagAlgebras.MetaTheory.TrueClone
+public import LeanFlagAlgebras.MetaTheory.Substitution
+public import LeanFlagAlgebras.MetaTheory.ClusterGraph
+public import LeanFlagAlgebras.MetaTheory.C5Free
+public import LeanFlagAlgebras.MetaTheory.FinitePlanting
+public import LeanFlagAlgebras.MetaTheory.SparseRootRepair
+public import LeanFlagAlgebras.MetaTheory.C5OneRoot
+public import LeanFlagAlgebras.MetaTheory.C5TwoRootNonEdge
+public import LeanFlagAlgebras.MetaTheory.C5Blowup
+public import LeanFlagAlgebras.MetaTheory.Pinning
+public import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+public import LeanFlagAlgebras.MetaTheory.StarWitness
+public import LeanFlagAlgebras.MetaTheory.C4Free
+public import LeanFlagAlgebras.MetaTheory.DegenerateFamily
+public import LeanFlagAlgebras.MetaTheory.DenseObstruction
+public import LeanFlagAlgebras.MetaTheory.FlagComplement
+public import LeanFlagAlgebras.MetaTheory.ComplementHom
+public import LeanFlagAlgebras.MetaTheory.ComplementClass
+public import LeanFlagAlgebras.MetaTheory.ComplementInvariance
+public import LeanFlagAlgebras.MetaTheory.C5FewTriangles
+public import LeanFlagAlgebras.MetaTheory.C5EdgeObstruction
+public import LeanFlagAlgebras.MetaTheory.NoInterior
+public import LeanFlagAlgebras.MetaTheory.EdgeThinning
+public import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
+public import LeanFlagAlgebras.MetaTheory.NoInteriorThinning
+public import LeanFlagAlgebras.MetaTheory.DownwardAverage
+public import LeanFlagAlgebras.MetaTheory.EmptyTypeCollapse
+public import LeanFlagAlgebras.MetaTheory.CertificateCones
+public import LeanFlagAlgebras.MetaTheory.VanishingIdeal
+public import LeanFlagAlgebras.MetaTheory.BooleanPoint
+public import LeanFlagAlgebras.MetaTheory.SinglePoint
+public import LeanFlagAlgebras.MetaTheory.C5EdgeInert
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+public import LeanFlagAlgebras.MetaTheory.RelativeClosure
+public import LeanFlagAlgebras.MetaTheory.RelativeSlackness
+public import LeanFlagAlgebras.MetaTheory.KernelSlackness
+public import LeanFlagAlgebras.MetaTheory.RelativePlanted
+public import LeanFlagAlgebras.MetaTheory.RelativeCertificateGap
+public import LeanFlagAlgebras.MetaTheory.RelativePositivstellensatz
+public import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
+public import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+public import LeanFlagAlgebras.MetaTheory.TuranLimit
+public import LeanFlagAlgebras.MetaTheory.MantelNotPlantable
+public import LeanFlagAlgebras.MetaTheory.SliceRecovery
+public import LeanFlagAlgebras.MetaTheory.GraphonBasic
+public import LeanFlagAlgebras.MetaTheory.GraphonMoments
+public import LeanFlagAlgebras.MetaTheory.GraphonRigidity
+public import LeanFlagAlgebras.MetaTheory.GraphonQuantStability
+public import LeanFlagAlgebras.MetaTheory.TuranAut
+public import LeanFlagAlgebras.MetaTheory.TuranDirac
+public import LeanFlagAlgebras.MetaTheory.TuranSliceIdentities
+public import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
+public import LeanFlagAlgebras.MetaTheory.PairSubsetCount
+public import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
+public import LeanFlagAlgebras.MetaTheory.GraphonHom
+public import LeanFlagAlgebras.MetaTheory.StdRootedBridge
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
+public import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
+public import LeanFlagAlgebras.MetaTheory.GraphonStep
+public import LeanFlagAlgebras.MetaTheory.GraphonCounting
+public import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
+public import LeanFlagAlgebras.MetaTheory.GraphonParametricTransport
+public import LeanFlagAlgebras.MetaTheory.ParametricStabilityModulus
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 

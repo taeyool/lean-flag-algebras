@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.Pinning
-import LeanFlagAlgebras.MetaTheory.HeredClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.Pinning
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+
+@[expose] public section
 
 /-! # The one-root edge flag and the endpoint pinning obstructions (paper §9 / §9.2)
 
@@ -152,7 +156,7 @@ lemma one_downward_vtype : (⟦(1 : FlagAlgebra vtype)⟧₀ : FlagAlgebra ∅�
 type, the mean of the one-root edge flag is the base edge density:
 `E[χ ↦ χ e] = φ₀ ρ` (the denominator `φ₀ ⟦1⟧₀` is `1` by `one_downward_vtype`). -/
 lemma expectation_e {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨vtype⟩₀ > 0) :
-    ∫ χ : PositiveHomSpace vtype, (PositiveHomSpace.toPosHom χ) e ∂(ℙ[φ₀]) = φ₀ ρ := by
+    ∫ χ : PositiveHomSpace vtype, (PositiveHomSpace.toPosHom χ) e ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace vtype)) : Measure _) = φ₀ ρ := by
   rw [probMeasure_extend_emptyType_positiveHom_spec hσ e, one_downward_vtype,
     PositiveHom.map_one, div_one]
   rfl
@@ -169,7 +173,7 @@ private lemma integrable_e {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨vtype⟩
 /-- **Endpoint `c = 0`.**  If the unlabelled edge has base value `0`, then `e` is almost surely `0`
 under the random extension: a `[0,1]`-valued variable of mean `0` vanishes a.s. -/
 lemma ae_e_eq_zero_of_pinned {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨vtype⟩₀ > 0) (h0 : φ₀ ρ = 0) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)),
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace vtype)) : Measure _),
       (PositiveHomSpace.toPosHom χ) e = 0 := by
   have hint : ∫ χ : PositiveHomSpace vtype, (PositiveHomSpace.toPosHom χ) e
       ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)) = 0 := by rw [expectation_e hσ, h0]
@@ -181,7 +185,7 @@ lemma ae_e_eq_zero_of_pinned {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨vtype�
 /-- **Endpoint `c = 1`.**  If the unlabelled edge has base value `1`, then `e` is almost surely `1`
 under the random extension: a `[0,1]`-valued variable of mean `1` equals `1` a.s. -/
 lemma ae_e_eq_one_of_pinned {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨vtype⟩₀ > 0) (h1 : φ₀ ρ = 1) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)),
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace vtype)) : Measure _),
       (PositiveHomSpace.toPosHom χ) e = 1 := by
   set g : PositiveHomSpace vtype → ℝ := fun χ => (PositiveHomSpace.toPosHom χ) e with hg
   have hgintval : ∫ χ, g χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)) = 1 := by

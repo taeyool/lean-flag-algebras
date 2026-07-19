@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.HeredClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+
+@[expose] public section
 
 /-! # Edge-deletion-closed classes (paper §9.4)
 

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.LabeledCount
-import Mathlib.Tactic.FinCases
+module
+
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+public import Mathlib.Tactic.FinCases
+
+@[expose] public section
 
 /-! # Pair-flag density as a vertex-subset-pair count
 

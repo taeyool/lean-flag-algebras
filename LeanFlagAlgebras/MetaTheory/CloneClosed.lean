@@ -1,10 +1,14 @@
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.BlowupSequence
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import LeanFlagAlgebras.MetaTheory.BinomialRatio
-import LeanFlagAlgebras.MetaTheory.PlantedEstimate
+module
+
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+public import LeanFlagAlgebras.MetaTheory.CapstoneShared
+public import LeanFlagAlgebras.MetaTheory.BlowupSequence
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import LeanFlagAlgebras.MetaTheory.BinomialRatio
+public import LeanFlagAlgebras.MetaTheory.PlantedEstimate
+
+@[expose] public section
 
 /-! # The clone-root-plantability theorem (paper §5, the capstone)
 

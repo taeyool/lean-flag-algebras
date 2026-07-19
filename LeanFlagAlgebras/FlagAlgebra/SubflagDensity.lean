@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagDef
-import Mathlib.Algebra.Order.Field.Rat
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagDef
+public import Mathlib.Algebra.Order.Field.Rat
+
+@[expose] public section
 
 /-! # Subflag Density
 

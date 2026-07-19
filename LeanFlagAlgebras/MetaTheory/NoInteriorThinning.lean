@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
-import LeanFlagAlgebras.MetaTheory.CapstoneShared
+module
+
+public import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
+public import LeanFlagAlgebras.MetaTheory.CapstoneShared
+
+@[expose] public section
 
 /-! # No interior pinning, via the edge-thinned limit (paper §9.4, `thm:no-interior`)
 

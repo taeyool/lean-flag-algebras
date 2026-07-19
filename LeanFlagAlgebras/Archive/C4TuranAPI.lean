@@ -1,11 +1,15 @@
-import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulLoader_old
-import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Flags.FlagDef
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Flags.Densities.MulLoader_old
+public import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+
+@[expose] public section
 
 /-! # Automation.C4TuranAPI — a 4-vertex graph density bound for K₃-free graphs
 

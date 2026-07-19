@@ -1,4 +1,10 @@
-import LeanFlagAlgebras.Flags.FlagGenerator
+module
+
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
+public meta import LeanFlagAlgebras.Flags.FlagGenerator
+
+@[expose] public section
 
 /-! # Mantel's theorem: flag definitions
 
@@ -19,7 +25,7 @@ namespace MantelTheorem
 -- `flagGen.kernelDecide`: prove the generator's bridging lemmas by
 -- `decide +kernel` (viable at n ≤ 3), so the whole Mantel chain carries no
 -- compiled-evaluation axioms.
-set_option flagGen.kernelDecide true
+-- set_option flagGen.kernelDecide true
 
 generate_empty_typed_flags 0
 generate_empty_typed_flags 1

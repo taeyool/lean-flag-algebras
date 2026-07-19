@@ -1,6 +1,10 @@
-import Mathlib.Algebra.BigOperators.GroupWithZero.Action
-import Mathlib.Data.Finsupp.SMul
-import Mathlib.Data.Real.Basic
+module
+
+public import Mathlib.Algebra.BigOperators.GroupWithZero.Action
+public import Mathlib.Data.Finsupp.SMul
+public import Mathlib.Data.Real.Basic
+
+@[expose] public section
 
 /-! # Linear and bilinear extensions of maps on a basis
 

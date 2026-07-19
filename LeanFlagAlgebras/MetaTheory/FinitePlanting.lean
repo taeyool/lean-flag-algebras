@@ -1,9 +1,13 @@
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import LeanFlagAlgebras.MetaTheory.BlowupSequence
-import LeanFlagAlgebras.MetaTheory.SupportClosure
+module
+
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import LeanFlagAlgebras.MetaTheory.CapstoneShared
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import LeanFlagAlgebras.MetaTheory.BlowupSequence
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+
+@[expose] public section
 
 /-! # Finite planting implies root-plantability (paper §8)
 

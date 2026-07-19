@@ -1,4 +1,8 @@
-import «LeanFlagAlgebras».Archive.Compute.Basic
+module
+
+public import «LeanFlagAlgebras».Archive.Compute.Basic
+
+@[export] public section
 
 /-!
 # (Archived) Computable flag density for `Sym2`-encoded flags

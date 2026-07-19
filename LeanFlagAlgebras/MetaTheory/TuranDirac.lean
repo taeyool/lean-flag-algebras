@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.MetaTheory.TuranAut
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import LeanFlagAlgebras.MetaTheory.EmptyTypeCollapse
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import Mathlib.MeasureTheory.Measure.DiracProba
+module
+
+public import LeanFlagAlgebras.MetaTheory.TuranAut
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+public import LeanFlagAlgebras.MetaTheory.EmptyTypeCollapse
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import Mathlib.MeasureTheory.Measure.DiracProba
+
+@[expose] public section
 
 /-! # The Turán extension measures are Dirac (paper §11.5 supporting layer)
 
@@ -74,7 +78,7 @@ theorem extend_eq_dirac_of_labelExtensions_subsingleton
     (hsing : ∀ n, ∀ G₁ ∈ labelExtensions (s n).2 σ,
       ∀ G₂ ∈ labelExtensions (s n).2 σ, G₁ = G₂) :
     ∃ χ : PositiveHomSpace σ,
-      (ℙ[φ] : Measure (PositiveHomSpace σ)) = Measure.dirac χ ∧
+      ((ℙ[φ] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _) = Measure.dirac χ ∧
       ∀ F : FinFlag σ,
         Tendsto (fun n => (flagDensity₁ F.2 (Gsel n) : ℝ)) atTop (𝓝 (χ.val F)) := by
   classical
@@ -140,7 +144,7 @@ theorem extend_eq_dirac_of_labelExtensions_subsingleton
 singleton of the Dirac point. -/
 theorem relSσ_singleton_of_extend_dirac {φ : PositiveHom ∅ₜ} {χ : PositiveHomSpace σ}
     (hσ : φ ⟨σ⟩₀ > 0)
-    (hdirac : (ℙ[φ] : Measure (PositiveHomSpace σ)) = Measure.dirac χ) :
+    (hdirac : ((ℙ[φ] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _) = Measure.dirac χ) :
     relSσ {posHomPoint φ} σ = {χ} := by
   -- Unfold `relSσ`.  Any `φ₀` in the union's index has `posHomPoint φ₀ = posHomPoint φ`,
   -- hence `φ₀.coe = φ.coe` (congrArg on `.val` + `posHomPoint`'s definition), hence

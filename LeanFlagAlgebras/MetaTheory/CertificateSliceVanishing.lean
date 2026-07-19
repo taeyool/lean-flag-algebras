@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.RelativeSlackness
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativeSlackness
+
+@[expose] public section
 
 /-! # Equality slices force certificate terms to vanish (paper §11.6,
 `prop:equality-slice-vanishing`)

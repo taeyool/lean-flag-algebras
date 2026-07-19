@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.BooleanPoint
-import LeanFlagAlgebras.MetaTheory.CertificateCones
-import LeanFlagAlgebras.MetaTheory.DenseObstruction
+module
+
+public import LeanFlagAlgebras.MetaTheory.BooleanPoint
+public import LeanFlagAlgebras.MetaTheory.CertificateCones
+public import LeanFlagAlgebras.MetaTheory.DenseObstruction
+
+@[expose] public section
 
 /-! # Degenerate roots collapse to a point (paper §10, `prop:single-point`)
 
@@ -304,7 +308,7 @@ integrable function of zero mean vanishes a.e. (`integral_eq_zero_iff_of_nonneg`
 lemma ae_nonEdgeless_zero_of_edgeDegenerate (hc : HeredClass) (hdeg : EdgeDegenerate hc)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Qσ (hc.constraintOf vtype).forb0)
     (hσ : φ₀ ⟨vtype⟩₀ > 0) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)),
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace vtype)) : Measure (PositiveHomSpace _)),
       ∀ F : FinFlag vtype, ¬ IsEdgelessFlag F.2 → χ.val F = 0 := by
   rw [ae_all_iff]
   intro F
@@ -340,7 +344,7 @@ lemma ae_nonComplete_zero_of_coEdgeDegenerate (hc : HeredClass)
     (hdeg : CoEdgeDegenerate hc)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Qσ (hc.constraintOf vtype).forb0)
     (hσ : φ₀ ⟨vtype⟩₀ > 0) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace vtype)),
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace vtype)) : Measure (PositiveHomSpace _)),
       ∀ F : FinFlag vtype, ¬ IsCompleteFlag F.2 → χ.val F = 0 := by
   rw [ae_all_iff]
   intro F

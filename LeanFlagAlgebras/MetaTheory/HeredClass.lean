@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.InducedContainment
-import LeanFlagAlgebras.MetaTheory.SupportClosure
+module
+
+public import LeanFlagAlgebras.MetaTheory.InducedContainment
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+
+@[expose] public section
 
 /-! # Hereditary graph classes — the shared class framework (paper §3, §5–§7)
 

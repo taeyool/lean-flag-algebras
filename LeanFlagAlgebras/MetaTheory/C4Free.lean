@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.MetaTheory.StarWitness
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import Mathlib.Combinatorics.SimpleGraph.Circulant
-import Mathlib.Combinatorics.SimpleGraph.DegreeSum
-import Mathlib.Algebra.Order.Chebyshev
+module
+
+public import LeanFlagAlgebras.MetaTheory.StarWitness
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import Mathlib.Combinatorics.SimpleGraph.Circulant
+public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+public import Mathlib.Algebra.Order.Chebyshev
+
+@[expose] public section
 
 /-! # The `C₄`-free class is a degeneracy counterexample (paper §9.1)
 

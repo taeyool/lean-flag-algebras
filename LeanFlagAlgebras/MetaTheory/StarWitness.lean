@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+module
+
+public import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+
+@[expose] public section
 
 /-! # Star and co-star witnesses for the degeneracy obstructions (paper §9 / §9.2)
 

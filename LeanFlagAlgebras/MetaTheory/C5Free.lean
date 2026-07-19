@@ -1,10 +1,14 @@
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import Mathlib.Combinatorics.SimpleGraph.Circulant
-import Mathlib.Combinatorics.SimpleGraph.Acyclic
-import Mathlib.Combinatorics.SimpleGraph.Girth
-import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
-import Mathlib.Combinatorics.SimpleGraph.Finite
-import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+module
+
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import Mathlib.Combinatorics.SimpleGraph.Circulant
+public import Mathlib.Combinatorics.SimpleGraph.Acyclic
+public import Mathlib.Combinatorics.SimpleGraph.Girth
+public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+public import Mathlib.Combinatorics.SimpleGraph.Finite
+public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+
+@[expose] public section
 
 /-! # The `C₅`-free hereditary class and the neighbourhood structure lemma (paper §8)
 

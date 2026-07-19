@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.GraphonMoments
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonMoments
+
+@[expose] public section
 
 /-! # Rigidity at the regular endpoint (paper §11.7, `thm:slice-rigidity`,
 `cor:r3-rigidity`)

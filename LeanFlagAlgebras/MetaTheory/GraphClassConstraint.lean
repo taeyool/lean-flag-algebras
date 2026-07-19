@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.Blowup
+module
+
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.Blowup
+
+@[expose] public section
 
 /-! # Clone-closed graph classes (paper §5)
 

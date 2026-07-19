@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+
+@[expose] public section
 
 /-! # The σ-rooting measure as a uniform distribution over rootings
 

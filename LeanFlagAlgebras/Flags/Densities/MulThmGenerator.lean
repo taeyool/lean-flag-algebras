@@ -1,7 +1,12 @@
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Forbid.Basic
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Forbid.Basic
+public import Mathlib.Tactic
+public meta import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+
+@[expose] public section
 
 /-! # Flag multiplication theorem generators
 
@@ -29,20 +34,20 @@ open FlagAlgebras.Compute
 namespace Flags.Densities
 
 /-- Build a real-number coefficient term from a `(num, den)` pair. -/
-def coeffToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
+meta def coeffToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `((($(Quote.quote num) : Nat) : ℝ))
   else
     `((($(Quote.quote num) : ℝ) / ($(Quote.quote den) : ℝ)))
 
 /-- Build the term `coeff • flagName`, one summand of the multiplication RHS. -/
-def coeffSmulFlagTerm (num den : Nat) (flagName : Name) : CommandElabM (TSyntax `term) := do
+meta def coeffSmulFlagTerm (num den : Nat) (flagName : Name) : CommandElabM (TSyntax `term) := do
   let coeffTerm <- coeffToTerm num den
   let flagIdent := mkIdent flagName
   `($coeffTerm • $flagIdent)
 
 /-- Left-fold a list of summands into `t₀ + t₁ + …`, or `0` when empty. -/
-def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElabM (TSyntax `term) := do
+meta def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElabM (TSyntax `term) := do
   let flagTypeIdent := mkIdent flagTypeName
   match terms.toList with
   | [] =>
@@ -55,7 +60,7 @@ def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElab
 order, where `cₕ` is the subflag-multiplication density
 `p(pattern iOrd, pattern jOrd; host h)` from `densityPF1F2GivenG`. Shared by both
 commands below. -/
-def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Name)
+meta def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Name)
     (patterns hosts : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat))
     (hostFree : List Nat) (iOrd jOrd : Nat) : CommandElabM (TSyntax `term) := do
   let f1 := patterns.getD iOrd (0, [], [], 0, 0)
@@ -187,7 +192,7 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
 -- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
 -- generators). `HgStx`/`hmemStx` are the hereditary-class witnesses (`completeGraph (Fin r)`
 -- and `completeSym2Graph_finFlag_mem_forbiddenFlags r`), synthesized by the dispatcher.
-private def runForbidFreeMulClique (patS hostS kS mS : TSyntax `num) (fStx : TSyntax `ident)
+private meta def runForbidFreeMulClique (patS hostS kS mS : TSyntax `num) (fStx : TSyntax `ident)
     (HgStx hmemStx : TSyntax `term) : CommandElabM Unit := do
   let k := kS.getNat
   let m := mS.getNat
@@ -295,7 +300,7 @@ the subgraph capstone `basisVector_quot_mul_forbidEq_sum_subgraph` (no canonical
 needed — the capstone derives the membership from `supergraphFamily`), the subgraph free split
 (`evalSubgraphFreeMask`), and rewrite onto the subgraph-`F`-free host set
 `flagSetHfree_hostN_k_m_<F>` whose `…_eq` filter matches the capstone's exactly. -/
-private def runForbidFreeMulSubgraph (patS hostS kS mS : TSyntax `num)
+private meta def runForbidFreeMulSubgraph (patS hostS kS mS : TSyntax `num)
     (fStx : TSyntax `ident) : CommandElabM Unit := do
   let k := kS.getNat
   let m := mS.getNat

@@ -1,5 +1,8 @@
-import Mathlib.Tactic
-import LeanFlagAlgebras.FlagAlgebra.PositiveHom
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+
+@[expose] public section
 
 /-! # Automation.ExprHelpers — shared Expr-traversal utilities
 

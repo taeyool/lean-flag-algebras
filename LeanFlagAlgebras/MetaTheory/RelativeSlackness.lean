@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+
+@[expose] public section
 
 /-! # Relative complementary slackness (paper §11.3, `thm:relative-slackness`)
 
@@ -161,7 +165,7 @@ theorem relative_slackness_exact_ae
       φ₀ h + (∑ i, lam i * φ₀ (⟦fs i⟧₀ : FlagAlgebra ∅ₜ)) + φ₀ n ≤ c)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Y) (hattain : φ₀ h = c) (i : Fin m)
     (hσi : φ₀ ⟨σs i⟩₀ > 0) :
-    ∀ᵐ ψ ∂(ℙ[φ₀] : Measure (PositiveHomSpace (σs i))),
+    ∀ᵐ ψ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace (σs i))) : Measure _),
       (PositiveHomSpace.toPosHom ψ) (fs i) = 0 := by
   -- `ψ (fs i)` is a.e. non-negative (`Measure.support_mem_ae` + `support_subset_relSσ`
   -- + `hf i`) with zero mean: by `probMeasure_extend_emptyType_positiveHom_spec` and
@@ -254,7 +258,7 @@ theorem relative_slackness_exact_ae_sq
       φ₀ h + (∑ i, lam i * φ₀ (⟦fs i⟧₀ : FlagAlgebra ∅ₜ)) + φ₀ n ≤ c)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Y) (hattain : φ₀ h = c) (i : Fin m)
     {l : FlagAlgebra (σs i)} (hfi : fs i = l * l) (hσi : φ₀ ⟨σs i⟩₀ > 0) :
-    ∀ᵐ ψ ∂(ℙ[φ₀] : Measure (PositiveHomSpace (σs i))),
+    ∀ᵐ ψ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace (σs i))) : Measure _),
       (PositiveHomSpace.toPosHom ψ) l = 0 := by
   filter_upwards [relative_slackness_exact_ae hlam hf hn hcert hφ₀ hattain i hσi] with ψ hψ
   rw [hfi, PositiveHom.map_mul] at hψ

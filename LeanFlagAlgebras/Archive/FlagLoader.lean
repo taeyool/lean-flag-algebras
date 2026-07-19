@@ -1,6 +1,10 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
-import Lean.Data.Json
-import Mathlib.Tactic
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
+public import Lean.Data.Json
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-!
 # (Archived) Early JSON flag-loader macro

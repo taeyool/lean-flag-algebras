@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import Mathlib.MeasureTheory.Measure.Portmanteau
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+public import Mathlib.MeasureTheory.Measure.Portmanteau
+
+@[expose] public section
 
 /-! # Closing the constraint set does not change the relative support (paper §11,
 `lem:relative-closure`)

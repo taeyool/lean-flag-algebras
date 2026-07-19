@@ -1,7 +1,12 @@
-import LeanFlagAlgebras.Automation.ExprHelpers
-import LeanFlagAlgebras.Forbid.Basic
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+module
+
+public import LeanFlagAlgebras.Automation.ExprHelpers
+public import LeanFlagAlgebras.Forbid.Basic
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+public meta import LeanFlagAlgebras.Automation.ExprHelpers
+
+@[expose] public section
 
 /-! # Automation.FlagExpand — flag expansion tactics
 
@@ -39,7 +44,7 @@ hypothesis.
 syntax (name := flagExpandForbidTac) "flag_expand_forbid " term : tactic
 
 /-- Implementation of the `flag_expand_forbid N` tactic. -/
-def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
+meta def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))
     let some nVal ← (Meta.evalNat nExpr).run

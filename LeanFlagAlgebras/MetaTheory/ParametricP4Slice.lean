@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
-import LeanFlagAlgebras.Automation.K4freeP4
+module
+
+public import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+public import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
+public import LeanFlagAlgebras.Automation.K4freeP4
+
+@[expose] public section
 
 /-! # The parametric `K_{r+1}`-free `P₄` equality slice (paper §11.6,
 `thm:parametric-p4-equality-slice`; the `r = 3` instance is

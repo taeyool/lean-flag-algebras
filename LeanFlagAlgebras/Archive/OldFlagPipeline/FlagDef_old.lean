@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.Flags.FlagLoader
+module
+
+public import LeanFlagAlgebras.Flags.FlagLoader
+
+@[expose] public section
 
 /-! # Flag data instantiation
 

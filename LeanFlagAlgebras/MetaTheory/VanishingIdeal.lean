@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.DownwardAverage
+module
+
+public import LeanFlagAlgebras.MetaTheory.DownwardAverage
+
+@[expose] public section
 
 /-! # The vanishing ideal unlabels to zero (paper §10, `prop:ideal-zero`)
 

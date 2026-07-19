@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+
+@[expose] public section
 
 /-! # The forbidden ideal as an ℝ-span (paper §3)
 

@@ -1,7 +1,11 @@
-import «LeanFlagAlgebras».Utils.SubgraphUtil
-import «LeanFlagAlgebras».Utils.TacticChoose
-import Mathlib.Analysis.Normed.Field.Lemmas
-import Mathlib.Data.Nat.Cast.Field
+module
+
+public import «LeanFlagAlgebras».Utils.SubgraphUtil
+public import «LeanFlagAlgebras».Utils.TacticChoose
+public import Mathlib.Analysis.Normed.Field.Lemmas
+public import Mathlib.Data.Nat.Cast.Field
+
+@[expose] public section
 
 /-!
 # Subgraph density

@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
-import Mathlib.Tactic.FinCases
+module
+
+public import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
+public import Mathlib.Tactic.FinCases
+
+@[export] public section
 
 /-!
 # (Archived, older) Enumerated flag sets via explicit graph isomorphisms

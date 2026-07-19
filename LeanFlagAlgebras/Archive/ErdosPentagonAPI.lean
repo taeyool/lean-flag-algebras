@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.ErdosPentagon.FlagDef
-import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.Automation.FlagSumSort
+module
+
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.ErdosPentagon.FlagDef
+public import LeanFlagAlgebras.ErdosPentagon.FlagMul
+public import LeanFlagAlgebras.Automation.FlagSumSort
+
+@[expose] public section
 
 /-! # Automation.ErdosPentagonAPI — the Erdős pentagon problem via the Automation layer
 

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.DownwardAverage
+module
+
+public import LeanFlagAlgebras.MetaTheory.DownwardAverage
+
+@[expose] public section
 
 /-! # Relative ensemble semantics: the relative support `S_σ(Y)` (paper §11, `sec:relative`)
 
@@ -38,7 +42,7 @@ with positive type density.  For `Y = Qσ forb0` this is the root-planting set `
 def relSσ (Y : Set (PositiveHomSpace ∅ₜ)) (σ : FlagType (Fin n₀)) :
     Set (PositiveHomSpace σ) :=
   closure (⋃ (φ₀ : PositiveHom ∅ₜ) (_ : posHomPoint φ₀ ∈ Y) (hσ : φ₀ ⟨σ⟩₀ > 0),
-            (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support)
+            Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)))
 
 /-- The relative support is closed. -/
 lemma relSσ_isClosed (Y : Set (PositiveHomSpace ∅ₜ)) (σ : FlagType (Fin n₀)) :
@@ -57,7 +61,7 @@ lemma relSσ_mono {Y Y' : Set (PositiveHomSpace ∅ₜ)} (hYY' : Y ⊆ Y')
 the relative support (mirror of `support_subset_Sσ`). -/
 lemma support_subset_relSσ {Y : Set (PositiveHomSpace ∅ₜ)} {σ : FlagType (Fin n₀)}
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Y) (hσ : φ₀ ⟨σ⟩₀ > 0) :
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support ⊆ relSσ Y σ := by
+    (Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ))) ⊆ relSσ Y σ := by
   intro χ hχ
   exact subset_closure (Set.mem_iUnion.mpr ⟨φ₀, Set.mem_iUnion.mpr ⟨hφ₀,
     Set.mem_iUnion.mpr ⟨hσ, hχ⟩⟩⟩)
@@ -105,7 +109,7 @@ theorem relative_soundness {Y : Set (PositiveHomSpace ∅ₜ)} {σ : FlagType (F
 def RelEnsembleNonneg (Y : Set (PositiveHomSpace ∅ₜ)) {σ : FlagType (Fin n₀)}
     (f : FlagAlgebra σ) : Prop :=
   ∀ (φ₀ : PositiveHom ∅ₜ), posHomPoint φ₀ ∈ Y → ∀ (hσ : φ₀ ⟨σ⟩₀ > 0),
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)) {χ | 0 ≤ (PositiveHomSpace.toPosHom χ) f} = 1
+    ((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _) {χ | 0 ≤ (PositiveHomSpace.toPosHom χ) f} = 1
 
 /-- **Relative support-closure criterion** (`prop:relative-criterion`): non-negativity on
 the relative support is equivalent to relative ensemble non-negativity — for *every* `Y`,

@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
-import «LeanFlagAlgebras».Archive.Compute.Downward
+module
+
+public import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
+public import «LeanFlagAlgebras».Archive.Compute.Downward
+
+@[export] public section
 
 /-!
 # (Archived) Downward (unlabeling) of the hand-written Mantel flags

@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.TuranLimit
-import LeanFlagAlgebras.MetaTheory.RootingUniform
-import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
+module
+
+public import LeanFlagAlgebras.MetaTheory.TuranLimit
+public import LeanFlagAlgebras.MetaTheory.RootingUniform
+public import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
+
+@[expose] public section
 
 /-! # Turán graphs are transitive on rooted patterns (paper §11.5 supporting layer)
 

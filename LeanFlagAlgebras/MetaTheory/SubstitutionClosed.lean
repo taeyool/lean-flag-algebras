@@ -1,10 +1,14 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
-import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.HeredClass
-import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import LeanFlagAlgebras.MetaTheory.BinomialRatio
+module
+
+public import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
+public import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+public import LeanFlagAlgebras.MetaTheory.CapstoneShared
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import LeanFlagAlgebras.MetaTheory.BinomialRatio
+
+@[expose] public section
 
 /-! # The substitution-root-plantability theorem (paper §6–§7)
 

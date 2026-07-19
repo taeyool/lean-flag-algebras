@@ -1,11 +1,15 @@
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Flags.Densities.MulLoader_old
-import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
-import LeanFlagAlgebras.MantelTheorem.Lemmas
-import LeanFlagAlgebras.Forbid.CommonGraphs
+module
+
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Flags.Densities.MulLoader_old
+public import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
+public import LeanFlagAlgebras.MantelTheorem.Lemmas
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+
+@[expose] public section
 
 /-! # Automation.MantelTheoremAPI — Mantel's theorem via the Automation layer
 

@@ -1,12 +1,16 @@
-import «LeanFlagAlgebras».Utils.LinExtension
-import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensity
-import Mathlib.Algebra.Algebra.Defs
-import Mathlib.Algebra.Group.Subgroup.Basic
-import Mathlib.Algebra.Module.Submodule.Basic
-import Mathlib.Data.Countable.Basic
-import Mathlib.Data.Nat.Lattice
-import Mathlib.LinearAlgebra.Span.Defs
-import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+module
+
+public import «LeanFlagAlgebras».Utils.LinExtension
+public import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensity
+public import Mathlib.Algebra.Algebra.Defs
+public import Mathlib.Algebra.Group.Subgroup.Basic
+public import Mathlib.Algebra.Module.Submodule.Basic
+public import Mathlib.Data.Countable.Basic
+public import Mathlib.Data.Nat.Lattice
+public import Mathlib.LinearAlgebra.Span.Defs
+public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+
+@[expose] public section
 
 /-! # The Flag Algebra `A^σ`
 

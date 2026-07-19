@@ -1,5 +1,9 @@
-import Mathlib.Tactic
-import Mathlib.Tactic.Conv
+module
+
+public import Mathlib.Tactic
+public import Mathlib.Tactic.Conv
+
+@[expose] public section
 
 /-! # `flagsum_sort` / `flagsum_ac_sort` tactics: canonical ordering of additive expressions
 
@@ -19,7 +23,7 @@ abbrev LinTerm := Expr × Expr
 
 /-! ## 1) Common Definitions -/
 
-private def parseTrailingNat? (s : String) : Option Nat :=
+private meta def parseTrailingNat? (s : String) : Option Nat :=
   let revDigits := s.toList.reverse.takeWhile Char.isDigit
   if revDigits.isEmpty then
     none
@@ -31,7 +35,7 @@ numeral of the applied head symbol's name (e.g. `FlagAlgebra_5_0_0_7` ↦ `7`). 
 name is checked first since it is free (no `MetaM` work); the full pretty-printer only runs as a
 fallback when the head isn't a plain numbered constant, since `ppExpr` is comparatively expensive
 and most terms in a flag sum resolve via the cheap path. -/
-private def baseIndexKey (e : Expr) : MetaM (Nat × String) := do
+private meta def baseIndexKey (e : Expr) : MetaM (Nat × String) := do
   let e := e.consumeMData
   match e.getAppFn.consumeMData with
   | Expr.const nm _ =>
@@ -45,7 +49,7 @@ private def baseIndexKey (e : Expr) : MetaM (Nat × String) := do
       let keyStr := (← ppExpr e).pretty
       pure ((parseTrailingNat? keyStr).getD 1000000000, keyStr)
 
-private def getBinaryOpArgs? (opName : Name) (e : Expr) : Option (Expr × Expr) :=
+private meta def getBinaryOpArgs? (opName : Name) (e : Expr) : Option (Expr × Expr) :=
   let e := e.consumeMData
   let fn := e.getAppFn.consumeMData
   if !fn.isConstOf opName then
@@ -54,22 +58,22 @@ private def getBinaryOpArgs? (opName : Name) (e : Expr) : Option (Expr × Expr) 
     let args := e.getAppArgs
     if args.size < 2 then none else some (args[args.size - 2]!, args[args.size - 1]!)
 
-private def getAddArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getAddArgs? (e : Expr) : Option (Expr × Expr) :=
   match getBinaryOpArgs? ``HAdd.hAdd e with
   | some ab => some ab
   | none => getBinaryOpArgs? ``Add.add e
 
-private def getSubArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getSubArgs? (e : Expr) : Option (Expr × Expr) :=
   match getBinaryOpArgs? ``HSub.hSub e with
   | some ab => some ab
   | none => getBinaryOpArgs? ``Sub.sub e
 
-private def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
   match getBinaryOpArgs? ``HSMul.hSMul e with
   | some ab => some ab
   | none => getBinaryOpArgs? ``SMul.smul e
 
-private def getUnaryOpArg? (opName : Name) (e : Expr) : Option Expr :=
+private meta def getUnaryOpArg? (opName : Name) (e : Expr) : Option Expr :=
   let e := e.consumeMData
   let fn := e.getAppFn.consumeMData
   if !fn.isConstOf opName then
@@ -78,10 +82,10 @@ private def getUnaryOpArg? (opName : Name) (e : Expr) : Option Expr :=
     let args := e.getAppArgs
     if args.isEmpty then none else some args[args.size - 1]!
 
-private def getNegArg? (e : Expr) : Option Expr :=
+private meta def getNegArg? (e : Expr) : Option Expr :=
   getUnaryOpArg? ``Neg.neg e
 
-private def insertSortedBy {α}
+private meta def insertSortedBy {α}
     (goesBefore : α → α → Bool)
     (item : α)
     (sorted : Array α)
@@ -98,7 +102,7 @@ private def insertSortedBy {α}
       next := next.push item
     return next
 
-private def getEqSides (target : Expr) : TacticM (Expr × Expr) := do
+private meta def getEqSides (target : Expr) : TacticM (Expr × Expr) := do
   let t := target.consumeMData
   if !t.getAppFn.isConstOf ``Eq then
     throwError "normalize_flagsum: goal must be an equality"
@@ -107,7 +111,7 @@ private def getEqSides (target : Expr) : TacticM (Expr × Expr) := do
     throwError "normalize_flagsum: malformed equality target"
   pure (args[1]!, args[2]!)
 
-private def replaceGoalUsingLhsEq
+private meta def replaceGoalUsingLhsEq
     (goal : MVarId)
     (lhsSorted rhs hLhs : Expr)
     : TacticM Unit := do
@@ -127,7 +131,7 @@ private def replaceGoalUsingRhsEq
   goal.assign proof
   replaceMainGoal [newGoal.mvarId!]
 
-private def withTimer (label : String) (act : TacticM Unit) : TacticM Unit := do
+private meta def withTimer (label : String) (act : TacticM Unit) : TacticM Unit := do
   let t0 ← IO.monoMsNow
   act
   let t1 ← IO.monoMsNow
@@ -135,10 +139,10 @@ private def withTimer (label : String) (act : TacticM Unit) : TacticM Unit := do
 
 /-! ## 2) Definitions for `sort` and `sort` Implementation -/
 
-private def mkOneCoeff : TacticM Expr := do
+private meta def mkOneCoeff : TacticM Expr := do
   Lean.Elab.Term.elabTerm (← `(term| (1 : ℝ))) none
 
-private partial def flattenLinearTerms (e : Expr) : TacticM (Array LinTerm) := do
+private meta partial def flattenLinearTerms (e : Expr) : TacticM (Array LinTerm) := do
   let e0 := e.consumeMData
   let e ←
     match e0 with
@@ -172,7 +176,7 @@ private structure KeyedTerm where
   base : Expr
   coeff : Expr
 
-private def insertSortedByKey
+private meta def insertSortedByKey
     (item : KeyedTerm)
     (sorted : Array KeyedTerm)
     : Array KeyedTerm :=
@@ -181,7 +185,7 @@ private def insertSortedByKey
     item
     sorted
 
-private def sortLinearTermsByIndex (terms : Array LinTerm) : TacticM (Array LinTerm) := do
+private meta def sortLinearTermsByIndex (terms : Array LinTerm) : TacticM (Array LinTerm) := do
   let keyed ← terms.mapM fun (base, coeff) => do
     let (idx, key) ← baseIndexKey base
     pure ({ idx := idx, key := key, base := base, coeff := coeff } : KeyedTerm)
@@ -190,18 +194,18 @@ private def sortLinearTermsByIndex (terms : Array LinTerm) : TacticM (Array LinT
     sorted := insertSortedByKey item sorted
   pure <| sorted.map fun t => (t.base, t.coeff)
 
-private def rebuildLinearExpr (terms : Array LinTerm) : TacticM Expr := do
+private meta def rebuildLinearExpr (terms : Array LinTerm) : TacticM Expr := do
   let smulTerms ← terms.mapM fun (base, coeff) => mkAppM ``HSMul.hSMul #[coeff, base]
   match smulTerms.toList with
   | [] => throwError "rebuildLinearExpr: empty term list"
   | t :: ts => ts.foldlM (fun acc nxt => mkAppM ``HAdd.hAdd #[acc, nxt]) t
 
-private def normalizeLinearExpr (e : Expr) : TacticM Expr := do
+private meta def normalizeLinearExpr (e : Expr) : TacticM Expr := do
   let flat ← flattenLinearTerms e
   let sorted ← sortLinearTermsByIndex flat
   rebuildLinearExpr sorted
 
-private def proveEqByAC (lhs rhs : Expr) : TacticM Expr := do
+private meta def proveEqByAC (lhs rhs : Expr) : TacticM Expr := do
   let goalType ← mkEq lhs rhs
   let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
   let savedGoals ← getGoals
@@ -244,7 +248,7 @@ elab "preview_flagsum_nf" : tactic =>
     logInfo m!"[flagsum-nf] RHS: {rhsNorm}"
 
 /-- Shared implementation: normalizes the current conv focus. -/
-private def sortNormalizeConv : TacticM Unit :=
+private meta def sortNormalizeConv : TacticM Unit :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
@@ -279,29 +283,29 @@ elab "sort_at_timer" : conv => do
 
 /-- Accumulator-passing flatten: pushes onto a single growing array instead of `++`-ing
 subresults, so a long left-associated chain of `n` summands costs `O(n)` instead of `O(n²)`. -/
-private partial def flattenAddTermsInto (acc : Array Expr) (e : Expr) : Array Expr :=
+private meta partial def flattenAddTermsInto (acc : Array Expr) (e : Expr) : Array Expr :=
   let e := e.consumeMData
   match getAddArgs? e with
   | some (a, b) => flattenAddTermsInto (flattenAddTermsInto acc a) b
   | none => acc.push e
 
-private def flattenAddTerms (e : Expr) : Array Expr :=
+private meta def flattenAddTerms (e : Expr) : Array Expr :=
   flattenAddTermsInto #[] e
 
-private def addTermKey (e : Expr) : MetaM (Nat × String) := do
+private meta def addTermKey (e : Expr) : MetaM (Nat × String) := do
   let e := e.consumeMData
   match getSmulArgs? e with
   | some (_, base) => baseIndexKey base
   | none => baseIndexKey e
 
-private def sortAddTermsByKey (terms : Array Expr) : MetaM (Array Expr) := do
+private meta def sortAddTermsByKey (terms : Array Expr) : MetaM (Array Expr) := do
   let keyed ← terms.mapM fun t => do
     let (idx, key) ← addTermKey t
     pure (idx, key, t)
   let sorted := keyed.qsort (fun a b => a.1 < b.1 || (a.1 = b.1 && a.2.1 < b.2.1))
   pure <| sorted.map fun (_, _, t) => t
 
-private partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
+private meta partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
   match terms with
   | [] => throwError "mkRightAssocAdd: empty term list"
   | [t] => pure t
@@ -313,7 +317,7 @@ private partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
 explicit operands left open, extracted from an existing `HAdd`/`Add` application. Reapplying it
 via `mkAppN` (pure term construction) avoids repeating typeclass instance search for every pair
 that `mkAppM` would otherwise perform. -/
-private def getBinaryOpPrefixFn? (opName : Name) (e : Expr) : Option Expr :=
+private meta def getBinaryOpPrefixFn? (opName : Name) (e : Expr) : Option Expr :=
   let e := e.consumeMData
   let fn := e.getAppFn.consumeMData
   if !fn.isConstOf opName then
@@ -322,12 +326,12 @@ private def getBinaryOpPrefixFn? (opName : Name) (e : Expr) : Option Expr :=
     let args := e.getAppArgs
     if args.size < 2 then none else some (mkAppN fn (args.extract 0 (args.size - 2)))
 
-private def getAddPrefixFn? (e : Expr) : Option Expr :=
+private meta def getAddPrefixFn? (e : Expr) : Option Expr :=
   match getBinaryOpPrefixFn? ``HAdd.hAdd e with
   | some fn => some fn
   | none => getBinaryOpPrefixFn? ``Add.add e
 
-private partial def mkRightAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
+private meta partial def mkRightAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
   match terms with
   | [] => panic! "mkRightAssocAddFast: empty term list"
   | [t] => t
@@ -340,7 +344,7 @@ of the two goals `add_nonneg` produces) rely on this specific shape: for a right
 `t1 + (t2 + (... + tn))`, splitting peels off only `t1` before getting stuck on the untouched
 `t2 + (... + tn)` remainder, whereas a left-associated sum fully decomposes (see
 `FLAGSUMSORT_PERF_PROGRESS.md` for how this was diagnosed). -/
-private partial def mkLeftAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
+private meta partial def mkLeftAssocAddFast (prefixFn : Expr) (terms : List Expr) : Expr :=
   match terms with
   | [] => panic! "mkLeftAssocAddFast: empty term list"
   | t :: ts => ts.foldl (fun acc t' => mkAppN prefixFn #[acc, t']) t
@@ -349,22 +353,22 @@ private partial def mkLeftAssocAddFast (prefixFn : Expr) (terms : List Expr) : E
 expression, used only to harvest a reusable `+`-instance prefix (see `getAddPrefixFn?`); when
 that harvest fails (e.g. `terms` has a single element and `topE` was never an add-application to
 begin with) falls back to the slower `mkAppM`-based construction. -/
-private def rebuildAddExprRightAssoc (topE : Expr) (terms : Array Expr) : MetaM Expr :=
+private meta def rebuildAddExprRightAssoc (topE : Expr) (terms : Array Expr) : MetaM Expr :=
   match getAddPrefixFn? topE with
   | some prefixFn => pure (mkRightAssocAddFast prefixFn terms.toList)
   | none => mkRightAssocAdd terms.toList
 
-private def normalizeByAddPermutation (e : Expr) : MetaM Expr := do
+private meta def normalizeByAddPermutation (e : Expr) : MetaM Expr := do
   let terms := flattenAddTerms e
   let sorted ← sortAddTermsByKey terms
   rebuildAddExprRightAssoc e sorted
 
-private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
+private meta def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
   let goalType ← mkEq lhs rhs
   let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
   let savedGoals ← getGoals
   setGoals [mvar.mvarId!]
-  evalTactic (← `(tactic| first | ac_rfl | simp [add_assoc, add_left_comm, add_comm]))
+  evalTactic (← `(tactic| first | ac_rfl | abel | simp [add_assoc, add_left_comm, add_comm]))
   let remaining ← getGoals
   if !remaining.isEmpty then
     throwError m!"proveEqByAddAC: failed to close side-goal\noriginal lhs: {lhs}\nsorted lhs: {rhs}"
@@ -391,7 +395,7 @@ tactic-mode goal (`mkMergeStepProof`, the same "synthetic mvar + evalTactic" pat
 `proveEqByAddAC` already uses), so `add_smul`/`add_assoc` go through the ordinary elaborator
 instead of being hand-assembled. -/
 
-private def mkSmul (coeff base : Expr) : MetaM Expr :=
+private meta def mkSmul (coeff base : Expr) : MetaM Expr :=
   mkAppM ``HSMul.hSMul #[coeff, base]
 
 /-- Reconstructs the actual term from a `(coeff, base)` pair: `some c, b ↦ c • b`, but
@@ -402,7 +406,7 @@ different (even though `one_smul`-defeq) and broke `K3forbidP3.lean`'s proof ter
 see `FLAGSUMSORT_PERF_PROGRESS.md`. Terms with `none` therefore also never participate in
 merging (`mergeableCoeffs` below always rejects them), since merging would require synthesizing
 exactly this kind of coefficient wrapper. -/
-private def termOf (coeff : Option Expr) (base : Expr) : MetaM Expr :=
+private meta def termOf (coeff : Option Expr) (base : Expr) : MetaM Expr :=
   match coeff with
   | some c => mkSmul c base
   | none => pure base
@@ -410,7 +414,7 @@ private def termOf (coeff : Option Expr) (base : Expr) : MetaM Expr :=
 /-- `h : a = b` ↦ proof of `head + a = head + b`. Pure `congrArg` — no typeclass-sensitive lemma
 involved, so (unlike `add_smul`/`add_assoc`) there's no suspected reason to route this through
 tactic-mode instead of direct term construction. -/
-private def congrArgAddLeft (prefixFn head h : Expr) : MetaM Expr := do
+private meta def congrArgAddLeft (prefixFn head h : Expr) : MetaM Expr := do
   let some (ty, _, _) := (← inferType h).eq? | throwError "congrArgAddLeft: expected an Eq proof"
   withLocalDeclD `x ty fun x => do
     let f ← mkLambdaFVars #[x] (mkAppN prefixFn #[head, x])
@@ -421,7 +425,7 @@ private def congrArgAddLeft (prefixFn head h : Expr) : MetaM Expr := do
 `add_assoc`/`add_smul` applied directly. Any opaque subterm shared between `lhs` and `rhs` (e.g.
 the unmerged "rest" of the sum) is never descended into by `simp`, so this stays `O(1)` regardless
 of how large that shared subterm is. -/
-private def mkMergeStepProof (lhs rhs : Expr) : TacticM Expr := do
+private meta def mkMergeStepProof (lhs rhs : Expr) : TacticM Expr := do
   let goalType ← mkEq lhs rhs
   let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
   let savedGoals ← getGoals
@@ -436,7 +440,7 @@ private def mkMergeStepProof (lhs rhs : Expr) : TacticM Expr := do
 /-- Two adjacent entries are mergeable only when *both* have an explicit coefficient (see
 `termOf`) and, after a cheap key pre-filter, their bases are confirmed `isDefEq`. Returns the two
 coefficients when mergeable. -/
-private def mergeableCoeffs (key1 key2 : String) (coeff1 coeff2 : Option Expr) (base1 base2 : Expr) :
+private meta def mergeableCoeffs (key1 key2 : String) (coeff1 coeff2 : Option Expr) (base1 base2 : Expr) :
     MetaM (Option (Expr × Expr)) := do
   match coeff1, coeff2 with
   | some c1, some c2 =>
@@ -452,7 +456,7 @@ private def mergeableCoeffs (key1 key2 : String) (coeff1 coeff2 : Option Expr) (
 share a base (only among entries with an explicit `coeff`). Returns the merged list together with
 a proof that the right-associated sum of the input equals the right-associated sum of the merged
 list. -/
-private partial def mergeAdjacentAndProve (prefixFn : Expr) :
+private meta partial def mergeAdjacentAndProve (prefixFn : Expr) :
     List (String × Option Expr × Expr) → TacticM (List (String × Option Expr × Expr) × Expr)
   | [] => throwError "mergeAdjacentAndProve: empty term list"
   | [(k, oc, b)] => do
@@ -481,6 +485,20 @@ private partial def mergeAdjacentAndProve (prefixFn : Expr) :
           let t1 ← termOf oc1 b1
           pure ((k1, oc1, b1) :: mergedRest, ← congrArgAddLeft prefixFn t1 restEq)
 
+/-- Cheap left-to-right scan: is there any *adjacent* same-base pair under the exact
+`mergeableCoeffs` predicate `mergeAdjacentAndProve` uses? When this is `false` the sorted focus has
+all-distinct bases, so nothing merges and `mergeSameBaseTermsConv` can skip the whole merge walk
+(and the `O(n)`-deep `congrArg` identity tower it would build proving `focus = focus`), going
+straight to the right→left re-association it has to do anyway. Key mismatches short-circuit before
+any `isDefEq`, so this is essentially `O(n)` string comparisons. -/
+private meta partial def anyAdjacentMergeable :
+    List (String × Option Expr × Expr) → MetaM Bool
+  | (k1, oc1, b1) :: (k2, oc2, b2) :: rest => do
+      match ← mergeableCoeffs k1 k2 oc1 oc2 b1 b2 with
+      | some _ => pure true
+      | none => anyAdjacentMergeable ((k2, oc2, b2) :: rest)
+  | _ => pure false
+
 /-- `conv`-mode step: after `acSortNormalizeConv` has sorted the current focus by base index,
 merge adjacent same-base runs (coefficient consolidation), then re-associate the result to
 *left*-associated (`(...(t1+t2)+t3...)+tn`) via `proveEqByAddAC`/`ac_rfl` — already-measured-fast
@@ -488,7 +506,7 @@ for pure reassociation, no `simp` search. The left-assoc reshape happens uncondi
 with nothing to merge) since downstream consumers like `flag_nonneg`'s
 `repeat apply add_nonneg` depend on it (see `mkLeftAssocAddFast`'s docstring). `norm_num` (to fold
 the resulting literal coefficient sums) only runs when a merge actually happened. -/
-private def mergeSameBaseTermsConv : TacticM Unit :=
+private meta def mergeSameBaseTermsConv : TacticM Unit :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
@@ -502,19 +520,31 @@ private def mergeSameBaseTermsConv : TacticM Unit :=
     match getAddPrefixFn? focus with
     | none => pure ()
     | some prefixFn =>
-        let (merged, mergeProof) ← mergeAdjacentAndProve prefixFn pairs.toList
-        let didMerge := merged.length < pairs.size
-        let mergedTerms ← merged.mapM fun (_, oc, b) => termOf oc b
-        let mergedExprRight := mkRightAssocAddFast prefixFn mergedTerms
-        let mergedExprLeft := mkLeftAssocAddFast prefixFn mergedTerms
-        let assocProof ← proveEqByAddAC mergedExprRight mergedExprLeft
-        let fullProof ← mkEqTrans mergeProof assocProof
-        replaceGoalUsingLhsEq goal mergedExprLeft rhs fullProof
-        if didMerge then
-          evalTactic (← `(tactic| try norm_num))
+        let hasMergeable ← anyAdjacentMergeable pairs.toList
+        if hasMergeable then
+          -- At least one adjacent same-base pair to combine: run the full merge walk (unchanged).
+          let (merged, mergeProof) ← mergeAdjacentAndProve prefixFn pairs.toList
+          let didMerge := merged.length < pairs.size
+          let mergedTerms ← merged.mapM fun (_, oc, b) => termOf oc b
+          let mergedExprRight := mkRightAssocAddFast prefixFn mergedTerms
+          let mergedExprLeft := mkLeftAssocAddFast prefixFn mergedTerms
+          let assocProof ← proveEqByAddAC mergedExprRight mergedExprLeft
+          let fullProof ← mkEqTrans mergeProof assocProof
+          replaceGoalUsingLhsEq goal mergedExprLeft rhs fullProof
+          if didMerge then
+            evalTactic (← `(tactic| try norm_num))
+        else
+          -- Nothing to merge: skip `mergeAdjacentAndProve`'s O(n)-deep `congrArg` identity tower.
+          -- `merged` would equal `pairs`, so `mergedExprLeft` is built identically; only the
+          -- right→left re-association remains (`focus` is already the right-assoc sorted sum),
+          -- which `proveEqByAddAC` closes directly. No `norm_num` (no coefficients were combined).
+          let mergedTerms ← pairs.toList.mapM fun (_, oc, b) => termOf oc b
+          let mergedExprLeft := mkLeftAssocAddFast prefixFn mergedTerms
+          let assocProof ← proveEqByAddAC focus mergedExprLeft
+          replaceGoalUsingLhsEq goal mergedExprLeft rhs assocProof
 
 /-- Shared implementation: normalizes the current conv focus using add-AC only. -/
-private def acSortNormalizeConv : TacticM Unit :=
+private meta def acSortNormalizeConv : TacticM Unit :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
@@ -553,12 +583,15 @@ Use this inside `conv` when you want to normalize arithmetic first and then
 perform add-AC sorting on the focused expression.
 -/
 elab "ac_sort_at_pipeline" : conv => do
-  -- `maxSteps` is bumped well above the default (100000): the `add_assoc` re-association is
-  -- roughly quadratic in the number of summands, so a long RHS sum (large SDP blocks) otherwise
-  -- trips `simp`'s "maximum number of steps exceeded" guard. This is a limit, not a loop.
+  -- Stage-A pre-simp folds subtractions/negations into coefficients and collapses nested `smul`s.
+  -- It deliberately does NOT re-associate: `flattenAddTerms` (inside `acSortNormalizeConv`) re-
+  -- flattens the `+`-tree regardless of association and `proveEqByAddAC`/`ac_rfl` proves the
+  -- permutation up to AC, so an `add_assoc` here is redundant O(n²) work feeding a shape that is
+  -- discarded immediately. Without it the remaining rewrites are linear; the high `maxSteps` is
+  -- now just defensive headroom (the default would already suffice) — a cap, not a loop.
   evalTactic (← `(tactic|
     (try (simp (config := { maxSteps := 10000000 }) only
-      [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
+      [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, smul_smul]))))
   acSortNormalizeConv
   mergeSameBaseTermsConv
 

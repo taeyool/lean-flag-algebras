@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.FinitePlanting
+module
+
+public import LeanFlagAlgebras.MetaTheory.FinitePlanting
+
+@[expose] public section
 
 /-! # Sparse root-blow-up repairs imply finite planting (paper §8)
 

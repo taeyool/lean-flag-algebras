@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.FlagAlgebra.FlagAlgebra
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.FlagAlgebra
+
+@[expose] public section
 
 /-! # The flag-density bridge (entry point)
 

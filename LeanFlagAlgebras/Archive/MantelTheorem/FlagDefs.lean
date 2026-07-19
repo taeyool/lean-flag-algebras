@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
-import «LeanFlagAlgebras».Archive.Compute.Basic
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+public import «LeanFlagAlgebras».Archive.Compute.Basic
+
+@[export] public section
 
 /-!
 # (Archived) Hand-written small flags for Mantel's theorem

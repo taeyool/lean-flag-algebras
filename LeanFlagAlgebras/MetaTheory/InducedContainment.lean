@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.LabeledCount
-import LeanFlagAlgebras.FlagAlgebra.FlagOperators
+module
+
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+public import LeanFlagAlgebras.FlagAlgebra.FlagOperators
+
+@[expose] public section
 
 /-! # From positive flag density to induced-subgraph containment
 

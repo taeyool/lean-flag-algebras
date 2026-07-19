@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.FlagComplement
-import LeanFlagAlgebras.MetaTheory.SupportClosure
+module
+
+public import LeanFlagAlgebras.MetaTheory.FlagComplement
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+
+@[expose] public section
 
 /-! # Complementation is a homeomorphism of positive-homomorphism spaces
 

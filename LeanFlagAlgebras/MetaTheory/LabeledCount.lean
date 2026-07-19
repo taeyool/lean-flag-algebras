@@ -1,5 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.DensityBridge
+module
 
+public import LeanFlagAlgebras.MetaTheory.DensityBridge
+
+@[expose] public section
 /-! # Labeled graph count as a vertex-subset count
 
 Infrastructure for §5 `lem:planted-estimate` of `MetaTheory/paper.tex` (no direct paper

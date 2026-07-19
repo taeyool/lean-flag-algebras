@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDensity
-import «LeanFlagAlgebras».Archive.MantelTheorem.FlagIso
+module
+
+public import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDensity
+public import «LeanFlagAlgebras».Archive.MantelTheorem.FlagIso
+
+@[export] public section
 
 /-!
 # (Archived) Flag-product identities for the Mantel flags

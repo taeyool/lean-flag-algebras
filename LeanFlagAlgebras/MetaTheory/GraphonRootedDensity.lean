@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
-import LeanFlagAlgebras.MetaTheory.StdRootedBridge
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
+public import LeanFlagAlgebras.MetaTheory.StdRootedBridge
+
+@[expose] public section
 
 /-! # Rooted induced densities of a graphon
 

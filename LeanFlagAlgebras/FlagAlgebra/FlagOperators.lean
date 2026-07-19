@@ -1,6 +1,10 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagAlgebra
-import Mathlib.Data.Fintype.CardEmbedding
-import Mathlib.Data.Nat.Cast.Field
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagAlgebra
+public import Mathlib.Data.Fintype.CardEmbedding
+public import Mathlib.Data.Nat.Cast.Field
+
+@[expose] public section
 
 /-! # The unlabeling (`downward`) operator on the flag algebra
 

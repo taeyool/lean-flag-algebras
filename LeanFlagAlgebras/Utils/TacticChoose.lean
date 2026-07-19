@@ -1,10 +1,14 @@
-import Lean
-import Init.Data.Nat.Basic
-import Mathlib.Data.Nat.Choose.Basic
-import Mathlib.Data.Nat.Factorial.Basic
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic
-import Mathlib.Algebra.Ring.Nat
+module
+
+public import Lean
+public import Init.Data.Nat.Basic
+public import Mathlib.Data.Nat.Choose.Basic
+public import Mathlib.Data.Nat.Factorial.Basic
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic
+public import Mathlib.Algebra.Ring.Nat
+
+@[expose] public section
 
 /-! # `simp_choose_eq` tactic: clearing binomial coefficients in `ℕ` equalities
 
@@ -30,7 +34,7 @@ structure SideData where
 -- Recursive helper to gather data from one side of the equality
 /-- Recursively walk a product expression on one side of the goal, collecting its `SideData`
 (treating `Nat.choose n k` factors specially and recursing through `*`). -/
-partial def processSideExpr (e : Expr) : TermElabM SideData := do
+meta def processSideExpr (e : Expr) : TermElabM SideData := do
   match e with
   | Expr.app (Expr.app (Expr.const ``Nat.choose ..) n) k =>
     let n_fact ← mkAppM ``Nat.factorial #[n]
@@ -82,7 +86,7 @@ partial def processSideExpr (e : Expr) : TermElabM SideData := do
 -- Helper to assert an assumption and get the new MVarId and FVarId of the hypothesis.
 /-- Add `proof : type` as a named hypothesis to the goal, returning its `FVarId` and the
 updated goal. -/
-def assertHyp (mvarId : MVarId) (type : Expr) (proof : Expr) (userName : Name) : MetaM (FVarId × MVarId) := do
+meta def assertHyp (mvarId : MVarId) (type : Expr) (proof : Expr) (userName : Name) : MetaM (FVarId × MVarId) := do
   let mvarIdNew ← mvarId.assert userName type proof
   let (fvarId, newerMVarId) ← mvarIdNew.intro1P
   return (fvarId, newerMVarId)

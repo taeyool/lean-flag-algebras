@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
-import Mathlib.Combinatorics.SimpleGraph.Copy
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
+public import Mathlib.Combinatorics.SimpleGraph.Copy
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-! # Forbidden-subgraph reasoning framework
 

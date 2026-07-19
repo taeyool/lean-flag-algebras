@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.EvalAlgebra
-import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
-import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+module
+
+public import LeanFlagAlgebras.MetaTheory.EvalAlgebra
+public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
+public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
+
+@[expose] public section
 
 /-! # Uniqueness of a measure on `X_σ` from its flag-integrals
 

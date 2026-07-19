@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+public import Mathlib.Tactic
+
+@[expose] public section
 
 open FlagAlgebras FlagAlgebras.Compute
 

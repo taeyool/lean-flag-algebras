@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.BlowupClosed
+module
+
+public import LeanFlagAlgebras.MetaTheory.BlowupClosed
+
+@[expose] public section
 
 /-! # Complete blow-ups and true twins: root-plantability (paper §6)
 

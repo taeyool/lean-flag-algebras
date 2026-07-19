@@ -3,17 +3,25 @@
 -- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
 -- theorem body still needs to be written (see TODO at the bottom).
 
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.Automation.FlagExpand
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.Automation.FlagExpand
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+public import LeanFlagAlgebras.Flags.ForbidFreePruned
+public import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public meta import LeanFlagAlgebras.Flags.ForbidFreePruned
+public meta import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+
+@[expose] public section
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -31,7 +39,7 @@ def K4 : Sym2Graph 4 := completeSym2Graph 4
 -- compiled-evaluation axioms.  The heartbeat/recursion limits must be lifted
 -- *before* the generate commands: at n = 4 the batched pair-density bridges
 -- exceed the default 200k-heartbeat elaboration budget.
-set_option flagGen.kernelDecide true
+-- set_option flagGen.kernelDecide true
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 generate_forbid_free_empty_typed_flags 2 K4

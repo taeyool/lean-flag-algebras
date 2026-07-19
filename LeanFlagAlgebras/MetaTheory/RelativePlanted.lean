@@ -1,9 +1,13 @@
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.StarWitness
-import LeanFlagAlgebras.MetaTheory.WeakConvergence
-import LeanFlagAlgebras.MetaTheory.RootingUniform
-import Mathlib.MeasureTheory.Measure.Portmanteau
+module
+
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+public import LeanFlagAlgebras.MetaTheory.StarWitness
+public import LeanFlagAlgebras.MetaTheory.WeakConvergence
+public import LeanFlagAlgebras.MetaTheory.RootingUniform
+public import Mathlib.MeasureTheory.Measure.Portmanteau
+
+@[expose] public section
 
 /-! # The relative planted set and relative root-plantability (paper §11.4,
 `def:relative-plantability`, `prop:relative-plantability`)
@@ -320,7 +324,7 @@ is approximated by finite rooted views. -/
 theorem support_subset_relQσ (hc : HeredClass) {Y : Set (PositiveHomSpace ∅ₜ)}
     (hY : Y ⊆ Qσ (hc.constraintOf ∅ₜ).forb0)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Y) (hσ : φ₀ ⟨σ⟩₀ > 0) :
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support ⊆ relQσ hc Y σ := by
+    Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) ⊆ relQσ hc Y σ := by
   -- Route (the paper's proof, with the repo's rooting-measure machinery):
   -- 1. `hY hφ₀ : posHomPoint φ₀ ∈ Qσ forb0`; `exists_constrained_flagSeq_limit φ₀
   --    (hc.constraintOf ∅ₜ).forb0` (with `mem_Qσ_iff` supplying the vanishing hypothesis,

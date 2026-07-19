@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.TuranDirac
-import LeanFlagAlgebras.MetaTheory.MantelNotPlantable
-import LeanFlagAlgebras.MetaTheory.SliceRecovery
-import LeanFlagAlgebras.MetaTheory.LabeledCount
+module
+
+public import LeanFlagAlgebras.MetaTheory.TuranDirac
+public import LeanFlagAlgebras.MetaTheory.MantelNotPlantable
+public import LeanFlagAlgebras.MetaTheory.SliceRecovery
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+
+@[expose] public section
 
 /-! # The Turán slice support identities (paper §11.5, `thm:turan-slice` /
 `thm:relative-mantel`, identity halves; §11.7 `cor:parametric-p4-turan-recovery`,
@@ -629,7 +633,7 @@ section Counting
 variable (r n : ℕ)
 
 /-- The canonical `vtype`-labelled Turán host: root at vertex `0`. -/
-private def turanVtypeLabeled (hr : 2 ≤ r) : LabeledGraph vtype (Fin (r * (n + 1))) where
+protected def turanVtypeLabeled (hr : 2 ≤ r) : LabeledGraph vtype (Fin (r * (n + 1))) where
   graph := turanGraph (r * (n + 1)) r
   type_embed :=
     { toFun := fun _ => ⟨0, by have := two_le_rN' (n := n) hr; omega⟩
@@ -641,7 +645,7 @@ private def turanVtypeLabeled (hr : 2 ≤ r) : LabeledGraph vtype (Fin (r * (n +
         exact iff_of_false (fun hh => hh rfl) (fun hh => hh) }
 
 /-- The canonical `τ`-labelled Turán host: roots at vertices `0` and `1`. -/
-private def turanEdgeLabeled (hr : 2 ≤ r) :
+protected def turanEdgeLabeled (hr : 2 ≤ r) :
     LabeledGraph FlagType_2_1 (Fin (r * (n + 1))) where
   graph := turanGraph (r * (n + 1)) r
   type_embed :=
@@ -675,7 +679,7 @@ private def turanEdgeLabeled (hr : 2 ≤ r) :
 
 /-- The canonical `η`-labelled Turán host: roots at vertices `0` and `r` (same residue
 class, needs class size `≥ 2`). -/
-private def turanNonEdgeLabeled (hr : 2 ≤ r) (hn : 1 ≤ n) :
+protected def turanNonEdgeLabeled (hr : 2 ≤ r) (hn : 1 ≤ n) :
     LabeledGraph FlagType_2_0 (Fin (r * (n + 1))) where
   graph := turanGraph (r * (n + 1)) r
   type_embed :=
@@ -697,22 +701,22 @@ private def turanNonEdgeLabeled (hr : 2 ≤ r) (hn : 1 ≤ n) :
 
 /-- The canonical `vtype`-labelling of the Turán term: root at vertex `0`. -/
 noncomputable def turanVtypeFlag (hr : 2 ≤ r) : FlagWithSize vtype (r * (n + 1)) :=
-  ⟦turanVtypeLabeled r n hr⟧
+  ⟦MetaTheory.turanVtypeLabeled r n hr⟧
 
 /-- The canonical `τ`-labelling: roots `(0, 1)` (adjacent — distinct residues, `r ≥ 2`). -/
 noncomputable def turanEdgeFlag (hr : 2 ≤ r) :
     FlagWithSize FlagType_2_1 (r * (n + 1)) :=
-  ⟦turanEdgeLabeled r n hr⟧
+  ⟦MetaTheory.turanEdgeLabeled r n hr⟧
 
 /-- The canonical `η`-labelling: roots `(0, r)` (non-adjacent — same residue class; needs
 class size `≥ 2`, i.e. `n ≥ 1`, and `r < r*(n+1)`). -/
 noncomputable def turanNonEdgeFlag (hr : 2 ≤ r) (hn : 1 ≤ n) :
     FlagWithSize FlagType_2_0 (r * (n + 1)) :=
-  ⟦turanNonEdgeLabeled r n hr hn⟧
+  ⟦MetaTheory.turanNonEdgeLabeled r n hr hn⟧
 
 private lemma turanVtypeFlag_unlabel (hr : 2 ≤ r) :
     unlabel (turanVtypeFlag r n hr) = (turanFlagSeq r n).2 := by
-  show unlabeledGraphQuot (turanVtypeLabeled r n hr)
+  show unlabeledGraphQuot (MetaTheory.turanVtypeLabeled r n hr)
     = graphFlag (turanGraph (r * (n + 1)) r)
   apply Quotient.sound
   exact ⟨{ graph_iso := SimpleGraph.Iso.refl,
@@ -720,7 +724,7 @@ private lemma turanVtypeFlag_unlabel (hr : 2 ≤ r) :
 
 private lemma turanEdgeFlag_unlabel (hr : 2 ≤ r) :
     unlabel (turanEdgeFlag r n hr) = (turanFlagSeq r n).2 := by
-  show unlabeledGraphQuot (turanEdgeLabeled r n hr)
+  show unlabeledGraphQuot (MetaTheory.turanEdgeLabeled r n hr)
     = graphFlag (turanGraph (r * (n + 1)) r)
   apply Quotient.sound
   exact ⟨{ graph_iso := SimpleGraph.Iso.refl,
@@ -728,7 +732,7 @@ private lemma turanEdgeFlag_unlabel (hr : 2 ≤ r) :
 
 private lemma turanNonEdgeFlag_unlabel (hr : 2 ≤ r) (hn : 1 ≤ n) :
     unlabel (turanNonEdgeFlag r n hr hn) = (turanFlagSeq r n).2 := by
-  show unlabeledGraphQuot (turanNonEdgeLabeled r n hr hn)
+  show unlabeledGraphQuot (MetaTheory.turanNonEdgeLabeled r n hr hn)
     = graphFlag (turanGraph (r * (n + 1)) r)
   apply Quotient.sound
   exact ⟨{ graph_iso := SimpleGraph.Iso.refl,
@@ -775,11 +779,11 @@ lemma turanVtypeFlag_edge_density (hr : 2 ≤ r) :
       = ((r - 1) * (n + 1) : ℚ) / (r * (n + 1) - 1) := by
   have h2N := two_le_rN' (n := n) hr
   show flagDensity₁ edgeFF.2
-      (⟦turanVtypeLabeled r n hr⟧ : Flag vtype (Fin (r * (n + 1)))) = _
-  rw [oneRoot_edge_density (turanVtypeLabeled r n hr) ⟨0, by omega⟩ (fun t => rfl)]
-  have hns : ((turanVtypeLabeled r n hr).graph.neighborSet
+      (⟦MetaTheory.turanVtypeLabeled r n hr⟧ : Flag vtype (Fin (r * (n + 1)))) = _
+  rw [oneRoot_edge_density (MetaTheory.turanVtypeLabeled r n hr) ⟨0, by omega⟩ (fun t => rfl)]
+  have hns : ((MetaTheory.turanVtypeLabeled r n hr).graph.neighborSet
       (⟨0, by omega⟩ : Fin (r * (n + 1)))).ncard = r * (n + 1) - (n + 1) := by
-    have hset : (turanVtypeLabeled r n hr).graph.neighborSet
+    have hset : (MetaTheory.turanVtypeLabeled r n hr).graph.neighborSet
         (⟨0, by omega⟩ : Fin (r * (n + 1)))
         = {w : Fin (r * (n + 1)) | w.val % r ≠ 0} := by
       ext w
@@ -802,47 +806,47 @@ lemma turanVtypeFlag_edge_density (hr : 2 ≤ r) :
 
 private lemma tau_count_TF (hr : 2 ≤ r) (P Q : Prop) (hP : P) (hQ : ¬ Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
       = n := by
-  have hval0 : ((turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
-  have hval1 : ((turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
+  have hval0 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
+  have hval1 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
   have h1r : (1 : ℕ) % r = 1 := Nat.mod_eq_of_lt (by omega)
   rw [ncard_setOf_eq_filter_card]
   have hpe : (Finset.univ.filter (fun w : Fin (r * (n + 1)) =>
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
       = (Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r = 1)).erase
-          ((turanEdgeLabeled r n hr).type_embed 1) := by
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) := by
     ext w
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_erase]
     constructor
     · rintro ⟨hw0, hw1, hp0, hp1⟩
       refine ⟨hw1, ?_⟩
       have hadj0 : (turanGraph (r * (n + 1)) r).Adj
-          ((turanEdgeLabeled r n hr).type_embed 0) w := hp0.mpr hP
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w := hp0.mpr hP
       have hnadj1 : ¬ (turanGraph (r * (n + 1)) r).Adj
-          ((turanEdgeLabeled r n hr).type_embed 1) w := fun ha => hQ (hp1.mp ha)
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w := fun ha => hQ (hp1.mp ha)
       rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hadj0
       rw [SimpleGraph.turanGraph_adj, hval1, h1r] at hnadj1
       omega
     · rintro ⟨hw1, hres⟩
-      have hw0 : w ≠ (turanEdgeLabeled r n hr).type_embed 0 := by
+      have hw0 : w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 := by
         intro hh
         have hv : w.val = 0 := by rw [hh, hval0]
         rw [hv, Nat.zero_mod] at hres
         omega
       refine ⟨hw0, hw1, ?_, ?_⟩
       · refine iff_of_true ?_ hP
-        show (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 0) w
+        show (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w
         rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod]
         omega
       · refine iff_of_false ?_ hQ
-        show ¬ (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 1) w
+        show ¬ (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w
         rw [SimpleGraph.turanGraph_adj, hval1, h1r]
         omega
   rw [hpe, Finset.card_erase_of_mem (by
@@ -854,44 +858,44 @@ private lemma tau_count_TF (hr : 2 ≤ r) (P Q : Prop) (hP : P) (hQ : ¬ Q) :
 
 private lemma tau_count_FT (hr : 2 ≤ r) (P Q : Prop) (hP : ¬ P) (hQ : Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
       = n := by
-  have hval0 : ((turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
-  have hval1 : ((turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
+  have hval0 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
+  have hval1 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
   have h1r : (1 : ℕ) % r = 1 := Nat.mod_eq_of_lt (by omega)
   rw [ncard_setOf_eq_filter_card]
   have hpe : (Finset.univ.filter (fun w : Fin (r * (n + 1)) =>
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
       = (Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r = 0)).erase
-          ((turanEdgeLabeled r n hr).type_embed 0) := by
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) := by
     ext w
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_erase]
     constructor
     · rintro ⟨hw0, hw1, hp0, hp1⟩
       refine ⟨hw0, ?_⟩
       have hnadj0 : ¬ (turanGraph (r * (n + 1)) r).Adj
-          ((turanEdgeLabeled r n hr).type_embed 0) w := fun ha => hP (hp0.mp ha)
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w := fun ha => hP (hp0.mp ha)
       rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hnadj0
       omega
     · rintro ⟨hw0, hres⟩
-      have hw1 : w ≠ (turanEdgeLabeled r n hr).type_embed 1 := by
+      have hw1 : w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 := by
         intro hh
         have hv : w.val = 1 := by rw [hh, hval1]
         rw [hv, h1r] at hres
         omega
       refine ⟨hw0, hw1, ?_, ?_⟩
       · refine iff_of_false ?_ hP
-        show ¬ (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 0) w
+        show ¬ (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w
         rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod]
         omega
       · refine iff_of_true ?_ hQ
-        show (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 1) w
+        show (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w
         rw [SimpleGraph.turanGraph_adj, hval1, h1r]
         omega
   rw [hpe, Finset.card_erase_of_mem (by
@@ -903,20 +907,20 @@ private lemma tau_count_FT (hr : 2 ≤ r) (P Q : Prop) (hP : ¬ P) (hQ : Q) :
 
 private lemma tau_count_TT (hr : 2 ≤ r) (P Q : Prop) (hP : P) (hQ : Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
       = r * (n + 1) - 2 * (n + 1) := by
-  have hval0 : ((turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
-  have hval1 : ((turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
+  have hval0 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
+  have hval1 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
   have h1r : (1 : ℕ) % r = 1 := Nat.mod_eq_of_lt (by omega)
   rw [ncard_setOf_eq_filter_card]
   have hpe : (Finset.univ.filter (fun w : Fin (r * (n + 1)) =>
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)))
       = Finset.univ.filter
           (fun w : Fin (r * (n + 1)) => w.val % r ≠ 0 ∧ w.val % r ≠ 1) := by
     ext w
@@ -924,113 +928,113 @@ private lemma tau_count_TT (hr : 2 ≤ r) (P Q : Prop) (hP : P) (hQ : Q) :
     constructor
     · rintro ⟨hw0, hw1, hp0, hp1⟩
       have hadj0 : (turanGraph (r * (n + 1)) r).Adj
-          ((turanEdgeLabeled r n hr).type_embed 0) w := hp0.mpr hP
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w := hp0.mpr hP
       have hadj1 : (turanGraph (r * (n + 1)) r).Adj
-          ((turanEdgeLabeled r n hr).type_embed 1) w := hp1.mpr hQ
+          ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w := hp1.mpr hQ
       rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hadj0
       rw [SimpleGraph.turanGraph_adj, hval1, h1r] at hadj1
       omega
     · rintro ⟨hres0, hres1⟩
-      have hw0 : w ≠ (turanEdgeLabeled r n hr).type_embed 0 := by
+      have hw0 : w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 := by
         intro hh
         have hv : w.val = 0 := by rw [hh, hval0]
         rw [hv, Nat.zero_mod] at hres0
         omega
-      have hw1 : w ≠ (turanEdgeLabeled r n hr).type_embed 1 := by
+      have hw1 : w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 := by
         intro hh
         have hv : w.val = 1 := by rw [hh, hval1]
         rw [hv, h1r] at hres1
         omega
       refine ⟨hw0, hw1, ?_, ?_⟩
       · refine iff_of_true ?_ hP
-        show (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 0) w
+        show (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w
         rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod]
         omega
       · refine iff_of_true ?_ hQ
-        show (turanGraph (r * (n + 1)) r).Adj ((turanEdgeLabeled r n hr).type_embed 1) w
+        show (turanGraph (r * (n + 1)) r).Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w
         rw [SimpleGraph.turanGraph_adj, hval1, h1r]
         omega
   rw [hpe, card_two_residue_compl r (n + 1) 0 1 (by omega) (by omega) (by omega)]
 
 private lemma tau_count_FF (hr : 2 ≤ r) (P Q : Prop) (hP : ¬ P) (hQ : ¬ Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanEdgeLabeled r n hr).type_embed 0 ∧
-      w ≠ (turanEdgeLabeled r n hr).type_embed 1 ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
-      ((turanEdgeLabeled r n hr).graph.Adj ((turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 0 ∧
+      w ≠ (MetaTheory.turanEdgeLabeled r n hr).type_embed 1 ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanEdgeLabeled r n hr).graph.Adj ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w ↔ Q)}
       = 0 := by
-  have hval0 : ((turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
-  have hval1 : ((turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
+  have hval0 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0).val = 0 := rfl
+  have hval1 : ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1).val = 1 := rfl
   have h1r : (1 : ℕ) % r = 1 := Nat.mod_eq_of_lt (by omega)
   rw [Set.ncard_eq_zero]
   rw [Set.eq_empty_iff_forall_notMem]
   rintro w ⟨hw0, hw1, hp0, hp1⟩
   have hnadj0 : ¬ (turanGraph (r * (n + 1)) r).Adj
-      ((turanEdgeLabeled r n hr).type_embed 0) w := fun ha => hP (hp0.mp ha)
+      ((MetaTheory.turanEdgeLabeled r n hr).type_embed 0) w := fun ha => hP (hp0.mp ha)
   have hnadj1 : ¬ (turanGraph (r * (n + 1)) r).Adj
-      ((turanEdgeLabeled r n hr).type_embed 1) w := fun ha => hQ (hp1.mp ha)
+      ((MetaTheory.turanEdgeLabeled r n hr).type_embed 1) w := fun ha => hQ (hp1.mp ha)
   rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hnadj0
   rw [SimpleGraph.turanGraph_adj, hval1, h1r] at hnadj1
   omega
 
 private lemma eta_count_FF (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop) (hP : ¬ P) (hQ : ¬ Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
       = n - 1 := by
-  have hval0 : ((turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
-  have hval1 : ((turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
+  have hval0 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
+  have hval1 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
   have hrr : (r : ℕ) % r = 0 := Nat.mod_self r
   rw [ncard_setOf_eq_filter_card]
   have hpe : (Finset.univ.filter (fun w : Fin (r * (n + 1)) =>
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)))
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)))
       = ((Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r = 0)).erase
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0)).erase
-          ((turanNonEdgeLabeled r n hr hn).type_embed 1) := by
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0)).erase
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) := by
     ext w
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_erase]
     constructor
     · rintro ⟨hw0, hw1, hp0, hp1⟩
       refine ⟨hw1, hw0, ?_⟩
       have hnadj0 : ¬ (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0) w := fun ha => hP (hp0.mp ha)
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w := fun ha => hP (hp0.mp ha)
       rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hnadj0
       omega
     · rintro ⟨hw1, hw0, hres⟩
       refine ⟨hw0, hw1, ?_, ?_⟩
       · refine iff_of_false ?_ hP
         show ¬ (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0) w
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w
         rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod]
         omega
       · refine iff_of_false ?_ hQ
         show ¬ (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 1) w
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w
         rw [SimpleGraph.turanGraph_adj, hval1, hrr]
         omega
-  have hmem0 : (turanNonEdgeLabeled r n hr hn).type_embed 0
+  have hmem0 : (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0
       ∈ Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r = 0) := by
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     rw [hval0]
     exact Nat.zero_mod r
-  have hne01 : (turanNonEdgeLabeled r n hr hn).type_embed 1
-      ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 := by
+  have hne01 : (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1
+      ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 := by
     intro hh
     have hv := congrArg Fin.val hh
     rw [hval0, hval1] at hv
     omega
-  have hmem1 : (turanNonEdgeLabeled r n hr hn).type_embed 1
+  have hmem1 : (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1
       ∈ (Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r = 0)).erase
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0) := by
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) := by
     rw [Finset.mem_erase]
     refine ⟨hne01, ?_⟩
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
@@ -1042,40 +1046,40 @@ private lemma eta_count_FF (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop) (hP : ¬ P
 
 private lemma eta_count_TT (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop) (hP : P) (hQ : Q) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
       = r * (n + 1) - (n + 1) := by
-  have hval0 : ((turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
-  have hval1 : ((turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
+  have hval0 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
+  have hval1 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
   have hrr : (r : ℕ) % r = 0 := Nat.mod_self r
   rw [ncard_setOf_eq_filter_card]
   have hpe : (Finset.univ.filter (fun w : Fin (r * (n + 1)) =>
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)))
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)))
       = Finset.univ.filter (fun w : Fin (r * (n + 1)) => w.val % r ≠ 0) := by
     ext w
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     constructor
     · rintro ⟨hw0, hw1, hp0, hp1⟩
       have hadj0 : (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0) w := hp0.mpr hP
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w := hp0.mpr hP
       rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod] at hadj0
       omega
     · intro hres
-      have hw0 : w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 := by
+      have hw0 : w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 := by
         intro hh
         have hv : w.val = 0 := by rw [hh, hval0]
         rw [hv, Nat.zero_mod] at hres
         omega
-      have hw1 : w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 := by
+      have hw1 : w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 := by
         intro hh
         have hv : w.val = r := by rw [hh, hval1]
         rw [hv, hrr] at hres
@@ -1083,12 +1087,12 @@ private lemma eta_count_TT (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop) (hP : P) (
       refine ⟨hw0, hw1, ?_, ?_⟩
       · refine iff_of_true ?_ hP
         show (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 0) w
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w
         rw [SimpleGraph.turanGraph_adj, hval0, Nat.zero_mod]
         omega
       · refine iff_of_true ?_ hQ
         show (turanGraph (r * (n + 1)) r).Adj
-          ((turanNonEdgeLabeled r n hr hn).type_embed 1) w
+          ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w
         rw [SimpleGraph.turanGraph_adj, hval1, hrr]
         omega
   rw [hpe, card_residue_compl r (n + 1) 0 (by omega)]
@@ -1096,23 +1100,23 @@ private lemma eta_count_TT (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop) (hP : P) (
 private lemma eta_count_mixed (hr : 2 ≤ r) (hn : 1 ≤ n) (P Q : Prop)
     (hPQ : ¬ (P ↔ Q)) :
     Set.ncard {w : Fin (r * (n + 1)) |
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
-      w ≠ (turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
-      ((turanNonEdgeLabeled r n hr hn).graph.Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0 ∧
+      w ≠ (MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1 ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w ↔ P) ∧
+      ((MetaTheory.turanNonEdgeLabeled r n hr hn).graph.Adj
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w ↔ Q)}
       = 0 := by
-  have hval0 : ((turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
-  have hval1 : ((turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
+  have hval0 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0).val = 0 := Nat.zero_mul r
+  have hval1 : ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1).val = r := Nat.one_mul r
   have hrr : (r : ℕ) % r = 0 := Nat.mod_self r
   rw [Set.ncard_eq_zero]
   rw [Set.eq_empty_iff_forall_notMem]
   rintro w ⟨hw0, hw1, hp0, hp1⟩
   have hadj_iff : (turanGraph (r * (n + 1)) r).Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 0) w
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 0) w
       ↔ (turanGraph (r * (n + 1)) r).Adj
-        ((turanNonEdgeLabeled r n hr hn).type_embed 1) w := by
+        ((MetaTheory.turanNonEdgeLabeled r n hr hn).type_embed 1) w := by
     rw [SimpleGraph.turanGraph_adj, SimpleGraph.turanGraph_adj, hval0, hval1,
       Nat.zero_mod, hrr]
   exact hPQ ((hp0.symm.trans hadj_iff).trans hp1)
@@ -1137,8 +1141,8 @@ lemma turanEdgeFlag_densities (hr : 2 ≤ r) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_1⟧ :
           Flag FlagType_2_1 (Fin 3))
-        (⟦turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanEdgeLabeled r n hr)
+        (⟦MetaTheory.turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanEdgeLabeled r n hr)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_1) 2
       (by decide) (by decide)]
     rw [tau_count_TF r n hr _ _
@@ -1149,8 +1153,8 @@ lemma turanEdgeFlag_densities (hr : 2 ≤ r) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_2⟧ :
           Flag FlagType_2_1 (Fin 3))
-        (⟦turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanEdgeLabeled r n hr)
+        (⟦MetaTheory.turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanEdgeLabeled r n hr)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_2) 2
       (by decide) (by decide)]
     rw [tau_count_FT r n hr _ _
@@ -1161,8 +1165,8 @@ lemma turanEdgeFlag_densities (hr : 2 ≤ r) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_3⟧ :
           Flag FlagType_2_1 (Fin 3))
-        (⟦turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanEdgeLabeled r n hr)
+        (⟦MetaTheory.turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanEdgeLabeled r n hr)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_3) 2
       (by decide) (by decide)]
     rw [tau_count_TT r n hr _ _
@@ -1178,8 +1182,8 @@ lemma turanEdgeFlag_densities (hr : 2 ≤ r) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_0⟧ :
           Flag FlagType_2_1 (Fin 3))
-        (⟦turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanEdgeLabeled r n hr)
+        (⟦MetaTheory.turanEdgeLabeled r n hr⟧ : Flag FlagType_2_1 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanEdgeLabeled r n hr)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_1_0) 2
       (by decide) (by decide)]
     rw [tau_count_FF r n hr _ _
@@ -1207,8 +1211,8 @@ lemma turanNonEdgeFlag_densities (hr : 2 ≤ r) (hn : 1 ≤ n) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_0⟧ :
           Flag FlagType_2_0 (Fin 3))
-        (⟦turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanNonEdgeLabeled r n hr hn)
+        (⟦MetaTheory.turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanNonEdgeLabeled r n hr hn)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_0) 2
       (by decide) (by decide)]
     rw [eta_count_FF r n hr hn _ _
@@ -1221,8 +1225,8 @@ lemma turanNonEdgeFlag_densities (hr : 2 ≤ r) (hn : 1 ≤ n) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_3⟧ :
           Flag FlagType_2_0 (Fin 3))
-        (⟦turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanNonEdgeLabeled r n hr hn)
+        (⟦MetaTheory.turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanNonEdgeLabeled r n hr hn)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_3) 0
       (by decide) (by decide)]
     rw [eta_count_TT r n hr hn _ _
@@ -1238,8 +1242,8 @@ lemma turanNonEdgeFlag_densities (hr : 2 ≤ r) (hn : 1 ≤ n) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_1⟧ :
           Flag FlagType_2_0 (Fin 3))
-        (⟦turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanNonEdgeLabeled r n hr hn)
+        (⟦MetaTheory.turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanNonEdgeLabeled r n hr hn)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_1) 1
       (by decide) (by decide)]
     rw [eta_count_mixed r n hr hn _ _ (by
@@ -1251,8 +1255,8 @@ lemma turanNonEdgeFlag_densities (hr : 2 ≤ r) (hn : 1 ≤ n) :
     show flagDensity₁
         (⟦FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_2⟧ :
           Flag FlagType_2_0 (Fin 3))
-        (⟦turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
-    rw [twoRoot_density (turanNonEdgeLabeled r n hr hn)
+        (⟦MetaTheory.turanNonEdgeLabeled r n hr hn⟧ : Flag FlagType_2_0 (Fin (r * (n + 1)))) = _
+    rw [twoRoot_density (MetaTheory.turanNonEdgeLabeled r n hr hn)
       (FlagAlgebras.Compute.Sym2LabeledGraph.toLabeledGraph Sym2LabeledGraph_3_2_0_2) 1
       (by decide) (by decide)]
     rw [eta_count_mixed r n hr hn _ _ (by

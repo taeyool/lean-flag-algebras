@@ -1,9 +1,13 @@
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.FlagSumSort
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.FlagSumSort
+
+@[expose] public section
 
 /-! # Automation.K4freeP4 — P₄ density bound in K₄-free graphs
 

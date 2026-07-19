@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import Mathlib.LinearAlgebra.Matrix.PosDef
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+public import Mathlib.LinearAlgebra.Matrix.PosDef
+
+@[expose] public section
 
 /-! # Positive-semidefinite quadratic forms over a flag algebra
 

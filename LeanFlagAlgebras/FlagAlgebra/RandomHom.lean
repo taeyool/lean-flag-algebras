@@ -1,5 +1,10 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagSequence
-import Mathlib.MeasureTheory.Measure.Prokhorov
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagSequence
+public import Mathlib.MeasureTheory.Measure.Prokhorov
+public import Mathlib.MeasureTheory.Measure.LevyProkhorovMetric
+
+@[expose] public section
 
 /-! # Random homomorphism ensembles
 
@@ -1189,7 +1194,8 @@ notation "ℙ[" φ₀ "]" =>
 theorem probMeasure_extend_emptyType_positiveHom_spec
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∀ (f : FlagAlgebra σ),
-  ∫ (φ : PositiveHomSpace σ), φ f ∂(ℙ[φ₀]) = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
+  ∫ (φ : PositiveHomSpace σ), φ f ∂(ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) =
+    (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   :=
   Classical.choose_spec (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
 

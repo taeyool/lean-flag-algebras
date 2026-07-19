@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.GraphonHom
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonHom
+
+@[expose] public section
 
 /-! # Step graphons
 

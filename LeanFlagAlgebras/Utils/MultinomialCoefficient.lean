@@ -1,4 +1,8 @@
-import Mathlib.Data.Nat.Choose.Multinomial
+module
+
+public import Mathlib.Data.Nat.Choose.Multinomial
+
+@[expose] public section
 
 /-! # Multinomial coefficient for `Fin t → ℕ`
 

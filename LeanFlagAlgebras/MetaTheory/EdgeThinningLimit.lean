@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.EdgeThinning
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+module
+
+public import LeanFlagAlgebras.MetaTheory.EdgeThinning
+public import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+
+@[expose] public section
 
 /-! # The edge-thinned constrained limit `φ₀^λ` (paper §9.4)
 

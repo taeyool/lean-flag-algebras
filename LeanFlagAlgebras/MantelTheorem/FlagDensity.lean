@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MantelTheorem.FlagDef
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+module
+
+public import LeanFlagAlgebras.MantelTheorem.FlagDef
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+
+@[expose] public section
 
 /-! # Mantel's theorem: flag density tables
 

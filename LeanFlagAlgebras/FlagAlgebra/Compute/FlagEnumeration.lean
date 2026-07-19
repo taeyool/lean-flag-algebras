@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.FastIso
-import Mathlib.Data.List.Sort
-import Mathlib.Data.List.Sublists
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FastIso
+public import Mathlib.Data.List.Sort
+public import Mathlib.Data.List.Sublists
+
+@[expose] public section
 
 /-! # Self-contained flag enumeration (Phase 1: empty-typed flags)
 

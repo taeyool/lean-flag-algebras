@@ -1,6 +1,10 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
-import Lean.Data.Json
-import Mathlib.Tactic
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
+public import Lean.Data.Json
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-! # Efficient flag loader with progress reporting
 

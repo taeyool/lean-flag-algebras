@@ -1,5 +1,9 @@
-import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
-import Mathlib.Data.Finset.Powerset
+module
+
+public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
+public import Mathlib.Data.Finset.Powerset
+
+@[expose] public section
 
 /-! # Combinations: `ℓ`-element subsets of a finset
 

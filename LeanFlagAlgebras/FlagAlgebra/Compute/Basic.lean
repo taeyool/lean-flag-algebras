@@ -1,5 +1,9 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
-import Mathlib.Data.Fintype.Perm
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+public import Mathlib.Data.Fintype.Perm
+
+@[expose] public section
 
 /-! # Computable flag/graph representations
 

@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.IsoInvariants
-import Mathlib.Data.List.Basic
-import Mathlib.Data.List.Permutation
-import Mathlib.Data.List.FinRange
-import Init.Data.List.Find
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.Compute.IsoInvariants
+public import Mathlib.Data.List.Basic
+public import Mathlib.Data.List.Permutation
+public import Mathlib.Data.List.FinRange
+public import Init.Data.List.Find
+
+@[expose] public section
 
 /-! # Fast graph-isomorphism checking for flags
 

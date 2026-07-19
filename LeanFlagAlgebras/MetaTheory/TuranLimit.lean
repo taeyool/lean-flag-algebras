@@ -1,9 +1,13 @@
-import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
-import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.MetaTheory.EdgeObstruction
-import LeanFlagAlgebras.MetaTheory.C4Free
-import LeanFlagAlgebras.MetaTheory.DenseObstruction
-import Mathlib.Combinatorics.SimpleGraph.Extremal.Turan
+module
+
+public import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
+public import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+public import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+public import LeanFlagAlgebras.MetaTheory.C4Free
+public import LeanFlagAlgebras.MetaTheory.DenseObstruction
+public import Mathlib.Combinatorics.SimpleGraph.Extremal.Turan
+
+@[expose] public section
 
 /-! # The balanced complete multipartite limit and the Turán slices (paper §11.5,
 the existence half of `thm:turan-slice` / `thm:relative-mantel`)

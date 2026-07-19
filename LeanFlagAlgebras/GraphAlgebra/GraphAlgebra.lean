@@ -1,10 +1,14 @@
-import «LeanFlagAlgebras».GraphAlgebra.SubgraphDensity
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.LinearAlgebra.FreeModule.Basic
-import Mathlib.LinearAlgebra.Basis.VectorSpace
-import Mathlib.Logic.Nonempty
-import Mathlib.Logic.Unique
-import Mathlib.Tactic.Linarith.Frontend
+module
+
+public import «LeanFlagAlgebras».GraphAlgebra.SubgraphDensity
+public import Mathlib.Combinatorics.SimpleGraph.Subgraph
+public import Mathlib.LinearAlgebra.FreeModule.Basic
+public import Mathlib.LinearAlgebra.Basis.VectorSpace
+public import Mathlib.Logic.Nonempty
+public import Mathlib.Logic.Unique
+public import Mathlib.Tactic.Linarith.Frontend
+
+@[expose] public section
 
 /-! # The Graph Algebra
 

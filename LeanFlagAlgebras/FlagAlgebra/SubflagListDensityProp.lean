@@ -1,13 +1,17 @@
-import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensity
-import «LeanFlagAlgebras».FlagAlgebra.FlagDef
-import Mathlib.Probability.Independence.Basic
-import Mathlib.Probability.Distributions.Uniform
-import Mathlib.Probability.ProbabilityMassFunction.Basic
-import Mathlib.Data.Nat.Choose.Multinomial
-import Mathlib.Data.Nat.Factorial.Basic
-import Mathlib.Data.Finset.Powerset
-import Mathlib.Data.Vector.Basic
-import Mathlib.Data.FinEnum
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensity
+public import «LeanFlagAlgebras».FlagAlgebra.FlagDef
+public import Mathlib.Probability.Independence.Basic
+public import Mathlib.Probability.Distributions.Uniform
+public import Mathlib.Probability.ProbabilityMassFunction.Basic
+public import Mathlib.Data.Nat.Choose.Multinomial
+public import Mathlib.Data.Nat.Factorial.Basic
+public import Mathlib.Data.Finset.Powerset
+public import Mathlib.Data.Vector.Basic
+public import Mathlib.Data.FinEnum
+
+@[expose] public section
 
 /-! # Asymptotic Independence of Subflag List Densities
 

@@ -1,6 +1,10 @@
-import Mathlib.MeasureTheory.Measure.Support
-import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
-import Mathlib.Topology.Order.OrderClosed
+module
+
+public import Mathlib.MeasureTheory.Measure.Support
+public import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
+public import Mathlib.Topology.Order.OrderClosed
+
+@[expose] public section
 
 /-! # Almost-sure non-negativity and support
 

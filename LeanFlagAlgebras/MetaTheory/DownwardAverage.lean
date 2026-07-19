@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.SupportClosure
-import Mathlib.Data.Fintype.CardEmbedding
+module
+
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+public import Mathlib.Data.Fintype.CardEmbedding
+
+@[expose] public section
 
 /-! # Evaluating unlabelled averages through the ensemble (paper §10 groundwork)
 
@@ -157,7 +161,7 @@ theorem downward_eval_eq_zero_of_degenerate {φ₀ : PositiveHom ∅ₜ}
 `S_σ` (immediately from the definition of `Sσ` as a closure of the union of supports). -/
 lemma support_subset_Sσ (T : Constraint σ) {φ₀ : PositiveHom ∅ₜ}
     (hφ₀ : posHomPoint φ₀ ∈ Qσ T.forb0) (hσ : φ₀ ⟨σ⟩₀ > 0) :
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support ⊆ Sσ T := by
+    Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) ⊆ Sσ T := by
   -- `subset_closure` composed with `Set.subset_iUnion` three times.
   intro χ hχ
   exact subset_closure (Set.mem_iUnion.mpr ⟨φ₀, Set.mem_iUnion.mpr ⟨hφ₀,

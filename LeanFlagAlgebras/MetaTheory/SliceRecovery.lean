@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+module
+
+public import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+
+@[expose] public section
 
 /-! # Recovery of the extremiser and qualitative stability (paper §11.7,
 `cor:parametric-p4-turan-recovery`, `cor:k4free-p4-qualitative-stability`,

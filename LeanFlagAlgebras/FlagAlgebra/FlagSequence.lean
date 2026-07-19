@@ -1,12 +1,16 @@
-import «LeanFlagAlgebras».FlagAlgebra.PositiveHom
-import Mathlib.Topology.Algebra.Ring.Real
-import Mathlib.Topology.Sequences
-import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
-import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
-import Mathlib.Probability.ProductMeasure
-import Mathlib.Probability.Moments.Variance
-import Mathlib.Probability.ProbabilityMassFunction.Integrals
-import Mathlib.NumberTheory.ZetaValues
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.PositiveHom
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Sequences
+public import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+public import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
+public import Mathlib.Probability.ProductMeasure
+public import Mathlib.Probability.Moments.Variance
+public import Mathlib.Probability.ProbabilityMassFunction.Integrals
+public import Mathlib.NumberTheory.ZetaValues
+
+@[expose] public section
 
 /-! # Convergent flag sequences and the limit semantics
 
@@ -795,9 +799,6 @@ theorem randomDensity_variance_bounded
       rw [← Finset.mul_sum, ← PositiveHom.map_sum]
       have hℓ_ge_n₀ : ℓ ≥ n₀ := by linarith [finFlag_size_ge_n₀ F]
       rw [sum_flagWithSize_eq_one ℓ hℓ_ge_n₀, PositiveHom.map_one, mul_one]
-
-example (a b : ℚ) (h : a ≤ b) : (a : ℝ) ≤ (b : ℝ) := by
-  simp_all only [Rat.cast_le]
 
 /-- The product probability measure on sequences of flags of sizes `n²+n₀`,
 each component drawn independently from `φ`'s model. Notation `μ{φ}`. -/

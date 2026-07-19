@@ -1,4 +1,8 @@
-import Lean
+module
+
+public import Lean
+
+@[expose] public section
 
 /-! # Generator options
 
@@ -14,7 +18,7 @@ layer adds no compiled-evaluation axioms
 (`Lean.ofReduceBool`/`Lean.trustCompiler`).  Kernel reduction is viable for
 small enumerations (e.g. Mantel's `n ≤ 3`); leave `false` for larger ones
 (e.g. the pentagon's `n = 5`). -/
-register_option flagGen.kernelDecide : Bool := {
+meta register_option flagGen.kernelDecide : Bool := {
   defValue := false
   descr := "flag generators: prove bridging lemmas by `decide +kernel` instead of `native_decide`"
 }

@@ -1,5 +1,9 @@
+module
+
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import Mathlib.Tactic.FinCases
+
+@[export] public section
 
 /-!
 # (Archived) Enumerated flag sets via the `Sym2` representation

@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.FlagAlgebra.FlagSequence
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.FlagSequence
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+
+@[expose] public section
 
 /-! # The constrained representation theorem
 

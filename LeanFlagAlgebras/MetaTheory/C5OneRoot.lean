@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.C5Free
-import LeanFlagAlgebras.MetaTheory.SparseRootRepair
+module
+
+public import LeanFlagAlgebras.MetaTheory.C5Free
+public import LeanFlagAlgebras.MetaTheory.SparseRootRepair
+
+@[expose] public section
 
 /-! # `C₅`-free root-plantability at the one-vertex type (paper §8)
 

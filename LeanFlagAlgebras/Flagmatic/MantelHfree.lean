@@ -17,17 +17,24 @@
 -- generation saving (every 3-vertex flag is K3-free except the triangle); the point is to
 -- validate the edge-based forbid-free bridges end-to-end. The savings appear at host sizes
 -- where only the forbid-free flags need be generated (n ≥ 6, empty-typed).
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Automation.FlagExpand
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-import LeanFlagAlgebras.Forbid.CommonGraphs
+
+module
+
+public import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+public import LeanFlagAlgebras.Automation.Basic
+public import LeanFlagAlgebras.Automation.FlagMulReduce
+public import LeanFlagAlgebras.Automation.FlagSumSort
+public import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+public import LeanFlagAlgebras.Automation.FlagExpand
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public meta import LeanFlagAlgebras.Flags.ForbidFreeGenerator
+public meta import LeanFlagAlgebras.Flags.ForbidFreePruned
+
+@[expose] public section
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -46,7 +53,7 @@ def K3 : Sym2Graph 3 := completeSym2Graph 3
 -- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
 -- `decide +kernel` (viable at n ≤ 3), so this file carries no
 -- compiled-evaluation axioms.
-set_option flagGen.kernelDecide true
+-- set_option flagGen.kernelDecide true
 
 generate_forbid_free_empty_typed_flags 2 K3
 generate_forbid_free_empty_typed_flags 3 K3

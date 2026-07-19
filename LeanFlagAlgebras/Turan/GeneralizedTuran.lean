@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.GraphAlgebra.SubgraphDensity
-import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
-import Mathlib.Combinatorics.Enumerative.DoubleCounting
-import Mathlib.Combinatorics.SimpleGraph.Extremal.Basic
-import Mathlib.Data.Nat.Choose.Cast
+module
+
+public import LeanFlagAlgebras.GraphAlgebra.SubgraphDensity
+public import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
+public import Mathlib.Combinatorics.Enumerative.DoubleCounting
+public import Mathlib.Combinatorics.SimpleGraph.Extremal.Basic
+public import Mathlib.Data.Nat.Choose.Cast
+
+@[expose] public section
 
 /-! # Generalized Turán numbers and densities
 

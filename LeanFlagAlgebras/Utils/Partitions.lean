@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.Utils.Combinations
-import LeanFlagAlgebras.Utils.MultinomialCoefficient
+module
+
+public import LeanFlagAlgebras.Utils.Combinations
+public import LeanFlagAlgebras.Utils.MultinomialCoefficient
+
+@[expose] public section
 
 /-! # Labeled partitions of a finset
 

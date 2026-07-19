@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
+
+@[expose] public section
 
 /-! # The rooted conditional homomorphism of a graphon
 

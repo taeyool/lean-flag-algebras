@@ -1,14 +1,18 @@
-import Mathlib.Data.Bool.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Fin.Basic
-import Mathlib.Data.List.Basic
-import Mathlib.Algebra.MvPolynomial.CommRing
-import Mathlib.Algebra.MvPolynomial.Degrees
-import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
-import Mathlib.Algebra.MvPolynomial.Polynomial
-import Mathlib.Algebra.Polynomial.Roots
-import Mathlib.Tactic.FieldSimp
-import Mathlib.Tactic.Ring
+module
+
+public import Mathlib.Data.Bool.Basic
+public import Mathlib.Data.Real.Basic
+public import Mathlib.Data.Fin.Basic
+public import Mathlib.Data.List.Basic
+public import Mathlib.Algebra.MvPolynomial.CommRing
+public import Mathlib.Algebra.MvPolynomial.Degrees
+public import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
+public import Mathlib.Algebra.MvPolynomial.Polynomial
+public import Mathlib.Algebra.Polynomial.Roots
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.Ring
+
+@[expose] public section
 
 /-!
 # (Archived) Boolean functions and multilinear polynomial collapse

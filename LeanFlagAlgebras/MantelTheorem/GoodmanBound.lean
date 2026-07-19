@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MantelTheorem.Lemmas
+module
+
+public import LeanFlagAlgebras.MantelTheorem.Lemmas
+
+@[expose] public section
 
 /-! # Goodman's bound on triangle density
 

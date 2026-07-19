@@ -1,8 +1,12 @@
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
-import LeanFlagAlgebras.Forbid.Basic
-import Lean.Data.Json
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.Forbid.CommonGraphs
+public import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
+public import LeanFlagAlgebras.Forbid.Basic
+public import Lean.Data.Json
+public import Mathlib.Tactic
+
+@[expose] public section
 
 /-! # Forbidden-graph multiplication theorem loader
 

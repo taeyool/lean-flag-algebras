@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.PairSubsetCount
-import LeanFlagAlgebras.MetaTheory.HeredClass
+module
+
+public import LeanFlagAlgebras.MetaTheory.PairSubsetCount
+public import LeanFlagAlgebras.MetaTheory.HeredClass
+
+@[expose] public section
 
 /-! # Unlabelled flags as plain graphs: the `∅ₜ` bridge
 

@@ -1,4 +1,8 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
+
+@[expose] public section
 
 /-! # Computable downward / averaging coefficients
 

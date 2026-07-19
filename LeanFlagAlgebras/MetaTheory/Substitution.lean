@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.BlowupClosed
+module
+
+public import LeanFlagAlgebras.MetaTheory.BlowupClosed
+
+@[expose] public section
 
 /-! # Substitution-closed graph classes: root-plantability (paper §7)
 

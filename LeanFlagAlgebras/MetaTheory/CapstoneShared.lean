@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.RootingUniform
+module
+
+public import LeanFlagAlgebras.MetaTheory.RootingUniform
+
+@[expose] public section
 
 /-! # The construction-agnostic capstone toolkit
 

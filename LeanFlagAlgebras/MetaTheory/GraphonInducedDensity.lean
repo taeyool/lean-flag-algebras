@@ -1,7 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.GraphonBasic
-import Mathlib.MeasureTheory.Constructions.Pi
-import Mathlib.Combinatorics.SimpleGraph.Finite
+module
 
+public import LeanFlagAlgebras.MetaTheory.GraphonBasic
+public import Mathlib.MeasureTheory.Constructions.Pi
+public import Mathlib.Combinatorics.SimpleGraph.Finite
+
+@[expose] public section
 /-! # Induced flag densities of a graphon
 
 The analytic layer of the `φ_W` construction (infrastructure toward `thm:k4free-p4-tripartite`'s

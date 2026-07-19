@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.ComplementClass
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+module
+
+public import LeanFlagAlgebras.MetaTheory.ComplementClass
+public import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+
+@[expose] public section
 
 /-! # Root-plantability is invariant under graph complementation (paper `lem:complementation`)
 
@@ -272,9 +276,9 @@ under `complBase φ₀` equals the expectation of its un-complement under `φ₀
 theorem expectation_basisVector_eq (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
     (hσ' : (complBase φ₀) ⟨σᶜ⟩₀ > 0) (G : FinFlag σᶜ) :
     ∫ χ, (complHom (PositiveHomSpace.toPosHom χ)) ⟦basisVector G⟧
-        ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ))
+        ∂(ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ))
       = ∫ η, (PositiveHomSpace.toPosHom η) ⟦basisVector G⟧
-          ∂(ℙ[complBase φ₀] : Measure (PositiveHomSpace σᶜ)) := by
+          ∂(ℙ[complBase φ₀] : ProbabilityMeasure (PositiveHomSpace σᶜ)) := by
   have hL :
       (fun χ : PositiveHomSpace σ => (complHom (PositiveHomSpace.toPosHom χ)) ⟦basisVector G⟧)
         = (fun χ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom χ) ⟦basisVector G.uncompl⟧) := by
@@ -288,8 +292,8 @@ theorem expectation_basisVector_eq (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨
 linearity (the integral and `complHom`/`toPosHom` are all ℝ-linear in `f`). -/
 theorem expectation_flag_eq (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
     (hσ' : (complBase φ₀) ⟨σᶜ⟩₀ > 0) (f : FlagAlgebra σᶜ) :
-    ∫ χ, (complHom (PositiveHomSpace.toPosHom χ)) f ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ))
-      = ∫ η, (PositiveHomSpace.toPosHom η) f ∂(ℙ[complBase φ₀] : Measure (PositiveHomSpace σᶜ)) := by
+    ∫ χ, (complHom (PositiveHomSpace.toPosHom χ)) f ∂(ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ))
+      = ∫ η, (PositiveHomSpace.toPosHom η) f ∂(ℙ[complBase φ₀] : ProbabilityMeasure (PositiveHomSpace σᶜ)) := by
   rcases Quotient.exists_rep f with ⟨frep, rfl⟩
   -- Rewrite each integrand as a finite sum of scalar multiples of basis-vector evaluations.
   have hLHS : (fun χ : PositiveHomSpace σ => (complHom (PositiveHomSpace.toPosHom χ)) ⟦frep⟧)

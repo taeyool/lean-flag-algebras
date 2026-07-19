@@ -1,6 +1,10 @@
-import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Data.Fintype.Perm
+module
+
+public import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
+public import Mathlib.Combinatorics.SimpleGraph.Subgraph
+public import Mathlib.Data.Fintype.Perm
+
+@[export] public section
 
 /-!
 # (Archived) Early computable flag/graph representation

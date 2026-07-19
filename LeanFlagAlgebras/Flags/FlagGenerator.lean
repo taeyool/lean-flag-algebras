@@ -1,7 +1,12 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
-import «LeanFlagAlgebras».FlagAlgebra.Compute.FlagEnumeration
-import «LeanFlagAlgebras».Flags.GeneratorOptions
-import Mathlib.Tactic
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+public import «LeanFlagAlgebras».Flags.GeneratorOptions
+public import Mathlib.Tactic.FinCases
+public import LeanFlagAlgebras.FlagAlgebra.Compute.Downward -- required, do not remove
+public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration -- required, do not remove
+
+@[expose] public section
 
 /-! # Flag generation macros
 
@@ -78,7 +83,7 @@ a single `ℕ`-valued chain wrapped as `⟨chain, by fin_cases i <;> decide⟩` 
 the *symbolic* `i`, which empirically dominates kernel type-checking (~13s of the
 ~17s for a 72-flag size-5 line) regardless of the tactic used. Pushing `Fin.mk`
 into the branches removes that symbolic obligation entirely. -/
-def mkTypeIndexFinExpr (typeIndices : Array Nat) (n : ℕ) : CommandElabM (TSyntax `term) := do
+meta def mkTypeIndexFinExpr (typeIndices : Array Nat) (n : ℕ) : CommandElabM (TSyntax `term) := do
   if _h : typeIndices.size = 0 then
     throwError "type_indices must be nonempty"
   let lastIdx := typeIndices[typeIndices.size - 1]!
@@ -90,7 +95,7 @@ def mkTypeIndexFinExpr (typeIndices : Array Nat) (n : ℕ) : CommandElabM (TSynt
   pure acc
 
 /-- Build a `Rat` term from a `(numerator, denominator)` coefficient pair. -/
-def coeffQTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
+meta def coeffQTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `((($(Quote.quote num) : Nat) : Rat))
   else
@@ -104,7 +109,7 @@ unsafe def evalNatPairListsImpl (type : Lean.Expr) (value : Lean.Expr) :
   Lean.Meta.evalExpr (List (List (Nat × Nat))) type value
 
 @[implemented_by evalNatPairListsImpl]
-opaque evalNatPairLists (type : Lean.Expr) (value : Lean.Expr) :
+meta opaque evalNatPairLists (type : Lean.Expr) (value : Lean.Expr) :
     Lean.Meta.MetaM (List (List (Nat × Nat)))
 
 /-- Compiler-backed evaluation of a closed `Expr` of type
@@ -117,12 +122,12 @@ unsafe def evalFlagDataImpl (type : Lean.Expr) (value : Lean.Expr) :
   Lean.Meta.evalExpr (List (Nat × List (Nat × Nat) × List Nat × Nat × Nat)) type value
 
 @[implemented_by evalFlagDataImpl]
-opaque evalFlagData (type : Lean.Expr) (value : Lean.Expr) :
+meta opaque evalFlagData (type : Lean.Expr) (value : Lean.Expr) :
     Lean.Meta.MetaM (List (Nat × List (Nat × Nat) × List Nat × Nat × Nat))
 
 /-- Turn a list of canonical endpoint pairs `[(u,v),…]` into a Lean term
 `[Sym2.mk ((u : Fin numVerts), (v : Fin numVerts)), …]`. -/
-def natPairsToEdgesTerm (numVerts : ℕ) (edges : List (Nat × Nat)) :
+meta def natPairsToEdgesTerm (numVerts : ℕ) (edges : List (Nat × Nat)) :
     CommandElabM (TSyntax `term) := do
   let terms ← edges.toArray.mapM fun uv => do
     `(Sym2.mk (($(Quote.quote uv.1) : Fin $(Quote.quote numVerts)),
@@ -134,7 +139,7 @@ or at the root. The `generate_*` macros emit *unqualified* names that pick up th
 surrounding namespace, so a prerequisite/existence check (e.g. "is the underlying
 empty-typed flag present?") must consult both: the locally-generated copy and any
 root-level one. -/
-def isDeclaredInScope (name : Name) : CommandElabM Bool := do
+meta def isDeclaredInScope (name : Name) : CommandElabM Bool := do
   let ns ← getCurrNamespace
   let env ← getEnv
   return env.contains (ns ++ name) || env.contains name
@@ -149,7 +154,7 @@ library) and (b) fail to detect the in-namespace re-declaration when two
 `generate_*` calls share a type/underlying constant within one namespace. At the
 root namespace `getCurrNamespace` is anonymous, so this coincides with the old
 root check. -/
-def elabUnlessDefined (name : Name) (cmd : Syntax) : CommandElabM Unit := do
+meta def elabUnlessDefined (name : Name) (cmd : Syntax) : CommandElabM Unit := do
   let ns ← getCurrNamespace
   if ¬ (← getEnv).contains (ns ++ name) then
     elabCommand cmd
@@ -168,7 +173,7 @@ type tag (`flagType`), the `toFlag` map and its injectivity proof (`toFlagFn` /
 the flag list (`nodupProof`); the dedup/`Quot.sound` value-lemma argument and the
 `Finset.map_univ_of_surjective` completeness argument are identical. Each
 declaration is emitted through `elabUnlessDefined`, so the macros stay idempotent. -/
-def emitFlagSetMachinery
+meta def emitFlagSetMachinery
     (n : ℕ)
     (flagType flagElemType toFlagFn toFlagInj surjWitness nodupProof : TSyntax `term)
     (flagTerms flagBridgeTerms : Array (TSyntax `term))

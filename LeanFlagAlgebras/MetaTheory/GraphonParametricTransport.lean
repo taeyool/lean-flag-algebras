@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
-import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
+public import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
+
+@[expose] public section
 
 /-! # The parametric rooted transport and the top-endpoint recovery (Cor 106)
 

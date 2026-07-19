@@ -1,8 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.MeasureSupport
-import LeanFlagAlgebras.MetaTheory.EvalAlgebra
-import LeanFlagAlgebras.MetaTheory.ConstrainedClass
-import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import Mathlib.Topology.UrysohnsLemma
+module 
+
+public import LeanFlagAlgebras.MetaTheory.MeasureSupport
+public import LeanFlagAlgebras.MetaTheory.EvalAlgebra
+public import LeanFlagAlgebras.MetaTheory.ConstrainedClass
+public import LeanFlagAlgebras.FlagAlgebra.RandomHom
+
+@[expose] public section
 
 /-! # Support passes to random extensions, and the support-closure criterion
 
@@ -59,7 +62,7 @@ lemma downward_basisVector (F : FinFlag σ) :
 lemma forbidden_ae_zero (T : Constraint σ) {φ₀ : PositiveHom ∅ₜ}
     (hφ₀ : posHomPoint φ₀ ∈ Qσ T.forb0) (hσ : φ₀ ⟨σ⟩₀ > 0)
     {F : FinFlag σ} (hF : T.forbσ F) :
-    ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)), χ.val F = 0 := by
+    ∀ᵐ χ ∂((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure (PositiveHomSpace σ)), χ.val F = 0 := by
   -- the underlying graph is a forbidden graph, hence killed by `φ₀ ∈ Q₀`
   have hzero0 : φ₀ (⟦basisVector ⟨F.1, unlabel F.2⟩⟧ : FlagAlgebra ∅ₜ) = 0 := by
     have hmem := (mem_Qσ_iff T.forb0 (posHomPoint φ₀)).mp hφ₀ ⟨F.1, unlabel F.2⟩ (T.unlabel_forb F hF)
@@ -87,7 +90,7 @@ constrained unlabelled limit with `φ₀⟨σ⟩₀ > 0`, then the random extens
 supported on `Q_σ`. -/
 theorem support_passes (T : Constraint σ) {φ₀ : PositiveHom ∅ₜ}
     (hφ₀ : posHomPoint φ₀ ∈ Qσ T.forb0) (hσ : φ₀ ⟨σ⟩₀ > 0) :
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support ⊆ Qσ T.forbσ := by
+    Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) ⊆ Qσ T.forbσ := by
   refine Measure.support_subset_of_isClosed (Qσ_isClosed T.forbσ) ?_
   have hae : ∀ᵐ χ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)), ∀ F : FinFlag σ, T.forbσ F → χ.val F = 0 := by
     rw [ae_all_iff]
@@ -105,7 +108,7 @@ theorem support_passes (T : Constraint σ) {φ₀ : PositiveHom ∅ₜ}
 of admissible random extensions of constrained unlabelled limits. -/
 def Sσ (T : Constraint σ) : Set (PositiveHomSpace σ) :=
   closure (⋃ (φ₀ : PositiveHom ∅ₜ) (_ : posHomPoint φ₀ ∈ Qσ T.forb0) (hσ : φ₀ ⟨σ⟩₀ > 0),
-            (ℙ[φ₀] : Measure (PositiveHomSpace σ)).support)
+            Measure.support (ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)))
 
 /-- Root-plantability: `S_σ = Q_σ`. -/
 def RootPlantable (T : Constraint σ) : Prop := Sσ T = Qσ T.forbσ
@@ -124,7 +127,7 @@ def QuotientNonneg (T : Constraint σ) (f : FlagAlgebra σ) : Prop :=
 random extension. -/
 def EnsembleNonneg (T : Constraint σ) (f : FlagAlgebra σ) : Prop :=
   ∀ (φ₀ : PositiveHom ∅ₜ), posHomPoint φ₀ ∈ Qσ T.forb0 → ∀ (hσ : φ₀ ⟨σ⟩₀ > 0),
-    (ℙ[φ₀] : Measure (PositiveHomSpace σ)) {χ | 0 ≤ (PositiveHomSpace.toPosHom χ) f} = 1
+    ((ℙ[φ₀] : ProbabilityMeasure (PositiveHomSpace σ)) : Measure _) {χ | 0 ≤ (PositiveHomSpace.toPosHom χ) f} = 1
 
 /-- **Quotient semantics implies ensemble semantics** (soundness, always holds). -/
 theorem quotient_implies_ensemble (T : Constraint σ) (f : FlagAlgebra σ)

@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.ErdosPentagon.Lemmas
+module
+
+public import LeanFlagAlgebras.ErdosPentagon.Lemmas
+
+@[expose] public section
 
 /-! # The Erdős pentagon problem
 

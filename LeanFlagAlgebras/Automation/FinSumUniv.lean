@@ -1,4 +1,8 @@
-import Mathlib.Algebra.BigOperators.Fin
+module
+
+public import Mathlib.Algebra.BigOperators.Fin
+
+@[expose] public section
 
 /-! # `Fin.sum_univ_*` for block sizes above eight
 

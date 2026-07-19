@@ -1,6 +1,11 @@
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Forbid.TuranDensity
-import LeanFlagAlgebras.Flags.ForbidFreePruned
+module
+
+public import LeanFlagAlgebras.Flags.FlagGenerator
+public import LeanFlagAlgebras.Forbid.TuranDensity
+public import LeanFlagAlgebras.Flags.ForbidFreePruned
+public meta import LeanFlagAlgebras.Flags.ForbidFreePruned
+
+@[expose] public section
 
 /-! # Common forbidden graphs
 

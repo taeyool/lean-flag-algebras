@@ -1,7 +1,11 @@
-import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
-import LeanFlagAlgebras.MetaTheory.GraphonHom
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
-import LeanFlagAlgebras.MetaTheory.SupportClosure
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
+public import LeanFlagAlgebras.MetaTheory.GraphonHom
+public import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+public import LeanFlagAlgebras.MetaTheory.SupportClosure
+
+@[expose] public section
 
 /-! # The rooted-view measure of a graphon
 

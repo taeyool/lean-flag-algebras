@@ -1,5 +1,11 @@
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.ErdosPentagon.FlagDef
+module
+
+public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public import LeanFlagAlgebras.ErdosPentagon.FlagDef
+public meta import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+public meta import LeanFlagAlgebras.ErdosPentagon.FlagDef
+
+@[expose] public section
 
 /-! # Erdős pentagon problem: generated flag products
 
@@ -25,6 +31,6 @@ generate_forbid_mul_theorems 4 5 3 1 K3
 generate_flag_pair_density_theorems 4 5 3 2 K3
 generate_forbid_mul_theorems 4 5 3 2 K3
 
-#print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
+-- #print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
 
 end ErdosPentagonAPI

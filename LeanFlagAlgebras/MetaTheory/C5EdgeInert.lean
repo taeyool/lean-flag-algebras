@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.C5EdgeObstruction
-import LeanFlagAlgebras.MetaTheory.CertificateCones
-import LeanFlagAlgebras.MetaTheory.VanishingIdeal
+module
+
+public import LeanFlagAlgebras.MetaTheory.C5EdgeObstruction
+public import LeanFlagAlgebras.MetaTheory.CertificateCones
+public import LeanFlagAlgebras.MetaTheory.VanishingIdeal
+
+@[expose] public section
 
 /-! # The `C₅`-free edge-type gap is closed-cone inert (paper §10, `cor:c5-edge-closed-inert`)
 

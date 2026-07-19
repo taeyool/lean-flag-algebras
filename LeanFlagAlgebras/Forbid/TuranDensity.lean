@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.Forbid.Basic
-import LeanFlagAlgebras.Turan.GeneralizedTuran
+module
+
+public import LeanFlagAlgebras.Forbid.Basic
+public import LeanFlagAlgebras.Turan.GeneralizedTuran
+
+@[expose] public section
 
 /-! # From forbidden-subgraph bounds to Turán densities
 

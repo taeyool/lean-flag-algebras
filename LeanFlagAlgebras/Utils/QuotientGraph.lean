@@ -1,4 +1,8 @@
-import Mathlib.Combinatorics.SimpleGraph.Maps
+module
+
+public import Mathlib.Combinatorics.SimpleGraph.Maps
+
+@[expose] public section
 
 /-! # Isomorphism classes of simple graphs
 

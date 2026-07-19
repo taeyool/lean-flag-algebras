@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.C4Free
+module
+
+public import LeanFlagAlgebras.MetaTheory.C4Free
+
+@[expose] public section
 
 /-! # A general subquadratic edge-degeneracy criterion (paper §9.1, `cor:degenerate-family`)
 

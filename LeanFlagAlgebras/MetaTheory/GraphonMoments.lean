@@ -1,4 +1,8 @@
-import LeanFlagAlgebras.MetaTheory.GraphonBasic
+module
+
+public import LeanFlagAlgebras.MetaTheory.GraphonBasic
+
+@[expose] public section
 
 /-! # Moment identities from the local slice equations (paper §11.7
 `thm:parametric-moments`, §11.8 `thm:approximate-moments`)

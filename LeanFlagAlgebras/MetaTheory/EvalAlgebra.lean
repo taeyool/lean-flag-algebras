@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.FlagAlgebra.FlagSequence
-import Mathlib.Topology.ContinuousMap.StoneWeierstrass
+module
+
+public import LeanFlagAlgebras.FlagAlgebra.FlagSequence
+public import Mathlib.Topology.ContinuousMap.StoneWeierstrass
+
+@[expose] public section
 
 /-! # Flag-algebra evaluations as a dense subalgebra of `C(X_σ)`
 

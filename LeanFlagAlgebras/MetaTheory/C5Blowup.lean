@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.C5Free
-import LeanFlagAlgebras.MetaTheory.Blowup
+module
+
+public import LeanFlagAlgebras.MetaTheory.C5Free
+public import LeanFlagAlgebras.MetaTheory.Blowup
+
+@[expose] public section
 
 /-! # Independent blow-ups of `C₅`-free graphs detect triangles (paper §8)
 

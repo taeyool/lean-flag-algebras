@@ -1,6 +1,10 @@
-import LeanFlagAlgebras.MetaTheory.PlantedCount
-import LeanFlagAlgebras.MetaTheory.CloneTotal
-import LeanFlagAlgebras.MetaTheory.LabeledCount
+module
+
+public import LeanFlagAlgebras.MetaTheory.PlantedCount
+public import LeanFlagAlgebras.MetaTheory.CloneTotal
+public import LeanFlagAlgebras.MetaTheory.LabeledCount
+
+@[expose] public section
 
 /-! # The reduced planted estimate (equal non-root clones)
 

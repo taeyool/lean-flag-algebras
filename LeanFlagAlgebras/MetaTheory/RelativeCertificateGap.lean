@@ -1,5 +1,9 @@
-import LeanFlagAlgebras.MetaTheory.CertificateCones
-import LeanFlagAlgebras.MetaTheory.RelativeSupport
+module
+
+public import LeanFlagAlgebras.MetaTheory.CertificateCones
+public import LeanFlagAlgebras.MetaTheory.RelativeSupport
+
+@[expose] public section
 
 /-! # No closed certificate gap over a slice (paper §11.4, `thm:relative-certificate-gap`)
 
