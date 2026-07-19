@@ -3109,7 +3109,7 @@ parts are:
   \item \textbf{Certificate matrices and basis-element vectors.}  For each SDP
     block $t$, a subflag type $\sigma_t$ and a rational matrix $M_t$ paired with
     a list of $\sigma_t$-flags $E_{t,i}$; their basis elements
-    $e_{t,i}:=[E_{t,i}]$ form the vector $v_t$ and the quadratic form
+    $e_{t,i}:=[E_{t,i}]$ form the vector~$v_t$ and the quadratic form
     $\langle v_t, M_t\, v_t\rangle$.
   \item \textbf{Lifting the objective (when needed).}  If the target graph $F$
     has fewer than $N$ vertices, one auxiliary lemma first lifts $[F]$ to the
@@ -3117,7 +3117,7 @@ parts are:
     forbidden graph.
   \item \textbf{The main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
-    and $r$ the certificate's non-negative remainder, the compiler assembles
+    and the certificate's non-negative remainder~$r$, the compiler assembles
     the bound $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
     in \Cref{sec:flagmatic-background}:
     \[
@@ -3196,7 +3196,7 @@ specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
 After emitting these flags, Part 1 generates
 the rewrite theorems, which are used later
 in Parts 3 and 4 of the proof. Concretely, for each emitted typed flag $F$, Part~1 evaluates the downward normalizing
-factor $q_\sigma(F)$ from \Cref{sec:formal-downward}.
+factor~$q_\sigma(F)$ from \Cref{sec:formal-downward}.
 For each relevant pair of typed flags $F_1,F_2$ and host flag $G$, it also
 evaluates the pair density
 \(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
