@@ -3032,10 +3032,10 @@ certificates; they are exactly what our compiler automates.
 The same idea scales by replacing one square with weighted sums of many
 squares.  Choose flags $E_1,\ldots,E_r$ of the same type, let
 $e_i:=[E_i]\in\mathcal A^\sigma$ be their basis elements, and collect these
-algebra elements into a vector $v=(e_1,\ldots,e_r)$.  A symmetric matrix $M$ is \emph{positive semidefinite}
-(PSD) if $x^\top Mx\geq 0$ for every real vector $x$.  Consequently, when $M$
+algebra elements into a vector $v=(e_1,\ldots,e_r)^\top$.  A symmetric matrix $M$ is \emph{positive semidefinite}
+(PSD) if $x^\top Mx\geq 0$ for every real vector~$x$.  Consequently, when $M=(M_{ij})$
 is PSD, the flag-algebra quadratic form
-$\langle v,Mv\rangle=\sum_{i,j}M_{ij}\,(e_i\cdot e_j)$ is non-negative under every
+$\langle v,Mv\rangle=\sum_{i,j}M_{ij} e_i e_j$ is non-negative under every
 positive homomorphism: evaluating the algebra elements turns it into the ordinary real
 quadratic form $x^\top Mx$.  The downward operator then transfers this
 non-negativity from the labeled algebra to the unlabeled one.
