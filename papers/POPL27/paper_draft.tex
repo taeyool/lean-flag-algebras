@@ -91,6 +91,7 @@
 \newcommand{\Ext}{\operatorname{Ext}}
 
 \newcommand{\commentout}[1]{}
+\newcommand\DOI[1]{DOI: \href{https://doi.org/#1}{#1}}
 
 \tikzset{
   graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
@@ -519,7 +520,7 @@ following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.  No background in flag algebras or extremal
 combinatorics is assumed.  
 For an integer $n$, we write $[n]$ for the set of all positive integers less than or equal to $n$.
-All graphs $G$ are undirected, finite and simple,
+All graphs~$G$ are undirected, finite and simple,
 and their vertex and edge sets are written $V(G)$ and $E(G)$, respectively.
 Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
 forbidden graphs.  Throughout the paper, an unqualified \emph{subgraph} is an
@@ -548,7 +549,7 @@ A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ where $M$ is an
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
 (that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
-The vertices in $\operatorname{Im}(\theta_F)$ are called the
+The vertices in~$\operatorname{Im}(\theta_F)$ are called the
 \emph{labeled vertices} of $F$; they are also often called its \emph{roots}.
 The remaining $|V(F)|-k$ vertices are \emph{unlabeled}.
 For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
@@ -1007,8 +1008,7 @@ lemma shows.
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
   $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $[F] \leq c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every
-  $\phi \in \poshom{\emptyset}$, a contradiction.
+  $[F] \leq c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
@@ -1112,7 +1112,7 @@ density as an unlabeled graph in the limiting object),
 the following holds~\cite{razborov2007flag}:
 there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
-such that for every $f \in \mathcal{A}^\sigma$, the random positive
+such that for every~$f \in \mathcal{A}^\sigma$, the random positive
 homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
 \begin{equation}\label{eq:ensemble}
   \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
@@ -1152,7 +1152,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
     \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
     \;\geq\; 0.
   \]
-  Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
+  Since $\phi_0$ was arbitrary, we have $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
 A flag algebra proof of $[F] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
@@ -1698,7 +1698,7 @@ Here the superscripted bracket notation is a tuple constructor for
 \lean{FlagList}.  Thus \lean{[F]}$^{\mathtt{f}}$ is the one-entry
 \lean{FlagList} whose unique entry is \lean{F}, and
 \lean{[F}$_1$\lean{, F}$_2$\lean{]}$^{\mathtt{f}}$ is the two-entry
-\lean{FlagList} sending the first index of \lean{Fin 2} to \lean{F}$_1$ and
+\lean{FlagList} sending the first index of \lean{Fin~2} to \lean{F}$_1$ and
 the second to \lean{F}$_2$.  The superscript \(\mathtt{f}\) distinguishes this
 notation from ordinary list notation and from quotient brackets; it does not
 add another quotienting operation.
@@ -1883,11 +1883,11 @@ Here the candidate limit \(a\) is a real-valued function on finite
 underlying sizes of the flags \(s(0),s(1),\ldots\) strictly increase.  The
 second conjunct uses Lean's filter notation for convergence:
 \lean{atTop} is the limit \(n\to\infty\) on \(\mathbb{N}\), and
-\(\mathcal{N} a\) is the neighbourhood filter of the function \(a\).  The term
+\(\mathcal{N} a\) is the neighbourhood filter of the function~\(a\).  The term
 \lean{flagDensitySeq s} is the sequence of density functions associated to
 \(s\); its \(n\)-th value sends a finite \(\sigma\)-flag \(F\) to
 \(\den{F}{s(n)}\).  Thus the \lean{Tendsto} line is the Lean statement that,
-for every finite \(\sigma\)-flag \(F\),
+for every finite \(\sigma\)-flag~\(F\),
 \[
   \lim_{n\to\infty}\den{F}{s(n)}=a(F).
 \]
@@ -1952,8 +1952,8 @@ limit of some flag sequence.
 Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
-leave implicit.  Part (b) goes in the opposite direction.  Starting from a
-positive homomorphism \(\phi\), the proof uses the values \(\phi([G])\) to put a
+leave implicit.  Part~(b) goes in the opposite direction.  Starting from a
+positive homomorphism~\(\phi\), the proof uses the values~\(\phi([G])\) to put a
 probability distribution on the finite \(\sigma\)-flags of each sufficiently
 large size: a flag \(G\) is sampled with weight \(\phi([G])\).  These weights are
 indeed probabilities because \(\phi\) is non-negative on flag basis elements and satisfies the normalization
@@ -1984,6 +1984,7 @@ from the Lean expression \lean{PositiveHom.coe}.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
+Here, 
 \lean{semanticCone}~$\sigma$ is the set of elements in
 \lean{FlagAlgebra}~$\sigma$ that every positive homomorphism
 evaluates non-negatively.  The induced order is installed as a Lean
@@ -2022,7 +2023,7 @@ combines the two: it sends a typed flag to the basis vector of its unlabeling,
 scaled by the normalizing factor.
 
 The normalizing factor is computed by counting label placements.  For a
-concrete typed labeled graph \(G\) on \(n\) vertices, \lean{isomorphismCount G}
+concrete typed labeled graph~\(G\) on~\(n\) vertices, \lean{isomorphismCount G}
 is the number of ways to place the \(n_0\) labels on the same underlying
 unlabeled graph so that the resulting typed labeled graph is related to
 \(G\) by a label-preserving graph isomorphism.  The denominator
@@ -2338,7 +2339,7 @@ graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
 graph \(H\).  The conclusion is the corresponding
 Tur\'an-density bound, written in Lean as
-\lean{generalizedTuranDensity H F <= c}; mathematically, it is the assertion
+\lean{generalizedTuranDensity~H~F~<=~c}; mathematically, it is the assertion
 \[
   \tdensity{F}{H}
   =
@@ -2431,7 +2432,7 @@ structure SimpleGraph (V : Type*) where
 \end{lstlisting}
 This works well for the mathematical specification, but it is too general to be
 the data structure of the evaluator.  The vertex type \lean{V} need not come
-with an algorithm for enumerating its vertices, and the relation \lean{Adj} need
+with an algorithm for enumerating its vertices, and the relation~\lean{Adj} need
 not come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
 \lean{Flag}s are built on top of this graph type, they inherit the same
 generality.  Even if the specification layer knows that, for each size, there are
@@ -2585,7 +2586,7 @@ generic inference step.  It asks typeclass search to decide the
 \lean{Nonempty} proposition that such a label-preserving graph isomorphism
 exists.  The generic decidability instance does this by enumerating finitely
 many graph isomorphisms and checking the type-preservation condition.
-The schematic predicate \lean{candidateMatches F H} has therefore been reduced
+The schematic predicate \lean{candidateMatches~F~H} has therefore been reduced
 to a finite search.  The size branch is not conceptually necessary for the
 definition, but it matches the implementation's computation-oriented proof: a
 candidate whose vertex set has the wrong cardinality cannot be isomorphic to
@@ -2853,7 +2854,7 @@ used in the examples of \Cref{sec:reflection-adequacy}.  Generating the typed
 flags also computes and proves their downward identities, including the
 coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
 generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
-pair of two-vertex patterns \((F_1,F_2)\) and every three-vertex host \(G\);
+pair of two-vertex patterns~\((F_1,F_2)\) and every three-vertex host \(G\);
 this family includes the displayed value \(c=1/2\).  These evaluations are
 batched to avoid invoking the native compiler separately for every tuple.
 Finally, the multiplication
@@ -3434,7 +3435,7 @@ flag vector.  The $C_4$-density certificate has two blocks, with matrices of
 dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
 has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
 $5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
-all with $8\times8$ matrices.  Together, these examples exercise both objective
+all with~$8\times8$ matrices.  Together, these examples exercise both objective
 branches and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
@@ -3967,10 +3968,9 @@ This section gives the definitions and main results needed to state that answer;
 a forthcoming paper will present the full theory and its applications.
 
 \paragraph{The constrained positive-homomorphism space.}
-Let \(\mathcal G\) be the class of all finite simple graphs, let
-\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
+Let \(\mathcal G\) be the class of all finite simple graphs, let~\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
 \(\sigma\).  Here \emph{hereditary} means closed under taking induced
-subgraphs: if \(G\in\mathcal K\) and \(S\subseteq V(G)\), then
+subgraphs: if~\(G\in\mathcal K\) and \(S\subseteq V(G)\), then
 \(G[S]\in\mathcal K\).  In particular, the \(H\)-free classes used earlier are
 hereditary, because taking an induced subgraph cannot create a new
 subgraph isomorphic to \(H\).
@@ -4090,8 +4090,7 @@ space:
 Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
 downward operator to \([F]\) produces a non-negative multiple of
 \([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
-Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if
-\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
+Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if~\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
 identity~\eqref{eq:ensemble} gives
 \[
   \mathbb{E}[\phi([F])]=0.
@@ -4466,8 +4465,8 @@ Szemer\'edi's regularity lemma and derived the qualitative form of Roth's
 theorem.  Mehta~\cite{mehta2022kruskal} formalized the Kruskal--Katona theorem.
 Subercaseaux et al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon
 number by connecting a geometric formalization to a SAT certificate.  The
-collaborative PFR project~\cite{gowers2025marton,pfr2023} produced a Lean~4
-formalization of the Gowers--Green--Manners--Tao proof of the polynomial
+collaborative PFR project~\cite{pfr2023} produced a Lean~4
+formalization of the Gowers--Green--Manners--Tao proof \cite{gowers2025marton} of the polynomial
 Freiman--Ruzsa conjecture in characteristic two.  These developments illustrate several
 ways in which formal combinatorics can depend on computation or a large
 supporting library.  Our distinctive concern is the reconstruction of a
@@ -4481,7 +4480,7 @@ gives an extended treatment~\cite{chlipala2013cpdt}.  Lean likewise supports
 verified computation, for example through Mathlib's \lean{decide} and
 \lean{norm\_num} tactics.  Cohen et al.~\cite{cohen2013refinements} develop
 a systematic methodology for building efficiently computable representations
-alongside their abstract counterparts in Coq; our \lean{Sym2Graph} /
+alongside their abstract counterparts in Rocq (previously called Coq); our \lean{Sym2Graph} /
 \lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
 type-class and instance-search mechanism.  Our elaboration-time command
 elaborators play a complementary role: they run the in-Lean finite enumerators
@@ -4754,63 +4753,63 @@ than principle determined the placement.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
-  DOI: 10.2178/jsl/1203350785.
+  \DOI{10.2178/jsl/1203350785}.
 
 \bibitem{razborov2013flag}
 A.~A.~Razborov.
 \newblock Flag algebras: An interim report.
 \newblock In R.~L.~Graham, J.~Ne\v{s}et\v{r}il, and S.~Butler, editors,
   \textit{The Mathematics of Paul Erd\H{o}s II}, 2nd ed., pages 207--232.
-  Springer, 2013. DOI: 10.1007/978-1-4614-7254-4\_16.
+  Springer, 2013. \DOI{10.1007/978-1-4614-7254-4\_16}.
 
 \bibitem{grzesik2012}
 A.~Grzesik.
 \newblock On the maximum number of five-cycles in a triangle-free graph.
 \newblock \textit{Journal of Combinatorial Theory, Series B},
-  102(5):1061--1066, 2012. DOI: 10.1016/j.jctb.2012.04.001.
+  102(5):1061--1066, 2012. \DOI{10.1016/j.jctb.2012.04.001}.
 
 \bibitem{hatami2012}
 H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l', S.~Norine, and A.~Razborov.
 \newblock On the number of pentagons in triangle-free graphs.
 \newblock \textit{Journal of Combinatorial Theory, Series A},
-  120(3):722--732, 2013. DOI: 10.1016/j.jcta.2012.12.008.
+  120(3):722--732, 2013. \DOI{10.1016/j.jcta.2012.12.008}.
 
 \bibitem{razborov2008triangles}
 A.~A.~Razborov.
 \newblock On the minimal density of triangles in graphs.
 \newblock \textit{Combinatorics, Probability and Computing}, 17(4):603--618,
-  2008. DOI: 10.1017/S0963548308009085.
+  2008. \DOI{10.1017/S0963548308009085}.
 
 \bibitem{razborov2010tetrahedron}
 A.~A.~Razborov.
 \newblock On 3-hypergraphs with forbidden 4-vertex configurations.
 \newblock \textit{SIAM Journal on Discrete Mathematics}, 24(3):946--963, 2010.
-  DOI: 10.1137/090747476.
+  \DOI{10.1137/090747476}.
 
 \bibitem{baber2012turan}
 R.~Baber and J.~Talbot.
 \newblock New Tur\'{a}n densities for 3-graphs.
 \newblock \textit{Electronic Journal of Combinatorics}, 19(2):\#P22, 2012.
-  DOI: 10.37236/2360.
+  \DOI{10.37236/2360}.
 
 \bibitem{balogh2016induced5}
 J.~Balogh, P.~Hu, B.~Lidick\'{y}, and F.~Pfender.
 \newblock Maximum density of induced 5-cycle is achieved by an iterated blow-up
   of 5-cycle.
 \newblock \textit{European Journal of Combinatorics}, 52:47--58, 2016.
-  DOI: 10.1016/j.ejc.2015.08.006.
+  \DOI{10.1016/j.ejc.2015.08.006}.
 
 \bibitem{balogh2017rainbow}
 J.~Balogh, P.~Hu, B.~Lidick\'{y}, F.~Pfender, J.~Volec, and M.~Young.
 \newblock Rainbow triangles in three-colored graphs.
 \newblock \textit{Journal of Combinatorial Theory, Series B}, 126:83--113,
-  2017. DOI: 10.1016/j.jctb.2017.04.002.
+  2017. \DOI{10.1016/j.jctb.2017.04.002}.
 
 \bibitem{dillies2022szemeredi}
 Y.~Dillies and B.~Mehta.
 \newblock Formalising Szemer\'{e}di's regularity lemma in Lean.
 \newblock In \textit{Proc.\ ITP 2022}, LIPIcs~237, pages 9:1--9:19, 2022.
-  DOI: 10.4230/LIPIcs.ITP.2022.9.
+  \DOI{10.4230/LIPIcs.ITP.2022.9}.
 
 \bibitem{mantel}
 W.~Mantel, Problem 28, Wiskundige Opgaven, 10:60--61, 1907.
@@ -4820,20 +4819,20 @@ B.~Mehta.
 \newblock Formalising the Kruskal--Katona theorem in Lean.
 \newblock In \textit{Intelligent Computer Mathematics (CICM 2022)},
   LNCS~13467, pages 75--91, 2022.
-  DOI: 10.1007/978-3-031-16681-5\_5.
+  \DOI{10.1007/978-3-031-16681-5\_5}.
 
 \bibitem{subercaseaux2024hexagon}
 B.~Subercaseaux, W.~Nawrocki, J.~Gallicchio, C.~Codel, M.~Carneiro, and
   M.~J.~H.~Heule.
 \newblock Formal verification of the empty hexagon number.
 \newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, pages 35:1--35:19, 2024.
-  DOI: 10.4230/LIPIcs.ITP.2024.35.
+  \DOI{10.4230/LIPIcs.ITP.2024.35}.
 
 \bibitem{gowers2025marton}
 W.~T.~Gowers, D.~Green, F.~Manners, and T.~Tao.
 \newblock On a conjecture of Marton.
 \newblock \textit{Annals of Mathematics}, 201(2):515--549, 2025.
-  DOI: 10.4007/annals.2025.201.2.5.
+  \DOI{10.4007/annals.2025.201.2.5}.
 
 \bibitem{pfr2023}
 A.~Anderson et al.
@@ -4857,13 +4856,13 @@ A.~Chlipala.
 C.~Cohen, M.~D\'{e}n\`{e}s, and A.~M\"{o}rtberg.
 \newblock Refinements for free!
 \newblock In \textit{Proc.\ CPP 2013}, LNCS~8307, pages 147--162, 2013.
-  DOI: 10.1007/978-3-319-03545-1\_10.
+  \DOI{10.1007/978-3-319-03545-1\_10}.
 
 \bibitem{harrison2007verifying}
 J.~Harrison.
 \newblock Verifying nonlinear real formulas via sums of squares.
 \newblock In \textit{Proc.\ TPHOLs 2007}, LNCS~4732, pages 102--118, 2007.
-  DOI: 10.1007/978-3-540-74591-4\_9.
+  \DOI{10.1007/978-3-540-74591-4\_9}.
 
 \bibitem{parrilo2003minimizing}
 P.~A.~Parrilo and B.~Sturmfels.
@@ -4876,7 +4875,7 @@ P.~A.~Parrilo and B.~Sturmfels.
 G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de~Moura.
 \newblock A metaprogramming framework for formal verification.
 \newblock \textit{Proc.\ ACM Program.\ Lang.}, 1(ICFP):34:1--34:29, 2017.
-  DOI: 10.1145/3110278.
+  \DOI{10.1145/3110278}.
 
 \bibitem{lovasz2012large}
 L.~Lov\'{a}sz.
@@ -4889,11 +4888,11 @@ L.~Lov\'{a}sz and B.~Szegedy.
 \newblock Limits of dense graph sequences.
 \newblock \textit{Journal of Combinatorial Theory, Series~B}, 96(6):933--957,
   2006.
-  DOI: 10.1016/j.jctb.2006.05.002.
+  \DOI{10.1016/j.jctb.2006.05.002}.
 
 \bibitem{freer2026graphon}
 C.~Freer.
-\newblock Graphon theory in Lean~4.
+\newblock Graphons in Lean~4.
 \newblock Computer software, 2026.
   \url{https://github.com/cameronfreer/graphon}.
 
