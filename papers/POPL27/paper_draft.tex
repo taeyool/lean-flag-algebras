@@ -3719,9 +3719,9 @@ Another type-theoretic issue appears, for example, when proving the symmetry
 \(
   \den{F_1,F_2}{G}=\den{F_2,F_1}{G}
 \).
-Suppose $F_1$ has vertex type $U_1$ and $F_2$ has vertex type $U_2$.
+Suppose $F_1$ has vertex type~$U_1$ and~$F_2$ has vertex type $U_2$.
 Let $V:\operatorname{Fin}2\to\mathsf{Type}$ be the vertex-type family defined
-by $V_0=U_1$ and $V_1=U_2$.  The tuple is represented by the dependent
+by $V_0=U_1$ and~$V_1=U_2$.  The tuple is represented by the dependent
 function
 \[
   \mathbf{F}:
@@ -3732,7 +3732,7 @@ function
 The dependency is in the codomain: at index $i$, the value $\mathbf{F}(i)$ has
 type \lean{Flag $\sigma$ $V_i$}, so the type of the returned flag varies with
 $i$.  If $\pi$ swaps the two positions, \lean{FlagList.permute} produces a
-tuple with vertex-type family $i\mapsto V_{\pi(i)}$; thus Lean does track that
+tuple with vertex-type family~$i\mapsto V_{\pi(i)}$; thus Lean does track that
 position $0$ now contains a flag on $U_2$ and position $1$ a flag on $U_1$.
 
 The difficulty arises when the tuple produced by \lean{FlagList.permute} is
@@ -3747,12 +3747,11 @@ equality sought here is between two descriptions of the same reordered tuple,
 not between $F_1$ and $F_2$ or between $U_1$ and $U_2$.
 
 The proof first establishes an equality
-$h:W=(i\mapsto V_{\pi(i)})$.  Given any equality of types $A=B$ and a term
-$x:A$, \lean{cast} transports $x$ across that equality, producing a term of
+$h:W=(i\mapsto V_{\pi(i)})$.  Given any equality of types $A=B$ and a term~$x:A$, \lean{cast} transports $x$ across that equality, producing a term of
 type $B$ without changing the underlying mathematical object.  Here it is used
 to place each component of $(F_2,F_1)$ in the corresponding component type of
 the permuted tuple.  Heterogeneous equality, written \lean{HEq $x$ $y$}, then
-allows $x:A$ and $y:B$ to be compared even when $A$ and $B$ are not
+allows~$x:A$ and~$y:B$ to be compared even when $A$ and $B$ are not
 definitionally the same; it asserts that they become equal after the required
 transport.  Applied to the whole tuples, this records that the two
 representations agree.  The lemma \lean{flagListDensity\_HEq\_eq} then states
@@ -3838,7 +3837,7 @@ enumeration should be used before it elaborates the filtering operation.
 
 A different inference problem occurs when the definition of multi-flag
 density processes a tuple whose entries use different vertex types.  For
-example, a pair $(F_1,F_2)$ may have vertex-type family $V_0=V$ and $V_1=W$.
+example, a pair $(F_1,F_2)$ may have vertex-type family $V_0=V$ and~$V_1=W$.
 The generic definition accesses a component $F_i$ using a variable index
 $i:\operatorname{Fin}2$.  To perform the finite constructions associated with
 that component, Lean needs a \lean{Fintype} enumeration of its vertex type
@@ -3849,7 +3848,7 @@ $V_i$ cannot reduce to either branch, and typeclass search does not itself
 split into the two cases.
 
 The missing object is a single pointwise rule that supplies a \lean{Fintype}
-enumeration of $V_i$ for every index $i$.  The auxiliary class
+enumeration of~$V_i$ for every index~$i$.  The auxiliary class
 \lean{FintypeList} records exactly this rule.  Its instance for a pair is
 constructed once by considering $i=0$ and $i=1$; subsequent definitions can
 then request the enumeration at an arbitrary position without repeating that
@@ -3981,7 +3980,7 @@ To make the underlying graph class explicit, we write
 \(\sigma\)-typed flag algebra and
 \(\FlagAlg{\sigma}[\mathcal K]\) for the algebra constructed using only graphs
 in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
-belong to \(\mathcal K\) occur in this constrained algebra.  Because
+belong to~\(\mathcal K\) occur in this constrained algebra.  Because
 \(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
 graphs lie outside \(\mathcal K\), span an ideal,\footnote{An ideal \(I\) in a
 commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace, and hence is closed
@@ -4043,8 +4042,7 @@ outside \(\mathcal K\), since otherwise heredity would put that induced subflag 
 back in \(\mathcal K\).  Hence multiplying a flag outside \(\mathcal K\) by any
 other flag produces a linear combination of flags outside \(\mathcal K\), so
 their span is precisely the ideal killed by \(q_\sigma\).  Once this
-presentation is established, a homomorphism vanishing on every flag outside
-\(\mathcal K\) vanishes on the whole ideal and therefore factors through
+presentation is established, a homomorphism vanishing on every flag outside~\(\mathcal K\) vanishes on the whole ideal and therefore factors through
 \(q_\sigma\) by the universal property of the quotient.
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
@@ -4060,7 +4058,7 @@ recalled in \Cref{sec:background-downward}, every such \(\phi_0\) determines a
 unique probability measure \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\).  It is
 obtained by choosing a uniformly random occurrence of \(\sigma\) in finite
 graphs approaching \(\phi_0\) and passing to the limit.  For a probability
-measure \(\mu\) on \(X_\sigma\), its
+measure~\(\mu\) on~\(X_\sigma\), its
 support \(\operatorname{supp}(\mu)\) consists of those points
 \(\chi\in X_\sigma\) for which every open neighborhood of \(\chi\) has positive
 \(\mu\)-measure.
@@ -4206,7 +4204,7 @@ ensemble-valid typed inequalities exactly under root-plantability.
 \paragraph{When root-plantability holds.}
 The criterion in \Cref{thm:support-closure-summary} reduces semantic completeness to a structural problem about the
 graph class.  Our main positive result gives a broad answer.  Given
-\(G\in\mathcal K\), a vertex \(v\in V(G)\), and a graph \(J\), write
+\(G\in\mathcal K\), a vertex~\(v\in V(G)\), and a graph \(J\), write
 \(G[v\mapsto J]\) for the graph obtained by replacing \(v\) by \(J\), keeping
 the edges inside \(J\), and joining every vertex of \(J\) to every former
 neighbor of \(v\).  Call \(\mathcal K\) \emph{blow-up-closed} if, for every
@@ -4233,7 +4231,7 @@ each such flag \((G,\theta)\), the proof repeatedly applies the preceding
 replacement construction, replacing every vertex \(v\in V(G)\) by a graph
 \(J_v\).  The resulting blow-up has a natural projection back to \(G\): every
 vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
-\(v\) under this projection, the \emph{fiber over \(v\)}.
+\(v\) under this projection, the \emph{fiber over~\(v\)}.
 
 The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
 uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
@@ -4247,7 +4245,7 @@ These estimates connect the finite blow-up construction to the definition of
 \(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
 Because \(X_\sigma\) has the topology of pointwise convergence on flags,
 membership in \(U\) can be ensured by approximating the values of finitely many
-\(\sigma\)-flags within a prescribed tolerance.  Choose \((G,\theta)\)
+\(\sigma\)-flags within a prescribed tolerance.  Choose~\((G,\theta)\)
 sufficiently far along the sequence representing \(\chi\), and then choose its
 blow-up sufficiently large.  The construction ensures that a positive fraction
 of the embeddings of \(\sigma\) into the blow-up produce \(\sigma\)-typed
@@ -4278,8 +4276,8 @@ Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
 class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
 let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
-at random has normalized degree tending to zero.  Let
-\(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the density expression represented by
+at random has normalized degree tending to zero.  
+Let~\(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the density expression represented by
 the following two-vertex \(\sigma_1\)-flag:
 \[
   d :=
