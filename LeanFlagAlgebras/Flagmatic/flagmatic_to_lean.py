@@ -1106,7 +1106,7 @@ LEAN_OPENS: list[str] = [
 ]
 
 
-def render_pruned_commands(cert: dict) -> str:
+def render_pruned_commands(cert: dict, kernel_decide: bool = False) -> str:
     """Emit the `def K{r}` forbid graph + the edge-based pruned generation /
     density / multiplication commands this certificate needs.
 
@@ -1117,6 +1117,11 @@ def render_pruned_commands(cert: dict) -> str:
       * typed flags        = (patN, k, m) and (N, k, m) per block;
       * pair-density + mul = (patN, N, k, m) per block.
     Only complete-graph forbids are supported (the forbid is `completeSym2Graph r`).
+
+    When `kernel_decide` is True, `set_option flagGen.kernelDecide true` is
+    emitted before the first `generate_forbid_free_*` command so that all
+    bridging lemmas are proved with `decide +kernel` instead of `native_decide`.
+    Viable for host size N ≤ 4; N = 5 is impractical (OOM / very slow).
     """
     desc = cert.get("description", "")
     forbid_n, forbid_edges, tag = _forbid_graph_from_description(desc)
@@ -1145,6 +1150,18 @@ def render_pruned_commands(cert: dict) -> str:
         typed_triples.add((N, k, type_idx))
         block_params.append((patN, k, type_idx))
 
+    # Lines to insert before the first generate command when kernel_decide is True.
+    kernel_decide_lines: list[str] = (
+        [
+            "-- `flagGen.kernelDecide`: all generated bridging lemmas are proved by",
+            "-- `decide +kernel` instead of `native_decide`, so this file carries no",
+            "-- compiled-evaluation axioms.  Viable for host size N ≤ 4.",
+            "set_option flagGen.kernelDecide true",
+        ]
+        if kernel_decide
+        else []
+    )
+
     if subgraph_mode:
         # Non-complete forbid → *subgraph* semantics (Route B). The forbidden graph is an explicit
         # `Sym2Graph` term, and the `generate_forbid_free_*` commands emit the subgraph-`F`-free
@@ -1158,6 +1175,7 @@ def render_pruned_commands(cert: dict) -> str:
             f"  edges := {{{edge_terms}}}",
             f"  edges_valid := by decide",
         ]
+        lines.extend(kernel_decide_lines)
         for n in sorted(empty_sizes):
             lines.append(f"generate_forbid_free_empty_typed_flags {n} {tag}")
         for (n, k, m) in sorted(typed_triples):
@@ -1175,6 +1193,7 @@ def render_pruned_commands(cert: dict) -> str:
         f"-- the forbid-free pair-density / multiplication theorems consumed by the proof below.",
         f"def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}",
     ]
+    lines.extend(kernel_decide_lines)
     for n in sorted(empty_sizes):
         lines.append(f"generate_forbid_free_empty_typed_flags {n} {tag}")
     for (n, k, m) in sorted(typed_triples):
@@ -1224,13 +1243,22 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
     return base
 
 
-def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> str:
+def render_skeleton(
+    cert: dict,
+    namespace: str,
+    theorem_name: str = "main",
+    kernel_decide: bool = False,
+) -> str:
     """Render a complete starter Lean API file for the edge-based pruned pipeline:
     imports, opens, namespace, `def K{r}` + `generate_forbid_free_*` commands, the
     matrix/PSD defs, σ_t / v_t definitions, the forbid-free objective expansion
-    (branch B), and the auto-proved main theorem."""
+    (branch B), and the auto-proved main theorem.
+
+    When `kernel_decide` is True, `set_option flagGen.kernelDecide true` is emitted
+    before the generate commands so all bridging lemmas use `decide +kernel`.
+    """
     opens = "\n".join(LEAN_OPENS)
-    commands = render_pruned_commands(cert)
+    commands = render_pruned_commands(cert, kernel_decide=kernel_decide)
     matrices_body = render_matrices(cert)
     vectors_body = render_flag_vectors(cert)
     # render_flag_vectors prepends a 2-line auto-gen header; strip it so the
@@ -1355,10 +1383,11 @@ def _cmd_gen_skeleton(args: argparse.Namespace) -> int:
         )
         return 2
     theorem_name = args.theorem_name or _derive_theorem_name(args.certificate)
-    text = render_skeleton(cert, namespace, theorem_name)
+    text = render_skeleton(cert, namespace, theorem_name, kernel_decide=args.kernel_decide)
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(text, encoding="utf-8")
-    print(f"wrote {len(text)} chars to {args.target} (namespace {namespace})")
+    kd_note = " [kernel-decide mode]" if args.kernel_decide else ""
+    print(f"wrote {len(text)} chars to {args.target} (namespace {namespace}){kd_note}")
     return 0
 
 
@@ -1494,6 +1523,28 @@ def main(argv: list[str] | None = None) -> None:
     )
     p_skel.add_argument("--force", action="store_true",
                         help="overwrite the target if it exists")
+    proof_mode = p_skel.add_mutually_exclusive_group()
+    proof_mode.add_argument(
+        "--kernel-decide",
+        dest="kernel_decide",
+        action="store_true",
+        default=False,
+        help=(
+            "Emit `set_option flagGen.kernelDecide true` before the generate commands. "
+            "All bridging lemmas are proved with `decide +kernel` instead of "
+            "`native_decide`, so the file carries no compiled-evaluation axioms. "
+            "Viable for host size N ≤ 4; N = 5 is impractical (OOM / very slow)."
+        ),
+    )
+    proof_mode.add_argument(
+        "--native-decide",
+        dest="kernel_decide",
+        action="store_false",
+        help=(
+            "Use `native_decide` for bridging lemmas (default). "
+            "Required for host size N = 5."
+        ),
+    )
     p_skel.set_defaults(func=_cmd_gen_skeleton)
 
     args = ap.parse_args(argv)
