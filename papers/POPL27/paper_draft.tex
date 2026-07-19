@@ -58,7 +58,7 @@
 \newtheorem{remark}[remark]{Remark}
 \aliascntresetthe{remark}
 
-\usepackage{cleveref}
+\usepackage[nameinlink]{cleveref}
 \crefname{theorem}{Theorem}{Theorems}
 \Crefname{theorem}{Theorem}{Theorems}
 \crefname{lemma}{Lemma}{Lemmas}
@@ -255,16 +255,22 @@
 
 % =========================================================================
 \title{Formalizing Flag Algebras in Lean}
-\date{}
+\date{\today}
 
 \author[1,3]{Gyeongwon Jeong\thanks{These authors are joint first authors of this work.}}
 \author[1,3]{Seonghun Park\protect\footnotemark[1]}
 \author[1]{Jihoon Hyun}
-\author[2]{Sang-il Oum}
-\author[3]{Hongseok Yang}
-\affil[1]{School of Computing, KAIST, Daejeon, Korea}
-\affil[2]{Discrete Mathematics Group, Institute for Basic Science (IBS), Daejeon, Korea}
-\affil[3]{School of Computational Sciences, Korea Institute for Advanced Study (KIAS), Seoul,~Korea}
+\author[2,3]{Sang-il Oum}
+\author[4]{Hongseok~Yang}
+\affil[1]{\small School of Computing, KAIST, Daejeon, Korea}
+\affil[2]{\small Discrete Mathematics Group, Institute for Basic Science (IBS), Daejeon, Korea}
+\affil[3]{\small Department of Mathematical Sciences, KAIST, Daejeon, Korea}
+\affil[4]{\small School of Computational Sciences, Korea Institute for Advanced Study (KIAS), Seoul,~Korea}
+\affil[ ]{E-mail addresses: \texttt{jgyw0910@kaist.ac.kr},
+\texttt{hun57@kaist.ac.kr},
+\texttt{qawbecrdtey@kaist.ac.kr},
+\texttt{sagil@ibs.re.kr},
+\texttt{hongseok00@gmail.com}}
 
 % =========================================================================
 \begin{document}
@@ -2510,7 +2516,7 @@ includes the labeled vertices.  Its edge set is then computed by filtering the
 host graph's explicit edge set to the edges whose endpoints both lie in the
 chosen vertex set.  The \lean{Fintype (Sym2InducedLabeledSubgraph G)} instance
 provides an enumeration of all induced subflags of \(G\).  Concretely,
-the instance contains an \lean{elems} field listing all elements of the type \lean{Sym2InducedLabeledSubgraph G},
+the instance contains an \lean{elems} field listing all elements of the type \lean{Sym2InducedLabeledSubgraph~G},
 together with a \lean{complete} proof that this enumeration misses none of
 them.  Here the
 enumeration is deliberately simple: since the vertices of \(G\) are
@@ -2524,7 +2530,7 @@ density calculation.  To compute the numerator of \(\den{F}{G}\), we still need
 to recognize which of these candidates are isomorphic to the pattern \(F\).
 This is the second basic ingredient: a decidable predicate on candidates which,
 given \(H\), decides whether the labeled graph associated to \(H\) is
-isomorphic to \(F\), with the type labels respected.
+isomorphic to~\(F\), with the type labels respected.
 
 The schematic predicate \lean{candidateMatches F H} below isolates this test.
 It is a one-pattern presentation of the isomorphism check that appears inside
@@ -2533,7 +2539,7 @@ turns the induced subgraph \(H\) into its associated labeled graph and asks
 whether the result is isomorphic to \(F\), with the type labels respected.  As
 a mathematical statement this is still a proposition, not a program.  The
 reflection step is to show Lean how to decide the proposition from the concrete
-data stored in \(F\), \(G\), and \(H\).  The following small instance displays
+data stored in \(F\), \(G\), and~\(H\).  The following small instance displays
 the mechanism used in the implementation: expose the finite vertex set of the
 candidate, read adjacency from explicit edge membership, reject candidates of
 the wrong size, and then invoke the finite isomorphism search.
@@ -3016,7 +3022,7 @@ terms in this derivation: the two labeled flags $\fKtwobull$ and
 $\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
 the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
-analogous flags, PSD matrices, and remainder coefficients.
+analogous flags, positive semidefinite matrices, and remainder coefficients.
 Checking even this certificate requires expanding a product, computing its
 downward image, expanding the objective and the unit to a common host size,
 and collecting coefficients.  These calculations remain suitable for
