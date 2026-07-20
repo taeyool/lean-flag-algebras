@@ -281,36 +281,38 @@
 
 \begin{abstract}
 Razborov's flag algebra method is a powerful tool for proving asymptotic
-inequalities in extremal graph theory, often reducing the task to a search for
-a finite certificate using semidefinite programming.  The method is
-particularly well suited to constrained problems, where one seeks bounds over
+inequalities in extremal graph theory, often reducing the task to finding a
+finite certificate by semidefinite programming.  The method is
+particularly well suited to constrained problems, where one seeks bounds for
 graphs that avoid specified finite patterns, such as triangles.  We present a
 machine-checked formalization of the method for finite simple graphs, together
 with a certificate-to-proof compiler that turns externally generated
 certificate data into algebraic proofs checked by Lean.
 
-The formalization covers the mathematical content of the method: partially
+The formalization covers the mathematical foundations of the method: partially
 labeled graphs, their densities in large graphs, the quotient algebra of
 density expressions, graph-limit semantics through positive homomorphisms, and
 the downward operators used to average out labels.  Our compiler treats the
-output of the external semidefinite programming search only as candidate
-certificate data: lists of flags, target-density data, and rational
+output of the external semidefinite programming search as candidate
+certificate data rather than as trusted input: lists of flags,
+target-density data, and rational
 positive-semidefinite matrices.  It then directs Lean to compute the required
-density and multiplication facts independently, check those computations
-against the mathematical definitions, verify positive-semidefiniteness exactly
+density and multiplication facts independently and check those computations
+against the mathematical definitions, verify positive semidefiniteness exactly
 over $\mathbb{Q}$, and carry out the algebraic normalization steps that occur in
-flag-algebra proofs.  As case studies, the compiler yields machine-checked
+flag-algebra proofs.  In our case studies, the compiler yields machine-checked
 proofs of several Tur\'an-type bounds, including Mantel's theorem, a
 $C_4$-density bound for triangle-free graphs, edge-density bounds for
-$K_4$-free, $K_5$-free, and $C_5$-free graphs, and, most notably, the
-Erd\H{o}s pentagon theorem, for which no proof avoiding flag algebras is
+$K_4$-free, $K_5$-free, and $C_5$-free graphs, and the
+Erd\H{o}s pentagon theorem, for which no proof that avoids flag algebras is
 known.
 
 The design of our constrained semantics also prompted a separate
 meta-theoretic investigation comparing two ways of imposing graph constraints:
 building a hereditary constraint into the flag algebra from the start, or
-testing inequalities afterwards on random labeled views of constrained graph
-limits.  We briefly state the resulting root-plantability criterion for when
+testing inequalities afterward on constrained graph limits with labels chosen
+at random.  We briefly state the resulting root-plantability criterion
+that characterizes when
 these approaches agree; a forthcoming paper will present the complete
 mathematical and formal account.
 \end{abstract}
@@ -355,34 +357,35 @@ asymptotic value
   = \lim_{n\to\infty}\frac{\lfloor n^2/4\rfloor}{\binom{n}{2}}
   = \frac{1}{2}
 \]
-records that, in any sufficiently large triangle-free graph, at most half of
+records that in any sufficiently large triangle-free graph, at most half of
 all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton, we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
-Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
-about \emph{all} sufficiently large \(\mathcal{H}\)-free graphs: a valid upper
-bound must guarantee that the proportion of induced copies of $F$ never exceeds
-the claimed value, asymptotically, no matter how large the host graph is.  No
+Determining $\tdensity{F}{\mathcal{H}}$ is hard because it requires controlling
+\emph{all} sufficiently large \(\mathcal{H}\)-free graphs: a valid upper
+bound must guarantee that, asymptotically, the proportion of induced copies of
+$F$ never exceeds the claimed value, regardless of the size of the host graph.  No
 finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
 
-Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
+Razborov's flag algebra method~\cite{razborov2007flag} provides a proof technique
 for exactly this setting: it reduces the task of proving an asymptotic bound
-over an infinite graph class to checking finitely many algebraic conditions.
-A semidefinite-programming (SDP) solver proposes finite data intended to satisfy
-these conditions; we call these data a candidate certificate.  The flag algebra
+for an infinite class of graphs to checking finitely many algebraic conditions.
+A semidefinite programming (SDP) solver proposes a finite package of data
+intended to satisfy these conditions; we call this package a candidate
+certificate.  The flag algebra
 framework explains why a candidate certificate that passes the checks
 establishes the desired bound for the whole class.
 
 This combination of mathematical abstraction and computer search has been
 unusually effective.  It resolved the Erd\H{o}s pentagon
-problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
-density of pentagons in triangle-free graphs, and it determined the minimum
+problem~\cite{hatami2012,grzesik2012}, concerning the maximum asymptotic
+density of pentagons in triangle-free graphs, and determined the minimum
 triangle density for a given edge density~\cite{razborov2008triangles}.  It
-settled the maximum induced $C_5$ density~\cite{balogh2016induced5} and the
-rainbow-triangle density problem~\cite{balogh2017rainbow}.  It also gives the
-best known upper bound on Tur\'an's tetrahedron
-problem~\cite{razborov2010tetrahedron}, and has produced several exact
+determined the maximum induced $C_5$ density~\cite{balogh2016induced5} and
+settled the rainbow-triangle density problem~\cite{balogh2017rainbow}.  It has
+also produced the best known upper bound on Tur\'an's tetrahedron
+problem~\cite{razborov2010tetrahedron} and several exact
 Tur\'an-density results for 3-uniform hypergraphs~\cite{baber2012turan}.
 
 % -- Previous version of the two paragraphs below (commented out) -------------
@@ -420,92 +423,103 @@ Tur\'an-density results for 3-uniform hypergraphs~\cite{baber2012turan}.
 % -- End previous version -----------------------------------------------------
 
 \paragraph{Formalizing the method.}
-We formalize the flag algebra framework itself in Lean, following Razborov's
-development: partially labeled graphs and their densities in large graphs, the
-quotient algebra of density expressions, graph-limit semantics through positive
-homomorphisms, and the downward operator that transfers labeled reasoning back
-to unlabeled graph statements.  We call this the \emph{specification layer}
-(\Cref{sec:abstract}).  Its definitions stay close to the mathematics: flags
-are isomorphism classes of labeled graphs, densities are sampling
-probabilities, and the algebra is a quotient by expansion identities.  Its
-theorems are the ones a flag-algebra argument actually appeals to, so such
-an argument can be stated in Lean much as it is stated on paper.
+We first formalize in Lean the mathematical foundations of Razborov's flag
+algebra method for finite simple graphs.  This development includes partially
+labeled graphs and their densities in large graphs, an algebra of density
+expressions modulo the identities that relate different graph sizes, positive
+homomorphisms representing graph limits, and the downward operator that turns
+a labeled density expression into an unlabeled one.  We call this part of the
+development the \emph{specification layer} (\Cref{sec:abstract}).  Its
+definitions follow the standard mathematics closely: flags are isomorphism
+classes of labeled graphs, densities are sampling probabilities, and algebraic
+expressions are identified when expansion identities give them the same
+asymptotic meaning.  This layer provides the mathematical interface needed to
+express flag-algebra proofs in Lean much as they appear on paper.
 
 \paragraph{From certificates to formal proofs.}
-Stating the method is not the same as checking its applications.  Such a
-candidate certificate is compact to write down but large to audit: the
-Erd\H{o}s pentagon certificate rests on thousands of exact density values and
-on rational matrices whose positive-semidefiniteness must be established
-exactly.  Nobody verifies such data by hand, and a formal proof should neither
-trust it nor replay it as thousands of hand proofs.  Our certificate-to-proof
-compiler closes this gap, supported by two further layers.  The
+Stating the method is not the same as checking a concrete application.  Each
+application is supported by a candidate certificate that is compact to state
+but potentially costly to audit: the Erd\H{o}s pentagon certificate relies
+on thousands of exact density values and on rational matrices whose
+positive semidefiniteness must be established exactly.  Such data are
+impractical to verify by hand, yet a formal proof should neither trust them nor
+require thousands of individually written proofs.  We close this gap with two
+further layers.  The
 \emph{reflection layer} (\Cref{sec:reflection}) supplies executable graph
 representations, together with adequacy theorems proving that the computations
-they support agree with the specification; Lean therefore recomputes the
-density and multiplication facts a certificate needs instead of trusting them.
-The \emph{automation layer} (\Cref{sec:flagmatic}) verifies
-positive-semidefiniteness exactly over $\mathbb{Q}$ and packages the recurring
-algebraic steps, including expanding flags to a common size, multiplying typed
-flags, applying the forbidden-graph assumption, and normalizing large linear
-combinations, into tactics and elaboration commands.
+they support agree with the specification.  Generation commands then
+specialize these theorems at elaboration time to produce the verified density,
+downward, and multiplication identities required by a certificate.  The
+\emph{automation layer} (\Cref{sec:flagmatic}) contains the
+certificate-to-proof compiler.  It checks exact rational $LDL^\top$
+factorizations to prove positive semidefiniteness over $\mathbb{R}$, expands
+the objective when necessary, and uses the reflected identities and custom
+tactics to normalize the certificate calculation under the forbidden-graph
+assumption and assemble the final bound.
 
 \paragraph{Constrained semantics.}
-Constrained extremal problems also expose a mathematical choice about when a
-constraint is imposed.  In the \emph{built-in-constraint} approach, one builds
-a hereditary graph constraint, such as \(H\)-freeness, into the
-flag algebra
-from the start; this is the traditional way to work in an algebra of
-\(H\)-free graphs.  In the \emph{ensemble} approach, one first works
-with graph limits and then imposes the constraint post hoc by testing
-inequalities on random labeled views of those constrained limits.  These two viewpoints agree
-for many purposes, but they do not automatically agree on every density of a
-finite labeled pattern.  Our investigation proves a \emph{root-plantability} criterion
-characterizing when they do agree, gives a positive result for
-blow-up-closed classes that also covers substitution-closed classes, and exhibits a
-counterexample based on \(C_4\)-free graphs.  The ensemble viewpoint is useful
-beyond this comparison: because it imposes constraints post hoc on graph
-limits, it can also express non-hereditary restrictions such as restricting
-to an extremal-density or equality slice.  This is the semantic viewpoint
-implemented by \lean{forbidLE} in our formalization.
+Our formalization also makes a choice about how to impose a forbidden-graph
+condition.  In the usual built-in approach, one constructs the flag algebra
+using only \(H\)-free graphs.  Our implementation instead retains the ambient
+algebra of all finite graphs and imposes \(H\)-freeness when an inequality is
+interpreted.  For a typed inequality, \lean{forbidLE} considers \(H\)-free
+empty-type positive homomorphisms, chooses an occurrence of the flag type
+uniformly at random, uses its vertices as labels, and requires the inequality
+to hold with probability one.  \Cref{sec:metatheory} calls this ensemble
+semantics and compares it with the built-in (or quotient) semantics.  Every
+quotient-valid inequality is ensemble-valid.  The two orders agree at the
+empty type, but they can differ at a nonempty type; they agree for all
+inequalities at a fixed type exactly when the constrained class is
+root-plantable at that type.  We prove that blow-up closure guarantees this
+agreement and give a \(C_4\)-free counterexample showing that heredity alone
+does not.
 
 \paragraph{Contributions.}
-The paper makes four main contributions.  First, it gives a Lean
-formalization of the core flag-algebra objects for finite simple graphs:
-flags, densities, the quotient algebra, positive homomorphisms, semantic
-order, and the downward/random-homomorphism machinery used in flag-algebra
-proofs.  Second, it builds a certificate-to-proof compiler that turns
-externally generated rational certificate data into Lean-checked algebraic
-proofs.  Third, it demonstrates the compiler on seven certificates, including
-machine-checked proofs of Mantel's theorem, the Erd\H{o}s pentagon theorem,
-and a $C_4$-density bound for triangle-free graphs; outside the certificate
-pipeline, the same infrastructure proves Goodman-type inequalities and the
-matching lower bounds.  Fourth, it develops the
-semantic comparison between built-in-constraint and ensemble approaches to constrained
-flag algebras, including the root-plantability criterion and the resulting
-generalization beyond hereditary constraints.  A separate, automatically
-generated Lean development formalizes this meta-theory on top of the manually
-developed flag-algebra library.  The complete Lean formalization, including
-the certificate-to-proof compiler and the meta-theory development, is publicly
-available at \url{https://github.com/taeyool/lean-flag-algebras-release}.
+The paper makes four main contributions.  First, it formalizes in Lean the core
+mathematical theory of flag algebras for finite simple graphs: flags and their
+densities, the quotient algebra, positive homomorphisms and semantic order,
+and the downward operator and random-extension machinery.  Second, it develops
+an executable reflection layer, proves that its computations agree with the
+mathematical specification, and uses it to build a certificate-to-proof compiler
+that translates externally generated rational certificate data into algebraic
+proofs checked by Lean.  Third, it evaluates the compiler on seven upper-bound
+certificates, including the bounds needed for Mantel's theorem and the
+Erd\H{o}s pentagon theorem, as well as a bound on the \(C_4\)-density of
+triangle-free graphs.  The matching lower bounds for Mantel's theorem and the
+Erd\H{o}s pentagon theorem are formalized separately, completing both
+Tur\'an-density results; the same infrastructure also proves Goodman-type
+inequalities outside the certificate pipeline.  Fourth, it compares the
+semantics obtained by building a hereditary constraint into the flag algebra
+with the ensemble semantics used by our implementation.  This comparison
+yields the root-plantability criterion, a sufficient condition based on
+blow-up closure, and a \(C_4\)-free counterexample.  The meta-theory is
+formalized in a separate, automatically generated Lean development that
+extends the manually written flag-algebra library.  The complete Lean
+development, including the certificate-to-proof compiler and this
+autoformalized meta-theory, is publicly available at
+\url{https://github.com/taeyool/lean-flag-algebras-release}.
 
 \paragraph{Organization.}
-\Cref{sec:background} recalls the mathematical background of flag algebras.
-\Cref{sec:abstract} develops the specification layer and the
-semantic treatment of forbidden-graph assumptions.
-\Cref{sec:reflection} develops the reflection layer: executable graph
-representations and the adequacy theorems that connect them to the
-specification.
-\Cref{sec:flagmatic} develops the automation layer: SDP-certificate
-verification, elaboration-time theorem generation, the tactics that assemble a
-certificate proof, and the verified results.
-\Cref{sec:lowerbounds} explains how the same infrastructure proves lower
-bounds and inequalities outside the certificate pipeline.
-\Cref{sec:obstacles} describes the main formalization obstacles and the
-bijective proof pattern used for density equalities.
-\Cref{sec:metatheory} summarizes our mathematical meta-theory of constrained
-semantics and its separate autoformalization, and \Cref{sec:unsure} records the
-remaining design questions.
-\Cref{sec:related,sec:conclusion} give related work and conclusions.
+\Cref{sec:background} reviews the mathematical background of flag algebras and
+establishes the notation used throughout the paper.  \Cref{sec:abstract}
+presents the specification layer, including its semantic treatment of
+forbidden-graph assumptions.  \Cref{sec:reflection} introduces executable
+graph representations, proves that their computations agree with the
+specification, and explains how elaboration-time commands turn individual
+computations into reusable theorems.  \Cref{sec:flagmatic} describes the
+certificate-to-proof compiler, its exact checks of positive semidefiniteness
+and proof automation, and its evaluation on seven certificates.
+\Cref{sec:lowerbounds} formalizes the
+matching lower-bound constructions and two additional Goodman-style
+inequalities outside the certificate pipeline.  \Cref{sec:obstacles} discusses
+the main engineering obstacles and a recurring bijective proof pattern for
+finite counting identities.  \Cref{sec:metatheory} presents the core results
+of our meta-theory of constrained semantics and describes its separate
+autoformalization, while
+\Cref{sec:unsure} records the remaining design questions.  Finally,
+\Cref{sec:related} discusses related work, \Cref{sec:conclusion} presents our
+conclusions, and \Cref{sec:compile-times} reports compilation times for the seven
+compiler examples.
 
 
 \section{Background: Flag Algebras}
