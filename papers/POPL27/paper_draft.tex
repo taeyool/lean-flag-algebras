@@ -1565,23 +1565,15 @@ abbrev LabeledGraphList {T : Type} [Fintype T]
 noncomputable def labeledGraphListDensity
     {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
-    ((*@$\sigma$@*) : FlagType T) (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+    {(*@$\sigma$@*) : FlagType T} (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
   labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
 The first line defines \lean{LabeledGraphList} by spelling out what a finite
 list means in this dependent setting: it is a function that assigns to each
 index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\lean{(Vl i)}.
-The family \lean{Vl : Fin t -> Type} records the vertex type of each entry, so
+The family \lean{Vl : Fin t $\to$ Type} records the vertex type of each entry, so
 the $t$ pattern flags are not forced to share one ambient vertex type.
-The square-bracket assumptions in the density signature provide the finite
-enumeration and equality tests needed for counting.  A \lean{Fintype} instance
-for a vertex type gives Lean a finite list of all its vertices, and a
-\lean{DecidableEq} instance gives a decision procedure for testing whether two
-vertices are equal.  The typeclasses \lean{FintypeList Vl} and
-\lean{DecidableEqList Vl} are componentwise versions of these assumptions:
-they supply the corresponding enumeration and equality-test instances for
-each vertex type \lean{Vl i} in the tuple.
 
 The second definition is the finite ratio corresponding to
 $\den{F_1,\ldots,F_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
@@ -1589,30 +1581,38 @@ graphs and \lean{G} is the concrete labeled graph in which they are counted.
 The local function \lean{r\_list} records, for each pattern, how many unlabeled
 vertices it contributes:
 \[
-  r_i = |V(H_i)| - |\sigma|.
+  r_i = |V(F_i)| - |\sigma|.
 \]
 The numerator \lean{labeledGraphListCount Hl G}, defined immediately before
 this function in the Lean development, counts the induced subgraph lists of
-\lean{G} that realize the patterns in \lean{Hl}.  The denominator applies
+\lean{G} that realize the patterns in \lean{Hl}, that is, the tuples
+$(S_1,\ldots,S_t)$ satisfying the conditions above.  The denominator applies
 \lean{multinomialCoefficient} to \lean{r\_list} and
-\(|V(G)| - |\sigma|\), written in Lean as the difference between \lean{G.size}
-and the size of \(\sigma\); it counts the possible choices of
+\(|V(G)| - |\sigma|\); it counts the possible choices of
 pairwise-disjoint vertex sets of those sizes among the unlabeled vertices of
 \lean{G}.  Thus the quotient is a rational number.
+The square-bracket assumptions in this signature provide the finite
+enumeration and equality tests needed for counting.  A \lean{Fintype} instance
+for a vertex type gives Lean a finite list of all its vertices, and a
+\lean{DecidableEq} instance gives a decision procedure for testing whether two
+vertices are equal.  The typeclasses \lean{FintypeList Vl} and
+\lean{DecidableEqList Vl} are componentwise versions of these assumptions:
+they supply the corresponding enumeration and equality-test instances for
+each vertex type \lean{Vl i} in the tuple.
 The \lean{noncomputable} keyword signals that Lean cannot synthesize an
 algorithm to evaluate this definition directly.  This poses no obstacle to
 formalizing flag algebra itself, but becomes relevant when applying the algebra
 to concrete extremal problems, a point we return to in \Cref{sec:reflection}.
 
 The concrete function \lean{labeledGraphListDensity} has two inputs: the tuple
-\lean{Hl} of pattern labeled graphs and the target labeled graph \lean{G}.  To
-make this a function of flags, we lift these two inputs separately.  The target
+\lean{Hl} of pattern labeled graphs and the host labeled graph \lean{G}.  To
+make this a function of flags, we lift these two inputs separately.  The host
 input is lifted from \lean{LabeledGraph} to \lean{Flag}; for the pattern tuple,
 the intermediate quotient is the quotient of concrete tuples by entrywise
-isomorphism.  We first lift the target input \lean{G}, then lift the pattern
+isomorphism.  We first lift the host input \lean{G}, then lift the pattern
 tuples, and finally package the result as a function on \lean{FlagList}.  The
 congruence proofs, omitted below, show that the density is unchanged when the
-target or any pattern flag is replaced by an isomorphic representative.
+host or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
 def flagListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
@@ -1639,7 +1639,7 @@ noncomputable def labeledGraphListDensityLifted
     : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G => labeledGraphListDensity Hl G)
-    (...) -- proof that target equivalence preserves density
+    (...) -- proof that host equivalence preserves density
 
 noncomputable def quotLabeledGraphListDensity
     {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
@@ -1676,9 +1676,9 @@ The three density definitions then lift the original concrete density one
 argument at a time.  For a fixed concrete pattern tuple \lean{Hl},
 \lean{labeledGraphListDensityLifted Hl} is a function
 \lean{Flag}~$\sigma$~\lean{W}~\(\to \mathbb{Q}\), obtained by quotienting the
-target argument.  The next definition, \lean{quotLabeledGraphListDensity},
+host argument.  The next definition, \lean{quotLabeledGraphListDensity},
 lifts the pattern tuple as well, so its first input is a
-\lean{QuotLabeledGraphList} and its second input is a target \lean{Flag}.  In
+\lean{QuotLabeledGraphList} and its second input is a host \lean{Flag}.  In
 the final definition, the input \lean{Fl} has type
 \lean{FlagList}~$\sigma$~\lean{t Vl}, that is, \lean{Fl i} is already a flag
 for each \lean{i : Fin t}.  The term
@@ -1714,15 +1714,17 @@ the second to \lean{F}$_2$.  The superscript \(\mathtt{f}\) distinguishes this
 notation from ordinary list notation and from quotient brackets; it does not
 add another quotienting operation.
 
-Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
-Although the statement mirrors the elementary sampling identity from
-\Cref{sec:background}, the formal proof must also commute finite counts
-with quotient lifts and the coercions between rational densities and real-valued
-algebra expressions.
+Building on the definitions above, we prove the following chain rule
+(\Cref{lem:chain-rule}) and several of its variants.
+Although the statement is the elementary counting identity of
+\Cref{sec:background}, its formal proof has to descend through the quotient:
+the counts are defined on concrete labeled graphs, and the identity between
+them comes from an explicit bijection between the choices the two sampling
+procedures make (\Cref{sec:proof-style}).
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
+    {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
     : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G := ...
 \end{lstlisting}
@@ -3535,7 +3537,7 @@ and at least $n^5$ copies of $C_5$:
 lemma subgraphCount_blowUp_C5_ge (n : Nat) : subgraphCount C5 (blowUp C5 n) >= (*@$\,$@*) n ^ 5
 \end{lstlisting}
 The proof of this counting lemma builds an injection from
-\lean{(Fin 5 -> Fin n)} to \lean{(blowUp C5 n).Subgraph},
+\lean{(Fin 5 $\to$ Fin n)} to \lean{(blowUp C5 n).Subgraph},
 the set of subgraphs of the blow-up: choosing one vertex in each
 of the five parts gives a set of vertices that induces a copy of $C_5$, and
 distinct choices give distinct subgraphs.  Thus, for every $n$, there is a
@@ -3836,7 +3838,7 @@ search.  To enumerate injections from $V$ to $W$, we enumerate all functions
 $V\to W$ and discard those that are not injective.  To enumerate graph
 embeddings, we then enumerate all injections and discard those that do not
 preserve the graph relation.  In the first line below, the annotation
-\lean{(Finset.univ : Finset (V -> W))} tells Lean explicitly that
+\lean{(Finset.univ : Finset (V $\to$ W))} tells Lean explicitly that
 \lean{Finset.univ} is the finite collection of all functions $V\to W$:
 \begin{lstlisting}
 -- Enumerate all functions V -> W and retain the injective ones.
