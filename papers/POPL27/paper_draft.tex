@@ -273,56 +273,46 @@
 \texttt{hun57@kaist.ac.kr},
 \texttt{qawbecrdtey@kaist.ac.kr},
 \texttt{sagil@ibs.re.kr},
-\texttt{hongseok00@gmail.com}}
+\texttt{hongseokyang@kias.re.kr}}
 
 % =========================================================================
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Razborov's flag algebras are a powerful method for proving asymptotic inequalities in
-extremal graph theory, often by reducing a graph-theoretic problem to a finite
-semidefinite-programming certificate.  The method is especially useful in
-constrained settings, where the desired inequality is required only for graphs
-that avoid specified finite patterns, such as triangles.  We present a
-machine-checked formalization of flag algebras for finite simple graphs,
-together with a certificate-to-proof compiler that reconstructs, in Lean,
-algebraic proofs suggested by external certificate data.
+Razborov's flag algebra method is a powerful tool for proving asymptotic
+inequalities in extremal graph theory, often reducing the task to a search for
+a finite certificate using semidefinite programming.  The method is
+particularly well suited to constrained problems, where one seeks bounds over
+graphs that avoid specified finite patterns, such as triangles.  We present a
+machine-checked formalization of the method for finite simple graphs, together
+with a certificate-to-proof compiler that turns externally generated
+certificate data into algebraic proofs checked by Lean.
 
 The formalization covers the mathematical content of the method: partially
 labeled graphs, their densities in large graphs, the quotient algebra of
 density expressions, graph-limit semantics through positive homomorphisms, and
-the downward operators used to average out labels.  The external search is
-used only to suggest finite data: lists of flags, target-density data, and
-rational positive-semidefinite matrices.  Lean independently computes the
-required density and multiplication facts, proves that these computations
-agree with the mathematical definitions, verifies positive-semidefiniteness
-exactly over $\mathbb{Q}$, and automates the algebraic normalization steps
-that occur in flag-algebra proofs.  As case studies, the compiler yields machine-checked
+the downward operators used to average out labels.  Our compiler treats the
+output of the external semidefinite programming search only as candidate
+certificate data: lists of flags, target-density data, and rational
+positive-semidefinite matrices.  It then directs Lean to compute the required
+density and multiplication facts independently, check those computations
+against the mathematical definitions, verify positive-semidefiniteness exactly
+over $\mathbb{Q}$, and carry out the algebraic normalization steps that occur in
+flag-algebra proofs.  As case studies, the compiler yields machine-checked
 proofs of several Tur\'an-type bounds, including Mantel's theorem, a
 $C_4$-density bound for triangle-free graphs, edge-density bounds for
 $K_4$-free, $K_5$-free, and $C_5$-free graphs, and, most notably, the
 Erd\H{o}s pentagon theorem, for which no proof avoiding flag algebras is
 known.
 
-The design of the formalization also led us to new theoretical results about
-constrained flag algebras.  We distinguish the built-in-constraint approach,
-which builds a hereditary graph constraint, such as \(H\)-freeness,
-into the
-flag algebra from the start, from the ensemble approach, which
-imposes constraints afterwards by testing inequalities on random labeled views
-of constrained graph limits.  The two approaches agree for important classes,
-but not in general for all densities of finite labeled patterns.  We prove a
-root-plantability criterion characterizing when they do agree, establish a
-positive result for blow-up-closed classes that also covers
-substitution-closed classes, and exhibit a counterexample based on
-\(C_4\)-free graphs.  This
-post hoc ensemble viewpoint also points beyond Razborov's original hereditary
-setting: it can impose constraints on graph limits that are not themselves
-hereditary, such as restricting to an extremal-density or equality slice.
-The Lean development of this meta-theory was generated in a separate
-Claude-driven autoformalization workflow, building on the manually developed
-library reported in the main part of the paper.
+The design of our constrained semantics also prompted a separate
+meta-theoretic investigation comparing two ways of imposing graph constraints:
+building a hereditary constraint into the flag algebra from the start, or
+testing inequalities afterwards on random labeled views of constrained graph
+limits.  We briefly state the resulting root-plantability criterion for when
+these approaches agree; a forthcoming paper will present the complete
+mathematical and formal account.
 \end{abstract}
 
 % =========================================================================
