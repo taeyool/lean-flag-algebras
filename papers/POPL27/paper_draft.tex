@@ -1379,25 +1379,20 @@ by a separate type, and each shift between roles must be justified by a theorem
 saying that it respects isomorphism, quotienting, density expansion, and
 multiplication.
 
-Our first design choice is to separate this typed mathematical interface from
-the proof-by-computation machinery used later to check flag-algebra
-certificates.  Here computation means evaluation inside Lean as part of proof
-checking, not a numerical experiment outside the prover.  For example, Lean may
-evaluate a finite flag-density table or normalize an algebraic expression, and
-the resulting equality can be used as a proof step only because previously
-proved theorems connect the computation to the mathematical definitions.  We
-call the interface supporting these proof-producing computations the
-\emph{specification layer}.  It formalizes the objects from
-\Cref{sec:background}: flags as isomorphism classes of labeled graphs,
-densities as finite sampling probabilities, the flag algebra as a quotient by
-expansion identities, and positive homomorphisms as semantic interpretations of
-algebra elements.  It also proves their basic interface theorems.  Once this layer
-has been established, certificate proofs can manipulate algebraic expressions
-without repeatedly returning to graph representatives and finite sampling
-definitions.
+Our first design choice is to keep the Lean definitions as close to the
+mathematics of \Cref{sec:background} as Lean allows, rather than shaping them
+for evaluation.  Flags remain isomorphism classes of labeled graphs, densities
+remain finite sampling probabilities, the flag algebra remains a quotient by
+expansion identities, and positive homomorphisms remain semantic
+interpretations of algebra elements; the subsections below take these in turn.
+Together with the maps between the roles above and the interface theorems
+justifying them, these definitions form the \emph{specification layer}.  Many
+of them are consequently \lean{noncomputable}; the executable counterparts, and
+the adequacy theorems tying them back to the definitions here, are developed
+separately in \Cref{sec:reflection}.
 
 A second design choice concerns where forbidden-subgraph assumptions enter the
-development.  In the background section we fixed $\mathcal{H}$ first and
+development.  In \Cref{sec:background} we fixed $\mathcal{H}$ first and
 defined all flags and algebras relative to the \(\mathcal{H}\)-free
 world.  In Lean we instead build the ambient flag algebra without fixing
 $\mathcal{H}$, and impose \(\mathcal{H}\)-freeness later as a
@@ -1465,8 +1460,9 @@ is represented by a simple graph on the label type \lean{T}.  The structure
 field \lean{graph} stores the underlying graph $M$, and the field
 \lean{type\_embed} stores the embedding
 $\theta_A:\sigma\hookrightarrow_g M$.  In the signature, braces mark
-parameters that Lean normally infers from context, and square brackets mark
-typeclass assumptions.  Thus \lean{[Fintype T]} tells Lean that the label type
+\emph{implicit} parameters, which Lean normally infers from context, and
+square brackets mark typeclass assumptions.  Thus \lean{[Fintype T]} tells
+Lean that the label type
 \lean{T} is finite; later signatures use assumptions such as
 \lean{[DecidableEq V]} when equality on a vertex type must be decidable.
 
