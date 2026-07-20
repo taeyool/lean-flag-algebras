@@ -496,12 +496,14 @@ available at \url{https://github.com/taeyool/lean-flag-algebras-release}.
 
 \paragraph{Organization.}
 \Cref{sec:background} recalls the mathematical background of flag algebras.
-\Cref{sec:abstract} describes the Lean specification layer and the
+\Cref{sec:abstract} develops the specification layer and the
 semantic treatment of forbidden-graph assumptions.
-\Cref{sec:reflection,sec:flagmatic} describe the bridge from
-specification to evaluable proof: reflection, SDP-certificate verification,
-the tactic layer, the automation layer, elaboration-time theorem generation,
-and the verified results.
+\Cref{sec:reflection} develops the reflection layer: executable graph
+representations and the adequacy theorems that connect them to the
+specification.
+\Cref{sec:flagmatic} develops the automation layer: SDP-certificate
+verification, elaboration-time theorem generation, the tactics that assemble a
+certificate proof, and the verified results.
 \Cref{sec:lowerbounds} explains how the same infrastructure proves lower
 bounds and inequalities outside the certificate pipeline.
 \Cref{sec:obstacles} describes the main formalization obstacles and the
