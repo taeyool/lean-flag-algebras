@@ -1941,7 +1941,7 @@ theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\si
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe := ...
 \end{lstlisting}
-Here \lean{FlagDensitySpace} with argument \(\sigma\) is the set of functions
+Here \lean{FlagDensitySpace}~\(\sigma\) is the set of functions
 \(\mathcal{F}^\sigma\to\mathbb{R}\) whose values lie in \([0,1]\), so its
 points are density profiles of finite \(\sigma\)-flags.  The expression
 \lean{$\phi$.coe} denotes the map \lean{PositiveHom.coe}, which forgets the
@@ -2102,39 +2102,28 @@ prose we write this operator as \(\llbracket-\rrbracket_\sigma\), following
 \Cref{sec:background-downward}.  In Lean code, the subscript \(0\)
 emphasizes that the codomain is the
 \(\emptyt\)-typed algebra.  The notation is compact, but the implementation
-contains the full sequence of quotient lifts: from concrete labeled graphs to
-flags, from flags to flag vectors, and finally from flag-vector
-representatives to elements of the quotient algebra.
+contains the full sequence of steps: a quotient lift from concrete labeled
+graphs to flags, a linear extension from flags to flag vectors, and a final
+quotient lift from flag-vector representatives to elements of the quotient
+algebra.
 
 It remains to connect this algebraic map to the semantics of positive
 homomorphisms.  The theorem below is the Lean form of the random-extension
-identity from Equation~\eqref{eq:ensemble}, so we first spell out the objects
-appearing in the statement.  The type \lean{PositiveHomSpace}, with argument
-\(\sigma\), is the
-measurable space whose points are positive homomorphisms on
-\(\mathcal{A}^\sigma\), represented in Lean by their density profiles.  A term
-of type \lean{PositiveHomSpace} applied to \(\sigma\) can be converted back to
-the corresponding positive homomorphism by
-\lean{PositiveHomSpace.toPosHom} applied to that term.
-At this point \(\phi\) is just a point of this measurable space, not yet a
-random sample.  The Lean expression
-\lean{PositiveHomSpace.toPosHom $\phi$ f} is the value of the positive
-homomorphism represented by \(\phi\) on \(f\).
+result behind Equation~\eqref{eq:ensemble}, so we first spell out the objects
+appearing in the statement.
 
-The hypothesis named \lean{h$\sigma$} in the theorem is the Lean assumption
-that \(\phi_0(\langle\sigma\rangle_0)>0\).  By the notation introduced in
-\Cref{sec:background-downward}, \(\langle\sigma\rangle_0\) is the empty-type
-basis element represented by the underlying graph of \(\sigma\), so the
-hypothesis says that this graph has positive density under \(\phi_0\).  Under
-this hypothesis Lean constructs a probability measure
-\(\mathbb{P}\) on \lean{PositiveHomSpace} with argument \(\sigma\).  This
-\(\mathbb{P}\) is the formal
-random extension \(\Ext_\sigma(\phi_0)\): it is the measure obtained by
-randomly choosing an occurrence of the type \(\sigma\) in the limiting object
-represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
-\(\mathbb{P}\) is present, a point of this measurable space may be regarded as
-a random positive homomorphism drawn from this measure.  The
-displayed theorem states the defining identity of that measure:
+\Cref{sec:background-semantic-order} identified \(\poshom{\sigma}\) with a
+subset of \([0,1]^{\mathcal{F}^\sigma}\) by sending a homomorphism to the
+densities it assigns.  In Lean the two sides of this identification are
+different types, and the theorem below uses both.  A positive homomorphism is a
+term of \lean{PositiveHom}~\(\sigma\), and its density profile
+\(F\mapsto\phi(\llbracket\lean{basisVector F}\rrbracket)\) is a point of
+\lean{PositiveHomSpace}~\(\sigma\), the measurable subspace of
+\([0,1]^{\mathcal{F}^\sigma}\) consisting of the profiles that arise this way.
+Two maps pass between these types: \lean{PositiveHom.coe} takes a homomorphism
+to its profile, and \lean{PositiveHomSpace.toPosHom} recovers a homomorphism
+with a given profile.  With these definitions in place, the existence of a
+measure satisfying Equation~\eqref{eq:ensemble} can be stated in Lean:
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -2165,14 +2154,14 @@ Equation~\eqref{eq:ensemble}:
   \frac{\phi_0(\llbracket f\rrbracket_0)}
        {\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)} .
 \]
-The denominator is the normalizing value of the typed unit after applying the
-downward operator.  It is a positive scalar multiple of
-\(\phi_0(\langle\sigma\rangle_0)\), so it is positive under the hypothesis
-above.  Thus the theorem gives a concrete way to compute the unlabeled value
+This is the identity characterizing the random extension, so \(\mathbb{P}\)
+represents the measure \(\Ext_\sigma(\phi_0)\) of
+\Cref{sec:background-downward}.
+Rearranged, the identity gives a concrete way to compute the unlabeled value
 \(\phi_0(\llbracket f\rrbracket_0)\) from typed evaluations: randomly label the
 limiting object represented by \(\phi_0\) with a copy of \(\sigma\), evaluate
 \(f\) in the resulting \(\sigma\)-typed positive homomorphism, average these
-values, and multiply by the positive normalizing denominator.
+values, and multiply by the positive normalizing denominator \(\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)\).
 
 The payoff is the Lean transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: if \(f\) is non-negative under every positive
@@ -2184,20 +2173,12 @@ theorem downward_preserve_semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\
     (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*))
     : (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*) := ...
 \end{lstlisting}
-The proof is the formal use of Equation~\eqref{eq:ensemble}.  To show that
-\(\llbracket f\rrbracket_0\) lies in the empty-type \lean{semanticCone}, Lean
-tests it against an arbitrary empty-type positive homomorphism \(\phi_0\).  If
-\(\phi_0(\langle\sigma\rangle_0)=0\), a separate zero-density lemma shows that
-every downward value evaluates to \(0\) at \(\phi_0\).  If
-\(\phi_0(\langle\sigma\rangle_0)>0\), the random-extension theorem provides
-the probability measure \(\mathbb{P}=\Ext_\sigma(\phi_0)\), obtained by randomly
-labeling an occurrence of~\(\sigma\), and rewrites
-\(\phi_0(\llbracket f\rrbracket_0)\) as a positive normalizing factor times
-the expectation of \(\phi(f)\) over \(\phi\sim \mathbb{P}\).  Since~\(f\in\mathcal{C}^\sigma\), every typed positive homomorphism \(\phi\) has
-\(\phi(f)\ge 0\).  The expectation is therefore non-negative, and multiplying
-by the positive normalizing factor preserves non-negativity.  This is the
-transfer from typed inequalities to the unlabeled order used later in density
-bounds.
+Its proof follows the sketch of \Cref{thm:downward-nonneg}, taking
+\(\mathbb{P}\) from the theorem above when
+\(\phi_0(\langle\sigma\rangle_0)>0\); a separate zero-density lemma handles the
+degenerate case \(\phi_0(\langle\sigma\rangle_0)=0\).  The later density bounds
+use this theorem to transfer inequalities from the labeled algebra to the
+unlabeled one.
 
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
