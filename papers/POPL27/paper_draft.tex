@@ -648,6 +648,13 @@ $\mathcal{F}^\sigma$ itself is infinite.
       \draw[graph edge] (a) -- (c);
     \end{tikzpicture}
     &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph root] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (b) -- (a);
+      \draw[graph edge] (b) -- (c);
+    \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
       \node[graph root] (v1) at (90:0.65) {};
@@ -659,11 +666,13 @@ $\mathcal{F}^\sigma$ itself is infinite.
     \end{tikzpicture}
     \\
     $K_2^\bullet$ & $\overline{K_2}^\bullet$ & $\overline{P_3}^\bullet$ & $P_3^\bullet$
-    & & $C_5^\bullet$ \\
+    & ${P_3'}^\bullet$ & $C_5^\bullet$ \\
   \end{tabular}
   \caption{Examples of flags.  \emph{Top row}: $\emptyset$-flags (ordinary graphs)
   of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the one-vertex flag type $\sigma$;
-  the filled vertex is the labeled one.}
+  the filled vertex is the labeled one.  The last two three-vertex flags,
+  $P_3^\bullet$ and ${P_3'}^\bullet$, have the same underlying graph and differ
+  only in which vertex is labeled.}
   \label{fig:flag-examples}
 \end{figure}
 
@@ -970,23 +979,26 @@ For a fixed flag type $\sigma$, define the \emph{semantic non-negativity cone}
 \]
 We write
 \[
-  f \leq_\sigma g
+  f \leq_{\mathcal{H},\sigma} g
   \qquad\text{when}\qquad
-  g-f \in \mathcal{C}^\sigma.
+  g-f \in \mathcal{C}^\sigma,
 \]
-Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
-Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_\sigma f$.
+where the subscript $\mathcal{H}$ records that the comparison is made in the
+\(\mathcal{H}\)-free world: both $\mathcal{A}^\sigma$ and $\mathcal{C}^\sigma$ are
+built from \(\mathcal{H}\)-free graphs, and later sections vary $\mathcal{H}$.
+Equivalently, $f\leq_{\mathcal{H},\sigma} g$ means that
+$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq_{\mathcal{H}} g$ in place of $f \leq_{\mathcal{H},\emptyset} g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
+Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_{\mathcal{H},\sigma} f$.
 
 Two immediate examples of elements of $\mathcal{C}^\sigma$ are flag basis
 elements and squares.  Every $\sigma$-flag $F$ gives an element
 $[F]\in\mathcal{C}^\sigma$, because positive homomorphisms send every flag
 basis element to a non-negative real by definition.
-For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_\sigma f^2$,
+For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_{\mathcal{H},\sigma} f^2$,
 because $\phi(f^2) = \phi(f)^2 \geq 0$ for every~$\phi \in \poshom{\sigma}$.
-Moreover, if $0 \leq_\sigma f$ and $0 \leq_\sigma g$, then $0 \leq_\sigma f + g$,
+Moreover, if $0 \leq_{\mathcal{H},\sigma} f$ and $0 \leq_{\mathcal{H},\sigma} g$, then $0 \leq_{\mathcal{H},\sigma} f + g$,
 since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}$.
-Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
+Similarly, if $0 \leq_{\mathcal{H},\sigma} f$ and $c$ is a non-negative real number, then $0 \leq_{\mathcal{H},\sigma} c \cdot f$.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
@@ -994,7 +1006,7 @@ reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  If $[F] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  If $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
   $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
@@ -1009,7 +1021,7 @@ lemma shows.
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
   $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $[F] \leq c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$, a contradiction.
+  $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
@@ -1020,14 +1032,14 @@ Two classical results illustrate how this looks in flag algebra language.
   Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$, meaning
   asymptotically at most half of all vertex pairs in a triangle-free graph
   are edges.  The upper bound translates into the flag algebra inequality
-  $[K_2] \leq \tfrac{1}{2}\cdot\mathbf{1}$; the balanced complete bipartite
+  $[K_2] \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$; the balanced complete bipartite
   graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ witness the lower bound.
 \end{example}
 
 \begin{example}[Erd\H{o}s Pentagon Problem~{\cite{grzesik2012,hatami2012}}]\label{ex:pentagon}
   The Erd\H{o}s pentagon problem asks for the maximum density of $C_5$ in
   triangle-free graphs; the asymptotic answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$.  The upper bound corresponds to the flag algebra inequality
-  $[C_5] \leq \tfrac{24}{625}\cdot\mathbf{1}$; an explicit \(K_3\)-free construction
+  $[C_5] \leq_{K_3} \tfrac{24}{625}\cdot\mathbf{1}$; an explicit \(K_3\)-free construction
   (the balanced blow-up of $C_5$) witnesses the lower bound.
 \end{example}
 
@@ -1130,9 +1142,9 @@ $\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:downward-nonneg}
-  For any flag type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$,
+  For any flag type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_{\mathcal{H},\sigma} f$,
   \[
-    0 \;\leq\; \llbracket f \rrbracket_\sigma.
+    0 \;\leq_{\mathcal{H}}\; \llbracket f \rrbracket_\sigma.
   \]
 \end{theorem}
 \begin{proof}[Proof sketch]
@@ -1141,7 +1153,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
-  Since $0 \leq_\sigma f$, every positive homomorphism on
+  Since $0 \leq_{\mathcal{H},\sigma} f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
   $\mathbb{E}[\boldsymbol{\phi}^\sigma(f)] \geq 0$.
   Rearranging~\eqref{eq:ensemble}:
@@ -1153,29 +1165,29 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
     \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
     \;\geq\; 0.
   \]
-  Since $\phi_0$ was arbitrary, we have $0 \leq \llbracket f \rrbracket_\sigma$.
+  Since $\phi_0$ was arbitrary, we have $0 \leq_{\mathcal{H}} \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $[F] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
-first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
+A flag algebra proof of $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ typically proceeds as follows:
+first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_{\mathcal{H},\sigma} f$ for some
 non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
-\Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
+\Cref{thm:downward-nonneg} to obtain $0 \leq_{\mathcal{H}} \llbracket f \rrbracket_\sigma$;
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
-\eqref{eq:sum-to-one} to conclude $[F] \leq c\cdot\mathbf{1}$.
+\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
-We prove $\fKtwo \leq \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra (i.e., the algebra $\mathcal{A}^\emptyset$ with $\mathcal{H} = \{K_3\}$).
+We prove $\fKtwo \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
 Let $\sigma$ be the one-vertex flag type.
 
 \textit{Step 1: A key inequality.}
-Since $0 \leq_\sigma (\fbarKtwobull - \fKtwobull)^2$,
-\Cref{thm:downward-nonneg} gives $0 \leq \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma$.
+Since $0 \leq_{\mathcal{H},\sigma} (\fbarKtwobull - \fKtwobull)^2$,
+\Cref{thm:downward-nonneg} gives $0 \leq_{K_3} \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma$.
 Expanding the square and computing each product at size~$3$,
 then applying the downward operator:
 \begin{align}
-  0 &\leq \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma\notag\\
+  0 &\leq_{K_3} \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma\notag\\
   &= \llbracket\fbarKtwobull\cdot\fbarKtwobull - 2\cdot\fbarKtwobull\cdot\fKtwobull + \fKtwobull\cdot\fKtwobull\rrbracket_\sigma\notag\\
   &= \left\llbracket\fbarKthreebull + \fEthreebull
     - \fbarPthreebull - \fPthreebull
@@ -1190,10 +1202,10 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
   \fKtwo
   &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
   &&\text{by \eqref{eq:k2-expansion}}\\
-  &\leq \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
+  &\leq_{K_3} \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
     \frac{1}{2}\left(\fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree\right) +
     \frac{1}{3}\,\fbarPthree
-  &&\text{by \eqref{eq:mantel-key} and $0 \leq \fbarPthree$}\\
+  &&\text{by \eqref{eq:mantel-key} and $0 \leq_{K_3} \fbarPthree$}\\
   &= \frac{1}{2}\cdot\left(\fbarKthree + \fbarPthree + \fPthree\right)
   \;=\; \frac{1}{2}\cdot\mathbf{1}.
   &&\text{by \eqref{eq:sum-to-one}}
@@ -2203,7 +2215,7 @@ bounds.
 form: a finite forbidden family \(\mathcal{H}\) is fixed first, and the flag
 types, flags, algebras, and positive homomorphisms are all built inside the
 \(\mathcal{H}\)-free world.  In that setup, an inequality
-\(f\leq_\sigma g\) is already an inequality in the constrained
+\(f\leq_{\mathcal{H},\sigma} g\) is already an inequality in the constrained
 \(\sigma\)-typed algebra: the forbidden configurations have been removed
 before the semantic order is tested.
 
@@ -2882,7 +2894,11 @@ uses that table to automate complete flag-algebra arguments.
 All certificate problems considered in this section have the same form: among
 graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
 element $[F]$ of a target graph $F$ satisfies
-$[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
+$[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  Here $\leq_{\mathcal H}$ is the empty-type semantic order of
+\Cref{sec:background-semantic-order}, for the certificate's forbidden family
+$\mathcal{H}$.  The Lean development establishes the corresponding ensemble
+form (\Cref{def:ensemble-semantic-order}); the two agree at the empty type
+(\Cref{sec:metatheory}).  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
 the flags whose basis elements enter the proof, together with the rational
 matrices needed to rewrite the difference between the
