@@ -787,6 +787,254 @@ lemma Sym2InducedLabeledSubgraph.coe_adj_iff_mem
     · exact v.2
   · exact fun h => h.1
 
+/-- Master correctness of the fast typed checker: it returns `true` exactly when
+the two `σ`-typed labeled graphs are flag-equivalent. -/
+theorem isIsoFast_bool_eq_true_iff {k n : ℕ} {σ : Sym2FlagType k}
+    (G₁ G₂ : Sym2LabeledGraph σ n) :
+    isIsoFast_bool G₁ G₂ = true ↔ G₁ ∼sf G₂ := by
+  constructor
+  · exact isIsoFast_bool_true_correct
+  · intro h
+    by_contra hfalse
+    exact isIsoFast_bool_false_correct (eq_false_of_ne_true hfalse) h
+
+section ExtractInduced
+variable {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {G : Sym2LabeledGraph σ n}
+
+/-- Vertex list used to relabel `H.verts` onto `Fin H.verts.card`: the type
+vertices in `Fin k` order first, then the remaining vertices of `H`. -/
+@[expose] def Sym2InducedLabeledSubgraph.relabelList
+    (H : Sym2InducedLabeledSubgraph G) : List (Fin n) :=
+  (List.finRange k).map (fun t => G.type_embed t)
+    ++ (getNonTypeVerts n k (fun t => G.type_embed t)).filter (fun v => decide (v ∈ H.verts))
+
+namespace Sym2InducedLabeledSubgraph
+
+theorem relabelList_nodup (H : Sym2InducedLabeledSubgraph G) :
+    (H.relabelList).Nodup := by
+  rw [relabelList, List.nodup_append]
+  refine ⟨?_, ?_, ?_⟩
+  · exact (List.nodup_finRange k).map G.type_embed.injective
+  · exact (getNonTypeVerts_nodup _).filter _
+  · intro a ha b hb
+    rw [List.mem_map] at ha
+    obtain ⟨t, _, rfl⟩ := ha
+    rw [List.mem_filter] at hb
+    intro heq
+    subst heq
+    exact (mem_getNonTypeVerts_iff_vals (fun t => G.type_embed t) (G.type_embed t)).1 hb.1 t rfl
+
+theorem relabelList_mem (H : Sym2InducedLabeledSubgraph G) (v : Fin n) :
+    v ∈ H.relabelList ↔ v ∈ H.verts := by
+  rw [relabelList, List.mem_append, List.mem_map, List.mem_filter]
+  constructor
+  · rintro (⟨t, _, rfl⟩ | ⟨_, hv⟩)
+    · exact H.verts_subset (G.mem_type_verts t)
+    · exact of_decide_eq_true hv
+  · intro hv
+    by_cases hty : ∃ t : Fin k, v = G.type_embed t
+    · obtain ⟨t, rfl⟩ := hty
+      exact Or.inl ⟨t, List.mem_finRange t, rfl⟩
+    · refine Or.inr ⟨?_, decide_eq_true hv⟩
+      refine (mem_getNonTypeVerts_iff_vals (fun t => G.type_embed t) v).2 ?_
+      intro i hEq
+      exact hty ⟨i, Fin.ext hEq⟩
+
+theorem relabelList_toFinset (H : Sym2InducedLabeledSubgraph G) :
+    (H.relabelList).toFinset = H.verts := by
+  ext v
+  rw [List.mem_toFinset, relabelList_mem]
+
+theorem relabelList_length (H : Sym2InducedLabeledSubgraph G) :
+    (H.relabelList).length = H.verts.card := by
+  rw [← List.toFinset_card_of_nodup (relabelList_nodup H), relabelList_toFinset]
+
+/-- The prefix of `relabelList` at index `< k` is the corresponding type vertex. -/
+theorem relabelList_getElem_type (H : Sym2InducedLabeledSubgraph G) (t : Fin k)
+    (h : t.val < (H.relabelList).length) :
+    (H.relabelList)[t.val] = G.type_embed t := by
+  have hpre : t.val < ((List.finRange k).map (fun t => G.type_embed t)).length := by
+    simp
+  rw [show (H.relabelList)[t.val]'h
+       = ((List.finRange k).map (fun t => G.type_embed t))[t.val]'hpre
+     from List.getElem_append_left hpre]
+  rw [List.getElem_map]
+  congr 1
+  simp
+
+theorem k_le_card (H : Sym2InducedLabeledSubgraph G) :
+    k ≤ H.verts.card := by
+  have hsub : (Finset.univ.image (fun t => G.type_embed t)) ⊆ H.verts := by
+    intro v hv
+    rw [Finset.mem_image] at hv
+    obtain ⟨t, _, rfl⟩ := hv
+    exact H.verts_subset (G.mem_type_verts t)
+  have hcard : (Finset.univ.image (fun t => G.type_embed t)).card = k := by
+    rw [Finset.card_image_of_injective _ G.type_embed.injective, Finset.card_univ, Fintype.card_fin]
+  calc k = (Finset.univ.image (fun t => G.type_embed t)).card := hcard.symm
+    _ ≤ H.verts.card := Finset.card_le_card hsub
+
+/-- Relabeling map `Fin m → Fin n`: index into the sorted vertex list. -/
+@[expose] def extractFwd (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (j : Fin m) : Fin n :=
+  (H.relabelList).get (Fin.cast ((relabelList_length H).trans hc).symm j)
+
+theorem extractFwd_injective (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) : Function.Injective (H.extractFwd hc) := by
+  intro a b hab
+  unfold extractFwd at hab
+  have hinj := List.nodup_iff_injective_get.mp (relabelList_nodup H)
+  have hcast := hinj hab
+  apply Fin.ext
+  have hval : (Fin.cast ((relabelList_length H).trans hc).symm a).val
+      = (Fin.cast ((relabelList_length H).trans hc).symm b).val := congrArg Fin.val hcast
+  exact hval
+
+theorem extractFwd_mem (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (j : Fin m) : H.extractFwd hc j ∈ H.verts := by
+  rw [← relabelList_mem]
+  exact List.get_mem _ _
+
+/-- Type-embed map `Fin k → Fin m`: type vertex `t` lands at position `t`. -/
+@[expose] def extractTypeFun (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (t : Fin k) : Fin m :=
+  ⟨t.val, by have := H.k_le_card; omega⟩
+
+theorem extractFwd_typeFun (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (t : Fin k) :
+    H.extractFwd hc (H.extractTypeFun hc t) = G.type_embed t := by
+  unfold extractFwd
+  rw [List.get_eq_getElem]
+  exact relabelList_getElem_type H t _
+
+/-- The relabeled edge set on `Fin m`. -/
+@[expose] def extractEdges (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) : Finset (Sym2 (Fin m)) :=
+  ((allEdges m).filter (fun e => decide (Sym2.map (H.extractFwd hc) e ∈ H.edges))).toFinset
+
+theorem mem_extractEdges (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (e : Sym2 (Fin m)) :
+    e ∈ H.extractEdges hc ↔ ¬ e.IsDiag ∧ Sym2.map (H.extractFwd hc) e ∈ H.edges := by
+  rw [extractEdges, List.mem_toFinset, List.mem_filter]
+  constructor
+  · rintro ⟨he, hd⟩
+    exact ⟨not_isDiag_of_mem_allEdges he, of_decide_eq_true hd⟩
+  · rintro ⟨hd, hmem⟩
+    exact ⟨mem_allEdges_of_not_isDiag' hd, decide_eq_true hmem⟩
+
+theorem extractEdges_valid (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) : ∀ e ∈ H.extractEdges hc, ¬ e.IsDiag :=
+  fun e he => (mem_extractEdges H hc e |>.mp he).1
+
+theorem extract_fromEdge_adj (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) (a b : Fin m) :
+    (fromEdgeSet (SetLike.coe (H.extractEdges hc))).Adj a b ↔
+      Sym2.mk (H.extractFwd hc a, H.extractFwd hc b) ∈ H.edges := by
+  rw [fromEdgeSet_adj]
+  simp only [Finset.mem_coe]
+  rw [mem_extractEdges]
+  have hmap : Sym2.map (H.extractFwd hc) (Sym2.mk (a, b))
+      = Sym2.mk (H.extractFwd hc a, H.extractFwd hc b) := rfl
+  constructor
+  · rintro ⟨⟨_, hmem⟩, _⟩
+    rwa [hmap] at hmem
+  · intro hmem
+    have hne : a ≠ b := by
+      intro hab
+      apply H.edges_valid _ hmem
+      rw [Sym2.mk_isDiag_iff, hab]
+    refine ⟨⟨?_, ?_⟩, hne⟩
+    · rw [Sym2.mk_isDiag_iff]
+      exact hne
+    · rwa [hmap]
+
+/-- Type edges of `σ` map to `H.edges` iff `σ`-adjacent. -/
+theorem typeEdge_mem_H_iff (H : Sym2InducedLabeledSubgraph G) (a b : Fin k) :
+    Sym2.mk (G.type_embed a, G.type_embed b) ∈ H.edges ↔
+      (fromEdgeSet (SetLike.coe σ.edges)).Adj a b := by
+  rw [← G.type_embed.map_rel_iff]
+  change _ ↔ G.toLabeledGraph.graph.Adj (G.type_embed a) (G.type_embed b)
+  rw [G.toLabeledGraph_adj_iff, edges, Finset.mem_filter]
+  constructor
+  · exact fun h => h.1
+  · intro hmem
+    refine ⟨hmem, ?_⟩
+    intro w hw
+    rcases Sym2.mem_iff.mp hw with rfl | rfl
+    · exact H.verts_subset (G.mem_type_verts a)
+    · exact H.verts_subset (G.mem_type_verts b)
+
+/-- Extraction of a placement `H` (with `H.verts.card = m`) as a computable
+`Sym2LabeledGraph σ m` on `Fin m`. -/
+@[expose] def extractInduced (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) : Sym2LabeledGraph σ m where
+  edges := H.extractEdges hc
+  edges_valid := H.extractEdges_valid hc
+  type_embed := {
+    toFun := H.extractTypeFun hc
+    inj' := by
+      intro a b hab
+      apply Fin.ext
+      have hval : (H.extractTypeFun hc a).val = (H.extractTypeFun hc b).val := congrArg Fin.val hab
+      exact hval
+    map_rel_iff' := by
+      intro a b
+      simp only [Function.Embedding.coeFn_mk]
+      rw [extract_fromEdge_adj, extractFwd_typeFun, extractFwd_typeFun, typeEdge_mem_H_iff]
+  }
+
+/-- The extracted `Sym2LabeledGraph` is flag-isomorphic (as labeled graphs) to
+the original coerced induced subflag. -/
+noncomputable def extractInduced_iso (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (hc : H.verts.card = m) :
+    (H.extractInduced hc).toLabeledGraph ≃f H.toLabeledSubgraph.coe := by
+  have hfwd_mem : ∀ j : Fin m, H.extractFwd hc j ∈ H.toLabeledSubgraph.subgraph.verts :=
+    fun j => H.extractFwd_mem hc j
+  let f : Fin m → H.toLabeledSubgraph.subgraph.verts := fun j => ⟨H.extractFwd hc j, hfwd_mem j⟩
+  have hf_inj : Function.Injective f := by
+    intro a b hab
+    have h := congrArg Subtype.val hab
+    exact H.extractFwd_injective hc h
+  have hf_surj : Function.Surjective f := by
+    rintro ⟨v, hv⟩
+    have hvv : v ∈ H.relabelList := (relabelList_mem H v).2 hv
+    obtain ⟨idx, hidx⟩ := List.get_of_mem hvv
+    refine ⟨Fin.cast ((relabelList_length H).trans hc) idx, Subtype.ext ?_⟩
+    show H.extractFwd hc (Fin.cast ((relabelList_length H).trans hc) idx) = v
+    unfold extractFwd
+    rw [← hidx]
+    congr 1
+  let e : Fin m ≃ H.toLabeledSubgraph.subgraph.verts := Equiv.ofBijective f ⟨hf_inj, hf_surj⟩
+  refine {
+    graph_iso := ⟨e, ?_⟩
+    type_preserve := ?_
+  }
+  · intro a b
+    show H.toLabeledSubgraph.subgraph.coe.Adj (f a) (f b)
+      ↔ (fromEdgeSet (SetLike.coe (H.extractEdges hc))).Adj a b
+    rw [SimpleGraph.Subgraph.coe_adj, extract_fromEdge_adj]
+    exact Iff.rfl
+  · funext t
+    apply Subtype.ext
+    show (H.extractFwd hc (H.extractTypeFun hc t) : Fin n)
+      = (H.toLabeledSubgraph.type_embed t : Fin n)
+    rw [extractFwd_typeFun, H.toLabeledSubgraph.embed_eq t, G.toLabeledGraph_type_embed_eq]
+
+/-- **Bridge lemma.** The pattern-iso existential decided by the density counter
+equals the fast checker's `∼sf`. -/
+theorem extractInduced_iso_iff (H : Sym2InducedLabeledSubgraph G) {m : ℕ}
+    (K : Sym2LabeledGraph σ m) (hc : H.verts.card = m) :
+    Nonempty (H.toLabeledSubgraph.coe ≃f K.toLabeledGraph) ↔ H.extractInduced hc ∼sf K := by
+  constructor
+  · rintro ⟨φ⟩
+    exact ⟨(H.extractInduced_iso hc).trans φ⟩
+  · rintro ⟨φ⟩
+    exact ⟨(H.extractInduced_iso hc).symm.trans φ⟩
+
+end Sym2InducedLabeledSubgraph
+
+end ExtractInduced
+
 instance
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} {Vl : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl) :
@@ -800,15 +1048,13 @@ instance
         Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
       (fun i ↦
         if hc : (Gl i).verts.card = Vl i then
-          haveI : Fintype ↥((Gl i).toLabeledSubgraph.subgraph.verts) :=
-            FinsetCoe.fintype (Gl i).verts
-          haveI : DecidableRel ((Gl i).toLabeledSubgraph.coe.graph.Adj) := fun u v ↦
-            decidable_of_iff _ (Sym2InducedLabeledSubgraph.coe_adj_iff_mem (Gl i) u v)
-          haveI : DecidableRel ((Hl i).toLabeledGraph.graph.Adj) := fun u v ↦
-            decidable_of_iff _ ((Hl i).toLabeledGraph_adj_iff u v).symm
+          -- Route the pattern-iso existential through the fast kernel-reducible
+          -- checker `isIsoFast_bool` on the extracted `Sym2LabeledGraph`, instead
+          -- of the generic `Equiv.instFintype` permutation tower.
           decidable_of_iff
-            (∃ _ : (Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph, True)
-            exists_true_iff_nonempty
+            (isIsoFast_bool ((Gl i).extractInduced hc) (Hl i) = true)
+            ((isIsoFast_bool_eq_true_iff ((Gl i).extractInduced hc) (Hl i)).trans
+              ((Gl i).extractInduced_iso_iff (Hl i) hc).symm)
         else
           isFalse (fun hiso ↦ hc (verts_card_of_coe_iso (Gl i) (Hl i) hiso))) _)
     (decidable_of_iff

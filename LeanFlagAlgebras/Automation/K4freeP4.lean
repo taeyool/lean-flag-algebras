@@ -32,6 +32,10 @@ namespace K4freeP4
 -- `Flags/FlagDef.lean`): the empty-typed underlying flags, the forbidden graph, and
 -- the σ-typed pattern/host flags. Flag generation comes first, so the density and
 -- multiplication theorem generators below resolve to these local constants.
+-- Kernel reduction of the generated bridging/density obligations (via
+-- `flag_bridge_decide` = `decide +kernel`) can exceed the default heartbeat budget
+-- during elaboration; lift it (kernel decide is unbounded, like `native_decide` was).
+set_option maxHeartbeats 0
 generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_complete_graph 4 10

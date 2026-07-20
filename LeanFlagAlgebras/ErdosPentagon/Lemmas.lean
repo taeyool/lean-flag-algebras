@@ -28,13 +28,13 @@ open Lean Elab Tactic Meta
 
 namespace ErdosPentagonAPI
 
-private def lastNamePart (nm : Name) : String :=
+private meta def lastNamePart (nm : Name) : String :=
   match nm with
   | .anonymous => ""
   | .str _ s => s
   | .num _ n => toString n
 
-private partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
+private meta partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
   if (lastNamePart nm).startsWith "FlagAlgebra_" then some nm else none
@@ -52,7 +52,7 @@ private partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
   | .proj _ _ b => findFlagAlgebraConst? b
   | _ => none
 
-private partial def findFlagConst? (e : Expr) : Option Name :=
+private meta partial def findFlagConst? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
   if (lastNamePart nm).startsWith "Flag_" then some nm else none
@@ -70,17 +70,17 @@ private partial def findFlagConst? (e : Expr) : Option Name :=
   | .proj _ _ b => findFlagConst? b
   | _ => none
 
-private def getBinAppArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getBinAppArgs? (e : Expr) : Option (Expr × Expr) :=
   match e with
   | .app (.app _ a) b => some (a, b)
   | _ => none
 
-private def unwrapQuotMk (e : Expr) : Expr :=
+private meta def unwrapQuotMk (e : Expr) : Expr :=
   let fn := e.getAppFn
   let args := e.getAppArgs
   if fn.isConstOf ``Quot.mk && args.size = 3 then args[2]! else e
 
-private def getAddArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getAddArgs? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
   if (fn.isConstOf ``HAdd.hAdd || fn.isConstOf ``Add.add) && args.size >= 2 then
@@ -88,7 +88,7 @@ private def getAddArgs? (e : Expr) : Option (Expr × Expr) :=
   else
     getBinAppArgs? e
 
-private def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
   if (fn.isConstOf ``HSMul.hSMul || fn.isConstOf ``SMul.smul) && args.size >= 2 then
@@ -98,7 +98,7 @@ private def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
     | .app f x => some (f, x)
     | _ => none
 
-private def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
+private meta def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
   if (fn.isConstOf ``HMul.hMul || fn.isConstOf ``Mul.mul) && args.size >= 2 then
@@ -106,13 +106,13 @@ private def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
   else
     getBinAppArgs? e
 
-private def flagToFlagAlgebraLastPart (s : String) : String :=
+private meta def flagToFlagAlgebraLastPart (s : String) : String :=
   if s.startsWith "Flag_" then
     "FlagAlgebra_" ++ s.drop 5
   else
     s
 
-private def mkFlagMulThmName? (mulTerm : Expr) : MetaM (Option Name) := do
+private meta def mkFlagMulThmName? (mulTerm : Expr) : MetaM (Option Name) := do
   let some (fExpr, gExpr) := getMulArgs? mulTerm | return none
   let fNm? := findFlagAlgebraConst? fExpr
   let gNm? := findFlagAlgebraConst? gExpr
@@ -139,7 +139,7 @@ private def mkFlagMulThmName? (mulTerm : Expr) : MetaM (Option Name) := do
       return some cand
   return none
 
-private def stepReduceFlagMul : TacticM Bool :=
+private meta def stepReduceFlagMul : TacticM Bool :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
@@ -173,7 +173,7 @@ private def stepReduceFlagMul : TacticM Bool :=
     else
       return false
 
-private partial def runReduceFlagMul (fuel : Nat := 256) (steps : Nat := 0) : TacticM Unit := do
+private meta partial def runReduceFlagMul (fuel : Nat := 256) (steps : Nat := 0) : TacticM Unit := do
   if fuel = 0 then
     throwError "auto_reduce_ep_flagmul: fuel exhausted"
   let progressed ← stepReduceFlagMul

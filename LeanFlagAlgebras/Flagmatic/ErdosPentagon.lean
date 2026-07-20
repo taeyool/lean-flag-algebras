@@ -31,6 +31,16 @@ namespace ErdosPentagon
 -- (the pentagon `C₅` objective `FlagAlgebra_5_0_0_19` among them), their completeness, and the
 -- forbid-free pair-density / multiplication theorems for all three σ-types.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+
+-- Axiom-clean `decide +kernel` (the library default).  The typed labeled-flag *construction*
+-- (`generate_forbid_free_flags 5 3 j`) used to OOM under `decide +kernel` (kernel peak > 16 GB),
+-- because reducing the labeled enumeration materialises one graph embedding (`↪g`) per
+-- (graph, embedding) pair.  It is now rerouted through the RAW `List (ℕ×ℕ) × List ℕ` enumeration
+-- (`FlagAlgebra.Compute.RawLabeled` + `namedFlags_eq_univ_filter_via_rawCover`), whose kernel-decided
+-- coverage check carries no `Finset`/`↪g` and fits in RAM — so this file needs no `native_decide`
+-- fallback and stays free of the `Lean.ofReduceBool`/`Lean.trustCompiler` axioms.  `maxHeartbeats 0`
+-- must precede the `generate_*` commands (the later one at the SDP section is too late for these).
+set_option maxHeartbeats 0
 generate_forbid_free_empty_typed_flags 3 K3
 generate_forbid_free_empty_typed_flags 4 K3
 generate_forbid_free_empty_typed_flags 5 K3

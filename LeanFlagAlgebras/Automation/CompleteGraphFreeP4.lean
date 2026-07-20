@@ -48,6 +48,10 @@ namespace CompleteGraphFreeP4
 -- flags. The forbidden graph here is the generic `completeGraph (Fin (r+1))`, so there
 -- is no named-clique generation. Flag generation comes first, so the definitions and
 -- the no-forbid density/multiplication generators below resolve to these local constants.
+-- Kernel reduction of the generated bridging/density obligations (via
+-- `flag_bridge_decide` = `decide +kernel`) can exceed the default heartbeat budget
+-- during elaboration; lift it (kernel decide is unbounded, like `native_decide` was).
+set_option maxHeartbeats 0
 generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_flags 3 2 0

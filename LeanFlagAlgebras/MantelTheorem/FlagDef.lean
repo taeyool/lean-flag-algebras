@@ -27,6 +27,10 @@ namespace MantelTheorem
 -- compiled-evaluation axioms.
 -- set_option flagGen.kernelDecide true
 
+-- Kernel reduction of the generated bridging/density obligations (via
+-- `flag_bridge_decide` = `decide +kernel`) can exceed the default heartbeat budget
+-- during elaboration; lift it (kernel decide is unbounded, like `native_decide` was).
+set_option maxHeartbeats 0
 generate_empty_typed_flags 0
 generate_empty_typed_flags 1
 generate_empty_typed_flags 2

@@ -21,7 +21,7 @@ The generation pipeline:
   `allEdges n` (`Finset.toList`/`Multiset.toList` are noncomputable, so we cannot
   go through `Finset.univ`).
 * `genSym2GraphsDedup n` — one representative per `∼sf`-class, via a `foldl`
-  that keeps a graph only if no kept graph is `isEmptyIsoFast_bool`-equivalent.
+  that keeps a graph only if no kept graph is `isEmptyIsoFastDeg_bool`-equivalent.
 * `genSym2Graphs n` — the deduped list re-sorted into the *canonical JSON order*
   (sort by `(edge count, lexicographically-minimal relabeled edge list)`), so
   every downstream index/proof keyed off the old JSON order keeps working.
@@ -74,7 +74,7 @@ def listPairLt : List (ℕ × ℕ) → List (ℕ × ℕ) → Bool
 `G`'s edges computably as the members of `allEdges n` (any order is fine, the
 result is sorted), since `Finset.toList` is noncomputable. -/
 def relabeledEdgeList {n : ℕ} (perm : List (Fin n)) (G : Sym2Graph n) : List (ℕ × ℕ) :=
-  List.insertionSort (fun p q => pairLe p q = true)
+  ksort (fun p q => pairLe p q = true)
     (((allEdges n).filter (fun e => decide (e ∈ G.edges))).map
       (fun e => edgeToPair (applyPermEdge perm e)))
 
@@ -151,7 +151,7 @@ theorem mem_allRawSym2Graphs {n : ℕ} (G : Sym2Graph n) : G ∈ allRawSym2Graph
 /-- One `foldl` step: append `G` to the accumulator unless some kept graph is
 already fast-iso-equivalent to it. -/
 def dedupStep {n : ℕ} (acc : List (Sym2Graph n)) (G : Sym2Graph n) : List (Sym2Graph n) :=
-  if acc.any (fun H => isEmptyIsoFast_bool H G) = true then acc else acc ++ [G]
+  if acc.any (fun H => isEmptyIsoFastDeg_bool H G) = true then acc else acc ++ [G]
 
 /-! ## Canonical-augmentation generator (empty-typed)
 
@@ -263,7 +263,7 @@ theorem mem_augmentAll {n : ℕ} (G : Sym2Graph n) (S : Finset (Fin n)) :
 /-- The augmentation-generated representatives: build the `(n+1)`-vertex graphs
 by augmenting each `n`-vertex representative, then deduplicate. This is the
 *specification*: it deduplicates by the `O(n!)`-per-comparison
-`isEmptyIsoFast_bool` test directly. The runtime generator `augRepsDeg` computes
+`isEmptyIsoFastDeg_bool` test directly. The runtime generator `augRepsDeg` computes
 the same list, but only runs the `O(n!)` test when a cheap iso-invariant key
 collides, so most pairs never reach it. -/
 def augReps : (n : ℕ) → List (Sym2Graph n)
@@ -276,12 +276,12 @@ def withDegKey {n : ℕ} (G : Sym2Graph n) : Sym2Graph n × (ℕ × List ℕ) :=
 
 /-- Keyed deduplication step with a cheap prefilter: keep `p` unless some survivor
 shares its cheap key (`q.2 == p.2`, `O(n)`) *and* is isomorphic to it
-(`isEmptyIsoFast_bool`, `O(n!)`). The `&&` short-circuits, so the expensive iso
+(`isEmptyIsoFastDeg_bool`, `O(n!)`). The `&&` short-circuits, so the expensive iso
 test runs only on cheap-key collisions. Makes the same keep/drop decisions as
 `dedupStep` because the cheap key is an iso invariant (`augRepsDeg_fst_eq`). -/
 def dedupStepDeg {n : ℕ} (acc : List (Sym2Graph n × (ℕ × List ℕ)))
     (p : Sym2Graph n × (ℕ × List ℕ)) : List (Sym2Graph n × (ℕ × List ℕ)) :=
-  if acc.any (fun q => q.2 == p.2 && isEmptyIsoFast_bool q.1 p.1) = true then acc
+  if acc.any (fun q => q.2 == p.2 && isEmptyIsoFastDeg_bool q.1 p.1) = true then acc
   else acc ++ [p]
 
 /-- The fast augmentation generator: identical structure to `augReps`, but each
@@ -308,7 +308,7 @@ performs. Carrying the keys through also lets downstream consumers
 (`genCanonicalEdgeLists`, the `generate_*` commands) reuse the canonical edge
 lists instead of recomputing them. -/
 def genSym2GraphsKeyed (n : ℕ) : List (Sym2Graph n × ℕ × List (ℕ × ℕ)) :=
-  List.insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
+  ksort (fun a b => graphKeyLe a.2 b.2 = true)
     ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))
 
 /-- The deduplicated list, re-sorted into canonical JSON order (sort keys dropped). -/
@@ -332,7 +332,7 @@ def genEmptyTypedFlags (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
 def genEmptyTypedFlagSet (n : ℕ) : Finset (Sym2EmptyTypedFlag n) :=
   (genEmptyTypedFlags n).toFinset
 
-/-! ## `isEmptyIsoFast_bool` completeness
+/-! ## `isEmptyIsoFastDeg_bool` completeness
 
 `FastIso` proves soundness (`true → ∼sf`) and the contrapositive completeness
 (`false → ¬ ∼sf`). We package the direct completeness statement. -/
@@ -375,10 +375,10 @@ theorem foldl_dedupStep_complete {n : ℕ} (xs : List (Sym2Graph n)) :
     rcases List.mem_cons.mp hG with hGx | hGrest
     · have hx : ∃ G', G' ∈ dedupStep acc x ∧ x ∼sf G' := by
         unfold dedupStep
-        by_cases hc : acc.any (fun H => isEmptyIsoFast_bool H x) = true
+        by_cases hc : acc.any (fun H => isEmptyIsoFastDeg_bool H x) = true
         · rw [if_pos hc]
           obtain ⟨G', hG'mem, hG'true⟩ := List.any_eq_true.mp hc
-          exact ⟨G', hG'mem, Sym2GraphEqv.symm (isEmptyIsoFast_bool_true_correct hG'true)⟩
+          exact ⟨G', hG'mem, Sym2GraphEqv.symm (isEmptyIsoFastDeg_bool_true_correct hG'true)⟩
         · rw [if_neg hc]
           exact ⟨x, List.mem_append.mpr (Or.inr (List.mem_singleton.mpr rfl)),
             Sym2GraphEqv.refl x⟩
@@ -399,7 +399,7 @@ theorem foldl_dedupStep_flags_nodup {n : ℕ} (xs : List (Sym2Graph n)) :
     simp only [List.foldl_cons]
     apply ih
     unfold dedupStep
-    by_cases hc : acc.any (fun H => isEmptyIsoFast_bool H x) = true
+    by_cases hc : acc.any (fun H => isEmptyIsoFastDeg_bool H x) = true
     · rw [if_pos hc]; exact hacc
     · rw [if_neg hc, List.map_append, List.map_cons, List.map_nil, List.nodup_append]
       refine ⟨hacc, List.nodup_singleton _, ?_⟩
@@ -409,7 +409,7 @@ theorem foldl_dedupStep_flags_nodup {n : ℕ} (xs : List (Sym2Graph n)) :
       subst heq
       obtain ⟨G', hG'mem, hG'eq⟩ := List.mem_map.mp hFacc
       have hG'x : G' ∼sf x := Quotient.exact hG'eq
-      exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isEmptyIsoFast_bool_complete hG'x⟩)
+      exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isEmptyIsoFastDeg_bool_complete hG'x⟩)
 
 /-! ## Augmentation correctness
 
@@ -541,7 +541,7 @@ The runtime generator `augRepsDeg` deduplicates with a cheap-key prefilter. We
 show it produces the same list as the specification `augReps` (`augRepsDeg_fst_eq`),
 so all completeness/`Nodup` results transfer. The only nontrivial fact is that the
 cheap key (`degKey`) is an isomorphism invariant (`degKey_iso_invariant`); the rest
-is a fold simulation that reuses `isEmptyIsoFast_bool`'s soundness. -/
+is a fold simulation that reuses `isEmptyIsoFastDeg_bool`'s soundness. -/
 
 /-- `List.any` only sees the list's elements, so a predicate change that agrees on
 every member leaves it unchanged. -/
@@ -555,7 +555,7 @@ theorem any_eq_of_forall_mem {α : Type*} (l : List α) {P Q : α → Bool}
 
 /-- Fold simulation: the prefiltered `dedupStepDeg` fold (on key-tagged graphs)
 makes the same keep/drop decisions as the `dedupStep` fold, because the cheap key
-is an iso invariant and `isEmptyIsoFast_bool` is sound. We carry two invariants:
+is an iso invariant and `isEmptyIsoFastDeg_bool` is sound. We carry two invariants:
 the first components match, and every tag equals its graph's `degKey`. -/
 theorem foldl_dedupStepDeg_sim {n : ℕ} (xs : List (Sym2Graph n)) :
     ∀ (accK : List (Sym2Graph n × (ℕ × List ℕ))) (accU : List (Sym2Graph n)),
@@ -567,25 +567,25 @@ theorem foldl_dedupStepDeg_sim {n : ℕ} (xs : List (Sym2Graph n)) :
   | cons x rest ih =>
     intro accK accU h1 h2
     simp only [List.map_cons, List.foldl_cons]
-    have hany : accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x)
-        = accU.any (fun H => isEmptyIsoFast_bool H x) := by
+    have hany : accK.any (fun q => q.2 == degKey x && isEmptyIsoFastDeg_bool q.1 x)
+        = accU.any (fun H => isEmptyIsoFastDeg_bool H x) := by
       rw [← h1, List.any_map]
       apply any_eq_of_forall_mem
       intro q hq
       rw [h2 q hq]
-      by_cases hiso : isEmptyIsoFast_bool q.1 x = true
+      by_cases hiso : isEmptyIsoFastDeg_bool q.1 x = true
       · have hkey : degKey q.1 = degKey x :=
-          degKey_iso_invariant (isEmptyIsoFast_bool_true_correct hiso)
+          degKey_iso_invariant (isEmptyIsoFastDeg_bool_true_correct hiso)
         simp [hiso, hkey]
       · simp only [Bool.not_eq_true] at hiso
         simp [hiso]
     have e1 : dedupStepDeg accK (withDegKey x)
-        = if accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x) = true
+        = if accK.any (fun q => q.2 == degKey x && isEmptyIsoFastDeg_bool q.1 x) = true
           then accK else accK ++ [withDegKey x] := rfl
     have e2 : dedupStep accU x
-        = if accU.any (fun H => isEmptyIsoFast_bool H x) = true
+        = if accU.any (fun H => isEmptyIsoFastDeg_bool H x) = true
           then accU else accU ++ [x] := rfl
-    by_cases hb : accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x) = true
+    by_cases hb : accK.any (fun q => q.2 == degKey x && isEmptyIsoFastDeg_bool q.1 x) = true
     · rw [e1, if_pos hb, e2, if_pos (by rw [← hany]; exact hb)]
       exact ih accK accU h1 h2
     · rw [e1, if_neg hb, e2, if_neg (by rw [← hany]; exact hb)]
@@ -621,7 +621,7 @@ theorem genSym2GraphsDedup_complete {n : ℕ} (G : Sym2Graph n) :
 theorem genSym2Graphs_perm (n : ℕ) :
     genSym2Graphs n ~ genSym2GraphsDedup n := by
   unfold genSym2Graphs genSym2GraphsKeyed
-  have h := (List.perm_insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
+  have h := (ksort_perm (fun a b => graphKeyLe a.2 b.2 = true)
     ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))).map Prod.fst
   rw [List.map_map] at h
   have hid : (Prod.fst ∘ fun G : Sym2Graph n => (G, graphKey G)) = id := by
@@ -690,7 +690,7 @@ def isValidEmbeddingB (sEdges eEdges : List (ℕ × ℕ)) (k : ℕ) (t : List �
 
 /-- Sort a list of edge pairs into canonical (lexicographic) order. -/
 def sortPairs (l : List (ℕ × ℕ)) : List (ℕ × ℕ) :=
-  List.insertionSort (fun p q => pairLe p q = true) l
+  ksort (fun p q => pairLe p q = true) l
 
 /-- Relabel a canonical edge list by a permutation `p` of `[0, n)` (given as a
 list), re-canonicalizing each edge. -/
@@ -737,7 +737,7 @@ def genFlagData (k m n : ℕ) : List (Nat × List (Nat × Nat) × List Nat × Na
     let eEdges := graphsN.getD j []
     let autE := autPerms n eEdges
     let validEmb := (injNatTuples n k).filter (fun t => isValidEmbeddingB sEdges eEdges k t)
-    let reps := List.insertionSort (fun s t => listNatLe s t = true)
+    let reps := ksort (fun s t => listNatLe s t = true)
                   ((validEmb.map (fun t => minTuple (tupleOrbit autE t))).dedup)
     reps.map (fun rep =>
       let osize := (tupleOrbit autE rep).length
@@ -875,7 +875,7 @@ theorem allAugSym2LabeledGraphs_complete {k : ℕ} {σ : Sym2FlagType k} {n : �
 def dedupStepL {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (acc : List (Sym2LabeledGraph σ n)) (G : Sym2LabeledGraph σ n) :
     List (Sym2LabeledGraph σ n) :=
-  if acc.any (fun H => isIsoFast_bool H G) = true then acc else acc ++ [G]
+  if acc.any (fun H => isIsoFastDeg_bool H G) = true then acc else acc ++ [G]
 
 /-- Attach the cheap key to a labeled graph as a precomputed bucketing key. -/
 def withLabeledDegKey {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
@@ -891,7 +891,7 @@ def dedupStepDegL {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (acc : List (Sym2LabeledGraph σ n × (ℕ × List ℕ)))
     (p : Sym2LabeledGraph σ n × (ℕ × List ℕ)) :
     List (Sym2LabeledGraph σ n × (ℕ × List ℕ)) :=
-  if acc.any (fun q => q.2 == p.2 && isIsoFast_bool q.1 p.1) = true then acc
+  if acc.any (fun q => q.2 == p.2 && isIsoFastDeg_bool q.1 p.1) = true then acc
   else acc ++ [p]
 
 /-- The deduplicated typed labeled graphs, key-tagged, produced by the cheap-key-prefiltered
@@ -958,10 +958,10 @@ theorem foldl_dedupStepL_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     rcases List.mem_cons.mp hG with hGx | hGrest
     · have hx : ∃ G', G' ∈ dedupStepL acc x ∧ x ∼sf G' := by
         unfold dedupStepL
-        by_cases hc : acc.any (fun H => isIsoFast_bool H x) = true
+        by_cases hc : acc.any (fun H => isIsoFastDeg_bool H x) = true
         · rw [if_pos hc]
           obtain ⟨G', hG'mem, hG'true⟩ := List.any_eq_true.mp hc
-          exact ⟨G', hG'mem, sym2LabeledGraphEqv.symm (isIsoFast_bool_true_correct hG'true)⟩
+          exact ⟨G', hG'mem, sym2LabeledGraphEqv.symm (isIsoFastDeg_bool_true_correct hG'true)⟩
         · rw [if_neg hc]
           exact ⟨x, List.mem_append.mpr (Or.inr (List.mem_singleton.mpr rfl)),
             sym2LabeledGraphEqv.refl x⟩
@@ -990,25 +990,25 @@ theorem foldl_dedupStepDegL_sim {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
   | cons x rest ih =>
     intro accK accU h1 h2
     simp only [List.map_cons, List.foldl_cons]
-    have hany : accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x)
-        = accU.any (fun H => isIsoFast_bool H x) := by
+    have hany : accK.any (fun q => q.2 == labeledDegKey x && isIsoFastDeg_bool q.1 x)
+        = accU.any (fun H => isIsoFastDeg_bool H x) := by
       rw [← h1, List.any_map]
       apply any_eq_of_forall_mem
       intro q hq
       rw [h2 q hq]
-      by_cases hiso : isIsoFast_bool q.1 x = true
+      by_cases hiso : isIsoFastDeg_bool q.1 x = true
       · have hkey : labeledDegKey q.1 = labeledDegKey x :=
-          labeledDegKey_iso_invariant (isIsoFast_bool_true_correct hiso)
+          labeledDegKey_iso_invariant (isIsoFastDeg_bool_true_correct hiso)
         simp [hiso, hkey]
       · simp only [Bool.not_eq_true] at hiso
         simp [hiso]
     have e1 : dedupStepDegL accK (withLabeledDegKey x)
-        = if accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x) = true
+        = if accK.any (fun q => q.2 == labeledDegKey x && isIsoFastDeg_bool q.1 x) = true
           then accK else accK ++ [withLabeledDegKey x] := rfl
     have e2 : dedupStepL accU x
-        = if accU.any (fun H => isIsoFast_bool H x) = true
+        = if accU.any (fun H => isIsoFastDeg_bool H x) = true
           then accU else accU ++ [x] := rfl
-    by_cases hb : accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x) = true
+    by_cases hb : accK.any (fun q => q.2 == labeledDegKey x && isIsoFastDeg_bool q.1 x) = true
     · rw [e1, if_pos hb, e2, if_pos (by rw [← hany]; exact hb)]
       exact ih accK accU h1 h2
     · rw [e1, if_neg hb, e2, if_neg (by rw [← hany]; exact hb)]
@@ -1103,8 +1103,8 @@ Decorate-sort-undecorate (as in `genSym2GraphsKeyed`): each rep's `labeledFlagKe
 `autPerms`) — is computed *once* and carried through the sort, so the `O(g²)`
 comparisons read the precomputed key instead of recomputing it. -/
 def genFlagsOrdered {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : List (Sym2Flag σ n) :=
-  (((genLabeledGraphsDedup σ n).map (fun G => (G, labeledFlagKey G))).insertionSort
-    (fun a b => labeledKeyLe a.2 b.2 = true)).map
+  (ksort (fun a b => labeledKeyLe a.2 b.2 = true)
+    ((genLabeledGraphsDedup σ n).map (fun G => (G, labeledFlagKey G)))).map
     (fun a => Quotient.mk (sym2LabeledGraphSetoid σ n) a.1)
 
 /-- `genFlagsOrdered σ n` is a permutation of `genFlags σ n`: the sort only reorders
@@ -1112,7 +1112,7 @@ the dedup reps. Mirrors `genSym2Graphs_perm`. -/
 theorem genFlagsOrdered_perm {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     genFlagsOrdered σ n ~ genFlags σ n := by
   unfold genFlagsOrdered genFlags
-  have h := (List.perm_insertionSort (fun a b => labeledKeyLe a.2 b.2 = true)
+  have h := (ksort_perm (fun a b => labeledKeyLe a.2 b.2 = true)
     ((genLabeledGraphsDedup σ n).map (fun G => (G, labeledFlagKey G)))).map
     (fun a => Quotient.mk (sym2LabeledGraphSetoid σ n) a.1)
   rw [List.map_map] at h
@@ -1137,7 +1137,7 @@ theorem foldl_dedupStepL_flags_nodup {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     simp only [List.foldl_cons]
     apply ih
     unfold dedupStepL
-    by_cases hc : acc.any (fun H => isIsoFast_bool H x) = true
+    by_cases hc : acc.any (fun H => isIsoFastDeg_bool H x) = true
     · rw [if_pos hc]; exact hacc
     · rw [if_neg hc, List.map_append, List.map_cons, List.map_nil, List.nodup_append]
       refine ⟨hacc, List.nodup_singleton _, ?_⟩
@@ -1147,7 +1147,7 @@ theorem foldl_dedupStepL_flags_nodup {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
       subst heq
       obtain ⟨G', hG'mem, hG'eq⟩ := List.mem_map.mp hFacc
       have hG'x : G' ∼sf x := Quotient.exact hG'eq
-      exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isIsoFast_bool_complete hG'x⟩)
+      exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isIsoFastDeg_bool_complete hG'x⟩)
 
 /-- The generated typed flags have no duplicates. Mirrors `genEmptyTypedFlags_nodup`. -/
 theorem genFlags_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :

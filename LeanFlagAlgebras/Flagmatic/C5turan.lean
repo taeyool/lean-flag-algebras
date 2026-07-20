@@ -30,6 +30,14 @@ namespace C5turan
 def ForbidGraph : Sym2Graph 5 where
   edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}
   edges_valid := by decide
+-- FALLBACK to `native_decide` for this file only.  The labeled-flag *construction*
+-- reduced by the typed `generate_forbid_free_flags 5 3 j` commands OOMs under
+-- `decide +kernel` (kernel peak > 16 GB — exit 137 on a 16 GB machine), a hard RAM
+-- wall intrinsic to the kernel materialising the enumeration's bundled `↪g`
+-- embeddings.  `native_decide` fits in a few GB.  Cost: `Lean.ofReduceBool` /
+-- `Lean.trustCompiler` axioms in this file only (the rest of the library stays
+-- `decide +kernel`, axiom-clean).  See `Flags/GeneratorOptions.lean`.
+set_option flagGen.kernelDecide false
 generate_forbid_free_empty_typed_flags 2 ForbidGraph
 generate_forbid_free_empty_typed_flags 4 ForbidGraph
 generate_forbid_free_empty_typed_flags 5 ForbidGraph
@@ -226,7 +234,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_0
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_0]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_1
@@ -234,7 +242,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_1
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_1]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_2
@@ -242,7 +250,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_2
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_2]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_3
@@ -250,7 +258,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_3
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_3]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_4
@@ -258,7 +266,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_4
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_4]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_5
@@ -266,7 +274,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_5
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_5]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_6
@@ -274,7 +282,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_6
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_6]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_7
@@ -282,7 +290,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_7
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_7]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_8
@@ -290,7 +298,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_8
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_8]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_9
@@ -298,7 +306,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_9
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_9]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_10
@@ -306,7 +314,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_10
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_10]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_11
@@ -314,7 +322,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_11
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_11]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_12
@@ -322,7 +330,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_12
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_12]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_13
@@ -330,7 +338,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_13
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_13]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_14
@@ -338,7 +346,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_14
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_14]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_15
@@ -346,7 +354,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_15
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_15]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_16
@@ -354,7 +362,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_16
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_16]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_17
@@ -362,7 +370,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_17
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_17]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_18
@@ -370,7 +378,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_18
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_18]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_20
@@ -378,7 +386,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_20
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_20]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_21
@@ -386,7 +394,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_21
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_21]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_22
@@ -394,7 +402,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_22
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_22]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_23
@@ -402,7 +410,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_23
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_23]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_25
@@ -410,7 +418,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_25
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_25]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_26
@@ -418,7 +426,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_26
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_26]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_5_0_0_27
@@ -426,7 +434,7 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_27
   := by
   dsimp [Flag_2_0_0_1, Flag_5_0_0_27]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
+  flag_bridge_decide
 
 set_option maxHeartbeats 0
 set_option maxRecDepth 10000

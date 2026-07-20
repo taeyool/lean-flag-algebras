@@ -36,6 +36,14 @@ set_option maxRecDepth 100000
 -- generated. The pruned commands emit only the K3-free flags, their completeness, and
 -- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+-- FALLBACK to `native_decide` for this file only.  The labeled-flag *construction*
+-- reduced by the typed `generate_forbid_free_flags 6 2 j` commands OOMs under
+-- `decide +kernel` (kernel peak > 16 GB — exit 137 on a 16 GB machine), a hard RAM
+-- wall intrinsic to the kernel materialising the enumeration's bundled `↪g`
+-- embeddings.  `native_decide` fits in a few GB.  Cost: `Lean.ofReduceBool` /
+-- `Lean.trustCompiler` axioms in this file only (the rest of the library stays
+-- `decide +kernel`, axiom-clean).  See `Flags/GeneratorOptions.lean`.
+set_option flagGen.kernelDecide false
 generate_forbid_free_empty_typed_flags 4 K3
 generate_forbid_free_empty_typed_flags 6 K3
 generate_forbid_free_flags 4 2 0 K3

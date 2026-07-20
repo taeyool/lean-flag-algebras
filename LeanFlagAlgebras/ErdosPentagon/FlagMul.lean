@@ -20,6 +20,10 @@ open FlagAlgebras.Compute
 
 namespace ErdosPentagonAPI
 
+-- Kernel reduction of the n = 5/6 flag enumeration (via `flag_bridge_decide` =
+-- `decide +kernel`) exceeds the default heartbeat budget during elaboration; lift
+-- it for this file (matching `native_decide`, which is unbounded).
+set_option maxHeartbeats 0
 generate_forbid_density_theorems 5 K3
 
 generate_flag_pair_density_theorems 4 5 3 0 K3

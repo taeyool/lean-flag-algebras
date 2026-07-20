@@ -26,6 +26,12 @@ namespace ErdosPentagonAPI
 -- n = 4/5 for the pattern/host and the pentagon `C5`), the forbidden graph `K3`, and the
 -- σ-typed (3-labelled) pattern/host flags. These `ErdosPentagonAPI.*` constants are
 -- shared by `FlagMul` / `Lemmas` / `ErdosPentagon` (which all import this file).
+-- The n = 5 completeness/bridging obligations are discharged by `decide +kernel`
+-- (via `flag_bridge_decide`); kernel reduction of the size-5 enumeration exceeds
+-- the default heartbeat budget during elaboration (`isDefEq`/tactic execution), so
+-- lift the limit for this file (matching `native_decide`, which is unbounded).
+set_option maxHeartbeats 0
+
 generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_empty_typed_flags 5

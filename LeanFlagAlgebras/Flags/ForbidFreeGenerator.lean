@@ -2,6 +2,7 @@ module
 
 public import LeanFlagAlgebras.Flags.ForbidFreePruned
 public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
+public import LeanFlagAlgebras.FlagAlgebra.Compute.RawLabeled
 public meta import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 
 @[expose] public section
@@ -225,6 +226,65 @@ theorem genFlagsHfreePruned_toFinset_eq (qB : (k : ℕ) → Sym2Graph k → Bool
         [] Glab' hInput
     exact ⟨Glab'', hGlab''mem,
       Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab''iso))⟩
+
+/-! ### Raw-routed σ-typed completeness (memory-fit `decide +kernel`)
+
+The typed clique route's `flag_bridge_decide` obligation
+`sym2FlagSetHfree = (genFlagsHfreePruned σ n qB).toFinset` OOMs under `decide +kernel`
+because reducing `genFlagsHfreePruned` materialises one graph embedding (`↪g`) per
+(graph, embedding) pair.  `namedFlags_eq_univ_filter_via_rawCover` reroutes the same
+statement (in its `= univ.filter p` form) through the **raw** `List (ℕ × ℕ) × List ℕ`
+enumeration (`RawLabeled`), which carries no `Finset` and no `↪g`.
+
+The heavy fact reduced by the kernel becomes `hcover` — a pure raw coverage check over
+`rawAllAugLabeledFromSeed` (no `Sym2LabeledGraph` on either side) — which fits in RAM.
+The bridge back to the flag set is fully symbolic (via `rawAllAugLabeledFromSeed_eq_map`
+(T1), `rawIsIsoDeg_rawEnc` (T2a), `augRepsFreeB_complete`); the kernel never reduces an
+`↪g`.  The completeness argument mirrors `genFlagsHfreePruned_toFinset_eq`, routed through
+the raw seed labeling instead of the deduplicated generation. -/
+theorem namedFlags_eq_univ_filter_via_rawCover {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (qB : (k : ℕ) → Sym2Graph k → Bool) (p : Sym2Flag σ n → Bool)
+    (namedLab : List (Sym2LabeledGraph σ n))
+    (hq_iso : ∀ {k : ℕ} {G G' : Sym2Graph k}, G ∼sf G' → qB k G = qB k G')
+    (hq_restrict : ∀ {k : ℕ} {H : Sym2Graph (k + 1)}, qB (k + 1) H = true → qB k (restrict H) = true)
+    (hq0 : qB 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true)
+    (hcompat : ∀ (Glab : Sym2LabeledGraph σ n),
+        p (Quotient.mk (sym2LabeledGraphSetoid σ n) Glab) = qB n ⟨Glab.edges, Glab.edges_valid⟩)
+    (hsound : namedLab.all (fun Glab => qB n (⟨Glab.edges, Glab.edges_valid⟩ : Sym2Graph n)) = true)
+    (hcover : (rawAllAugLabeledFromSeed n k (edgesNat σ)
+          (((augRepsFreeBDeg qB n).map Prod.fst).map edgesNat)).all
+        (fun rx => (namedLab.map rawEnc).any (fun rnf => rawIsIsoDeg n k rx rnf)) = true) :
+    ((namedLab.map (Quotient.mk (sym2LabeledGraphSetoid σ n)) : List (Sym2Flag σ n))).toFinset
+      = Finset.univ.filter (fun F => p F = true) := by
+  rw [List.all_eq_true] at hsound
+  apply Finset.ext
+  intro F
+  simp only [List.mem_toFinset, List.mem_map, Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨Glab, hGlab, rfl⟩
+    rw [hcompat]
+    exact hsound Glab hGlab
+  · intro hpF
+    obtain ⟨Glab0, rfl⟩ := Quotient.exists_rep F
+    have hqU : qB n ⟨Glab0.edges, Glab0.edges_valid⟩ = true := by rw [← hcompat]; exact hpF
+    obtain ⟨R, hRmem, hRiso⟩ :=
+      augRepsFreeB_complete qB hq_iso hq_restrict n ⟨Glab0.edges, Glab0.edges_valid⟩ hqU
+    obtain ⟨Glab', hGlab'mem, hGlab'iso⟩ := mem_labeledOfGraph_eqv_of_underlying Glab0 hRiso
+    have hInput : Glab' ∈ (augRepsFreeB qB n).flatMap (labeledOfGraph σ) :=
+      List.mem_flatMap.mpr ⟨R, hRmem, hGlab'mem⟩
+    have hrawmem : rawEnc Glab' ∈ rawAllAugLabeledFromSeed n k (edgesNat σ)
+        (((augRepsFreeBDeg qB n).map Prod.fst).map edgesNat) := by
+      rw [show ((augRepsFreeBDeg qB n).map Prod.fst).map edgesNat
+            = (augRepsFreeB qB n).map edgesNat from by rw [augRepsFreeBDeg_fst_eq],
+        rawAllAugLabeledFromSeed_eq_map]
+      exact List.mem_map.mpr ⟨Glab', hInput, rfl⟩
+    rw [List.all_eq_true] at hcover
+    obtain ⟨rnf, hrnf, hiso⟩ := List.any_eq_true.mp (hcover _ hrawmem)
+    obtain ⟨nf, hnfmem, rfl⟩ := List.mem_map.mp hrnf
+    rw [rawIsIsoDeg_rawEnc] at hiso
+    have hGlab'nf : Glab' ∼sf nf := isIsoFastDeg_bool_true_correct hiso
+    exact ⟨nf, hnfmem,
+      Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab'nf))⟩
 
 end FlagAlgebras.Compute
 
@@ -658,6 +718,8 @@ private meta def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx 
   -- Completeness, in the bridge's predicate form (forbid is the term `⟦F⟧`, no canonical flag).
   let freeSym2Terms : Array (TSyntax `term) := freeArr.map (fun i =>
     mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}"))
+  let freeLabeledTerms : Array (TSyntax `term) := freeArr.map (fun i =>
+    mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}"))
   let isHfreeName := mkIdent (Name.mkSimple s!"isHfree_{n}_{k}_{m}_{tag}")
   let isHfreeGraphName := mkIdent (Name.mkSimple s!"isHfreeGraph_{n}_{k}_{m}_{tag}")
   let sym2SetName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_{k}_{m}_{tag}")
@@ -678,14 +740,40 @@ private meta def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx 
       def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
 
-  -- Genuine-pruning σ-typed completeness (Task 8b): the named free set equals the labeled flags built
-  -- over the *pruned* graph reps `augRepsFreeB (qFree F)` — no forbidden graph is materialized, and the
-  -- `native_decide` runs the cheap combinatorial `qFree` over the pruned reps rather than the density
-  -- filter over the full `genSym2GraphsDedup`. Closed by `genFlagsHfreePruned_toFinset_eq`; `hcompat`
-  -- matches the density-based `isHfree` to `qFree` via the Task-4 bridge (`qFree_eq_density_decide`).
-  elabUnlessDefined sym2SetEqName.getId (← `(
-      theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+  -- Genuine-pruning σ-typed completeness (Task 8b): the named free set equals `univ.filter isHfree`.
+  --
+  -- Under `decide +kernel` (`flagGen.kernelDecide true`, the default), the direct
+  -- `sym2FlagSet = (genFlagsHfreePruned …).toFinset` obligation OOMs (kernel reduction materialises one
+  -- `↪g` per (graph, embedding) pair).  It is rerouted through the RAW `List (ℕ×ℕ) × List ℕ`
+  -- enumeration (`RawLabeled`): the only kernel-decided fact is `hcover`, a raw coverage check with NO
+  -- `Sym2LabeledGraph`/`↪g` on either side (fits in RAM); the bridge back to the flag set is fully
+  -- symbolic (`namedFlags_eq_univ_filter_via_rawCover`, via T1/T2a + `augRepsFreeB` completeness).
+  --
+  -- Under the `native_decide` fallback (`flagGen.kernelDecide false`, used by the heavier files that
+  -- exceed even the raw kernel budget) the original path is kept unchanged: compiled evaluation of
+  -- `genFlagsHfreePruned` fits, so there is nothing to reroute.  This keeps those files byte-identical.
+  let sym2SetEqProof : TSyntax `term ←
+    if flagGen.kernelDecide.get (← getOptions) then
+      `(by
+        have hmap : $sym2SetName
+            = ((([ $freeLabeledTerms,* ] :
+                  List (FlagAlgebras.Compute.Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (Quotient.mk (FlagAlgebras.Compute.sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)))
+                : List (Sym2Flag $typeTerm $(Quote.quote n)))).toFinset := rfl
+        rw [hmap]
+        exact FlagAlgebras.Compute.namedFlags_eq_univ_filter_via_rawCover
+          (FlagAlgebras.Compute.qFree $fStx) $isHfreeName
+          ([ $freeLabeledTerms,* ] :
+            List (FlagAlgebras.Compute.Sym2LabeledGraph $typeTerm $(Quote.quote n)))
+          (fun {_ _ _} h => FlagAlgebras.Compute.qFree_iso $fStx h)
+          (fun {_ _} h => FlagAlgebras.Compute.qFree_restrict $fStx h)
+          (FlagAlgebras.Compute.qFree_hq0 $fStx (by decide))
+          (fun Glab => by
+            rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl)
+          (by flag_bridge_decide)
+          (by flag_bridge_decide))
+    else
+      `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
                 (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
@@ -697,7 +785,10 @@ private meta def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx 
           (fun {_ _} h => FlagAlgebras.Compute.qFree_restrict $fStx h)
           (FlagAlgebras.Compute.qFree_hq0 $fStx (by decide))
           (fun Glab => by
-            rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl)))
+            rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl))
+  elabUnlessDefined sym2SetEqName.getId (← `(
+      theorem $sym2SetEqName :
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := $sym2SetEqProof))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
