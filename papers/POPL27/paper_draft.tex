@@ -465,7 +465,7 @@ from the start; this is the traditional way to work in an algebra of
 with graph limits and then imposes the constraint post hoc by testing
 inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
-finite labeled pattern.  Our investigation proves a root-plantability criterion
+finite labeled pattern.  Our investigation proves a \emph{root-plantability} criterion
 characterizing when they do agree, gives a positive result for
 blow-up-closed classes that also covers substitution-closed classes, and exhibits a
 counterexample based on \(C_4\)-free graphs.  The ensemble viewpoint is useful
@@ -731,17 +731,18 @@ When $n < m$, we set $\den{F}{G} := 0$ by convention.
 
 \paragraph{Chain rule.}
 The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
-$m-k$ unlabeled vertices directly from $G$, or by first sampling a larger
-intermediate flag $G'$ of size $n$ inside $G$ and then sampling~$F$ inside $G'$.
+$m-k$ unlabeled vertices directly from $G$, or by first sampling an
+intermediate flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
+then sampling~$F$ inside $G'$.
 These two procedures are the same experiment, which gives the following identity.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
-  For $F \in \mathcal{F}^\sigma_m$, $n \geq m$, and a $\sigma$-flag $G$ of size
-  $\geq n$,
+  For $F \in \mathcal{F}^\sigma_m$, a $\sigma$-flag $G$ of size $n$, and $n'$
+  with $m \leq n' \leq n$,
   \[
     \den{F}{G}
     \;=\;
-    \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,\den{G'}{G}.
+    \sum_{G' \in \mathcal{F}^\sigma_{n'}} \den{F}{G'}\,\den{G'}{G}.
   \]
 \end{lemma}
 
@@ -786,7 +787,7 @@ Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
   \label{eq:zero-element}
-  \mathbf e_F - \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'},
+  \mathbf e_F - \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot \mathbf e_G,
   \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
 The \emph{flag algebra} is the quotient module
@@ -802,7 +803,7 @@ $\fKtwobull$, we retain the standard shorthand of omitting the brackets in
 algebraic formulas; there the surrounding algebraic context makes the
 canonical image unambiguous.
 
-We call $\sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'} \cdot \mathbf e_{G'}$ the
+We call $\sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot \mathbf e_G$ the
 \emph{expansion of $F$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
@@ -811,7 +812,7 @@ equality
 \[
   [F]
   =
-  \sum_{G' \in \mathcal{F}^\sigma_n} \den{F}{G'}\,[G']
+  \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G}\,[G]
   \qquad\text{in }\mathcal{A}^\sigma .
 \]
 We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
@@ -854,7 +855,7 @@ $\ell \geq m_1 + m_2 - k$ and define
   \label{eq:mul}
   [F_1] \cdot [F_2]
   \;:=\;
-  \sum_{G' \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G'} \cdot [G']
+  \sum_{G \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G} \cdot [G]
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance, this definition appears to depend on both the choice of $\ell$
