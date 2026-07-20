@@ -737,7 +737,7 @@ then sampling~$F$ inside $G'$.
 These two procedures are the same experiment, which gives the following identity.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
-  For $F \in \mathcal{F}^\sigma_m$, a $\sigma$-flag $G$ of size $n$, and $n'$
+  For $F \in \mathcal{F}^\sigma_m$, $G \in \mathcal{F}^\sigma_n$, and $n'$
   with $m \leq n' \leq n$,
   \[
     \den{F}{G}
@@ -775,9 +775,8 @@ satisfying the usual laws; the flag algebras in this paper are commutative
 $\mathbb{R}$-algebras.} of density expressions generated
 by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
 density of that local labeled pattern in a large host graph.  The quotient
-below records the standard sampling identities among these building blocks,
-beginning with the expansion identity coming from
-Lemma~\ref{lem:chain-rule}.
+below records the identity of Lemma~\ref{lem:chain-rule} among these building
+blocks.
 Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
@@ -796,9 +795,8 @@ The \emph{flag algebra} is the quotient module
 \]
 We write $[F]$ for the class of $\mathbf e_F$ in $\mathcal{A}^\sigma$.
 Throughout the paper, capital letters $F,G$ denote finite flags, while
-lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.  Thus a
-positive homomorphism is applied to~$[F]$, not directly to the finite flag
-$F$.  For familiar named or pictorial flags, such as $K_2$ or
+lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.
+For familiar named or pictorial flags, such as $K_2$ or
 $\fKtwobull$, we retain the standard shorthand of omitting the brackets in
 algebraic formulas; there the surrounding algebraic context makes the
 canonical image unambiguous.
@@ -807,7 +805,7 @@ We call $\sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot \mathbf e_G$ the
 \emph{expansion of $F$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
-The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
+The quotient by $\mathcal{Z}^\sigma$ records this expansion identity as the
 equality
 \[
   [F]
