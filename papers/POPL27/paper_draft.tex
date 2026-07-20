@@ -1523,8 +1523,10 @@ precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
 We can now define $\mathcal{F}^\sigma_n$ in Lean as
 \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
 \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
-\bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each element is a pair
-$(n, F)$ where $n$ records the size and $F$ is the $\sigma$-flag of that size.
+\bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each
+element is a pair $\hat F = \langle n, F\rangle$ where $n$ records the size and $F$ is the
+$\sigma$-flag of that size.  In Lean the two components are written
+$\hat F.1$ and $\hat F.2$.
 \begin{lstlisting}
 def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
@@ -1743,7 +1745,7 @@ abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType 
 def basisVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
-Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
+Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector $\mathbf e_F$ for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
 
 Next, we define the zero space $\mathcal{Z}^\sigma$.  The auxiliary function
 \lean{flagExpansion F}~$\ell$ is the Lean version of
@@ -1817,9 +1819,8 @@ noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Flag
 noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Mul (FlagAlgebra (*@$\sigma$@*)) where
   mul := by
     apply Quotient.map(*@$_2$@*) ((*@$\cdot$@*) * (*@$\cdot$@*))
-    -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$n_0$}@*) (*@\textcolor{gray}{$\sigma$}@*),
-    --   flagVectorEqv f f' and flagVectorEqv g g'
-    --   imply flagVectorEqv (f * g) (f' * g')
+    -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$\sigma$}@*),
+    --   flagVectorEqv f f' and flagVectorEqv g g' imply flagVectorEqv (f * g) (f' * g')
 \end{lstlisting}
 Here \lean{Quotient.map$_2$} is a Lean built-in function that lifts a binary
 operation to a quotient type given a proof that the operation respects the
@@ -1834,7 +1835,7 @@ obligation amounts to showing that this multiplication respects
 is that \lean{ZeroSpace} $\sigma$ is
 closed under multiplication by arbitrary flag vectors:
 \begin{lstlisting}
-theorem flagVector_mul_zeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+theorem flagVector_mul_zeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (f : FlagVector (*@$\sigma$@*)) {k : FlagVector (*@$\sigma$@*)} (hk_zero : k (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
     : f * k (*@$\in$@*) ZeroSpace (*@$\sigma$@*) := ...
 \end{lstlisting}
@@ -1848,22 +1849,18 @@ depend on the chosen representatives.  This is the compatibility condition
 that allows the Lean definition to use \lean{Quotient.map$_2$}.  A separate
 theorem handles the choice of output size:
 \begin{lstlisting}
-theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
-    {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)} ...
+theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)}
+    (h(*@$\ell_1$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_1$@*) + n(*@$_0$@*)) (h(*@$\ell_2$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_2$@*) + n(*@$_0$@*))
     : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*)) := ...
 \end{lstlisting}
-The ellipsis hides the admissibility assumptions on the two output sizes:
-\(\ell_1\) and \(\ell_2\) must both be large enough to contain the two input
-flags after identifying their common type \(\sigma\).  In Lean this is written
-as
-\[
-  F_1.1 + F_2.1 \leq \ell_i + n_0
-  \qquad (i=1,2),
-\]
-where \(F_j.1\) is the total number of vertices of \(F_j\), and \(n_0\) is the
-number of labeled vertices in \(\sigma\).  Equivalently, the intended output
+The hypotheses \lean{h$\ell_1$} and \lean{h$\ell_2$} are the admissibility
+assumptions on the two output sizes: \(\ell_1\) and \(\ell_2\) must both be
+large enough to contain the two input flags after identifying their common
+type \(\sigma\).  Here \(F_j.1\) is the total number of vertices of \(F_j\),
+and \(n_0\) is the number of labeled vertices in \(\sigma\).  Equivalently, the intended output
 size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the
-type are sampled disjointly in the two flags, while the \(n_0\) type vertices
+type are sampled disjointly in the two flags, while the \(n_0\) labeled vertices
 are shared.  The theorem then says that any two such admissible output sizes
 give equivalent flag vectors, justifying the choice of the minimal size in
 \lean{flagMul}.
@@ -3690,7 +3687,7 @@ expansions can be stated in that common space.
 
 This dependent-sum packaging solves the typing problem, but it is not an equality
 principle for dependent pairs.  The tagged pairs
-$\langle\ell_1,H\rangle$ and $\langle\ell_2,G\rangle$ remain different basis
+$\langle\ell_1,G'\rangle$ and $\langle\ell_2,G\rangle$ remain different basis
 indices when their size tags differ.  What the packaging provides is a common
 ambient type in which linear combinations involving either index can be
 formed.  At this point the comparison is well typed, but no equality between
