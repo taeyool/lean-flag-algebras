@@ -334,10 +334,11 @@ simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 where an \emph{induced copy} of $F$ in $G$ is a vertex subset
 $S\subseteq V(G)$ with $|S|=|V(F)|$ and $G[S]\cong F$, and
 \emph{\(\mathcal{H}\)-free} means that $G$ contains no copy of any
-member of $\mathcal{H}$ as a (not necessarily induced) subgraph.  The corresponding asymptotic
-question normalizes by the number of possible $|V(F)|$-vertex subsets and
-takes a limit; we call this the \emph{Tur\'an density} of $F$ with
-respect to $\mathcal{H}$:
+member of $\mathcal{H}$ as a (not necessarily induced) subgraph.  We obtain the
+corresponding asymptotic quantity by normalizing
+$\mathrm{ex}(n,\,F;\,\mathcal{H})$ by the total number
+$\binom{n}{|V(F)|}$ of $|V(F)|$-vertex subsets and taking the limit; we call the
+result the \emph{Tur\'an density} of $F$ with respect to $\mathcal{H}$:
 \[
   \tdensity{F}{\mathcal{H}}
   :=
@@ -355,7 +356,7 @@ asymptotic value
   = \frac{1}{2}
 \]
 records that, in any sufficiently large triangle-free graph, at most half of
-all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
+all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton, we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
 Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
@@ -366,11 +367,11 @@ finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
 
 Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
-for exactly this setting: it reduces the infinitely many graphs one has to
-reason about to a finite semidefinite-programming certificate.  A
-semidefinite-programming (SDP) solver searches for that certificate, and the
-flag algebra framework explains why it implies an asymptotic bound for the
-whole graph class.
+for exactly this setting: it reduces the task of proving an asymptotic bound
+over an infinite graph class to checking finitely many algebraic conditions.
+A semidefinite-programming (SDP) solver proposes finite data intended to satisfy these conditions, and
+the flag algebra framework explains why any data that pass the checks establish
+the desired bound for the whole class.
 
 This combination of mathematical abstraction and computer search has been
 unusually effective.  It resolved the Erd\H{o}s pentagon
