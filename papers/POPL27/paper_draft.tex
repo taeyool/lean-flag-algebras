@@ -1771,6 +1771,9 @@ noncomputable def ZeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) :
     : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
   Submodule.span (*@$\mathbb{R}$@*) (zeroSet (*@$\sigma$@*))
 \end{lstlisting}
+In \lean{flagExpansion}, the black dot is Lean's scalar multiplication
+operation on \lean{FlagVector}s: it scales the basis vector indexed by
+\(\langle\ell, F'\rangle\) by the density \lean{flagDensity$_1$ F.2 F'}.
 
 Following the same pattern as the definition of \lean{Flag} from
 \lean{LabeledGraph} in \Cref{sec:flagtypes}, we now define
@@ -2014,7 +2017,7 @@ instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@
 
 The downward operator from \Cref{sec:background-downward} forgets the
 labels of a typed flag-algebra expression while keeping the correct averaging
-factor.  On a single flag the intended formula is
+factor.  On a single flag $F$ the intended formula is
 \[
   \llbracket [F] \rrbracket_\sigma = q_\sigma(F)\cdot [F|_\emptyset].
 \]
@@ -2033,17 +2036,16 @@ then lifted to \lean{unlabel} on \lean{Flag}s.  The map \lean{downwardFlag}
 combines the two: it sends a typed flag to the basis vector of its unlabeling,
 scaled by the normalizing factor.
 
-The normalizing factor is computed by counting label placements.  For a
+The normalizing factor $q_\sigma$ is computed by counting label placements.  For a
 concrete typed labeled graph~\(G\) on~\(n\) vertices, \lean{isomorphismCount G}
 is the number of ways to place the \(n_0\) labels on the same underlying
-unlabeled graph so that the resulting typed labeled graph is related to
-\(G\) by a label-preserving graph isomorphism.  The denominator
+unlabeled graph so that the resulting typed labeled graph is isomorphic
+to~\(G\).  The denominator
 \(n!/(n-n_0)!\) is the total number of injections of the
 \(n_0\) labels into the \(n\) vertices, so their ratio is exactly
-\(q_\sigma(G)\).  In the last line of the snippet, the black dot is Lean's
-scalar multiplication operation on \lean{FlagVector}s: it scales the basis
-vector indexed by the pair consisting of \(n\) and \lean{unlabel F} by
-\lean{downwardNormalizingFactor F}.
+\(q_\sigma(G)\).  In the last line of the snippet, \lean{downwardFlag} scales
+the basis vector indexed by the pair consisting of \(n\) and \lean{unlabel F}
+by \lean{downwardNormalizingFactor F}.
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
@@ -2070,11 +2072,10 @@ The algebra-level operator is built in three steps.  First,
 \lean{downwardFlagVector} extends the single-flag map linearly from flag basis
 vectors to arbitrary \(\sigma\)-typed \lean{FlagVector} terms.  Second,
 \lean{downwardFlagVectorQuot} quotients the resulting empty-type flag vector,
-producing an element of \lean{FlagAlgebra}~\(\emptyt\).  Third,
-\lean{downward} turns this
-representative-level construction into a function whose input is an element of
-the \(\sigma\)-typed quotient algebra, rather than a chosen
-\lean{FlagVector} representative.
+producing an element of \lean{FlagAlgebra}~\(\emptyt\).  Both still take a
+\(\sigma\)-typed \lean{FlagVector} as input.  Third, \lean{downward} replaces
+that input by an element of the quotient algebra \lean{FlagAlgebra}~\(\sigma\),
+so that the operator no longer depends on a chosen representative.
 
 The compatibility theorem needed for the third step is the essential point.  A
 flag vector may be changed by an element of the zero space without changing the
@@ -2100,7 +2101,7 @@ noncomputable def downward {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : 
     : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   Quotient.lift (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f) (...)
 
-notation "(*@$\llbracket$@*)" f "(*@$\rrbracket_0$@*)" => (downward f)
+notation "(*@\textcolor{orange!80!black}{$\llbracket$}@*)" f "(*@\textcolor{orange!80!black}{$\rrbracket_0$}@*)" => (downward f)
 \end{lstlisting}
 The last definition is the quotient-level downward operator, and the final
 line of the snippet is the Lean notation declaration saying that
