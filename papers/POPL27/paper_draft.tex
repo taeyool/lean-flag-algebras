@@ -231,12 +231,14 @@
              native_decide,decide,norm_num,simp,ring,linarith,omega,
              exact,apply,rw,calc,intro,constructor,use,refine,obtain,
              rcases,cases,induction,assumption,contradiction,trivial,rfl,
-             macro,elab,notation,example},
+             macro,elab,notation,example,
+             infix,infixl,infixr,prefix,postfix},
   keywordstyle=\color{blue!70!black}\bfseries,
   comment=[l]{--},
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{orange!80!black},
   morestring=[b]",
+  showstringspaces=false,
   sensitive=true,
   basicstyle=\ttfamily\small,
   breaklines=true,
@@ -1434,16 +1436,16 @@ library.  Before giving the Lean definitions of flags, we recall the small
 pieces of Mathlib notation used below.  In \Cref{sec:background} we
 described a finite graph as having a vertex set $V(G)$.  In Lean, the vertex
 set is represented by a type: a term of type \lean{SimpleGraph V} is a simple
-graph whose vertices are the elements of \lean{V}.  Finiteness is supplied
-separately by assumptions such as \lean{Fintype V}; for example,
-\lean{SimpleGraph (Fin n)} is the Lean version of a graph on the vertex set
-\(\{0,\ldots,n-1\}\).
+graph whose vertices are the elements of the type \lean{V}.  Finiteness is
+supplied separately by assumptions such as \lean{Fintype V}.  For example,
+\lean{SimpleGraph (Fin n)} is a graph on the type \lean{Fin n}, whose elements
+are the natural numbers \(0,\ldots,n-1\).
 
 Mathlib provides ${G\hookrightarrow_g H}$ for the type of graph embeddings
 from $G$ to $H$.  Such an embedding is an injective vertex map that
 preserves and reflects adjacency, so its image is an induced copy of $G$
 in $H$.  Mathlib also provides $G\simeq_g H$ for graph isomorphisms.
-With this notation in place, the concrete pair $(M,\theta_A)$ from
+With this notation in place, the concrete pair $F=(M,\theta_F)$ from
 \Cref{sec:background} is represented by \lean{LabeledGraph}, while its
 isomorphism class is represented by \lean{Flag}.
 
@@ -1459,8 +1461,8 @@ is represented by a simple graph on the label type \lean{T}.  The structure
 \lean{LabeledGraph} packages the two pieces of a concrete $\sigma$-flag: the
 field \lean{graph} stores the underlying graph $M$, and the field
 \lean{type\_embed} stores the embedding
-$\theta_A:\sigma\hookrightarrow_g M$.  In the signature, braces mark
-\emph{implicit} parameters, which Lean normally infers from context, and
+$\theta_F:\sigma\hookrightarrow_g M$.  In the signature, braces mark
+implicit parameters, which Lean normally infers from context, and
 square brackets mark typeclass assumptions.  Thus \lean{[Fintype T]} tells
 Lean that the label type
 \lean{T} is finite; later signatures use assumptions such as
@@ -1471,25 +1473,25 @@ two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
 quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
 structure LabeledGraphIso {T V V' : Type} [Fintype T]
-    ((*@$\sigma$@*) : FlagType T) (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) V') where
+    {(*@$\sigma$@*) : FlagType T} (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) V') where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
 
-infixl:50 " (*@$\simeq$@*)f " => LabeledGraphIso
+infixl:50 " (*@\textcolor{orange!80!black}{$\simeq$}@*)f " => LabeledGraphIso
 
 instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type)
     : Setoid (LabeledGraph (*@$\sigma$@*) V) where
-  -- r : LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) Prop
+  -- r : LabeledGraph (*@\textcolor{gray}{$\sigma$}@*) V (*@\textcolor{gray}{$\to$}@*) LabeledGraph (*@\textcolor{gray}{$\sigma$}@*) V (*@\textcolor{gray}{$\to$}@*) Prop
   r     := fun G G' => Nonempty (G (*@$\simeq$@*)f G')
   iseqv := ... -- proof that r defines an equivalence relation
 
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-\lean{Quotient} comes with bracket notation for equivalence classes.  In Lean
-code, the bare notation \(\llbracket x\rrbracket\) means ``the quotient class
-of the representative \(x\),'' with the relevant quotient inferred from the
-expected type.  Thus, when the expected type is
+\lean{Quotient} comes with a double-bracket notation for equivalence classes.
+In Lean code, the bare notation \(\llbracket x\rrbracket\), with no subscript,
+means ``the quotient class of the representative \(x\),'' with the relevant
+quotient inferred from the expected type.  Thus, when the expected type is
 \lean{Flag}~\(\sigma\)~\lean{V}, \(\llbracket G\rrbracket\) is the flag
 represented by the concrete labeled graph \(G\).  Later, when the expected type
 is \lean{FlagAlgebra}~\(\sigma\), the same bare brackets send a
