@@ -634,4 +634,110 @@ elab "generate_forbid_free_flag_pair_density_theorems" patS:num hostS:num kS:num
   let hostFree := inducedFreeFlagIndices hostMask hosts
   genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
 
+/-! ## Objective (single-flag) density table — the `auto_flagDensity1_*` lemmas
+
+When the objective flag is smaller than the host size (branch B), `flag_expand_hfree` needs
+`@[simp]` lemmas evaluating `flagDensity₁ objective host` to a concrete rational for every
+forbid-free host flag. `generate_forbid_free_density1_theorems` emits that table; the values
+are computed at elaboration time by the elementary combinatorics below (the elaboration-time
+analogue of `sym2EmptyTypeFlagDensity₁`), and every emitted theorem is independently verified
+by `flag_bridge_decide`. -/
+
+/-- Exact induced single-flag density `d(obj; host)` as a reduced `(num, den)` pair: the
+fraction of `objN`-vertex subsets of the host whose induced subgraph is isomorphic to `obj`.
+Faithful port of Python `induced_density` (`flagmatic_to_lean.py`); isomorphism is tested by
+equality of `canonicalLabeledForm`s with an empty label set (full lex-min canonicalization). -/
+def inducedDensity1
+    (objN : Nat) (objEdges : List (Nat × Nat))
+    (hostN : Nat) (hostEdges : List (Nat × Nat)) : Nat × Nat :=
+  if hostN < objN then (0, 1)
+  else
+    let objCanon := canonicalLabeledForm objEdges objN []
+    let res := (combinations (List.range hostN) objN).foldl (fun (acc : Nat × Nat) S =>
+      if canonicalLabeledForm (inducedLocalEdges S hostEdges) objN [] == objCanon then
+        (acc.1 + 1, acc.2 + 1)
+      else (acc.1 + 1, acc.2)) (0, 0)
+    fracReduce res.2 res.1
+
+-- `generate_forbid_free_density1_theorems objN objIdx hostN F`
+--
+-- The auto-generated `flagDensity₁` evaluation table for the branch-B objective
+-- expansion: for the objective flag `Flag_objN_0_0_objIdx` and every `F`-free
+-- `hostN`-vertex flag `Flag_hostN_0_0_i`, emit the `@[simp]` theorem
+--   `auto_flagDensity1_objN_0_0_objIdx_hostN_0_0_i :`
+--   `   flagDensity₁ Flag_objN_0_0_objIdx Flag_hostN_0_0_i = value`,
+-- the `value` computed at elaboration time by `inducedDensity1`. Each theorem is
+-- closed by `flag_bridge_decide`, so the proof is `decide +kernel` under
+-- `set_option flagGen.kernelDecide true` and `native_decide` otherwise. These are
+-- what `flag_expand_hfree hostN F` needs to evaluate density coefficients when it
+-- expands an objective smaller than the host size.
+--
+-- The `F`-containing hosts are skipped via the same free mask (and clique fast
+-- path) the flag generator uses, so the table names exactly the `Flag_hostN_0_0_*`
+-- constants `generate_forbid_free_empty_typed_flags hostN F` creates.
+--
+-- Parameters:
+--   • `objN`, `objIdx` : the objective is the `objIdx`-th canonical `objN`-vertex
+--                        graph (`Flag_objN_0_0_objIdx`).
+--   • `hostN`          : vertex count of the host flags (`Flag_hostN_0_0_*`).
+--   • `F`              : the forbidden graph — a `Sym2Graph` term, forbidden as a
+--                        (non-induced) subgraph, as in the other `…_forbid_free_…`
+--                        commands.
+--
+-- Prerequisites: `generate_forbid_free_empty_typed_flags objN F` and
+-- `generate_forbid_free_empty_typed_flags hostN F` (the named flags must exist).
+--
+-- Example — the edge density inside every K5-free 5-vertex flag:
+--   `generate_forbid_free_density1_theorems 2 1 5 K5`
+elab "generate_forbid_free_density1_theorems" objNS:num objIdxS:num hostNS:num
+    fStx:ident : command => do
+  let objN := objNS.getNat
+  let objIdx := objIdxS.getNat
+  let hostN := hostNS.getNat
+
+  -- The objective's canonical edge list (same enumeration order as `Flag_objN_0_0_*`).
+  let objAll ← evalCanonicalEdgeLists objN
+  if objAll.length ≤ objIdx then
+    throwError s!"Objective index {objIdx} out of range: only {objAll.length} canonical \
+{objN}-vertex graph(s)"
+  let objEdges := objAll.getD objIdx []
+
+  -- The host enumeration + the `F`-free mask (same clique fast path as the flag
+  -- generator, so the emitted table matches the generated `Flag_hostN_0_0_*` set).
+  let hostAll ← evalCanonicalEdgeLists hostN
+  let freeMask ← match ← detectCompleteR fStx with
+    | some r => evalCliqueFreeMask hostN r
+    | none => evalSubgraphFreeMask hostN fStx
+  let freeIndices := (List.range hostAll.length).filter (fun i => freeMask.getD i false)
+
+  let objFlagName := mkIdent (Name.mkSimple s!"Flag_{objN}_0_0_{objIdx}")
+  if ¬ (← isDeclaredInScope objFlagName.getId) then
+    throwError s!"Missing definition: {objFlagName.getId} \
+(run `generate_forbid_free_empty_typed_flags {objN} {fStx.getId}` first)"
+
+  let mut generated : Nat := 0
+  for i in freeIndices do
+    let hostFlagName := mkIdent (Name.mkSimple s!"Flag_{hostN}_0_0_{i}")
+    if ¬ (← isDeclaredInScope hostFlagName.getId) then
+      throwError s!"Missing definition: {hostFlagName.getId} \
+(run `generate_forbid_free_empty_typed_flags {hostN} {fStx.getId}` first)"
+    let nd := inducedDensity1 objN objEdges hostN (hostAll.getD i [])
+    let rhsTerm ← densityValueToTerm nd.1 nd.2
+    let thmName := mkIdent (Name.mkSimple
+      s!"auto_flagDensity1_{objN}_0_0_{objIdx}_{hostN}_0_0_{i}")
+    if ¬ (← isDeclaredInScope thmName.getId) then
+      elabCommand (← `(
+        @[simp]
+        theorem $thmName
+            : flagDensity₁ $objFlagName $hostFlagName = $rhsTerm
+          := by
+          dsimp [$objFlagName:ident, $hostFlagName:ident]
+          rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+          flag_bridge_decide
+      ))
+      generated := generated + 1
+
+  logInfo s!"Generated {generated} objective flagDensity₁ theorem(s): \
+Flag_{objN}_0_0_{objIdx} against the {freeIndices.length} forbid-free {hostN}-vertex flag(s)"
+
 end Flags.Densities
