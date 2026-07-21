@@ -2799,18 +2799,16 @@ reflection pattern.  The specification-level definition uses the abstract
 downward normalizing factor \(q_\sigma(F)\), implemented as
 \lean{downwardNormalizingFactor}.  Its executable counterpart is
 \lean{downwardNormalizingFactor\_Sym2Flag}.  On a concrete
-\lean{Sym2LabeledGraph}, Lean enumerates the finite set of type embeddings that
+\lean{Sym2LabeledGraph} over a flag type with \(k\) labels, on \(n\) vertices,
+Lean enumerates the finite set of type embeddings that
 produce an equivalent flag, takes its cardinality, and divides by the total
-number \(n!/(n-k)!\) of injections from $[k]$ to $[n]$.
+number \(n!/(n-k)!\) of injections of the \(k\) labels into the \(n\) vertices.
 The resulting computation is invariant under flag equivalence, so it can then
 be lifted through the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
 def isoEmbeddingCount_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
   (isoSym2TypeEmbeddingSetWithSameGraph G).card
-  -- isoSym2TypeEmbeddingSetWithSameGraph G is a finite set of embeddings
-  -- whose elements can be enumerated by an algorithm, so its cardinality
-  -- can be computed.
 
 def downwardNormalizingFactor_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
@@ -2826,9 +2824,13 @@ def downwardNormalizingFactor_Sym2Flag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) 
 \end{lstlisting}
 These are executable \lean{def}s, rather than specification-level
 \lean{noncomputable def}s.  The first definition computes a natural number by
-taking the cardinality of the explicitly finite set
-\lean{isoSym2TypeEmbeddingSetWithSameGraph G}.  The second performs the
-rational normalization.  The final \lean{Quotient.lift} applies this same
+taking the cardinality of the finite set
+\lean{isoSym2TypeEmbeddingSetWithSameGraph G}.  Its elements are the type
+embeddings of \(\sigma\) into \(G\)'s graph, in the sense of the
+\lean{type\_embed} field of \lean{Sym2LabeledGraph}, that give a labeled graph
+isomorphic to \(G\).  The
+second definition divides that count by the number of injections, so its value
+is exactly \(q_\sigma(G)\).  The final \lean{Quotient.lift} applies this same
 representative-level computation to a \lean{Sym2Flag}; its omitted
 representative-invariance argument proves that equivalent representatives give
 the same value.
@@ -2851,17 +2853,20 @@ example : downwardNormalizingFactor Sym2Flag_3_1_0_1.toFlag = 2 / 3 := by
   rw [downwardNormalizingFactor_eq]
   decide +kernel
 \end{lstlisting}
-Here the rewrite changes the goal to the closed computable equality
+Here the command \lean{rw} changes the goal to the closed computable equality
 \begin{lstlisting}
   downwardNormalizingFactor_Sym2Flag  Sym2Flag_3_1_0_1  =  2 / 3
 \end{lstlisting}
-and \lean{decide +kernel} evaluates that finite computation.  The reflected
-normalizing factor makes the downward operator executable on concrete
-$\sigma$-flags.  The reflection layer computes the underlying $\emptyset$-flag and its
-normalizing factor; the adequacy theorem then certifies their product as the
-abstract downward image.  By linearity, finite linear combinations of flag
-basis elements can be handled term by term, so the downward identities needed in later flag-algebra proofs can
-be established computationally rather than by separate counting arguments.
+and \lean{decide +kernel} evaluates that finite computation.
+
+The reflected normalizing factor is what makes the downward operator executable
+on concrete $\sigma$-flags.  The
+reflection layer computes the underlying $\emptyset$-flag and its normalizing
+factor, and the adequacy theorem certifies their product as the abstract
+downward image.  By linearity, a finite linear combination of flag basis
+elements is handled term by term, so the downward identities needed in later
+flag-algebra proofs can be established by computation rather than by separate
+counting arguments.
 
 \subsection{From Reflected Computations to Reusable Theorems}
 \label{sec:reflection-generation}
