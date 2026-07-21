@@ -506,8 +506,8 @@ establishes the notation used throughout the paper.  \Cref{sec:abstract}
 presents the specification layer, including its semantic treatment of
 forbidden-graph assumptions.  \Cref{sec:reflection} introduces executable
 graph representations, proves that their computations agree with the
-specification, and explains how elaboration-time commands turn individual
-computations into reusable theorems.  \Cref{sec:flagmatic} describes the
+specification, and explains how elaboration-time commands generate flags and
+their theorems.  \Cref{sec:flagmatic} describes the
 certificate-to-proof compiler, its exact checks of positive semidefiniteness
 and proof automation, and its evaluation on seven certificates.
 \Cref{sec:lowerbounds} formalizes the
@@ -2868,7 +2868,7 @@ elements is handled term by term, so the downward identities needed in later
 flag-algebra proofs can be established by computation rather than by separate
 counting arguments.
 
-\subsection{From Reflected Computations to Reusable Theorems}
+\subsection{Elaboration-Time Generation of Flags and Theorems}
 \label{sec:reflection-generation}
 
 The two examples in the preceding subsection show the basic unit of reflected
@@ -2888,10 +2888,10 @@ precisely, the generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
 elaboration, the phase in which Lean processes source commands and produces
 checked definitions and theorems, they run the finite enumerators and
-generate statements and proofs for the required specialized facts.  The
-resulting theorems are both a reusable interface and a cache: each finite
-computation is performed when its theorem family is generated, and later
-proofs recover the result by rewriting rather than recomputing it.  For the
+generate statements and proofs for the required specialized facts.  Each finite
+computation is therefore performed once, when its theorem family is generated,
+and later proofs recover the result by rewriting rather than recomputing it.
+For the
 sizes and flag type used in the two examples above, the relevant commands have
 the following form:
 \begin{lstlisting}
@@ -2922,20 +2922,73 @@ the unique type on one labeled vertex, while the suffix
 
 The important point is what each group contributes to subsequent proofs.  The
 first four commands create the named two- and three-vertex flags
-used in the examples of \Cref{sec:reflection-adequacy}.  Generating the typed
+used in the examples of \Cref{sec:reflection-adequacy}, and each of the four
+also proves a completeness lemma stating that the flags it names exhaust the
+corresponding \(\mathcal{F}^\sigma_n\).  Generating the typed
 flags also computes and proves their downward identities, including the
 coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
 generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
 pair of two-vertex patterns~\((F_1,F_2)\) and every three-vertex host \(G\);
-this family includes the displayed value \(c=1/2\).  These evaluations are
-batched to avoid invoking the native compiler separately for every tuple.
+this family includes the displayed value \(c=1/2\).
 Finally, the multiplication
-command uses all of those coefficients to prove the product expansion
-\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair.  Thus, elaboration produces the
+command combines those coefficients with the completeness lemma for the hosts
+to prove the product expansion
+\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair; completeness is
+what justifies summing over exactly the named hosts.  Thus, elaboration produces the
 flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
-and the multiplication table, together with proofs of every entry.  Variants
-for a fixed forbidden graph first discard flags that cannot contribute and then
-perform the same computations on the surviving family.
+and the multiplication table, together with proofs of every entry.
+
+The finite enumerations behind these commands are organized so that
+elaboration remains tractable as the sizes grow.  The enumeration of graphs
+is inductive in the size.  The \(n\)-vertex representatives are obtained by
+extending the \((n-1)\)-vertex representatives by one vertex in all possible
+ways and discarding duplicates, so the generator only ever handles one
+representative per isomorphism class, never the exponentially many labeled
+graphs on \(n\) vertices.  Deduplication attaches to each candidate a cheap
+isomorphism-invariant key, derived from its edge count and degree sequence,
+and runs the expensive isomorphism test only when two keys collide.  The
+completeness lemmas are likewise not proved by brute force.  That the
+inductive generator misses no isomorphism class is proved once, as an
+ordinary theorem about the enumerator, and the finite evaluation performed at
+generation time only checks that the emitted constants match the enumerator's
+output; nothing ever compares the named flags against the full quotient type
+directly.
+
+Extremal applications work under a forbidden-graph assumption, and each of
+the commands above has a forbid-free variant for this situation.  The
+\lean{generate\_forbid\_free\_*} commands take one additional argument, a
+concrete \lean{Sym2Graph} term for the forbidden graph \(H\); the Mantel
+development, for example, defines \lean{K3} as the complete graph on three
+vertices and runs \lean{generate\_forbid\_free\_flags 3 1 0 K3}.  These
+variants emit constants and theorems only for the flags whose underlying
+graph does not contain \(H\) as a subgraph, and their completeness lemmas
+change accordingly, stating that the named flags exhaust the \(H\)-free ones,
+with \(H\)-freeness phrased as a vanishing subflag density so that the lemma
+composes with the forbidden-graph machinery of \Cref{sec:forbidden}.
+
+The forbid-free variants also optimize how the \(H\)-free flags are found.
+For a complete forbidden graph, the size induction itself prunes: only
+\(H\)-free representatives are extended, only \(H\)-free extensions are kept,
+and a cheap clique test decides containment, so flags containing \(H\) are
+never generated.  For other forbidden graphs, the representative enumeration
+is filtered before any typed structure is built, so the labeled-graph work is
+spent only on the surviving graphs.  The pruned generation nevertheless
+proves the same filtered completeness lemma.  Its enumeration misses no
+\(H\)-free isomorphism class because \(H\)-freeness is invariant under
+isomorphism and preserved by deleting a vertex, so the completeness argument
+descends through the size induction; a proved bridge then equates the
+combinatorial containment test driving the pruning with the density condition
+stated in the lemma.
+
+At realistic sizes, much of the elaboration cost is in certifying the
+generated density facts.  Rather than one evaluator invocation per pair
+density, the commands prove batch lemmas, each certifying a block of
+densities in a single evaluation, and derive the individual
+\lean{flagDensity}$_2$ theorems by projecting from their block, so the number
+of invocations grows with the number of blocks rather than with the number of
+pairs.  A single option switches all of these evaluations between the
+compiled evaluator and the kernel, so a development whose sizes permit kernel
+reduction adds no compiled-evaluation axioms.
 
 Metaprogramming automates theorem construction, not verification: Lean still
 checks every generated proof, and a wrong coefficient makes that proof fail.
@@ -2944,8 +2997,8 @@ densities, and products by rewriting rather than reopening the finite searches.
 Thus, the story of this section has three steps: concrete representations make
 the finite operations executable, adequacy theorems connect those operations
 to the abstract definitions, and elaboration-time generation turns their
-individual results into a reusable table of proved facts.  The next section
-uses that table to automate complete flag-algebra arguments.
+individual results into tables of proved facts.  The next section
+uses those tables to automate complete flag-algebra arguments.
 
 \section{Automating Flag-Algebra Proofs}
 \label{sec:flagmatic}
@@ -3261,12 +3314,11 @@ assembled output.
 \paragraph{Flags and density data (Part~1).}
 This is where the reflection layer of \Cref{sec:reflection} enters the
 compiler.  Part~1 defines the certificate's forbidden graph as a
-\lean{Sym2Graph} term and selects one of two generation routes.  Complete-graph
-forbids use the \lean{generate\_pruned\_*} commands, while a general graph
-forbidden as a subgraph uses the parallel
-\lean{generate\_subgraph\_free\_*} commands.  During elaboration, both routes
-enumerate the flags that avoid the forbidden graph, with isomorphic flags
-appearing only once.  For each enumerated flag, the commands emit a concrete
+\lean{Sym2Graph} term and invokes the \lean{generate\_forbid\_free\_*}
+commands of \Cref{sec:reflection-generation} on it; the commands dispatch
+internally on whether the forbidden graph is complete.  During elaboration,
+they enumerate the flags that avoid the forbidden graph, with isomorphic
+flags appearing only once.  For each enumerated flag, the commands emit a concrete
 reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty type
 or a \lean{Sym2Flag} at a nonempty type, together with its decoded
 specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
@@ -4565,7 +4617,7 @@ alongside their abstract counterparts in Rocq (previously called Coq); our \lean
 \lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
 type-class and instance-search mechanism.  Our elaboration-time command
 elaborators play a complementary role: they run the in-Lean finite enumerators
-and specialize the adequacy theorems to produce reusable density and
+and specialize the adequacy theorems to produce the density and
 multiplication facts (\Cref{sec:reflection-generation}).  The unverified
 certificate translator operates outside this reflected core and emits source
 whose mathematical obligations Lean subsequently checks.
