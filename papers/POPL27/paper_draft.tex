@@ -936,10 +936,10 @@ densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 consider increasing sequences~$\{G_n\}_{n\in\mathbb{N}}$ of host
 $\sigma$-flags with $|V(G_n)|\to\infty$ and ask what happens to $\sigma$-flag
 densities in the limit.  Positive homomorphisms can be thought of as the
-limiting objects of convergent
-sequences of host $\sigma$-flags.  The semantic non-negativity cone
+limiting density profiles of convergent sequences of host $\sigma$-flags.
+The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the flag-algebra elements
-whose value at every such limiting object is non-negative, and establishing
+whose value under every positive homomorphism is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
 to do.
 
@@ -975,7 +975,7 @@ via the assignment $F \mapsto \phi([F])$, so $\poshom{\sigma}$ can be identified
 a subset of $[0,1]^{\mathcal{F}^\sigma}$.  % It is moreover compact.
 
 The following theorem makes precise the sense in which positive homomorphisms
-are exactly the limiting objects of convergent sequences of
+are exactly the limiting density profiles of convergent sequences of
 $\sigma$-flags~\cite{razborov2007flag}.
 
 \begin{theorem}[Razborov]\label{thm:convergent-hom}
@@ -1138,14 +1138,16 @@ the typed unit therefore gives
 \]
 
 \paragraph{Random homomorphisms.}
-A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ represents a limiting
-object for unlabeled graph sequences.  Given such a $\phi_0$ and a non-empty
-flag type $\sigma$, one can generate a \emph{random positive homomorphism} on
-$\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
-limiting object.
-Whenever $\phi_0(\langle\sigma\rangle_0) > 0$ (i.e., $\sigma$ has positive
-density as an unlabeled graph in the limiting object),
-the following holds~\cite{razborov2007flag}:
+A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ records the limiting
+densities of unlabeled graphs along a convergent sequence of finite graphs.
+For a non-empty flag type $\sigma$, its random extension can be understood
+through any such sequence realizing $\phi_0$: in each finite graph, choose
+uniformly at random an embedding of $\sigma$ and use the embedded vertices as
+labels.  Razborov's random-extension theorem describes the limiting
+distribution of the resulting $\sigma$-flag densities.
+Whenever $\phi_0(\langle\sigma\rangle_0) > 0$, meaning that the underlying
+unlabeled graph of $\sigma$ has positive limiting density, the following
+holds~\cite{razborov2007flag}:
 there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
 such that for every~$f \in \mathcal{A}^\sigma$, the random positive
@@ -1172,9 +1174,11 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
 \end{theorem}
 \begin{proof}[Proof sketch]
   Let $\phi_0 \in \poshom{\emptyset}$; we show $\phi_0(\llbracket f \rrbracket_\sigma) \geq 0$.
-  If $\phi_0(\langle\sigma\rangle_0) = 0$, then the flag type $\sigma$ has zero
-  density in the limiting object, and every $\sigma$-flag density also
-  vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
+  If $\phi_0(\langle\sigma\rangle_0) = 0$, then $\phi_0$ assigns density zero
+  to the underlying unlabeled graph of $\sigma$.  The underlying graph of
+  every $\sigma$-flag contains an induced copy of $\sigma$, so the downward
+  image of every $\sigma$-flag basis element also evaluates to zero under
+  $\phi_0$.  By linearity, $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
   Since $0 \leq_{\mathcal{H},\sigma} f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
@@ -2191,10 +2195,12 @@ This is the identity characterizing the random extension, so \(\mathbb{P}\)
 represents the measure \(\Ext_\sigma(\phi_0)\) of
 \Cref{sec:background-downward}.
 Rearranged, the identity gives a concrete way to compute the unlabeled value
-\(\phi_0(\llbracket f\rrbracket_0)\) from typed evaluations: randomly label the
-limiting object represented by \(\phi_0\) with a copy of \(\sigma\), evaluate
-\(f\) in the resulting \(\sigma\)-typed positive homomorphism, average these
-values, and multiply by the positive normalizing denominator \(\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)\).
+\(\phi_0(\llbracket f\rrbracket_0)\) from typed evaluations.  Along a
+convergent sequence of finite graphs whose density profiles tend to \(\phi_0\),
+choose uniformly at random an embedding of \(\sigma\) in each graph, use the
+embedded vertices as labels, evaluate \(f\), average, and pass to the limit.
+The result is then multiplied by the positive normalizing denominator
+\(\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)\).
 
 The payoff is the Lean transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: if \(f\) is non-negative under every positive
@@ -2304,7 +2310,7 @@ ambient \(\sigma\)-typed flag-algebra elements being compared.  In particular,
 The definition delegates to \lean{forbidLEWith}, the condition-generic version
 that takes a \lean{ForbidCondition} as a parameter.  A \lean{ForbidCondition}
 is a predicate on empty-type positive homomorphisms,
-specifying which ambient limiting objects are allowed.  The particular condition
+specifying which empty-type positive homomorphisms are allowed.  The particular condition
 \lean{forbiddenCondition H} selects the \(H\)-free ones: it considers only
 positive homomorphisms \(\phi_0\) such that
 \[
@@ -3994,9 +4000,9 @@ departure from the usual presentation of constrained flag algebras.  Rather
 than building a new algebra for each forbidden family, it retains the same
 ambient algebra and imposes the forbidden-graph condition only when
 interpreting its elements.  It considers only unlabeled positive
-homomorphisms satisfying that condition, chooses an occurrence of the flag
-type at random in the limiting object represented by each homomorphism, and
-requires the desired inequality to hold with probability one over that choice.
+homomorphisms satisfying that condition, applies the corresponding
+random-extension measure to each one, and requires the desired inequality to
+hold with probability one under that measure.
 This engineering choice exposed a mathematical problem in its own right:
 when does this \emph{ensemble semantics} validate exactly the same typed
 inequalities as a flag algebra in which the constraint is built in from the
