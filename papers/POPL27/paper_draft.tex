@@ -1297,7 +1297,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % $\phi([H])=0$.  Equivalently, $g-f$ evaluates to a non-negative real number in
 % every positive homomorphism satisfying the forbidden-graph condition
 % $\phi([H])=0$.
-% Thus an upper-bound proof for the target graph $P$ aims to establish
+% Thus, an upper-bound proof for the target graph $P$ aims to establish
 % \[
 %   [P] \leq c\cdot\mathbf{1}.
 % \]
@@ -1364,7 +1364,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % In informal arguments, the same symbol freely denotes a concrete graph, its
 % isomorphism class, a formal linear combination of flags, an element of the
 % quotient algebra, or a real value assigned by a positive homomorphism; the
-% transitions between these roles are implicit.  In Lean they are explicit:
+% transitions between these roles are implicit.  In Lean, they are explicit:
 % each role is a distinct type, and each transition is a map that must be
 % proved compatible with the relevant equivalence relations and algebraic
 % operations.  The specification layer provides those maps and their
@@ -1397,64 +1397,69 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % notation; the names and fields match the implementation.
 % -- End original introduction -------------------------------------------------
 
-Informal flag algebra proofs are compact partly because the notation is
+Informal flag algebra proofs are compact partly because their notation is
 deliberately overloaded.  The same symbol may denote a concrete labeled graph,
 its isomorphism class, a basis vector in a free vector space, an element of the
 quotient algebra, or the real number obtained by applying a positive
-homomorphism to that element.  On paper these shifts are usually harmless and
-are left implicit.  In Lean they become the first formalization problem: each
-role must be represented by a separate type, and each passage between roles
-must be justified.  In particular, constructions on concrete graphs must be
-invariant under isomorphism, expansion identities must hold in the quotient,
-multiplication must be well defined on the quotient algebra, and positive
-homomorphisms must preserve the algebraic operations.
+homomorphism to that element.  On paper, these changes of viewpoint are usually
+harmless and are left implicit.  In Lean, however, they create an immediate
+formalization challenge: each role must be represented by a separate type, and
+each passage between roles must be justified.  In particular, constructions
+on concrete graphs must be invariant under isomorphism, expansion identities
+must hold in the quotient, multiplication must be well defined on the quotient
+algebra, and positive homomorphisms must preserve the algebraic operations.
 
-Our first design choice is to keep the Lean definitions as close to the
-mathematics of \Cref{sec:background} as Lean allows, rather than shaping them
-for evaluation.  Flags remain isomorphism classes of labeled graphs, densities
-remain finite sampling probabilities, the flag algebra remains a quotient by
-expansion identities, and positive homomorphisms remain semantic
-interpretations of algebra elements; the subsections below take these in turn.
-Together with the maps between the roles above and the interface theorems
-justifying them, these definitions form the \emph{specification layer}.  Many
-of them are consequently \lean{noncomputable}; the executable counterparts, and
-the adequacy theorems tying them back to the definitions here, are developed
-separately in \Cref{sec:reflection}.
+Our first design choice is therefore to make the Lean definitions follow the
+mathematics of \Cref{sec:background} as closely as possible, even when the
+resulting definitions cannot be executed directly.  Accordingly, flags are
+isomorphism classes of labeled graphs, densities are finite sampling
+probabilities, the flag algebra is a quotient by expansion identities, and
+positive homomorphisms provide semantic interpretations of algebra elements.
+The following subsections present these definitions in turn.  Together with
+the maps between these representations and the theorems establishing their
+correctness, they form the \emph{specification layer}.  Several of these
+quotient-based definitions involve nonconstructive choices and are therefore
+marked \lean{noncomputable}.  For the finite calculations needed in later
+proofs, such as testing flag isomorphism and computing densities and products,
+the \emph{reflection layer} of \Cref{sec:reflection} provides executable
+procedures corresponding to the abstract definitions in the specification
+layer.  Its adequacy theorems prove that the results returned by these
+procedures agree with those abstract definitions.
 
-A second design choice concerns where forbidden-subgraph assumptions enter the
-development.  In \Cref{sec:background} we fixed $\mathcal{H}$ first and
-defined all flags and algebras relative to the \(\mathcal{H}\)-free
-world.  In Lean we instead build the ambient flag algebra without fixing
-$\mathcal{H}$, and impose \(\mathcal{H}\)-freeness later as a
-predicate on the semantic order.  Thus the core formalization implements the unconstrained
-theory.  If every definition carried an arbitrary forbidden family
-$\mathcal{H}$ from the start, then even the elementary constructions of flags,
-densities, expansion identities, and multiplication would acquire an extra
-parameter and extra side conditions.  By postponing \(\mathcal{H}\)-freeness, we
-develop the ambient algebra once and introduce the constraint only when it is
-needed for extremal applications.  This keeps the algebraic infrastructure
-reusable across different forbidden graphs.  The deferred treatment is still
-sound for Tur\'an-density bounds: \Cref{sec:forbidden} defines the
-ensemble semantic order used for forbidden graphs and states the transfer
-theorem that turns an empty-type ensemble inequality into the corresponding
-extremal-density bound.
+Our second design choice concerns how forbidden-subgraph assumptions are
+represented in the Lean development.  In the mathematical presentation of
+\Cref{sec:background}, we first fix \(\mathcal{H}\) and construct flags and
+flag algebras within the class of \(\mathcal{H}\)-free graphs.  Our Lean
+formalization instead constructs the ambient flag algebras without a
+forbidden-family parameter and imposes \(\mathcal{H}\)-freeness later by
+restricting the positive homomorphisms considered by the semantic order.  Thus,
+the core formalization implements the unconstrained theory.  If an arbitrary
+forbidden family were carried through the definitions from the outset, even
+the elementary constructions of flags, densities, expansion identities, and
+multiplication would require an additional parameter and corresponding side
+conditions.  By postponing the constraint, we formalize the
+\(\mathcal{H}\)-independent algebraic definitions and results only once.  The
+same Lean infrastructure can then be reused for different forbidden graphs,
+with the appropriate constraint introduced only in the semantic comparisons
+required by each extremal application.  This design is sound for the
+Tur\'an-density applications formalized here: \Cref{sec:forbidden} defines the
+ensemble semantic order and states the transfer theorem that converts an
+empty-type ensemble inequality into the corresponding extremal-density bound.
+\Cref{sec:metatheory} places this design in a broader mathematical setting by
+comparing the ensemble semantic order with the order obtained by building the
+constraint into the flag algebra from the outset.  It gives a criterion for
+the two orders to agree, broad sufficient conditions for agreement, and an
+example in which they differ.  A forthcoming paper will develop this
+meta-theory and its applications in full.
 
-One notational convention is specific to the formalization.  In
-\Cref{sec:background}, the empty flag type was written simply as
-$\emptyset$.  In Lean-related notation, we write it as $\emptyt$ to avoid
-confusion with ordinary empty sets.
+For Lean-facing notation, we write the empty flag type as \(\emptyt\), rather
+than the \(\emptyset\) used in \Cref{sec:background}, to distinguish it from
+ordinary empty sets.
 
-The displayed snippets below are also an expository version rather than a
-literal transcript of the source.  In the actual Lean implementation, many of
-the parameters are declared once as ambient variables and then inferred by
-Lean; here we spell them out at the definitions where they are used.  When a
-displayed definition marks a parameter as implicit, later applications omit
-that parameter, following Lean's usual argument-passing convention.  We also
-occasionally use paper-facing names for intermediate terms when the
-implementation names are optimized for local proof context or tactic plumbing.
-These deviations are meant to expose the dependency of each construction on
-the label type, the vertex types, and the flag type \(\sigma\), without asking
-the reader to remember a global Lean context or source-file naming convention.
+The Lean snippets below are lightly adapted for exposition.  We make otherwise
+inferred parameters explicit and occasionally replace implementation-oriented
+names with clearer paper-facing names, so that the relevant types and
+dependencies are visible without requiring the surrounding source context.
 
 \subsection{Flag Types and Flags}
 \label{sec:flagtypes}
@@ -1491,7 +1496,7 @@ field \lean{graph} stores the underlying graph $M$, and the field
 \lean{type\_embed} stores the embedding
 $\theta_F:\sigma\hookrightarrow_g M$.  In the signature, braces mark
 implicit parameters, which Lean normally infers from context, and
-square brackets mark typeclass assumptions.  Thus \lean{[Fintype T]} tells
+square brackets mark typeclass assumptions.  Thus, \lean{[Fintype T]} tells
 Lean that the label type
 \lean{T} is finite; later signatures use assumptions such as
 \lean{[DecidableEq V]} when equality on a vertex type must be decidable.
@@ -1553,7 +1558,7 @@ We can now define $\mathcal{F}^\sigma_n$ in Lean as
 \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
 \bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each
 element is a pair $\hat F = \langle n, F\rangle$ where $n$ records the size and $F$ is the
-$\sigma$-flag of that size.  In Lean the two components are written
+$\sigma$-flag of that size.  In Lean, the two components are written
 $\hat F.1$ and $\hat F.2$.
 \begin{lstlisting}
 def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
@@ -1620,7 +1625,7 @@ $(S_1,\ldots,S_t)$ satisfying the conditions above.  The denominator applies
 \lean{multinomialCoefficient} to \lean{r\_list} and
 \(|V(G)| - |\sigma|\); it counts the possible choices of
 pairwise-disjoint vertex sets of those sizes among the unlabeled vertices of
-\lean{G}.  Thus the quotient is a rational number.
+\lean{G}.  Thus, the quotient is a rational number.
 The square-bracket assumptions in this signature provide the finite
 enumeration and equality tests needed for counting.  A \lean{Fintype} instance
 for a vertex type gives Lean a finite list of all its vertices, and a
@@ -1737,7 +1742,7 @@ noncomputable def flagDensity(*@$_2$@*)
   flagListDensity [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
 Here the superscripted bracket notation is a tuple constructor for
-\lean{FlagList}.  Thus \lean{[F]}$^{\mathtt{f}}$ is the one-entry
+\lean{FlagList}.  Thus, \lean{[F]}$^{\mathtt{f}}$ is the one-entry
 \lean{FlagList} whose unique entry is \lean{F}, and
 \lean{[F}$_1$\lean{, F}$_2$\lean{]}$^{\mathtt{f}}$ is the two-entry
 \lean{FlagList} sending the first index of \lean{Fin~2} to \lean{F}$_1$ and
@@ -1931,7 +1936,7 @@ second conjunct uses Lean's filter notation for convergence:
 \(\mathcal{N} a\) is the neighbourhood filter of the function~\(a\).  The term
 \lean{flagDensitySeq s} is the sequence of density functions associated to
 \(s\); its \(n\)-th value sends a finite \(\sigma\)-flag \(F\) to
-\(\den{F}{s(n)}\).  Thus the \lean{Tendsto} line is the Lean statement that,
+\(\den{F}{s(n)}\).  Thus, the \lean{Tendsto} line is the Lean statement that,
 for every finite \(\sigma\)-flag~\(F\),
 \[
   \lim_{n\to\infty}\den{F}{s(n)}=a(F).
@@ -1951,7 +1956,7 @@ def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (F
 \end{lstlisting}
 The arrow \lean{$\to_a$[$\mathbb{R}$]} in the first definition is Lean's
 notation for the type of functions preserving addition, multiplication,
-multiplication by real scalars, and the unit.  Thus \lean{Hom}
+multiplication by real scalars, and the unit.  Thus, \lean{Hom}
 abbreviates the type of these structure-preserving maps from
 \lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type \(\sigma\) supplied as
 its argument.  The second definition is Lean's subtype construction.
@@ -1990,7 +1995,7 @@ profile it induces:
 \[
   F\longmapsto \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr).
 \]
-Thus the first theorem says that the limiting density profile \(a\) of a
+Thus, the first theorem says that the limiting density profile \(a\) of a
 convergent \(\sigma\)-flag sequence is equal to this profile of some positive
 homomorphism \(\phi\).  Conversely, the second theorem says that every
 positive homomorphism \(\phi\), after passing to this profile, arises as the
@@ -2020,7 +2025,7 @@ One then samples an entire sequence
 where \(X_n\) is chosen from the distribution on \(\sigma\)-flags of size \(n^2+n_0\).
 The key estimate says that, for each fixed test \(\sigma\)-flag \(F\), the density
 \(\den{F}{X_n}\) is very likely to be close to \(\phi([F])\) once \(n\) is large.
-Thus almost every sampled sequence has the limiting density profile prescribed
+Thus, almost every sampled sequence has the limiting density profile prescribed
 by \(\phi\).  Selecting one such realization and calling it
 \(G_0,G_1,\ldots\) gives the deterministic \(\sigma\)-flag sequence required by
 Theorem~\ref{thm:convergent-hom}(b).  The Lean proof formalizes this argument
@@ -2113,7 +2118,7 @@ The compatibility theorem needed for the third step is the essential point.  A
 flag vector may be changed by an element of the zero space without changing the
 corresponding flag-algebra element; the respect lemma displayed below proves
 that the downward image is unchanged whenever two flag-vector representatives
-differ by an element of the zero space.  Thus the formalized operator is not
+differ by an element of the zero space.  Thus, the formalized operator is not
 merely a linear map on representatives: it is a well-defined map on the
 quotient algebra.
 \begin{lstlisting}
@@ -2154,7 +2159,7 @@ appearing in the statement.
 
 \Cref{sec:background-semantic-order} identified \(\poshom{\sigma}\) with a
 subset of \([0,1]^{\mathcal{F}^\sigma}\) by sending a homomorphism to the
-densities it assigns.  In Lean the two sides of this identification are
+densities it assigns.  In Lean, the two sides of this identification are
 different types, and the theorem below uses both.  A positive homomorphism is a
 term of \lean{PositiveHom}~\(\sigma\), and its density profile
 \(F\mapsto\phi(\llbracket\lean{basisVector F}\rrbracket)\) is a point of
@@ -2242,7 +2247,7 @@ base positive homomorphisms~\(\phi_0\) that assign density zero to every graph
 containing the forbidden graph as a (not necessarily induced)
 subgraph, and then require the desired typed inequality to hold almost surely
 under the random extension \(\Ext_\sigma(\phi_0)\), which labels an occurrence
-of \(\sigma\) at random.  Thus forbiddenness is not a new
+of \(\sigma\) at random.  Thus, forbiddenness is not a new
 flag-algebra universe in the implementation; it is an a posteriori condition on
 which positive homomorphisms are allowed to interpret the ambient algebra.  The
 definitions of flags, densities, products, the downward operator, and positive
@@ -2373,7 +2378,7 @@ Tur\'an-density bound, written in Lean as
   \den{F}{G}
   \leq c .
 \]
-Thus a certificate proof only has to
+Thus, a certificate proof only has to
 establish one semantic inequality in the ambient algebra; the passage from
 that inequality to the extremal-density statement is handled once and
 reused.
@@ -2899,7 +2904,7 @@ this family includes the displayed value \(c=1/2\).  These evaluations are
 batched to avoid invoking the native compiler separately for every tuple.
 Finally, the multiplication
 command uses all of those coefficients to prove the product expansion
-\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair.  Thus elaboration produces the
+\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair.  Thus, elaboration produces the
 flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
 and the multiplication table, together with proofs of every entry.  Variants
 for a fixed forbidden graph first discard flags that cannot contribute and then
@@ -2909,7 +2914,7 @@ Metaprogramming automates theorem construction, not verification: Lean still
 checks every generated proof, and a wrong coefficient makes that proof fail.
 Once accepted, these theorems let later arguments simplify downward images,
 densities, and products by rewriting rather than reopening the finite searches.
-Thus the story of this section has three steps: concrete representations make
+Thus, the story of this section has three steps: concrete representations make
 the finite operations executable, adequacy theorems connect those operations
 to the abstract definitions, and elaboration-time generation turns their
 individual results into a reusable table of proved facts.  The next section
@@ -2939,7 +2944,7 @@ Flagmatic.  The compiler does not run the semidefinite program or search for a
 decomposition.  Instead, it translates the certificate's flags, matrices, and
 target data into Lean, generates the required flags, asks Lean to recompute
 their density and multiplication identities, verifies the rational matrix
-factorizations, and assembles the final inequality.  Thus Flagmatic proposes
+factorizations, and assembles the final inequality.  Thus, Flagmatic proposes
 the data, while Lean checks every mathematical obligation; no manual copying
 of coefficients or reconstruction of the finite bookkeeping is required.
 
@@ -3263,7 +3268,7 @@ matrices $Q'_t$ and $R_t$ that already give an exact rational congruence
 factorization
 $M_t=R_tQ'_tR_t^\top$.  Here $R_t$ may be rectangular and $Q'_t$ is a smaller
 symmetric matrix; in the certificates used here, $Q'_t$ is diagonal with
-positive entries.  Thus these data already witness positive semidefiniteness in
+positive entries.  Thus, these data already witness positive semidefiniteness in
 principle, but they are not an $LDL^\top$ factorization of $M_t$: $R_t$ need not
 be square or unit lower triangular, and $Q'_t$ need not have the same dimension
 as $M_t$.
@@ -3324,7 +3329,7 @@ that the reflection computation found to contain $K$.
 For a non-complete $H$, a subgraph copy may have additional edges
 and therefore need not be an induced copy of $H$.  The alternative tactic
 \lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
-supergraphs internally.  Thus the two tactics implement the same lifting step
+supergraphs internally.  Thus, the two tactics implement the same lifting step
 for two representations of subgraph-freeness; neither introduces additional
 forbidden graphs into the certificate.
 
@@ -3393,7 +3398,7 @@ four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
 proof, and one addition of a non-negative quadratic form.  Branch~B additionally
 contributes the Part~3 objective expansion, while Branch~A omits it.  A
 non-complete forbidden graph selects the subgraph-free variants of the same
-generation and normalization steps.  Thus the translator varies the data and
+generation and normalization steps.  Thus, the translator varies the data and
 the required route, but the argument assembled in Part~4 has the same structure
 in every generated file.
 
@@ -3634,7 +3639,7 @@ enumeration issues that motivate it.
 \subsection{Computing with Graphs up to Isomorphism}
 
 As described in \Cref{sec:flagtypes}, a flag is an isomorphism class of
-concrete labeled graphs.  Thus two isomorphic labeled graphs $G$ and $G'$ may
+concrete labeled graphs.  Thus, two isomorphic labeled graphs $G$ and $G'$ may
 use different vertex names and be represented by different Lean values, but
 they represent the same flag.  This is the mathematically natural
 representation: subsequent statements should not depend on arbitrary vertex
@@ -3690,7 +3695,7 @@ difficulty appears inside this comparison: the first sum ranges over
 \lean{Flag $\sigma$ (Fin $\ell_1$)}, whereas the second ranges over
 \lean{Flag $\sigma$ (Fin $\ell_2$)}.  A term from the first type cannot be used
 where Lean expects a term of the second, and an ordinary equality can only
-compare terms having the same type.  Thus a term-by-term rewrite is not merely
+compare terms having the same type.  Thus, a term-by-term rewrite is not merely
 hard to prove; it is not a well-typed statement.
 
 The first additional formalization task is therefore to construct explicitly
@@ -3713,7 +3718,7 @@ $\langle\ell_2,G\rangle$.  The second components have different types, but
 both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
 Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
 supported real-valued functions on \lean{FinFlag}~$\sigma$, or equivalently
-of finite formal real linear combinations of its elements.  Thus the two
+of finite formal real linear combinations of its elements.  Thus, the two
 tagged $\sigma$-flags index basis vectors in the same vector space, and both product
 expansions can be stated in that common space.
 
@@ -3753,7 +3758,7 @@ Substituting this identity into the size-$\ell_1$ product gives
 \end{aligned}
 \]
 The first equality expands every $H$ into size $\ell_2$; the second is the
-chain rule.  Thus the ``flag-expansion relation'' is not a relationship
+chain rule.  Thus, the ``flag-expansion relation'' is not a relationship
 between the two vertex types.  It is an equality, in the common flag algebra,
 between two linear combinations whose basis $\sigma$-flags carry different size tags.
 In the Lean proof, \lean{flagExpansion} constructs the size-$\ell_2$ linear
@@ -3908,7 +3913,7 @@ specify which ambient type \lean{Finset.univ} enumerates, bind the particular
 \lean{Fintype} instances required by a dependent tuple.  Each choice is
 recorded once in a local instance or helper definition.  The subsequent
 density proofs can then reuse that choice instead of asking typeclass search to
-reconstruct it at every occurrence.  Thus a new counting construction still
+reconstruct it at every occurrence.  Thus, a new counting construction still
 requires local enumeration setup, but that setup does not spread into the
 later algebraic argument.
 
@@ -4030,7 +4035,7 @@ belong to~\(\mathcal K\) occur in this constrained algebra.  Because
 \(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
 graphs lie outside \(\mathcal K\), span an ideal,\footnote{Here an ideal \(I\)
 is a linear subspace of the flag algebra that is also closed under
-multiplication by arbitrary algebra elements.  Thus \(I\) is closed under
+multiplication by arbitrary algebra elements.  Thus, \(I\) is closed under
 addition and real scalar multiplication, and if \(x\in I\) and \(a\) belongs
 to the flag algebra, then \(ax\in I\).  This property makes the quotient by
 \(I\) an algebra in which every element of \(I\) is identified with zero.} and the usual constrained
@@ -4066,7 +4071,7 @@ algebra into \(X_\sigma\).  Its image is
   \right\}
   \subseteq X_\sigma.
 \end{equation}
-Thus \(Q_\sigma\) is the space of all \(\sigma\)-typed positive homomorphisms
+Thus, \(Q_\sigma\) is the space of all \(\sigma\)-typed positive homomorphisms
 admitted by the constrained quotient.
 
 There is also an intrinsic description:
@@ -4198,7 +4203,7 @@ equivalently, every positive homomorphism
 \(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
 on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
 \(\sigma\) into finite graphs approximating \(\phi_0\), using the embedded
-vertices as labels, and passing to the limit.  Thus the second display requires
+vertices as labels, and passing to the limit.  Thus, the second display requires
 that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
 \(\chi(f)\leq\chi(g)\) with probability one.
 For the \(H\)-free class, consisting of graphs containing no subgraph
@@ -4245,7 +4250,7 @@ continuous function that is strictly positive on \(S_\sigma\) and strictly
 negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
 function by evaluation of a flag-algebra element.  The resulting element is
 ensemble non-negative but fails to be quotient non-negative, so the two orders
-cannot agree for all elements.  Thus \Cref{thm:support-closure-summary} is a completeness theorem:
+cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
 quotient proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
