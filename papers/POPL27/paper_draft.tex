@@ -1557,7 +1557,7 @@ We can now represent $\mathcal{F}^\sigma_n$ in Lean by
 \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
 \lean{FinFlag}~$\sigma$ collects $\sigma$-flags of all finite sizes and
 represents $\mathcal{F}^\sigma = \bigcup_n \mathcal{F}^\sigma_n$.  It is
-defined as a dependent pair type: each element is a pair
+defined as a dependent sum type: each element is a dependent pair
 $\hat F = \langle n, F\rangle$, where $n$ records the size and $F$ is the
 $\sigma$-flag of that size.  In Lean, the two components are accessed as
 $\hat F.1$ and $\hat F.2$.
