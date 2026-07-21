@@ -1400,12 +1400,14 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 Informal flag algebra proofs are compact partly because the notation is
 deliberately overloaded.  The same symbol may denote a concrete labeled graph,
 its isomorphism class, a basis vector in a free vector space, an element of the
-quotient algebra, or the real number obtained by evaluating that element in a
-limit.  On paper these shifts are usually harmless and are left implicit.  In
-Lean they become the first formalization problem: each role must be represented
-by a separate type, and each shift between roles must be justified by a theorem
-saying that it respects isomorphism, quotienting, density expansion, and
-multiplication.
+quotient algebra, or the real number obtained by applying a positive
+homomorphism to that element.  On paper these shifts are usually harmless and
+are left implicit.  In Lean they become the first formalization problem: each
+role must be represented by a separate type, and each passage between roles
+must be justified.  In particular, constructions on concrete graphs must be
+invariant under isomorphism, expansion identities must hold in the quotient,
+multiplication must be well defined on the quotient algebra, and positive
+homomorphisms must preserve the algebraic operations.
 
 Our first design choice is to keep the Lean definitions as close to the
 mathematics of \Cref{sec:background} as Lean allows, rather than shaping them
