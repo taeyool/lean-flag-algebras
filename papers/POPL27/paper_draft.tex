@@ -756,7 +756,9 @@ The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling an
 intermediate flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
 then sampling~$F$ inside $G'$.
-These two procedures are the same experiment, which gives the following identity.
+These two procedures describe the same sampling experiment.  The resulting
+identity is the single-flag case of Razborov's chain
+rule~\cite[Lemma~2.2]{razborov2007flag}.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
   For $F \in \mathcal{F}^\sigma_m$, $G \in \mathcal{F}^\sigma_n$, and $n'$
