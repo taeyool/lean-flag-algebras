@@ -953,11 +953,10 @@ equivalently, if $\lim_{n\to\infty}\den{F}{G_n}$ exists for every $\sigma$-flag 
 
 \paragraph{Positive homomorphisms.}
 A \emph{positive homomorphism} on
-$\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
-$\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
-number to each flag-algebra element, respects addition, multiplication, and the unit, and
-never assigns a negative value to a flag basis element.
+$\mathcal{A}^\sigma$ is a map
+$\phi:\mathcal{A}^\sigma \to \mathbb{R}$ that preserves addition,
+multiplication, multiplication by real scalars, and the unit.  It must also
+satisfy $\phi([F]) \geq 0$ for every $\sigma$-flag $F$.
 Following standard flag-algebra terminology, we call such a homomorphism
 \emph{positive}, although its defining inequalities are non-strict.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
@@ -1931,11 +1930,11 @@ for every finite \(\sigma\)-flag~\(F\),
   \lim_{n\to\infty}\den{F}{s(n)}=a(F).
 \]
 
-Mathematically, a positive homomorphism is an
-\(\mathbb{R}\)-algebra homomorphism
-\(\phi:\mathcal{A}^\sigma\to\mathbb{R}\) such that
-\(\phi([F])\ge 0\) for every finite \(\sigma\)-flag \(F\).  The Lean definition follows this sentence almost
-literally:
+Mathematically, a positive homomorphism is a map
+\(\phi:\mathcal{A}^\sigma\to\mathbb{R}\) that preserves addition,
+multiplication, multiplication by real scalars, and the unit, and satisfies
+\(\phi([F])\ge 0\) for every finite \(\sigma\)-flag \(F\).  The Lean definition
+follows this sentence almost literally:
 \begin{lstlisting}
 abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
   FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[(*@$\mathbb{R}$@*)] (*@$\mathbb{R}$@*)
@@ -1944,18 +1943,18 @@ def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (F
   { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
 The arrow \lean{$\to_a$[$\mathbb{R}$]} in the first definition is Lean's
-notation for the type of \(\mathbb{R}\)-algebra homomorphisms:
-functions preserving addition, multiplication, scalar multiplication by real
-numbers, and the unit.  Thus \lean{Hom} abbreviates the type of algebra
-homomorphisms from \lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type
-\(\sigma\) supplied as its argument.  The second definition is Lean's subtype
-construction.  Mathematically, we read it in the usual set-comprehension form
+notation for the type of functions preserving addition, multiplication,
+multiplication by real scalars, and the unit.  Thus \lean{Hom}
+abbreviates the type of these structure-preserving maps from
+\lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type \(\sigma\) supplied as
+its argument.  The second definition is Lean's subtype construction.
+Mathematically, we read it in the usual set-comprehension form
 \[
   \{\phi\in \operatorname{Hom}(\mathcal{A}^\sigma,\mathbb{R})
     \mid \phi([F])\ge 0
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
-In other words, the only extra condition on an algebra homomorphism is
+In other words, the only extra condition imposed by \lean{PositiveHom} is
 non-negativity on flag basis elements.  In Lean syntax, this is the
 \lean{$\forall$ F : FinFlag $\sigma$} field after the subtype separator
 \lean{//}.
