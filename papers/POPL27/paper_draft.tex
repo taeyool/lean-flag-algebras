@@ -888,8 +888,10 @@ $\ell \geq m_1 + m_2 - k$ and define
 At first glance, this definition appears to depend on both the choice of $\ell$
 and the choice of representatives for~$[F_1]$ and $[F_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
-respects isomorphism classes of the input $\sigma$-flags.  Extending bilinearly to all
-of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
+respects isomorphism classes of the input $\sigma$-flags.  Extending bilinearly
+to all of $\mathcal{A}^\sigma$ gives an algebra over the real numbers.  Its
+multiplication is commutative, meaning that $fg=gf$ for all
+$f,g\in\mathcal{A}^\sigma$.
 The unit of this algebra is the basis element represented by the $\sigma$-flag
 $(\sigma, \operatorname{id}_{[k]})$ of size~$k$, in which the underlying graph
 is $\sigma$ itself and every vertex is labeled; we write it as
@@ -1891,7 +1893,9 @@ give equivalent flag vectors, justifying the choice of the minimal size in
 \lean{flagMul}.
 
 With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
-a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$.
+an algebra over the real numbers and that its multiplication is commutative,
+completing the formalization of the algebraic structure of
+$\mathcal{A}^\sigma$.
 
 \subsection{Positive Homomorphisms and Semantic Order}
 
@@ -4014,12 +4018,12 @@ To make the underlying graph class explicit, we write
 in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
 belong to~\(\mathcal K\) occur in this constrained algebra.  Because
 \(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
-graphs lie outside \(\mathcal K\), span an ideal,\footnote{An ideal \(I\) in a
-commutative \(\mathbb{R}\)-algebra \(A\) is a linear subspace, and hence is closed
-under addition and real scalar multiplication, that is also closed under
-multiplication by arbitrary elements of \(A\): if \(x\in I\) and \(a\in A\),
-then \(ax\in I\).  This property makes the quotient \(A/I\) an algebra in which
-every element of \(I\) is identified with zero.} and the usual constrained
+graphs lie outside \(\mathcal K\), span an ideal,\footnote{Here an ideal \(I\)
+is a linear subspace of the flag algebra that is also closed under
+multiplication by arbitrary algebra elements.  Thus \(I\) is closed under
+addition and real scalar multiplication, and if \(x\in I\) and \(a\) belongs
+to the flag algebra, then \(ax\in I\).  This property makes the quotient by
+\(I\) an algebra in which every element of \(I\) is identified with zero.} and the usual constrained
 algebra is canonically isomorphic to the quotient of the ambient algebra by
 this ideal.  We therefore have a canonical quotient map
 \[
