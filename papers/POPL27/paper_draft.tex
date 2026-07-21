@@ -235,6 +235,7 @@
              infix,infixl,infixr,prefix,postfix},
   keywordstyle=\color{blue!70!black}\bfseries,
   comment=[l]{--},
+  morecomment=[l]{/--},
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{orange!80!black},
   morestring=[b]",
@@ -2450,7 +2451,7 @@ count of the same flavor: it counts label placements rather than subflags.
 
 Thus, an executable flag-algebra development needs two basic ingredients.  It
 must be able to enumerate the finite objects being counted, such as candidate
-induced subflags, and it must be able to answer finite yes/no questions, such
+induced subflags, and it must be able to decide yes/no questions, such
 as whether two flags are isomorphic.  In Lean, these ingredients are usually
 provided by typeclass instances.  A \lean{Fintype} instance gives Lean an
 explicit finite collection containing every element of a type; a
@@ -2466,7 +2467,7 @@ Its starting point is Mathlib's graph type \lean{SimpleGraph V}, where
 adjacency relation \lean{Adj} takes two vertices and returns a proposition:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
-  Adj      : V -> V -> Prop
+  Adj      : V -> (*@$\,$@*) V -> (*@$\,$@*) Prop
   symm     : Symmetric Adj
   loopless : Irreflexive Adj
 \end{lstlisting}
@@ -2498,7 +2499,7 @@ abbrev Sym2FlagType (k : (*@$\mathbb{N}$@*)) := Sym2Graph k
 structure Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, (*@$\neg$@*) e.IsDiag
-  type_embed  : fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
+  type_embed  : fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges) (*@$\hookrightarrow$@*)g fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
 The expression \lean{SetLike.coe edges} is the coercion that views the
 finite edge set \lean{edges : Finset (Sym2 (Fin n))} as an ordinary set of
@@ -2507,8 +2508,8 @@ unordered pairs.  This coercion is needed because Mathlib's constructor
 unordered vertex pairs, not from a \lean{Finset}.  Thus
 \lean{fromEdgeSet (SetLike.coe edges)} is the abstract graph decoded from the
 concrete edge data.  The field \lean{type\_embed} then says that the graph
-decoded from the type edge set of \(\sigma\) embeds, as a graph, into the
-decoded host graph.  In other words, the concrete
+decoded from \(\sigma\)'s edge set embeds into the graph decoded from the field
+\lean{edges}.  In other words, the concrete
 \lean{Finset}-based representation still carries the usual flag-labeling map
 used by the specification layer.
 
@@ -2537,7 +2538,7 @@ def Sym2InducedLabeledSubgraph.edges {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : 
     {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
     : Finset (Sym2 (Fin n)) :=
   G.edges.filter (fun (e : Sym2 (Fin n)) =>
-    forall (v : Fin n), v (*@$\in$@*) e -> v (*@$\in$@*) H.verts)
+    forall (v : Fin n), v (*@$\in$@*) e -> (*@$\,$@*) v (*@$\in$@*) H.verts)
 
 instance {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     : Fintype (Sym2InducedLabeledSubgraph G) where
@@ -2553,8 +2554,8 @@ instance {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\ma
 \end{lstlisting}
 The type \lean{Sym2InducedLabeledSubgraph G} represents induced subflags
 of \(G\): it stores the chosen vertex set together with a proof that this set
-includes the labeled vertices.  Its edge set is then computed by filtering the
-host graph's explicit edge set to the edges whose endpoints both lie in the
+includes the labeled vertices.  Its edge set is then computed by filtering
+\(G\)'s explicit edge set to the edges whose endpoints both lie in the
 chosen vertex set.  The \lean{Fintype (Sym2InducedLabeledSubgraph G)} instance
 provides an enumeration of all induced subflags of \(G\).  Concretely,
 the instance contains an \lean{elems} field listing all elements of the type \lean{Sym2InducedLabeledSubgraph~G},
@@ -2578,8 +2579,8 @@ It is a one-pattern presentation of the isomorphism check that appears inside
 the implementation's tuple-level predicate \lean{predIsoSym2LabeledHl}.  It
 turns the induced subgraph \(H\) into its associated labeled graph and asks
 whether the result is isomorphic to \(F\), with the type labels respected.  As
-a mathematical statement this is still a proposition, not a program.  The
-reflection step is to show Lean how to decide the proposition from the concrete
+stated, \lean{candidateMatches F H} is a proposition, not a program.  The
+reflection step is to show Lean how to decide it from the concrete
 data stored in \(F\), \(G\), and~\(H\).  The following small instance displays
 the mechanism used in the implementation: expose the finite vertex set of the
 candidate, read adjacency from explicit edge membership, reject candidates of
@@ -2599,14 +2600,15 @@ instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) 
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     : DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H) :=
   fun H => by
+    -- the vertex set of H is finite
     have : Fintype H.toLabeledSubgraph.subgraph.verts := by ...
-    -- adjacency in H is membership in the filtered finite edge set H.edges
+    -- adjacency in H is decidable
     have : DecidableRel H.toLabeledSubgraph.coe.graph.Adj := by ...
-    -- adjacency in F is membership in the finite edge set F.edges
+    -- adjacency in F is decidable
     have : DecidableRel F.toLabeledGraph.graph.Adj := by ...
     exact if hsize : H.verts.card = m then
       (by
-        dsimp [candidateMatches]
+        dsimp [candidateMatches] -- unfold the definition of candidateMatches
         infer_instance)
     else
       isFalse (fun hIso => hsize (verts_card_of_coe_iso H F hIso))
@@ -2623,11 +2625,12 @@ The proof of the instance is the computational heart of the example.  After the
 local \lean{Fintype} and \lean{DecidableRel} instances have been assembled, the
 \lean{hsize} branch reaches the \lean{infer\_instance} line; this is the
 generic inference step.  It asks typeclass search to decide the
-\lean{Nonempty} proposition that such a label-preserving graph isomorphism
-exists.  The generic decidability instance does this by enumerating finitely
-many graph isomorphisms and checking the type-preservation condition.
+\lean{Nonempty} proposition in the definition of \lean{candidateMatches}, which
+says that such an isomorphism exists.  The generic decidability instance does
+this by enumerating finitely many graph isomorphisms and checking the
+type-preservation condition.
 The schematic predicate \lean{candidateMatches~F~H} has therefore been reduced
-to a finite search.  The size branch is not conceptually necessary for the
+to a finite search.  The \lean{hsize} branch is not conceptually necessary for the
 definition, but it matches the implementation's computation-oriented proof: a
 candidate whose vertex set has the wrong cardinality cannot be isomorphic to
 \(F\), so it is rejected before the isomorphism search is run.
@@ -2660,6 +2663,9 @@ def sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2Fla
 def sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
 \end{lstlisting}
+The arguments here are of type \lean{Sym2Flag}, the reflection-layer counterpart
+of \lean{Flag} obtained by quotienting \lean{Sym2LabeledGraph} by concrete
+isomorphism; \Cref{sec:reflection-adequacy} constructs it.
 Note that unlike the specification-level density functions, these definitions do not
 carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
 evaluating them.  But computability alone does not say that they implement the
@@ -3870,12 +3876,12 @@ preserve the graph relation.  In the first line below, the annotation
 \lean{(Finset.univ : Finset (V $\to$ W))} tells Lean explicitly that
 \lean{Finset.univ} is the finite collection of all functions $V\to W$:
 \begin{lstlisting}
--- Enumerate all functions V -> W and retain the injective ones.
+-- Enumerate all functions V -> (*@$\,$@*) W and retain the injective ones.
 instance : Fintype (Embedding V W) :=
-  { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
+  { elems := (Finset.univ : Finset (V -> (*@$\,$@*) W)).filterMap ..., ... }
 
 -- Enumerate all injections and retain the graph embeddings.
-instance : Fintype (G1 ->g G2) :=
+instance : Fintype (G1 (*@$\hookrightarrow$@*)g G2) :=
   { elems := (Finset.univ : Finset (Embedding V W)).filterMap ..., ... }
 \end{lstlisting}
 The annotation is needed because \lean{Finset.univ} is polymorphic: without
