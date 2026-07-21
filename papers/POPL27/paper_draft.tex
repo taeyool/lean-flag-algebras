@@ -806,10 +806,10 @@ density of that local labeled pattern in a large host graph.  The quotient
 below records the identity of Lemma~\ref{lem:chain-rule} among these building
 blocks.
 Formally, let
-$\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
-$\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  For a $\sigma$-flag $F$, write $\mathbf e_F$ for its
-corresponding basis vector.
+$\mathbb{R}[\mathcal{F}^\sigma]$ be the free real vector space on
+$\mathcal{F}^\sigma$, that is, the vector space of finite formal real linear
+combinations of $\sigma$-flags.  For a $\sigma$-flag $F$, write $\mathbf e_F$
+for its corresponding basis vector.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
@@ -817,7 +817,7 @@ by all elements of the form
   \mathbf e_F - \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot \mathbf e_G,
   \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
-The \emph{flag algebra} is the quotient module
+The \emph{flag algebra} is the quotient vector space
 \[
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
@@ -1754,11 +1754,12 @@ theorem flagDensity_eq_sum_density_prods
 
 \subsection{The Flag Algebra}
 
-To define the flag algebra, we first construct the free $\mathbb{R}$-module with basis
-$\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
-function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
-type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
-the constructor that produces the basis vector for each $\sigma$-flag:
+To define the flag algebra, we first construct the free real vector space on
+$\mathcal{F}^\sigma$.  Each element of this vector space is represented as a
+finitely supported function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using
+Mathlib's \lean{Finsupp} type.  \lean{FlagVector} $\sigma$ is the resulting
+type, and \lean{basisVector} is the constructor that produces the basis vector
+for each $\sigma$-flag:
 \begin{lstlisting}
 abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
@@ -1774,7 +1775,7 @@ $\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G}\cdot \mathbf e_G$, the expansio
 $F$ at size $\ell$.  We encode the generating element of
 Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
 collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the
-submodule they span:
+linear subspace they span, represented in Lean by a \lean{Submodule}:
 \begin{lstlisting}
 noncomputable def flagExpansion {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
     : FlagVector (*@$\sigma$@*) :=
