@@ -2601,9 +2601,6 @@ the wrong size, and then invoke the finite isomorphism search.
 def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
     : Prop :=
-  -- H.toLabeledSubgraph is the abstract labeled subgraph of G.toLabeledGraph
-  -- induced by the vertex set H.verts. This subgraph gets converted to
-  -- the graph by H.toLabeledSubgraph.coe, which forgets the subgraph structure.
   Nonempty (H.toLabeledSubgraph.coe (*@$\simeq$@*)f F.toLabeledGraph)
 
 /-- The finite edge-set representation turns the predicate into executable code. -/
@@ -2624,7 +2621,7 @@ instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) 
     else
       isFalse (fun hIso => hsize (verts_card_of_coe_iso H F hIso))
 
-/-- A one-pattern illustrative version of the reflected density computation. -/
+/-- A one-pattern illustrative version of the reflection-layer density computation. -/
 def sym2LabeledGraphDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     [DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H)]
@@ -2632,6 +2629,19 @@ def sym2LabeledGraphDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@
   ((Finset.univ : Finset (Sym2InducedLabeledSubgraph G)).filter
     (fun H => candidateMatches F H)).card / Nat.choose (n - k) (m - k)
 \end{lstlisting}
+The body of \lean{candidateMatches} decodes both sides before comparing them.
+The pattern is decoded by \lean{F.toLabeledGraph}, which reads \(F\)'s edge
+\lean{Finset} through \lean{fromEdgeSet} and keeps the type embedding, giving
+the abstract \lean{LabeledGraph} of \Cref{sec:flagtypes}.  The candidate is
+decoded in two steps.  First, \lean{H.toLabeledSubgraph} is the labeled
+subgraph of \lean{G.toLabeledGraph} whose vertices are \lean{H.verts} and whose
+edges are the induced ones computed above.  Second, \lean{.coe} views that
+subgraph as a labeled graph in its own right, on the vertex type
+\lean{H.verts}, forgetting that it sits inside \(G\).  The two decoded labeled
+graphs are then compared with the isomorphism type \(\simeq_f\) of
+\Cref{sec:flagtypes}, and \lean{Nonempty} turns it into the proposition that
+some such isomorphism exists.
+
 The proof of the instance is the computational heart of the example.  After the
 local \lean{Fintype} and \lean{DecidableRel} instances have been assembled, the
 \lean{hsize} branch reaches the \lean{infer\_instance} line; this is the
@@ -2689,7 +2699,7 @@ in the next subsection.
 \label{sec:reflection-adequacy}
 
 \Cref{sec:flagtypes} defined flags by quotienting labeled graphs by
-label-preserving graph isomorphisms.
+isomorphism.
 The reflection layer repeats the same construction for the concrete graph
 representation from \Cref{sec:reflection-concrete}:
 \begin{lstlisting}
@@ -2712,7 +2722,8 @@ We now have two corresponding representations of flags.  The
 specification-oriented development of \Cref{sec:flagtypes} uses
 \lean{Flag}, while the computation-oriented development
 of \Cref{sec:reflection-concrete} uses
-\lean{Sym2Flag}.  To use a reflected computation in a theorem stated in the
+\lean{Sym2Flag}.  To use a computation from the reflection layer in a theorem
+stated in the
 specification layer, we need an explicit map from the latter representation to
 the former.  We call this map \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
@@ -2723,8 +2734,13 @@ def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n) : Flag (fromEdgeSet (SetLike
     G
 \end{lstlisting}
 
-Our
-\emph{adequacy theorems} state that the reflected computations in
+With \lean{Sym2Flag.toFlag} in hand we can carry out the reflection described
+in \Cref{sec:reflection}.  It asks for a program and a theorem saying that the
+program's output agrees with the abstract definition in the specification
+layer.
+\Cref{sec:reflection-concrete} supplied the programs, and the theorems are the
+ones below.  Our
+\emph{adequacy theorems} state that
 \lean{sym2FlagDensity$_1$} and \lean{sym2FlagDensity$_2$}
 agree
 with the abstract definitions
@@ -2740,6 +2756,8 @@ theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
+A computable definition together with its adequacy theorem is what we call a
+\emph{reflected} computation.
 With these adequacy theorems in place, a proof about a density in the
 specification layer can be reduced to a proof about the corresponding
 computable density in the reflection layer.  Since this density is computable,
@@ -2757,7 +2775,7 @@ example : flagDensity(*@$_2$@*)
              Sym2Flag_3_1_0_1.toFlag = 1 / 2
   := by
   rw [flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)]
-  native_decide
+  decide +kernel
 \end{lstlisting}
 In the code, the three displayed constants are concrete \lean{Sym2Flag}s in
 the reflection layer: \lean{Sym2Flag\_2\_1\_0\_0} corresponds to
@@ -2771,18 +2789,10 @@ the closed reflection-layer computation
 \begin{lstlisting}
   sym2FlagDensity(*@$_2$@*)  Sym2Flag_2_1_0_0  Sym2Flag_2_1_0_1  Sym2Flag_3_1_0_1  =  1 / 2
 \end{lstlisting}
-\lean{native\_decide} is a Lean tactic for closing a decidable goal by running
-the corresponding executable computation.  Here it evaluates the
-reflection-layer density computation above and closes the goal.
-
-The caveat is that \lean{native\_decide} relies on Lean's native compiler to
-run the computation, rather than reducing it inside the kernel.  This is still
-a reasonable engineering choice here.  A realistic flag-algebra proof contains
-thousands of such density computations, so running them through the native
-evaluator is far more practical than reducing each one inside the slower Lean
-kernel.  The important mathematical reductions are still proved in Lean before
-this point; the native compiler is trusted only for the final evaluation of the
-closed finite computation.
+\lean{decide +kernel} is a Lean tactic for closing a decidable goal by
+evaluating it inside the kernel.  Here it runs the reflection-layer density
+computation above and closes the goal, so nothing outside the kernel is
+trusted.
 
 The downward operator from \Cref{sec:formal-downward} follows the same
 reflection pattern.  The specification-level definition uses the abstract
@@ -2839,13 +2849,13 @@ rewrite-and-evaluate pattern:
 \begin{lstlisting}
 example : downwardNormalizingFactor Sym2Flag_3_1_0_1.toFlag = 2 / 3 := by
   rw [downwardNormalizingFactor_eq]
-  native_decide
+  decide +kernel
 \end{lstlisting}
 Here the rewrite changes the goal to the closed computable equality
 \begin{lstlisting}
   downwardNormalizingFactor_Sym2Flag  Sym2Flag_3_1_0_1  =  2 / 3
 \end{lstlisting}
-and \lean{native\_decide} evaluates that finite computation.  The reflected
+and \lean{decide +kernel} evaluates that finite computation.  The reflected
 normalizing factor makes the downward operator executable on concrete
 $\sigma$-flags.  The reflection layer computes the underlying $\emptyset$-flag and its
 normalizing factor; the adequacy theorem then certifies their product as the
