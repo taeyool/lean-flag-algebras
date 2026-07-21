@@ -6,6 +6,7 @@ public import LeanFlagAlgebras.Automation.FlagMulReduce
 public import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 public import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 public import LeanFlagAlgebras.Automation.FlagSumSort
+public meta import LeanFlagAlgebras.Flags.FlagGenerator
 
 @[expose] public section
 

@@ -1,7 +1,12 @@
 module
 
-public import Mathlib.Tactic
-public import Mathlib.Tactic.Conv
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.Ring
+-- `Module.Defs` provides the smul/group lemmas named inside this file's tactic quotations
+-- (`add_smul`, `neg_smul`, `smul_smul`, `sub_eq_add_neg`, …). Without it those idents resolve
+-- to dangling hygienic names (`add_smul✝`) at quotation time and every `simp only [...]`/merge
+-- step that references them fails when the tactics run downstream.
+public import Mathlib.Algebra.Module.Defs
 
 @[expose] public section
 

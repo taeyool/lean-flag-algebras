@@ -1,6 +1,7 @@
 module
 
-public import Mathlib
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Data.Fintype.Powerset
 
 @[expose] public section
 

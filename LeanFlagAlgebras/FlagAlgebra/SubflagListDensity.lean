@@ -2,6 +2,7 @@ module
 
 public import LeanFlagAlgebras.FlagAlgebra.SubflagDensity
 public import LeanFlagAlgebras.Utils.Partitions
+public import Mathlib.Algebra.BigOperators.Field
 public import Mathlib.Data.Set.Subset
 public import Mathlib.Tactic.FieldSimp
 

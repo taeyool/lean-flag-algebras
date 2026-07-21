@@ -3,9 +3,7 @@ module
 public import Lean
 public import Init.Data.Nat.Basic
 public import Mathlib.Data.Nat.Choose.Basic
-public import Mathlib.Data.Nat.Factorial.Basic
 public import Mathlib.Tactic.Ring
-public import Mathlib.Tactic
 public import Mathlib.Algebra.Ring.Nat
 
 @[expose] public section

@@ -1,9 +1,13 @@
 module
 
-public import LeanFlagAlgebras.Flags.FlagGenerator
 public import LeanFlagAlgebras.Forbid.TuranDensity
 public import LeanFlagAlgebras.Flags.ForbidFreePruned
 public meta import LeanFlagAlgebras.Flags.ForbidFreePruned
+-- Required by the `generate_complete_graph` elab below: its generated proof does
+-- `simp [Sym2Graph_r_0_0_idx, mkEdgeFinset]`, and `mkEdgeFinset` lives here. The reference sits
+-- inside a `(command| …)` quotation, which the unused-import linter cannot see — so this import
+-- looks unused but removing it makes `mkEdgeFinset` resolve to a dangling `mkEdgeFinset✝`. Keep.
+public import LeanFlagAlgebras.Flags.FlagGenerator
 
 @[expose] public section
 
@@ -97,7 +101,7 @@ namespace FlagAlgebras.Compute
 /-- The complete graph `K_r` as a computable `Sym2Graph r`: every non-loop pair is an edge. -/
 def completeSym2Graph (r : ℕ) : Sym2Graph r where
   edges := Finset.univ.filter (fun e => ¬ e.IsDiag)
-  edges_valid := fun e he => (Finset.mem_filter.mp he).2
+  edges_valid := fun _ he => (Finset.mem_filter.mp he).2
 
 /-- `completeSym2Graph r` is complete: an off-diagonal pair is an edge iff the endpoints differ.
 This is the hypothesis the clique-based pruning (`inducedContains_iff_hasClique`, Task 8a) needs. -/

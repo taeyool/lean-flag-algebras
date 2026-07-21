@@ -103,7 +103,7 @@ theorem natListNodup_eq_decide (l : List ℕ) : natListNodup l = decide l.Nodup 
 theorem finRange_map_cons {n k : ℕ} (x : Fin n) (f' : Fin k → Fin n) :
     (List.finRange (k + 1)).map (fun i => ((Fin.cons x f' : Fin (k + 1) → Fin n) i).val)
       = x.val :: (List.finRange k).map (fun i => (f' i).val) := by
-  rw [List.finRange_succ_eq_map]
+  rw [List.finRange_succ]
   simp only [List.map_cons, List.map_map, Fin.cons_zero, Function.comp_def, Fin.cons_succ]
 
 /-- **L-tuples.** Mapping each type embedding `f` (as `Fin k → Fin n`) to its raw

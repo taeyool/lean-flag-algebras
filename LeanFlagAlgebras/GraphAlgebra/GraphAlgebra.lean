@@ -1,12 +1,9 @@
 module
 
 public import «LeanFlagAlgebras».GraphAlgebra.SubgraphDensity
-public import Mathlib.Combinatorics.SimpleGraph.Subgraph
-public import Mathlib.LinearAlgebra.FreeModule.Basic
+public import Mathlib.Data.Real.Basic
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
-public import Mathlib.Logic.Nonempty
-public import Mathlib.Logic.Unique
-public import Mathlib.Tactic.Linarith.Frontend
+public import Mathlib.Tactic.Cases
 
 @[expose] public section
 

@@ -1,6 +1,7 @@
 module
 
 public import LeanFlagAlgebras.MetaTheory.CloneCount
+public import Mathlib.Algebra.Group.Action.Defs
 
 @[expose] public section
 

@@ -1,6 +1,5 @@
 module
 
-public import LeanFlagAlgebras.Forbid.Basic
 public import LeanFlagAlgebras.Forbid.CommonGraphs
 
 @[expose] public section

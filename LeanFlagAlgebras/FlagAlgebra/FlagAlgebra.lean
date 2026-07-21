@@ -3,11 +3,6 @@ module
 public import «LeanFlagAlgebras».Utils.LinExtension
 public import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensity
 public import Mathlib.Algebra.Algebra.Defs
-public import Mathlib.Algebra.Group.Subgroup.Basic
-public import Mathlib.Algebra.Module.Submodule.Basic
-public import Mathlib.Data.Countable.Basic
-public import Mathlib.Data.Nat.Lattice
-public import Mathlib.LinearAlgebra.Span.Defs
 public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
 @[expose] public section

@@ -1,9 +1,7 @@
 module
 
-public import «LeanFlagAlgebras».Utils.Combinations
 public import «LeanFlagAlgebras».Utils.QuotientGraph
 public import Mathlib.Combinatorics.SimpleGraph.Subgraph
-public import Mathlib.Algebra.BigOperators.Field
 
 @[expose] public section
 

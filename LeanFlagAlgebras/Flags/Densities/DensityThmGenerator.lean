@@ -1,10 +1,7 @@
 module
 
 public import LeanFlagAlgebras.Forbid.CommonGraphs
-public import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-public import LeanFlagAlgebras.Flags.ForbidFreePruned
-public import LeanFlagAlgebras.Flags.GeneratorOptions
-public import Mathlib.Tactic
+public import LeanFlagAlgebras.Flags.FlagGenerator
 
 @[expose] public section
 

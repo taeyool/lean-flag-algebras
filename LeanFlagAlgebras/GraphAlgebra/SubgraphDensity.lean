@@ -1,9 +1,17 @@
 module
 
+public import «LeanFlagAlgebras».Utils.Combinations
 public import «LeanFlagAlgebras».Utils.SubgraphUtil
-public import «LeanFlagAlgebras».Utils.TacticChoose
-public import Mathlib.Analysis.Normed.Field.Lemmas
+public import LeanFlagAlgebras.Utils.TacticChoose
+public import Init.PropLemmas
+public import Mathlib.Algebra.Order.Group.Nat
+public import Mathlib.Algebra.Order.GroupWithZero.Unbundled.Basic
+public import Mathlib.Algebra.BigOperators.Field
+public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Data.Nat.Cast.Field
+public import Mathlib.Data.Rat.Init
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -2633,10 +2641,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     . constructor
       . rintro ⟨⟨h_u_not_X₂, h_u_not_X₃⟩, h_u⟩
         rw [h_G₁_verts_eq_X₂₃₄, mem_coe] at h_u
-        simp only [union_assoc, mem_union, not_or, X₂₃₄] at h_u
-        rcases h_u with ⟨h_u₁ | h_u₁ | h_u₁, h_u₂⟩
-        · exact (h_u_not_X₃ h_u₁ h_u_not_X₂).elim
-        · exact ((h_u₂ h_u₁).2.1 h_u₁).elim
+        simp only [union_assoc, mem_union, X₂₃₄] at h_u
+        rcases h_u with h_u₁ | h_u₁ | h_u₁
+        · exact (h_u_not_X₂ h_u₁).elim
+        · exact (h_u_not_X₃ h_u₁).elim
         · exact h_u₁
       . intro h_u_X₄
         rw [h_G₁_verts_eq_X₂₃₄, mem_coe]
@@ -2654,11 +2662,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             have : u ∈ (X₁ ∪ X₂ ∪ X₃) ∩ X₄ := Finset.mem_inter.mpr ⟨Finset.subset_union_right h_u_X₃, h_u_X₄⟩
             rw [h_X₁_to_X₃_disj_X₄] at this
             exact Finset.notMem_empty u this
-          exact ⟨.inr (.inr h_u_X₄), by tauto⟩
-        · simp only [h_u_X₄, or_true, not_true_eq_false, imp_false, true_and]
-          intro h_u_X₃
-          suffices h : u ∈ (X₂ ∪ X₃) ∩ X₄ by rw [h_X₂_X₃_disj_X₄] at h; exact notMem_empty _ h
-          simp only [mem_inter, mem_union, h_u_X₃, or_true, true_and, h_u_X₄]
+          exact ⟨h_u_not_X₂, by tauto⟩
+        · simp only [h_u_X₄, or_true]
 
   let f_S₃_S₂ : S₃ ≃ S₂ := Equiv.ofBijective f_S₃_S₂_fwd ⟨h_f_S₃_S₂_inj, h_f_S₃_S₂_surj⟩
 
