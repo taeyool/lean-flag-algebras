@@ -1597,7 +1597,7 @@ probabilistic sampling formulation of \Cref{sec:background}, this direct ratio i
 \begin{lstlisting}
 abbrev LabeledGraphList {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
-  (*@$\forall$@*) (i : Fin t), LabeledGraph (*@$\sigma$@*) (Vl i)
+  (i : Fin t) (*@$\to$@*) LabeledGraph (*@$\sigma$@*) (Vl i)
 
 noncomputable def labeledGraphListDensity
     {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
