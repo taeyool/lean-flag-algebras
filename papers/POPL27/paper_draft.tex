@@ -526,52 +526,55 @@ compiler examples.
 \label{sec:background}
 
 This section recalls the mathematical definitions underlying flag algebras,
-following Razborov~\cite{razborov2007flag}, and sets up the notation used
-throughout the paper.  No background in flag algebras or extremal
-combinatorics is assumed.  
-For an integer $n$, we write $[n]$ for the set of all positive integers less than or equal to $n$.
-All graphs~$G$ are undirected, finite and simple,
-and their vertex and edge sets are written $V(G)$ and $E(G)$, respectively.
-Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
-forbidden graphs.  Throughout the paper, an unqualified \emph{subgraph} is an
-ordinary, not necessarily induced, subgraph; when vertex-induced containment
-is intended, we say \emph{induced subgraph} explicitly.  If $G$ is a graph and
-$S\subseteq V(G)$, the
-\emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
-exactly the edges of $G$ with both endpoints in $S$.  A graph is
-\emph{\(\mathcal{H}\)-free} if it contains no subgraph (not necessarily induced)
-isomorphic to a member of $\mathcal{H}$.  All flag types, flags, and flag
-algebras below are defined relative to this fixed $\mathcal{H}$.
+following Razborov~\cite{razborov2007flag}, and establishes the notation used
+later in the paper.  No background in flag algebras or extremal combinatorics
+is assumed.  For a nonnegative integer $n$, we write $[n]$ for the set of
+positive integers at most $n$.  We consider only undirected, finite, and simple
+graphs; for a graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$,
+respectively.
+
+We fix a (possibly empty) finite set $\mathcal{H}$ of forbidden graphs.  In this
+paper, an unqualified \emph{subgraph} is an ordinary, not necessarily induced,
+subgraph.  A graph is \emph{\(\mathcal{H}\)-free} if it contains no subgraph
+isomorphic to any member of $\mathcal{H}$.  All flag types, flags, and flag
+algebras defined below are relative to this fixed $\mathcal{H}$.
 
 \subsection{Flag Types and Flags}
 
 \paragraph{Flag Types.}
-A \emph{flag type} of size $k$ is an \(\mathcal{H}\)-free graph \(\sigma\) with vertex set $[k]$.
-The \emph{empty flag type} $\emptyset$ (size $k=0$) is the unique graph on the
-empty vertex set.
+A flag type specifies the labeled part shared by all flags of that type.
+Formally, a \emph{flag type} of size $k$ is an \(\mathcal{H}\)-free graph
+\(\sigma\) with vertex set $[k]$.  The \emph{empty flag type} $\emptyset$, of
+size zero, is the unique graph on the empty vertex set.
 We use the term \emph{flag type} rather than Razborov's original \emph{type}
 to avoid confusion with Lean's type system in later sections.
 
 \paragraph{Flags.}
+For a graph $G$ and a set $S\subseteq V(G)$, let $G[S]$ denote the
+\emph{induced subgraph} of $G$ on $S$: its vertex set is $S$, and its edges are
+exactly the edges of $G$ with both endpoints in $S$.
 Fix a flag type $\sigma$ of size $k$.
-A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ where $M$ is an
-\(\mathcal{H}\)-free finite graph and $\theta_F : [k] \hookrightarrow V(M)$ is an injective map such
-that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
-(that is, $\theta_F$ is a graph embedding of $\sigma$ into $M$).
-The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
-The vertices in~$\operatorname{Im}(\theta_F)$ are called the
+A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ consisting of an
+\(\mathcal{H}\)-free finite graph $M$ and an injective map
+$\theta_F : [k] \hookrightarrow V(M)$ that induces a graph isomorphism from
+$\sigma$ to $M[\operatorname{Im}(\theta_F)]$.  The \emph{size} of $F$ is
+$|V(M)|$, and we write $V(F)$ for $V(M)$.
+For each $i\in[k]$, the vertex $\theta_F(i)$ carries label $i$.  The vertices
+in~$\operatorname{Im}(\theta_F)$ are therefore called the
 \emph{labeled vertices} of $F$; they are also often called its \emph{roots}.
-The remaining $|V(F)|-k$ vertices are \emph{unlabeled}.
+All remaining vertices are \emph{unlabeled}.
 For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
 we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
 \emph{$\sigma$-flag induced by $F$ on $S$}.
-Note that flags over the empty flag type $\emptyset$ are just ordinary finite graphs.
+Flags over the empty flag type $\emptyset$ are simply ordinary
+\(\mathcal{H}\)-free graphs with no labeled vertices.
 \Cref{fig:flag-examples} illustrates several flags of different types.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
 \emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
 if there is a graph isomorphism $\alpha: V(M_1)\to V(M_2)$
-with $\alpha \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
+with $\alpha \circ \theta_1 = \theta_2$; this equation says that $\alpha$
+preserves every label.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
@@ -676,11 +679,13 @@ $\mathcal{F}^\sigma$ itself is infinite.
     $K_2^\bullet$ & $\overline{K_2}^\bullet$ & $\overline{P_3}^\bullet$ & $P_3^\bullet$
     & ${P_3'}^\bullet$ & $C_5^\bullet$ \\
   \end{tabular}
-  \caption{Examples of flags.  \emph{Top row}: $\emptyset$-flags (ordinary graphs)
-  of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the one-vertex flag type $\sigma$;
-  the filled vertex is the labeled one.  The last two three-vertex flags,
-  $P_3^\bullet$ and ${P_3'}^\bullet$, have the same underlying graph and differ
-  only in which vertex is labeled.}
+  \caption{Examples of flags when no graphs are forbidden
+  ($\mathcal{H}=\varnothing$).  \emph{Top row}: $\emptyset$-flags, equivalently
+  ordinary graphs, of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the
+  unique one-vertex flag type $\sigma$.  The filled vertex carries label~1,
+  and the open vertices are unlabeled.  The flags $P_3^\bullet$ and
+  ${P_3'}^\bullet$ have the same underlying path; $P_3^\bullet$ labels an
+  endpoint, whereas ${P_3'}^\bullet$ labels the middle vertex.}
   \label{fig:flag-examples}
 \end{figure}
 
