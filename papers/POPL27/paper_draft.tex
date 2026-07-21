@@ -2385,7 +2385,8 @@ number of vertices.
 \section{The Reflection Layer}
 \label{sec:reflection}
 
-There are at least two ways to carry out a formal proof.  One is to proceed as a
+The finite calculations a formal proof depends on can be discharged in two
+ways.  One is to proceed as a
 mathematician usually would: when a finite claim is needed, write a proof of
 that claim directly.  In the flag-algebra setting, this would mean proving, one
 by one, that two particular flags are isomorphic, that a certain density is a
@@ -2421,7 +2422,8 @@ hide arbitrary choices of representatives.  Those definitions are the right ones
 for stating theorems, but many are marked \lean{noncomputable} because they are
 specifications rather than efficient programs.  This section develops the
 executable mirror of that layer: concrete graph and flag representations,
-procedures for isomorphism and density computations, and adequacy theorems
+procedures for isomorphism testing, for computing densities, and for computing
+downward normalizing factors, and adequacy theorems
 proving that those procedures agree with the quotient-based definitions.
 
 \subsection{Concrete Graph Representations and Finite Search}
