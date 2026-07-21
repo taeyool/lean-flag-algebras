@@ -579,6 +579,9 @@ $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
 $\mathcal{F}^\sigma$ itself is infinite.
+When a flag type~$\sigma$ is fixed, we consistently call an individual flag
+of that type a $\sigma$-flag.  We reserve the unqualified term \emph{flag} for
+statements in which the type is unspecified, varies, or is irrelevant.
 
 \begin{figure}[t]
   \centering
@@ -681,9 +684,9 @@ $\mathcal{F}^\sigma$ itself is infinite.
   \end{tabular}
   \caption{Examples of flags when no graphs are forbidden
   ($\mathcal{H}=\varnothing$).  \emph{Top row}: $\emptyset$-flags, equivalently
-  ordinary graphs, of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the
+  ordinary graphs, of sizes 2, 3, and 5.  \emph{Bottom row}: $\sigma$-flags of the
   unique one-vertex flag type $\sigma$.  The filled vertex carries label~1,
-  and the open vertices are unlabeled.  The flags $P_3^\bullet$ and
+  and the open vertices are unlabeled.  The $\sigma$-flags $P_3^\bullet$ and
   ${P_3'}^\bullet$ have the same underlying path; $P_3^\bullet$ labels an
   endpoint, whereas ${P_3'}^\bullet$ labels the middle vertex.}
   \label{fig:flag-examples}
@@ -712,8 +715,8 @@ Let $\sigma$ be a flag type of size $k$.
 
 \paragraph{Single-flag density.}
 For a $\sigma$-flag $F$ of size $m$
-(the pattern flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the host flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
+(the pattern $\sigma$-flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
+(the host $\sigma$-flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag \(F'\) with \(F' \cong_\sigma F\).
@@ -754,7 +757,7 @@ When $n < m$, we set $\den{F}{G} := 0$ by convention.
 \paragraph{Chain rule.}
 The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling an
-intermediate flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
+intermediate $\sigma$-flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
 then sampling~$F$ inside $G'$.
 These two procedures describe the same sampling experiment.  The resulting
 identity is the single-flag case of Razborov's chain
@@ -798,14 +801,14 @@ Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
 this paper, the scalar coefficients are real numbers, multiplication is
 bilinear and associative, there is a multiplicative unit, and the order of
 multiplication does not matter: $fg=gf$.} of density expressions generated
-by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
+by $\sigma$-flags.  Each $\sigma$-flag is a symbolic building block: it stands for the
 density of that local labeled pattern in a large host graph.  The quotient
 below records the identity of Lemma~\ref{lem:chain-rule} among these building
 blocks.
 Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  For a flag $F$, write $\mathbf e_F$ for its
+combinations of $\sigma$-flags.  For a $\sigma$-flag $F$, write $\mathbf e_F$ for its
 corresponding basis vector.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
@@ -828,8 +831,9 @@ canonical image unambiguous.
 
 We call $\sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot \mathbf e_G$ the
 \emph{expansion of $F$ at size $n$}.
-By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
-its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
+By Lemma~\ref{lem:chain-rule}, a $\sigma$-flag $F \in \mathcal{F}^\sigma_m$ and
+its expansion at any size $n \geq m$ have the same density in every host
+$\sigma$-flag of size $\geq n$.
 The quotient by $\mathcal{Z}^\sigma$ records this expansion identity as the
 equality
 \[
@@ -871,7 +875,7 @@ We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
 \end{example}
 
 \paragraph{Multiplication.}
-For flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
+For $\sigma$-flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
 $F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
 $\ell \geq m_1 + m_2 - k$ and define
 \begin{equation}
@@ -884,7 +888,7 @@ $\ell \geq m_1 + m_2 - k$ and define
 At first glance, this definition appears to depend on both the choice of $\ell$
 and the choice of representatives for~$[F_1]$ and $[F_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
-respects isomorphism classes of the input flags.  Extending bilinearly to all
+respects isomorphism classes of the input $\sigma$-flags.  Extending bilinearly to all
 of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
 The unit of this algebra is the basis element represented by the $\sigma$-flag
 $(\sigma, \operatorname{id}_{[k]})$ of size~$k$, in which the underlying graph
@@ -926,10 +930,12 @@ $\sigma=\emptyset$.
 Fix a flag type $\sigma$.  
 The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
 densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
-\emph{asymptotic} statements: rather than a single finite host flag, we
-consider increasing sequences~$\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
-what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
-sequences of host flags.  The semantic non-negativity cone
+\emph{asymptotic} statements: rather than a single finite host $\sigma$-flag, we
+consider increasing sequences~$\{G_n\}_{n\in\mathbb{N}}$ of host
+$\sigma$-flags with $|V(G_n)|\to\infty$ and ask what happens to $\sigma$-flag
+densities in the limit.  Positive homomorphisms can be thought of as the
+limiting objects of convergent
+sequences of host $\sigma$-flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the flag-algebra elements
 whose value at every such limiting object is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
@@ -1107,7 +1113,7 @@ For a $\sigma$-flag $F$ of size $m$ with $|V(\sigma)|=k$, let
        {m(m-1)\cdots(m-k+1)}
 \]
 be the probability that a uniformly random injection $[k]\hookrightarrow V(M)$
-recovers the same $\sigma$-typed flag as $F$.
+recovers the same $\sigma$-flag as $F$.
 The \emph{downward operator}
 $\llbracket\cdot\rrbracket_\sigma:\mathcal{A}^\sigma\to\mathcal{A}^\emptyset$
 is then defined on flag basis elements by
@@ -1506,7 +1512,7 @@ def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type 
 In Lean code, the bare notation \(\llbracket x\rrbracket\), with no subscript,
 means ``the quotient class of the representative \(x\),'' with the relevant
 quotient inferred from the expected type.  Thus, when the expected type is
-\lean{Flag}~\(\sigma\)~\lean{V}, \(\llbracket G\rrbracket\) is the flag
+\lean{Flag}~\(\sigma\)~\lean{V}, \(\llbracket G\rrbracket\) is the \(\sigma\)-flag
 represented by the concrete labeled graph \(G\).  Later, when the expected type
 is \lean{FlagAlgebra}~\(\sigma\), the same bare brackets send a
 \lean{FlagVector} representative to its class modulo the zero space.  This
@@ -1558,7 +1564,7 @@ inequality.
 
 Formalizing the density function is not straightforward.  The density
 $\den{F_1,\ldots,F_t}{G}$ from \Cref{sec:background} should be a
-function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
+function taking $t$ pattern $\sigma$-flags and a host $\sigma$-flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
 define a function from a quotient type in Lean is to first define it on the
 underlying type, prove that it respects the equivalence relation, and lift it
@@ -1589,7 +1595,7 @@ The first line defines \lean{LabeledGraphList} by spelling out what a finite
 list means in this dependent setting: it is a function that assigns to each
 index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\lean{(Vl i)}.
 The family \lean{Vl : Fin t $\to$ Type} records the vertex type of each entry, so
-the $t$ pattern flags are not forced to share one ambient vertex type.
+the $t$ pattern $\sigma$-flags are not forced to share one ambient vertex type.
 
 The second definition is the finite ratio corresponding to
 $\den{F_1,\ldots,F_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
@@ -1622,13 +1628,14 @@ to concrete extremal problems, a point we return to in \Cref{sec:reflection}.
 
 The concrete function \lean{labeledGraphListDensity} has two inputs: the tuple
 \lean{Hl} of pattern labeled graphs and the host labeled graph \lean{G}.  To
-make this a function of flags, we lift these two inputs separately.  The host
+make this a function of $\sigma$-flags, we lift these two inputs separately.  The host
 input is lifted from \lean{LabeledGraph} to \lean{Flag}; for the pattern tuple,
 the intermediate quotient is the quotient of concrete tuples by entrywise
 isomorphism.  We first lift the host input \lean{G}, then lift the pattern
 tuples, and finally package the result as a function on \lean{FlagList}.  The
 congruence proofs, omitted below, show that the density is unchanged when the
-host or any pattern flag is replaced by an isomorphic representative.
+host $\sigma$-flag or any pattern $\sigma$-flag is replaced by an isomorphic
+representative.
 \begin{lstlisting}
 def flagListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
@@ -1686,7 +1693,7 @@ there must exist an isomorphism \lean{Gl i}~\(\simeq_f\)~\lean{Gl' i}.  The
 instance \lean{labeledGraphListSetoid} supplies the setoid required by
 \lean{Quotient}.  Its quotient is \lean{QuotLabeledGraphList}.  The
 abbreviation \lean{FlagList} is the more convenient tuple of already-quotiented
-flags.
+$\sigma$-flags.
 
 The three density definitions then lift the original concrete density one
 argument at a time.  For a fixed concrete pattern tuple \lean{Hl},
@@ -1696,15 +1703,15 @@ host argument.  The next definition, \lean{quotLabeledGraphListDensity},
 lifts the pattern tuple as well, so its first input is a
 \lean{QuotLabeledGraphList} and its second input is a host \lean{Flag}.  In
 the final definition, the input \lean{Fl} has type
-\lean{FlagList}~$\sigma$~\lean{t Vl}, that is, \lean{Fl i} is already a flag
+\lean{FlagList}~$\sigma$~\lean{t Vl}, that is, \lean{Fl i} is already a $\sigma$-flag
 for each \lean{i : Fin t}.  The term
 \lean{FlagList.coe Fl} has type
 \lean{QuotLabeledGraphList}~$\sigma$~\lean{t Vl}; concretely, it chooses a
-representative \lean{(Fl i).out} for each flag in the tuple and forms the
+representative \lean{(Fl i).out} for each $\sigma$-flag in the tuple and forms the
 quotient class of the concrete tuple \lean{fun i => (Fl i).out}.  Thus
 \lean{flagListDensity} can call
 \lean{quotLabeledGraphListDensity} after converting the
-tuple-of-flags input into the quotient-of-tuples input expected by the
+input tuple of $\sigma$-flags into the quotient-of-tuples input expected by the
 preceding definition.
 
 The following \lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
@@ -1751,7 +1758,7 @@ To define the flag algebra, we first construct the free $\mathbb{R}$-module with
 $\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
 function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
 type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
-the constructor that produces the basis vector for each flag:
+the constructor that produces the basis vector for each $\sigma$-flag:
 \begin{lstlisting}
 abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
@@ -1807,14 +1814,14 @@ abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
 The quotient therefore imposes a family of expansion identities: for every
-flag \lean{F : FinFlag}~$\sigma$ and every size $\ell \geq F.1$, the class of
+$\sigma$-flag \lean{F : FinFlag}~$\sigma$ and every size $\ell \geq F.1$, the class of
 \lean{basisVector F} is identified with the class of
 \lean{flagExpansion F}~$\ell$, that is, with the linear combination of all
-size-$\ell$ flags weighted by their densities over \(F\).
+size-$\ell$ $\sigma$-flags weighted by their densities over \(F\).
 
 Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
 The term \lean{flagMulWithSize} defines the product
-of two flags at a chosen output size $\ell$ as in
+of two $\sigma$-flags at a chosen output size $\ell$ as in
 Equation~\eqref{eq:mul}. The term \lean{flagMul} specializes this product to the minimal admissible
 size $\ell = F.1 + F'.1 - n_0$. Then, \lean{bilinearExtension} extends
 \lean{flagMul} linearly in each argument to give a product on
@@ -1873,11 +1880,11 @@ theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\s
 \end{lstlisting}
 The hypotheses \lean{h$\ell_1$} and \lean{h$\ell_2$} are the admissibility
 assumptions on the two output sizes: \(\ell_1\) and \(\ell_2\) must both be
-large enough to contain the two input flags after identifying their common
+large enough to contain the two input $\sigma$-flags after identifying their common
 type \(\sigma\).  Here \(F_j.1\) is the total number of vertices of \(F_j\),
 and \(n_0\) is the number of labeled vertices in \(\sigma\).  Equivalently, the intended output
 size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the
-type are sampled disjointly in the two flags, while the \(n_0\) labeled vertices
+type are sampled disjointly in the two $\sigma$-flags, while the \(n_0\) labeled vertices
 are shared.  The theorem then says that any two such admissible output sizes
 give equivalent flag vectors, justifying the choice of the minimal size in
 \lean{flagMul}.
@@ -1888,11 +1895,11 @@ a commutative associative $\mathbb{R}$-algebra, completing the formalization of 
 \subsection{Positive Homomorphisms and Semantic Order}
 
 This subsection describes how we encode the semantic side of flag algebras in
-Lean: sequences of finite flags, their limiting density functions, positive
+Lean: sequences of finite $\sigma$-flags, their limiting density functions, positive
 homomorphisms, and the order induced by testing against all positive
 homomorphisms.  The convergence theorem from
 Theorem~\ref{thm:convergent-hom} is the main mathematical bridge between finite
-flag sequences and positive homomorphisms, but the formalization first has to
+$\sigma$-flag sequences and positive homomorphisms, but the formalization first has to
 make each of these surrounding notions explicit.
 
 \lean{FlagSeq}~$\sigma$ is the type of sequences of $\sigma$-flags indexed by
@@ -1907,7 +1914,7 @@ def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (F
 \end{lstlisting}
 Here the candidate limit \(a\) is a real-valued function on finite
 \(\sigma\)-flags.  The first conjunct, \lean{Increases s}, asserts that the
-underlying sizes of the flags \(s(0),s(1),\ldots\) strictly increase.  The
+underlying sizes of the \(\sigma\)-flags \(s(0),s(1),\ldots\) strictly increase.  The
 second conjunct uses Lean's filter notation for convergence:
 \lean{atTop} is the limit \(n\to\infty\) on \(\mathbb{N}\), and
 \(\mathcal{N} a\) is the neighbourhood filter of the function~\(a\).  The term
@@ -1973,17 +1980,17 @@ profile it induces:
   F\longmapsto \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr).
 \]
 Thus the first theorem says that the limiting density profile \(a\) of a
-convergent flag sequence is equal to this profile of some positive
+convergent \(\sigma\)-flag sequence is equal to this profile of some positive
 homomorphism \(\phi\).  Conversely, the second theorem says that every
 positive homomorphism \(\phi\), after passing to this profile, arises as the
-limit of some flag sequence.
+limit of some \(\sigma\)-flag sequence.
 Both directions require nontrivial formalization work.  In part (a), one must
-show that the limit \(a\) of a flag sequence \(s\) satisfies all algebraic
+show that the limit \(a\) of a \(\sigma\)-flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
 leave implicit.  Part~(b) goes in the opposite direction.  Starting from a
 positive homomorphism~\(\phi\), the proof uses the values~\(\phi([G])\) to put a
 probability distribution on the finite \(\sigma\)-flags of each sufficiently
-large size: a flag \(G\) is sampled with weight \(\phi([G])\).  These weights are
+large size: a \(\sigma\)-flag \(G\) is sampled with weight \(\phi([G])\).  These weights are
 indeed probabilities because \(\phi\) is non-negative on flag basis elements and satisfies the normalization
 identity
 \[
@@ -1999,12 +2006,12 @@ One then samples an entire sequence
 \[
   X=(X_0,X_1,\ldots),
 \]
-where \(X_n\) is chosen from the distribution on flags of size \(n^2+n_0\).
-The key estimate says that, for each fixed test flag \(F\), the density
+where \(X_n\) is chosen from the distribution on \(\sigma\)-flags of size \(n^2+n_0\).
+The key estimate says that, for each fixed test \(\sigma\)-flag \(F\), the density
 \(\den{F}{X_n}\) is very likely to be close to \(\phi([F])\) once \(n\) is large.
 Thus almost every sampled sequence has the limiting density profile prescribed
 by \(\phi\).  Selecting one such realization and calling it
-\(G_0,G_1,\ldots\) gives the deterministic flag sequence required by
+\(G_0,G_1,\ldots\) gives the deterministic \(\sigma\)-flag sequence required by
 Theorem~\ref{thm:convergent-hom}(b).  The Lean proof formalizes this argument
 by building the probability distributions, proving the concentration estimate,
 and then extracting one sequence whose density profile is the profile obtained
@@ -2031,23 +2038,23 @@ instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@
 
 The downward operator from \Cref{sec:background-downward} forgets the
 labels of a typed flag-algebra expression while keeping the correct averaging
-factor.  On a single flag $F$ the intended formula is
+factor.  On a single $\sigma$-flag $F$ the intended formula is
 \[
   \llbracket [F] \rrbracket_\sigma = q_\sigma(F)\cdot [F|_\emptyset].
 \]
 The formalization follows this formula, but it has to pass through the two
 quotients already introduced: first the quotient from concrete labeled graphs
-to flags, and then the zero-space quotient from flag vectors to the flag
+to $\sigma$-flags, and then the zero-space quotient from flag vectors to the flag
 algebra.
 
 The single-flag part defines the two ingredients of the formula separately.
 The rational number \(q_\sigma(F)\) is implemented as
-\lean{downwardNormalizingFactor}; before it can be used on flags, it is defined
+\lean{downwardNormalizingFactor}; before it can be used on $\sigma$-flags, it is defined
 on concrete \lean{LabeledGraph}s and proved invariant under labeled-graph
 isomorphism.  The operation \(F|_\emptyset\), which forgets the type embedding,
 is implemented first as \lean{unlabeledGraph} on concrete labeled graphs and
 then lifted to \lean{unlabel} on \lean{Flag}s.  The map \lean{downwardFlag}
-combines the two: it sends a typed flag to the basis vector of its unlabeling,
+combines the two: it sends a $\sigma$-flag to the basis vector of its unlabeling,
 scaled by the normalizing factor.
 
 The normalizing factor $q_\sigma$ is computed by counting label placements.  For a
@@ -2125,7 +2132,7 @@ prose we write this operator as \(\llbracket-\rrbracket_\sigma\), following
 emphasizes that the codomain is the
 \(\emptyt\)-typed algebra.  The notation is compact, but the implementation
 contains the full sequence of steps: a quotient lift from concrete labeled
-graphs to flags, a linear extension from flags to flag vectors, and a final
+graphs to $\sigma$-flags, a linear extension from $\sigma$-flags to flag vectors, and a final
 quotient lift from flag-vector representatives to elements of the quotient
 algebra.
 
@@ -2302,7 +2309,7 @@ positive homomorphisms \(\phi_0\) such that
 \[
   \phi_0([A])=0
   \qquad
-  \text{for every empty-type flag } A
+  \text{for every \(\emptyset\)-flag } A
   \text{ whose graph contains } H \text{ as a subgraph}.
 \]
 
@@ -2406,11 +2413,12 @@ proving that those procedures agree with the quotient-based definitions.
 \label{sec:reflection-concrete}
 
 The finite coefficients in a flag-algebra proof come from concrete counting
-problems.  For example, suppose \(F\) and \(G\) are empty-type flags.  To
+problems.  For example, suppose \(F\) and \(G\) are \(\emptyset\)-flags.  To
 compute the density \(\den{F}{G}\), one can conceptually enumerate all
-\(|V(F)|\)-vertex induced subflags of \(G\), test which of them are isomorphic
-to \(F\), count the successful ones, and divide by
-\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-typed density, the same experiment
+\(|V(F)|\)-vertex subsets of \(G\), regard their induced graphs as
+\(\emptyset\)-flags, test which of them are isomorphic to \(F\), count the
+successful ones, and divide by
+\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-flag density, the same experiment
 keeps the labeled vertices fixed and chooses only the additional unlabeled
 vertices.  The downward normalizing factor \(q_\sigma(F)\) is another finite
 count of the same flavor: it counts label placements rather than subflags.
@@ -2783,7 +2791,7 @@ After decoding a concrete \lean{Sym2Flag} back to an abstract \lean{Flag}, this
 adequacy theorem rewrites a goal about the specification-level coefficient as
 a goal about the executable function
 \lean{downwardNormalizingFactor\_Sym2Flag}.  For instance, for the concrete
-flag corresponding to \(\fbarPthreebull\), where \(\sigma\) is the one-vertex
+$\sigma$-flag corresponding to \(\fbarPthreebull\), where \(\sigma\) is the one-vertex
 flag type, Lean proves \(q_\sigma(\fbarPthreebull)=2/3\) by the same
 rewrite-and-evaluate pattern:
 \begin{lstlisting}
@@ -2797,7 +2805,7 @@ Here the rewrite changes the goal to the closed computable equality
 \end{lstlisting}
 and \lean{native\_decide} evaluates that finite computation.  The reflected
 normalizing factor makes the downward operator executable on concrete
-flags.  The reflection layer computes the underlying unlabeled flag and its
+$\sigma$-flags.  The reflection layer computes the underlying $\emptyset$-flag and its
 normalizing factor; the adequacy theorem then certifies their product as the
 abstract downward image.  By linearity, finite linear combinations of flag
 basis elements can be handled term by term, so the downward identities needed in later flag-algebra proofs can
@@ -2815,7 +2823,7 @@ the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
 \lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
 uniform: they prove the reflected evaluators correct for every possible input.
 What repeats in a concrete development is not the correctness argument, but
-its specialization to each concrete flag and to each pattern-pair/host
+its specialization to each concrete $\sigma$-flag and to each pattern-pair/host
 combination used by the later algebraic proof.
 
 We automate this repetition using Lean's metaprogramming facilities.  More
@@ -2938,7 +2946,7 @@ the non-negativity of the $Q_t$ and $r$ and the intervening equality.
 
 Mantel's theorem gives a small example of the whole idea.  Here the target is
 $P=K_2$, and we abbreviate its basis element $[K_2]$ by $K_2$.  Fix the
-one-vertex type $\sigma$.  The two flags obtained by adding one unlabeled vertex are
+one-vertex type $\sigma$.  The two $\sigma$-flags obtained by adding one unlabeled vertex are
 $\fKtwobull$ and $\fbarKtwobull$, according to whether the two vertices are
 adjacent.  We use these pictures directly in the algebraic calculation below.\footnote{Strictly,
 each picture denotes a finite $\sigma$-flag, whereas the algebraic operations
@@ -2997,7 +3005,7 @@ downward operator term by term:
 \end{align*}
 The fractions in the second line are the downward normalizing factors: they
 record whether one, two, or all three choices of the labeled vertex produce
-the displayed labeled flag.
+the displayed $\sigma$-flag.
 
 Write
 \[
@@ -3030,7 +3038,7 @@ inequality follows because the
 remainder $\tfrac13\cdot\fbarPthree$ is non-negative.
 
 The essential certificate data for this example are precisely the nontrivial
-terms in this derivation: the two labeled flags $\fKtwobull$ and
+terms in this derivation: the two $\sigma$-flags $\fKtwobull$ and
 $\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
 the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
@@ -3042,7 +3050,7 @@ automation but become impractical to perform and transcribe by hand for larger
 certificates; they are exactly what our compiler automates.
 
 The same idea scales by replacing one square with weighted sums of many
-squares.  Choose flags $E_1,\ldots,E_r$ of the same type, let
+squares.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
 $e_i:=[E_i]\in\mathcal A^\sigma$ be their basis elements, and collect these
 algebra elements into a vector $v=(e_1,\ldots,e_r)^\top$.  A symmetric matrix $M$ is \emph{positive semidefinite}
 (PSD) if $x^\top Mx\geq 0$ for every real vector~$x$.  Consequently, when $M=(M_{ij})$
@@ -3116,7 +3124,8 @@ parts are:
   \item \textbf{Flags and density data.}  The named flags and corresponding
     flag-algebra basis elements used by the proof (restricted to those that are
     free of the chosen forbidden graph), together with proved identities for
-    single-flag densities, flag-pair densities, and products of typed flags.
+    single-flag densities, flag-pair densities, and products of flags sharing
+    a common type.
     These identities support the algebraic rewrites used later in the proof.
   \item \textbf{Certificate matrices and basis-element vectors.}  For each SDP
     block $t$, a subflag type $\sigma_t$ and a rational matrix $M_t$ paired with
@@ -3207,9 +3216,10 @@ specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
 
 After emitting these flags, Part 1 generates
 the rewrite theorems, which are used later
-in Parts 3 and 4 of the proof. Concretely, for each emitted typed flag $F$, Part~1 evaluates the downward normalizing
+in Parts 3 and 4 of the proof.  Concretely, for each emitted $\sigma$-flag
+$F$, Part~1 evaluates the downward normalizing
 factor~$q_\sigma(F)$ from \Cref{sec:formal-downward}.
-For each relevant pair of typed flags $F_1,F_2$ and host flag $G$, it also
+For each relevant pair of $\sigma$-flags $F_1,F_2$ and host $\sigma$-flag $G$, it also
 evaluates the pair density
 \(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
 in the product expansion of $[F_1]\cdot[F_2]$.  When the objective must be
@@ -3262,13 +3272,13 @@ algebraic calculation are accepted by Lean.
 The first two parts provide the algebraic data used by the certificate.  Part~3
 aligns the objective with that data when necessary.  The certificate identities
 are expressed at the host size $N$, but the objective basis element is not
-always represented by a flag of that size.  This splits the certificates into
+always represented by an $\emptyset$-flag of that size.  This splits the certificates into
 two branches.  When the objective is already represented at host size
 (\emph{Branch~A}: the $P_3$- and $C_4$-density bounds and Erd\H{o}s pentagon),
 this part is empty.  When the objective is smaller (\emph{Branch~B}: Mantel,
 the $K_4$- and $K_5$-Tur\'an bounds, and the $C_5$-free edge-density bound), the
 compiler proves an auxiliary identity that expands it over the $N$-vertex
-$\mathcal{H}$-free flags, with coefficients given by the single-flag densities
+$\mathcal{H}$-free $\emptyset$-flags, with coefficients given by the single-flag densities
 generated in Part~1.
 
 All certificates considered here have a singleton forbidden family
@@ -3277,13 +3287,13 @@ $\mathcal{H}=\{H\}$.  For a complete $H$, the generated proof invokes the
 reflection-layer \lean{Sym2Graph} encoding of $H$ (for example, \lean{K3} in
 the Mantel proof).  The expansion theorem is stated using the
 specification-level $H$-free semantic condition from
-\Cref{def:ensemble-semantic-order}, whereas the host flags were enumerated and
+\Cref{def:ensemble-semantic-order}, whereas the host $\emptyset$-flags were enumerated and
 filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
-two representations: it proves that the flag decoded from $K$ belongs to
-\lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$
+two representations: it proves that the $\emptyset$-flag decoded from $K$ belongs to
+\lean{forbiddenFlags H}, the set of $\emptyset$-flags whose underlying graphs contain $H$
 as a subgraph.
 Consequently, the $H$-free condition forces the decoded $K$ to have density
-zero, which justifies removing from the objective expansion the host flags
+zero, which justifies removing from the objective expansion the host $\emptyset$-flags
 that the reflection computation found to contain $K$.
 
 For a non-complete $H$, a subgraph copy may have additional edges
@@ -3648,7 +3658,7 @@ at two admissible sizes are equivalent modulo the zero-space relations, and
 hence equal in the flag algebra.
 
 The mathematical comparison is familiar.  Given $\ell_1\leq\ell_2$, expand
-each size-$\ell_1$ flag into flags of size $\ell_2$ and apply the chain rule of
+each size-$\ell_1$ $\sigma$-flag into $\sigma$-flags of size $\ell_2$ and apply the chain rule of
 \Cref{lem:chain-rule} to collect the coefficients.  Both completed expansions
 are flag vectors, so their equivalence is a well-formed statement.  The
 difficulty appears inside this comparison: the first sum ranges over
@@ -3672,14 +3682,14 @@ common ambient type.  We therefore use the dependent sum
   \mathop{\Sigma}_{\ell : \mathbb{N}}
     \text{\lean{Flag}}~\sigma~(\text{\lean{Fin}}~\ell).
 \]
-A size-$\ell_1$ flag $G'$ is therefore stored as the tagged pair
-$\langle\ell_1,G'\rangle$, while a size-$\ell_2$ flag $G$ is stored as
+A size-$\ell_1$ $\sigma$-flag $G'$ is therefore stored as the tagged pair
+$\langle\ell_1,G'\rangle$, while a size-$\ell_2$ $\sigma$-flag $G$ is stored as
 $\langle\ell_2,G\rangle$.  The second components have different types, but
 both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
 Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
 supported real-valued functions on \lean{FinFlag}~$\sigma$, or equivalently
 of finite formal real linear combinations of its elements.  Thus the two
-tagged flags index basis vectors in the same vector space, and both product
+tagged $\sigma$-flags index basis vectors in the same vector space, and both product
 expansions can be stated in that common space.
 
 This dependent-sum packaging solves the typing problem, but it is not an equality
@@ -3720,9 +3730,9 @@ Substituting this identity into the size-$\ell_1$ product gives
 The first equality expands every $H$ into size $\ell_2$; the second is the
 chain rule.  Thus the ``flag-expansion relation'' is not a relationship
 between the two vertex types.  It is an equality, in the common flag algebra,
-between two linear combinations whose basis flags carry different size tags.
+between two linear combinations whose basis $\sigma$-flags carry different size tags.
 In the Lean proof, \lean{flagExpansion} constructs the size-$\ell_2$ linear
-combination for each tagged size-$\ell_1$ flag, and the zero-space relation
+combination for each tagged size-$\ell_1$ $\sigma$-flag, and the zero-space relation
 \lean{flagVectorEqv} justifies replacing the original basis vector by that
 combination.  The proof reasons about equality modulo this relation.
 
@@ -3742,17 +3752,17 @@ function
   \qquad \mathbf{F}(0)=F_1,\quad \mathbf{F}(1)=F_2.
 \]
 The dependency is in the codomain: at index $i$, the value $\mathbf{F}(i)$ has
-type \lean{Flag $\sigma$ $V_i$}, so the type of the returned flag varies with
+type \lean{Flag $\sigma$ $V_i$}, so the vertex type of the returned $\sigma$-flag varies with
 $i$.  If $\pi$ swaps the two positions, \lean{FlagList.permute} produces a
 tuple with vertex-type family~$i\mapsto V_{\pi(i)}$; thus Lean does track that
-position $0$ now contains a flag on $U_2$ and position $1$ a flag on $U_1$.
+position $0$ now contains a $\sigma$-flag on $U_2$ and position $1$ a $\sigma$-flag on $U_1$.
 
 The difficulty arises when the tuple produced by \lean{FlagList.permute} is
 compared with the separately constructed tuple $(F_2,F_1)$.  The latter's
 vertex-type family $W$ is written directly
 as $W_0=U_2$ and $W_1=U_1$.  The families $W$ and
 $i\mapsto V_{\pi(i)}$ are pointwise equal, but Lean need not reduce these two
-expressions to the same term.  Because the type of the whole flag tuple depends
+expressions to the same term.  Because the type of the whole $\sigma$-flag tuple depends
 on its vertex-type family, ordinary equality between the two tuples is not
 available until this equality of families has been made explicit.  The
 equality sought here is between two descriptions of the same reordered tuple,
@@ -3815,7 +3825,7 @@ have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr h_iso_S0_
 \end{lstlisting}
 This pattern appears repeatedly in the list-density proofs.  It is used to
 show that the density is independent of the chosen labeled-graph
-representatives of its input flags, and to show that
+representatives of its input $\sigma$-flags, and to show that
 $\den{F_1,\ldots,F_t}{G}$ is unchanged when the prescribed tuple
 $(F_1,\ldots,F_t)$ is reordered.  In the latter proof, the two finite
 collections consist of the tuples of disjoint induced copies counted before
@@ -3895,7 +3905,7 @@ carries the main mathematical content of the proof.
 Our experience proving the density chain rules made this pattern particularly
 clear.  A chain rule identifies two sampling procedures: choosing the required
 subflags directly in the host, or making the same choice in stages through an
-intermediate flag.  On paper, these procedures are readily seen as two
+intermediate $\sigma$-flag.  On paper, these procedures are readily seen as two
 descriptions of the same experiment.  In Lean, after unfolding the
 definitions, the proof came down to a bijection between the finite sets of
 choices made by the two procedures.  This bijection yielded equality of the
@@ -4008,7 +4018,7 @@ this ideal.  We therefore have a canonical quotient map
   \FlagAlg{\sigma}[\mathcal K]
 \]
 that sends every \(\sigma\)-flag outside \(\mathcal K\) to zero and every
-remaining flag to its counterpart in the constrained algebra.
+remaining \(\sigma\)-flag to its counterpart in the constrained algebra.
 
 Let
 \[
@@ -4047,13 +4057,16 @@ There is also an intrinsic description:
   \right\}.
 \end{equation}
 The role of heredity is to justify the quotient presentation above.  Every
-flag $F$ appearing in the product of a flag $F'$ outside \(\mathcal K\) with another
-flag $F''$ contains the first flag $F'$ as an induced subflag.  It therefore also lies
-outside \(\mathcal K\), since otherwise heredity would put that induced subflag $F'$
-back in \(\mathcal K\).  Hence multiplying a flag outside \(\mathcal K\) by any
-other flag produces a linear combination of flags outside \(\mathcal K\), so
+\(\sigma\)-flag $F$ appearing in the product of a \(\sigma\)-flag $F'$ outside
+\(\mathcal K\) with another \(\sigma\)-flag $F''$ contains $F'$ as an induced
+subflag.  It therefore also lies outside \(\mathcal K\), since otherwise
+heredity would imply that the underlying graph of $F'$ also lies in
+\(\mathcal K\).  Hence multiplying a \(\sigma\)-flag outside \(\mathcal K\) by
+any other \(\sigma\)-flag produces a linear combination of \(\sigma\)-flags
+outside \(\mathcal K\), so
 their span is precisely the ideal killed by \(q_\sigma\).  Once this
-presentation is established, a homomorphism vanishing on every flag outside~\(\mathcal K\) vanishes on the whole ideal and therefore factors through
+presentation is established, a homomorphism vanishing on every \(\sigma\)-flag
+outside~\(\mathcal K\) vanishes on the whole ideal and therefore factors through
 \(q_\sigma\) by the universal property of the quotient.
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
@@ -4109,7 +4122,7 @@ identity~\eqref{eq:ensemble} gives
 Since every positive homomorphism \(\phi'\) satisfies \(\phi'([F])\geq0\), it
 follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
 \(\phi([F])=0\) with probability one.  Applying this argument to
-the countable collection of flags outside \(\mathcal K\) shows that a positive
+the countable collection of \(\sigma\)-flags outside \(\mathcal K\) shows that a positive
 homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
 probability one.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the
 fundamental inclusion
@@ -4120,11 +4133,11 @@ We say that \((\mathcal G,\mathcal K,\sigma)\) is
 \emph{root-plantable}\footnote{The vertices distinguished by the type
 \(\sigma\) are often called the \emph{roots}, which explains the first part of
 the term \emph{root-plantable}.  A finite \(\sigma\)-flag \((G,\theta)\)
-records a flag-density profile relative to a specified embedding
+records a profile of \(\sigma\)-flag densities relative to a specified embedding
 \(\theta:\sigma\to G\), whose image consists of the labeled vertices.  To
 \emph{plant} this profile in a larger graph \(H\in\mathcal K\), without
 specifying labels in advance, is to produce many embeddings
-\(\widehat\theta:\sigma\to H\) whose flag-density profiles approximate the
+\(\widehat\theta:\sigma\to H\) whose profiles of \(\sigma\)-flag densities approximate the
 profile specified by \((G,\theta)\).  Here ``many'' means that these embeddings
 form a fraction bounded away from zero of all embeddings of \(\sigma\) in
 \(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\) reproduces
@@ -4237,7 +4250,7 @@ non-degenerate type in a blow-up-closed class.
 
 The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
 of finite \(\sigma\)-flags whose underlying graphs lie in \(\mathcal K\).  For
-each such flag \((G,\theta)\), the proof repeatedly applies the preceding
+each such \(\sigma\)-flag \((G,\theta)\), the proof repeatedly applies the preceding
 replacement construction, replacing every vertex \(v\in V(G)\) by a graph
 \(J_v\).  The resulting blow-up has a natural projection back to \(G\): every
 vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
@@ -4246,14 +4259,14 @@ vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
 The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
 uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
 corresponding fiber with probability bounded away from zero.  When a fixed
-finite flag is sampled from the blow-up, its sampled vertices lie in distinct
+finite \(\sigma\)-flag is sampled from the blow-up, its sampled vertices lie in distinct
 fibers with probability tending to one.  On this event, their adjacencies are
 determined by the corresponding vertices of \(G\), so the internal structure
-of the replacement graphs \(J_v\) does not affect the sampled flag.
+of the replacement graphs \(J_v\) does not affect the sampled \(\sigma\)-flag.
 
 These estimates connect the finite blow-up construction to the definition of
 \(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
-Because \(X_\sigma\) has the topology of pointwise convergence on flags,
+Because \(X_\sigma\) has the topology of pointwise convergence on \(\sigma\)-flags,
 membership in \(U\) can be ensured by approximating the values of finitely many
 \(\sigma\)-flags within a prescribed tolerance.  Choose~\((G,\theta)\)
 sufficiently far along the sequence representing \(\chi\), and then choose its
@@ -4261,7 +4274,7 @@ blow-up sufficiently large.  The construction ensures that a positive fraction
 of the embeddings of \(\sigma\) into the blow-up produce \(\sigma\)-typed
 density profiles lying in \(U\): the labeled vertices enter the designated
 fibers with probability bounded away from zero, while the distinct-fiber
-estimate preserves the required flag densities.
+estimate preserves the required \(\sigma\)-flag densities.
 
 Passing to a limit of these unlabeled blow-ups gives some \(\phi_0\in Q_0\) for
 which
@@ -4358,13 +4371,13 @@ A forthcoming paper will give the complete mathematical and formal account.
 It will develop finite planting criteria: finite-graph conditions that certify
 root-plantability by constructing, within the constrained class, larger graphs
 in which a positive fraction of the embeddings \(\theta:\sigma\to H\) have
-flag-density profiles approximating the profile of a given sufficiently large
+profiles of \(\sigma\)-flag densities approximating the profile of a given sufficiently large
 \(\sigma\)-flag in the class.  It will also study further graph classes for which
 quotient and ensemble semantics agree or disagree.  One source of disagreement
 is a pinning obstruction: under every admissible random-extension measure, the
-density of a particular labeled flag takes one fixed value with probability
+density of a particular \(\sigma\)-flag takes one fixed value with probability
 one, while the constrained quotient contains a positive homomorphism at which
-that flag has a different density.  Finally, the forthcoming work will extend
+that \(\sigma\)-flag has a different density.  Finally, the forthcoming work will extend
 ensemble semantics to restrictions imposed directly on positive homomorphisms,
 such as fixing their edge density to a particular value, rather than requiring
 the restriction to arise from a hereditary graph class.  The present section
