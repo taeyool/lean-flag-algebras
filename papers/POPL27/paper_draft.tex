@@ -2202,41 +2202,42 @@ degenerate case \(\phi_0(\langle\sigma\rangle_0)=0\).  The later density bounds
 use this theorem to transfer inequalities from the labeled algebra to the
 unlabeled one.
 
-\subsection{Forbidden Graphs as Assumptions, Not New Theories}
+\subsection{Forbidden Graphs and the Ensemble Semantic Order}
 \label{sec:forbidden}
 
-\Cref{sec:background} presented flag algebras in the usual constrained
-form: a finite forbidden family \(\mathcal{H}\) is fixed first, and the flag
-types, flags, algebras, and positive homomorphisms are all built inside the
-\(\mathcal{H}\)-free world.  In that setup, an inequality
+In \Cref{sec:background}, a finite forbidden family \(\mathcal{H}\) is fixed
+first, and the flag types, flags, algebras, and positive homomorphisms are all
+built inside the \(\mathcal{H}\)-free world.  In that setup, an inequality
 \(f\leq_{\mathcal{H},\sigma} g\) is already an inequality in the constrained
 \(\sigma\)-typed algebra: the forbidden configurations have been removed
 before the semantic order is tested.
 
-Our Lean formalization deliberately separates these two steps.  The core
+Our Lean formalization deliberately separates building the algebra from
+imposing the constraint.  The core
 development constructs the ambient flag algebra \(\mathcal{A}^\sigma\) of all
-finite simple graphs, with no forbidden family as a parameter.  The definitions
-of flags, densities, products, the downward operator, and positive
-homomorphisms are therefore reusable across extremal problems.  A forbidden
+finite simple graphs, with no forbidden family as a parameter.  A forbidden
 graph is introduced only later, as an assumption on the semantic comparison
 between two ambient algebra elements \(f,g\in\mathcal{A}^\sigma\): we test only
 base positive homomorphisms~\(\phi_0\) that assign density zero to every graph
 containing the forbidden graph as a (not necessarily induced)
 subgraph, and then require the desired typed inequality to hold almost surely
-after randomly labeling an occurrence of \(\sigma\).  Thus forbiddenness is not a new
+under the random extension \(\Ext_\sigma(\phi_0)\), which labels an occurrence
+of \(\sigma\) at random.  Thus forbiddenness is not a new
 flag-algebra universe in the implementation; it is an a posteriori condition on
-which positive homomorphisms are allowed to interpret the ambient algebra.
+which positive homomorphisms are allowed to interpret the ambient algebra.  The
+definitions of flags, densities, products, the downward operator, and positive
+homomorphisms are therefore reusable across extremal problems.
 
 The order used for this a posteriori condition is the
-\emph{ensemble semantic order}.  The current API implements the case of one
-forbidden graph \(H\); a forbidden family would impose the zero-density
-condition below for every member of the family.
+\emph{ensemble semantic order}.  We state it for a single forbidden graph
+\(H\); a forbidden family would impose the zero-density condition below for
+every member.
 
 \begin{definition}[Ensemble semantic order]\label{def:ensemble-semantic-order}
 Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
 \(f,g\in\mathcal{A}^\sigma\) in the ambient flag algebra.  We write
 \(f\leq^{\mathrm{ens}}_{H,\sigma} g\) if, for every empty-type positive
-homomorphism \(\phi_0\) such that, viewing graphs and \(\sigma\) as
+homomorphism \(\phi_0\) such that, viewing graphs as
 empty-type flag-algebra elements,
 \[
   \phi_0([F])=0
@@ -2251,15 +2252,9 @@ the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 \end{definition}
 
 \begin{remark}[Relation to built-in \(H\)-free semantics]
-There is another standard way to impose the same forbidden-graph condition:
-one builds the \(H\)-free restriction into the flag algebra from the beginning,
-so that the algebra itself is already an algebra of \(H\)-free flags, and
-semantic inequalities are tested inside that separately built constrained
-algebra.  Our ensemble order does something different.  It keeps the ambient
-algebra of all finite graphs, takes a limit of large \(H\)-free graphs, and
-only then chooses the labels randomly within that limit.  Consequently, it
-tests what is true for almost every labeled view of a constrained limit.
-
+The built-in approach of \Cref{sec:background} tests inequalities inside a
+separately built \(H\)-free algebra, whereas the ensemble order tests them on
+random labelings of a constrained limit.
 For unlabeled density bounds this distinction is harmless: the final
 Tur\'an-density statements are recovered by the transfer theorem below.  For
 labeled intermediate inequalities, however, the two viewpoints need not agree.
@@ -2273,20 +2268,22 @@ example showing that it can be real.
 
 The first condition says that \(\phi_0\) assigns density zero to every graph
 containing the forbidden graph \(H\); the second says that \(\sigma\) has positive density under
-\(\phi_0\), so a random occurrence of \(\sigma\) can be chosen.  The last line
-then compares \(f\) and \(g\) not against all positive homomorphisms on a
-separately built \(H\)-free algebra, but against almost every \(\sigma\)-typed positive
-homomorphism obtained by randomly labeling from such a \(\phi_0\).  The Lean
+\(\phi_0\), so a random occurrence of \(\sigma\) can be chosen and the random
+extension \(\Ext_\sigma(\phi_0)\) exists.  The last line
+then requires \(\phi(f)\leq\phi(g)\) for almost every \(\sigma\)-typed positive
+homomorphism \(\phi\) obtained by randomly labeling from such a \(\phi_0\).  The Lean
 predicate \lean{forbidLE} is the formalization of
 \Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
-def forbidLEWith (C : ForbidCondition) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
+def forbidLEWith {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (C : ForbidCondition) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)),
     (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0
     -> (*@$\,$@*) C (*@$\phi_0$@*)
     -> (*@$\,$@*) (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
 
-def forbidLE {m : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (H : SimpleGraph (Fin m)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
+def forbidLE {n(*@$_0$@*) m : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (H : SimpleGraph (Fin m)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   forbidLEWith (forbiddenCondition H) f g
 \end{lstlisting}
 Read \lean{forbidLE} first.  Its explicit argument
@@ -2300,53 +2297,54 @@ specifying which ambient limiting objects are allowed.  The particular condition
 \lean{forbiddenCondition H} selects the \(H\)-free ones: it considers only
 positive homomorphisms \(\phi_0\) such that
 \[
-  \phi_0([A])=0
+  \phi_0([F])=0
   \qquad
-  \text{for every empty-type flag } A
-  \text{ whose graph contains } H \text{ as a subgraph}.
+  \text{for every empty-type flag } F
+  \text{ whose underlying graph contains } H \text{ as a subgraph}.
 \]
 
 The body of \lean{forbidLEWith} ranges over empty-type positive homomorphisms
-\lean{$\phi_0$}.  The hypothesis
-\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} says that the flag type \(\sigma\)
-has positive density as an unlabeled graph in $\phi_0$, which is the condition
-needed to form the random-extension measure \(\mathbb{P}[\phi_0]\).  The
-hypothesis \lean{C $\phi_0$} is the condition being imposed on the ambient
-empty-type limit; for \lean{forbidLE H}, this is exactly the \(H\)-free
-condition described above.
-
-The conclusion says that the event
+\lean{$\phi_0$}.  The
+hypothesis \lean{C $\phi_0$} is the condition being imposed on
+\lean{$\phi_0$}; for \lean{forbidLE H}, this is exactly the \(H\)-free
+condition described above.  The measure \lean{$\mathbb{P}$[$\phi_0$]} is the
+random extension \(\Ext_\sigma(\phi_0)\), which
+\lean{exists\_\allowbreak probMeasure\_\allowbreak extend\_\allowbreak
+emptyType\_\allowbreak positiveHom} of
+\Cref{sec:formal-downward} supplies from the hypothesis
+\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0}, and the conclusion says that the event
 \lean{\{$\phi$ : PositiveHomSpace $\sigma$ | $\phi$ f $\leq$ $\phi$ g\}} has
-probability one under this random extension.  Here a sampled
+probability one under it.  Here a sampled
 \lean{$\phi$} is a \(\sigma\)-typed positive
 homomorphism, so the event is exactly that the sampled homomorphism evaluates
 \lean{f} at most \lean{g}.
 
 What remains is to connect
 the semantic predicate above to the corresponding asymptotic bound on induced densities.
-In the theorem below, the variables have types
-\lean{H : SimpleGraph (Fin n)} and \lean{F : SimpleGraph (Fin m)}. Here \(H\) is
+This is the Lean counterpart of \Cref{lem:semantic-bound}, with the hypothesis
+stated in the ensemble order of \Cref{def:ensemble-semantic-order} rather than
+in the built-in order of \Cref{sec:background-semantic-order}.
+In the theorem below, \(H\) is
 the forbidden graph and \(F\) is the target graph.  The expression \lean{F.toFlagAlgebra} converts
 the simple graph \(F\) into the corresponding element of the empty-type flag
 algebra \lean{FlagAlgebra $\emptyt$}, whose evaluation is the induced
-\(F\)-density.  The forbidden graph \(H\) enters \lean{forbidLE} directly as a
-\lean{SimpleGraph}; it supplies the \(H\)-free condition described above.
+\(F\)-density.
 
 The formal bridge packages this passage from semantic order to the finite
 asymptotic statement:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)}
-    {F : SimpleGraph (Fin m)} {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
+    {F : SimpleGraph (Fin m)} {c : (*@$\mathbb{R}$@*)} (hc : 0 (*@$\leq$@*) c)
     (h : forbidLE H F.toFlagAlgebra (c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))))
-    : generalizedTuranDensity H F <= c := ...
+    : generalizedTuranDensity H F (*@$\leq$@*) c := ...
 \end{lstlisting}
 The hypothesis \lean{h} is an empty-typed \lean{forbidLE} inequality: the target
 graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
 graph \(H\).  The conclusion is the corresponding
 Tur\'an-density bound, written in Lean as
-\lean{generalizedTuranDensity~H~F~<=~c}; mathematically, it is the assertion
+\lean{generalizedTuranDensity~H~F~$\leq$~c}; mathematically, it is the assertion
 \[
   \tdensity{F}{H}
   =
@@ -2359,6 +2357,18 @@ Thus a certificate proof only has to
 establish one semantic inequality in the ambient algebra; the passage from
 that inequality to the extremal-density statement is handled once and
 reused.
+
+One point about this limit is worth recording, since the definition of the
+Tur\'an density \(\tdensity{F}{H}\) takes its existence for granted.  In Lean,
+\lean{generalizedTuranDensity H F} is Mathlib's \lean{limUnder} applied to the
+normalized extremal numbers.  Lean functions are total, so \lean{limUnder} must
+return a value even when the sequence does not converge, and that value is then
+unspecified.  A bound on it
+would therefore say nothing on its own, so we also prove
+\lean{tendsto\_\allowbreak generalizedTuranDensity}, which shows that the
+normalized extremal numbers do converge to it.  The argument is the standard
+one, deriving convergence from the fact that they are non-increasing in the
+number of vertices.
 
 \section{The Reflection Layer}
 \label{sec:reflection}
