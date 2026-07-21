@@ -1465,13 +1465,13 @@ dependencies are visible without requiring the surrounding source context.
 \subsection{Flag Types and Flags}
 \label{sec:flagtypes}
 
-Our formalization builds on Mathlib, and in particular on Mathlib's graph
-library.  Before giving the Lean definitions of flags, we recall the small
-pieces of Mathlib notation used below.  In \Cref{sec:background}, we
-described a finite graph as having a vertex set $V(G)$.  In Lean, the vertex
-set is represented by a type: a term of type \lean{SimpleGraph V} is a simple
-graph whose vertices are the elements of the type \lean{V}.  Finiteness is
-supplied separately by assumptions such as \lean{Fintype V}.  For example,
+Our formalization builds on Mathlib, particularly its graph library.  Before
+giving the Lean definitions of flags, we recall the small amount of Mathlib
+notation used below.  In \Cref{sec:background}, we described a finite graph as
+having a vertex set $V(G)$.  In Lean, the vertex set is represented by a type:
+a term of type \lean{SimpleGraph V} is a simple graph whose vertices are the
+elements of the type \lean{V}.  Finiteness is supplied separately by
+assumptions such as \lean{Fintype V}.  For example,
 \lean{SimpleGraph (Fin n)} is a graph on the type \lean{Fin n}, whose elements
 are the natural numbers \(0,\ldots,n-1\).
 
@@ -1496,15 +1496,14 @@ is represented by a simple graph on the label type \lean{T}.  The structure
 field \lean{graph} stores the underlying graph $M$, and the field
 \lean{type\_embed} stores the embedding
 $\theta_F:\sigma\hookrightarrow_g M$.  In the signature, braces mark
-implicit parameters, which Lean normally infers from context, and
-square brackets mark typeclass assumptions.  Thus, \lean{[Fintype T]} tells
-Lean that the label type
-\lean{T} is finite; later signatures use assumptions such as
+implicit parameters that Lean normally infers from context, whereas square
+brackets mark typeclass assumptions.  Thus, \lean{[Fintype T]} tells Lean that
+the label type \lean{T} is finite; later definitions use assumptions such as
 \lean{[DecidableEq V]} when equality on a vertex type must be decidable.
 
-We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
-two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
-quotienting \lean{LabeledGraph} by this isomorphism relation:
+We define \lean{LabeledGraphIso} as a structure representing isomorphisms
+between two \lean{LabeledGraph} terms, and define \lean{Flag} by quotienting
+\lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
 structure LabeledGraphIso {T V V' : Type} [Fintype T]
     {(*@$\sigma$@*) : FlagType T} (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) V') where
@@ -1522,56 +1521,58 @@ instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-\lean{Quotient} comes with a double-bracket notation for equivalence classes.
-In Lean code, the bare notation \(\llbracket x\rrbracket\), with no subscript,
-means ``the quotient class of the representative \(x\),'' with the relevant
-quotient inferred from the expected type.  Thus, when the expected type is
-\lean{Flag}~\(\sigma\)~\lean{V}, \(\llbracket G\rrbracket\) is the \(\sigma\)-flag
-represented by the concrete labeled graph \(G\).  Later, when the expected type
-is \lean{FlagAlgebra}~\(\sigma\), the same bare brackets send a
-\lean{FlagVector} representative to its class modulo the zero space.  This
-bare quotient notation should be distinguished from the subscripted brackets
-\(\llbracket-\rrbracket_\sigma\) or \(\llbracket-\rrbracket_0\), which denote
-the downward operator.
-
 \lean{LabeledGraphIso} represents an isomorphism of concrete $\sigma$-flags.
 It consists of a graph isomorphism \lean{graph\_iso} between the underlying
 graphs, together with a compatibility proof \lean{type\_preserve} saying that
 this isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy
 of $\sigma$ in $G'$.  This is the Lean form of the condition
-$\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ abbreviates
-this structure, with $\sigma$ inferred from the two labeled graphs.
+$\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ denotes this
+type of isomorphism data, with $\sigma$ inferred from the two labeled graphs.
 
-Lean's quotient type does not take an arbitrary relation directly; it expects
-a \emph{setoid}, namely a type together with an explicitly supplied equivalence
-relation.  The instance \lean{labeledGraphSetoid} provides this package for
+Lean's quotient type does not accept an arbitrary relation directly; it
+requires a \emph{setoid}, which packages a relation with proofs that it is an
+equivalence relation.  The instance \lean{labeledGraphSetoid} provides this package for
 \lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} identifies two
-terms $G,G'$ when there exists labeled-graph isomorphism data
-$G\simeq_f G'$, and its field \lean{iseqv} contains the proofs that this
-relation is reflexive, symmetric, and transitive.  Finally,
+terms $G,G'$ when a labeled-graph isomorphism $G\simeq_f G'$ exists, and its
+field \lean{iseqv} contains the proofs that this relation is reflexive,
+symmetric, and transitive.  Finally,
 \lean{Flag}~$\sigma$~\lean{V} is defined as the quotient of
 \lean{LabeledGraph}~$\sigma$~\lean{V} by that setoid, so its elements are
 precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
 \lean{V}.
 
-We can now define $\mathcal{F}^\sigma_n$ in Lean as
+\lean{Quotient} comes with double-bracket notation for equivalence classes.  In
+Lean code, the bare notation \(\llbracket x\rrbracket\), with no subscript,
+means ``the quotient class of the representative \(x\),'' with the relevant
+quotient inferred from the expected type.  Thus, in this subsection, when the
+expected type is \lean{Flag}~\(\sigma\)~\lean{V},
+\(\llbracket G\rrbracket\) is the \(\sigma\)-flag represented by the concrete
+labeled graph \(G\).  Throughout the paper, bare double brackets denote
+quotient classes, whereas the subscripted brackets
+\(\llbracket-\rrbracket_\sigma\) and \(\llbracket-\rrbracket_0\) denote the
+downward operator.  We return to the bare quotient notation in
+\Cref{sec:formal-flag-algebra}.
+
+We can now represent $\mathcal{F}^\sigma_n$ in Lean by
 \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
-\lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
-\bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each
-element is a pair $\hat F = \langle n, F\rangle$ where $n$ records the size and $F$ is the
-$\sigma$-flag of that size.  In Lean, the two components are written
+\lean{FinFlag}~$\sigma$ collects $\sigma$-flags of all finite sizes and
+represents $\mathcal{F}^\sigma = \bigcup_n \mathcal{F}^\sigma_n$.  It is
+defined as a dependent pair type: each element is a pair
+$\hat F = \langle n, F\rangle$, where $n$ records the size and $F$ is the
+$\sigma$-flag of that size.  In Lean, the two components are accessed as
 $\hat F.1$ and $\hat F.2$.
 \begin{lstlisting}
 def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
-Note that unlike \Cref{sec:background}, none of the definitions above carries the
-\(\mathcal{H}\)-free condition: the underlying graphs are arbitrary.  This is a
-deliberate interface choice.  The core quotient and density machinery is
-developed once for all finite graphs, while the \(\mathcal{H}\)-free assumption
-is imposed later through the semantic predicate on the final unlabeled
-inequality.
+Unlike the definitions in \Cref{sec:background}, none of the definitions above
+carries the \(\mathcal{H}\)-free condition: the underlying graphs are
+arbitrary.  This is a deliberate interface choice.  The core quotient and
+density machinery is developed once for all finite graphs, while
+\(\mathcal{H}\)-freeness is imposed later by restricting the positive
+homomorphisms used in the ensemble semantic order
+(\Cref{sec:forbidden}).
 
 \subsection{Subflag Densities}
 \label{sec:formal-subflag-densities}
@@ -1767,6 +1768,7 @@ theorem flagDensity_eq_sum_density_prods
 \end{lstlisting}
 
 \subsection{The Flag Algebra}
+\label{sec:formal-flag-algebra}
 
 To define the flag algebra, we first construct the free real vector space on
 $\mathcal{F}^\sigma$.  Each element of this vector space is represented as a
@@ -1828,6 +1830,10 @@ instance flagVectorSetoid {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : F
 abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
+Since \lean{FlagAlgebra}~$\sigma$ is another quotient type, if $f$ is a
+\lean{FlagVector}~$\sigma$, the bare notation $\llbracket f\rrbracket$ denotes
+its class in this quotient.
+
 The quotient therefore imposes a family of expansion identities: for every
 $\sigma$-flag \lean{F : FinFlag}~$\sigma$ and every size $\ell \geq F.1$, the class of
 \lean{basisVector F} is identified with the class of
