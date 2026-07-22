@@ -3448,9 +3448,7 @@ proof of the bound in Part~4.
 For example, applying the compiler to the Mantel certificate with
 the following command
 \begin{lstlisting}[language={}]
-python flagmatic_to_lean.py gen-skeleton \
-  <mantel-cert>.json Mantel.lean \
-  --namespace Mantel --force
+python flagmatic_to_lean.py gen-skeleton <mantel-cert>.json Mantel.lean --namespace Mantel --force
 \end{lstlisting}
 generates \lean{Mantel.lean} from the Mantel certificate.  The optional
 \lean{--namespace Mantel} argument selects the namespace of the generated
@@ -3637,31 +3635,27 @@ $c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
 The compiler script connects the certificate's external representation to the four
 parts above.  Flagmatic represents a graph or flag by a compact string, so the
 script parses each string and searches the canonical enumeration used by
-the reflection generators for the same graph or flag after a relabeling of
-vertices that preserves the flag labels.  The selected entry determines the
-corresponding Lean basis element and hence the entries of each flag vector.
+the reflection generators for the entry isomorphic to it.  The index of the
+matching entry determines the corresponding \lean{FlagAlgebra\_n\_k\_m\_i}
+constant, and hence the entries of each flag vector.
 The script then reads the target and bound, the forbidden graph, the
 host size, and the SDP blocks; reconstructs the rational matrices; computes the
-$LDL^\top$ witnesses; and selects the target-lifting branch and the form in
-which the bound states its forbidden graph.
+$LDL^\top$ witnesses; and decides whether the target must be lifted.
 
 For each certificate, the script writes one Lean source file containing all
 four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
 proof, and one addition of a non-negative quadratic form.  When the target is
 smaller than the host size, the file additionally contains the Part~3
-expansion.  A
-non-complete forbidden graph changes how the bound states that graph and which
-unit-expansion lemma Part~4 cites; the generation commands of Part~1 and the
-expansion tactics of Parts~3 and~4 need no such selection, since each dispatches
-on the forbidden graph itself during elaboration.  Thus, the script varies the
-data and the required route, but the argument assembled in Part~4 has the same
+expansion.  Thus, the script varies the
+data, but the argument assembled in Part~4 has the same
 structure in every generated file.
 
-The script itself determines which Lean basis element corresponds to each
+The script itself determines which \lean{FlagAlgebra\_n\_k\_m\_i} constant
+corresponds to each
 certificate flag and converts the target, bound, forbidden graph, and matrix
 data into Lean declarations.  These choices are made in Python.  Lean
 typechecks the generated file and verifies its propositions, including the
-final bound, but it does not compare the file with the source JSON\@.  This
+final bound, but it does not compare the file with the source certificate.  This
 distinction between validity of the generated theorem and fidelity of the
 translation is central to the following trust model.
 
