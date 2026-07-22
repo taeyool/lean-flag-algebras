@@ -2885,7 +2885,26 @@ What repeats in a concrete development is not the correctness argument, but
 its specialization to each concrete $\sigma$-flag and to each pattern-pair/host
 combination used by the later algebraic proof.
 
-We automate this repetition using Lean's metaprogramming facilities.  More
+The generated flags are named by a fixed scheme, already visible in the
+constants of \Cref{sec:reflection-adequacy}.  A name such as
+\lean{Flag\_n\_k\_m\_i} or \lean{FlagAlgebra\_n\_k\_m\_i} carries four
+indices: \(n\) is the size of the flag, \(k\) is the size of its flag type,
+\(m\) is the position of the type's graph in the enumeration of the
+\(k\)-vertex graphs, and \(i\) is the position of the flag itself in the
+enumeration of the \(n\)-vertex flags of that type.  Both enumerations are in
+a fixed canonical order: graphs are listed by edge count, with ties broken
+lexicographically by the smallest edge list over all vertex relabelings, and
+the flags over a graph are listed by the placement of their labels.  The
+reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
+scheme, and the empty type is written \(k=m=0\).  Thus
+\lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
+number \(1\) among the three-vertex flags of the unique one-vertex type,
+namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is the
+corresponding basis element of the flag algebra.
+
+We automate this repetition, the specialization of the uniform adequacy
+theorems to concrete flags and pattern-pair/host combinations, using Lean's
+metaprogramming facilities.  More
 precisely, the generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
 elaboration, the phase in which Lean processes source commands and produces
@@ -2894,7 +2913,8 @@ generate statements and proofs for the required specialized facts.  Each finite
 computation is therefore performed once, when its theorem family is generated,
 and later proofs recover the result by rewriting rather than recomputing it.
 For the
-sizes and flag type used in the two examples above, the relevant commands have
+sizes and flag type used in the two examples of
+\Cref{sec:reflection-adequacy}, the relevant commands have
 the following form:
 \begin{lstlisting}
 -- Generate empty-typed flags at pattern size 2 and host size 3.
@@ -2911,18 +2931,55 @@ generate_flag_pair_density_theorems_no_forbid 2 3 1 0
 generate_mul_theorems 2 3 1 0
 \end{lstlisting}
 
-The numerical parameters are bookkeeping, not the message of the example.
-Their convention nevertheless explains how the commands fit together.  The
-argument of
-\lean{generate\_empty\_typed\_flags n} is the number \(n\) of vertices.  In
-\lean{generate\_flags n k m}, \(n\) is again the total number of vertices,
-\(k\) is the number of labeled vertices, and \(m\) selects one of the
-\(k\)-vertex flag types.  The last two commands take the pattern size, the host
-size, and then the same \(k,m\) describing the type.  Here \(k=1,m=0\) selects
-the unique type on one labeled vertex, while the suffix
-\lean{no\_forbid} says that no forbidden-graph filter is being applied.
+The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.
+\lean{generate\_empty\_typed\_flags n} generates the empty-typed flags on
+\(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
+flags of the type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique
+type on one labeled vertex.  The density and multiplication commands take a
+pattern size \(p\) and a host size \(h\), followed by the same \(k,m\)
+describing the type, and the suffix \lean{no\_forbid} says that no
+forbidden-graph filter is being applied.
+\Cref{tab:generation-commands} collects the whole command family, including
+the forbid-free variants described below.
 
-The important point is what each group contributes to subsequent proofs.  The
+\begin{table}
+  \centering
+  \caption{The generation commands.  \(n\) is a flag size and \(k\), \(m\)
+  select the flag type, as in the naming scheme; the density and
+  multiplication commands take a pattern size \(p\) and a host size \(h\).
+  The forbid-free variants take a further argument \lean{H}, a
+  \lean{Sym2Graph} term for the forbidden graph.}
+  \label{tab:generation-commands}
+  \small
+  \begin{tabular}{@{}lp{0.34\textwidth}@{}}
+    \toprule
+    Command & Generates \\
+    \midrule
+    \lean{generate\_empty\_typed\_flags n} &
+      the empty-typed flags on \(n\) vertices, with completeness \\
+    \lean{generate\_flags n k m} &
+      the \(n\)-vertex flags of type \((k,m)\), with unlabelings, downward
+      coefficients, and completeness \\
+    \lean{generate\_flag\_pair\_density\_theorems\_no\_forbid p h k m} &
+      the pair-density theorems for size-\(p\) patterns in size-\(h\) hosts \\
+    \lean{generate\_mul\_theorems p h k m} &
+      the product expansions \([F_1]\cdot[F_2]=\sum_G c_G\,[G]\) over the
+      size-\(h\) hosts \\
+    \midrule
+    \lean{generate\_forbid\_free\_empty\_typed\_flags n H} &
+      the \(H\)-free empty-typed flags, with filtered completeness \\
+    \lean{generate\_forbid\_free\_flags n k m H} &
+      the \(H\)-free typed flags, with unlabelings, downward coefficients,
+      and filtered completeness \\
+    \lean{generate\_forbid\_free\_flag\_pair\_density\_theorems p h k m H} &
+      the pair-density theorems over the \(H\)-free flags \\
+    \lean{generate\_forbid\_free\_mul\_theorems p h k m H} &
+      the product expansions, valid modulo flags containing \(H\) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The important point is what each command contributes to subsequent proofs.  The
 first four commands create the named two- and three-vertex flags
 used in the examples of \Cref{sec:reflection-adequacy}, and each of the four
 also proves a completeness lemma stating that the flags it names exhaust the
@@ -2940,22 +2997,6 @@ what justifies summing over exactly the named hosts.  Thus, elaboration produces
 flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
 and the multiplication table, together with proofs of every entry.
 
-The finite enumerations behind these commands are organized so that
-elaboration remains tractable as the sizes grow.  The enumeration of graphs
-is inductive in the size.  The \(n\)-vertex representatives are obtained by
-extending the \((n-1)\)-vertex representatives by one vertex in all possible
-ways and discarding duplicates, so the generator only ever handles one
-representative per isomorphism class, never the exponentially many labeled
-graphs on \(n\) vertices.  Deduplication attaches to each candidate a cheap
-isomorphism-invariant key, derived from its edge count and degree sequence,
-and runs the expensive isomorphism test only when two keys collide.  The
-completeness lemmas are likewise not proved by brute force.  That the
-inductive generator misses no isomorphism class is proved once, as an
-ordinary theorem about the enumerator, and the finite evaluation performed at
-generation time only checks that the emitted constants match the enumerator's
-output; nothing ever compares the named flags against the full quotient type
-directly.
-
 Extremal applications work under a forbidden-graph assumption, and each of
 the commands above has a forbid-free variant for this situation.  The
 \lean{generate\_forbid\_free\_*} commands take one additional argument, a
@@ -2968,7 +3009,41 @@ change accordingly, stating that the named flags exhaust the \(H\)-free ones,
 with \(H\)-freeness phrased as a vanishing subflag density so that the lemma
 composes with the forbidden-graph machinery of \Cref{sec:forbidden}.
 
-The forbid-free variants also optimize how the \(H\)-free flags are found.
+\subsubsection{Optimizations}
+\label{sec:reflection-generation-optimizations}
+
+The pipeline just described is organized so that elaboration remains
+tractable as the flag sizes grow.  The main optimizations are the following.
+
+\paragraph{Size-inductive enumeration.}
+The enumeration of flags is inductive in the size: the underlying
+\(n\)-vertex graph representatives are obtained by extending the
+\((n-1)\)-vertex representatives by one vertex in all possible ways, and the
+typed flags on \(n\) vertices are obtained by placing the type's labels on
+those representatives in every valid way.  The working lists therefore stay
+close to one representative per isomorphism class, rather than covering all
+\(2^{\binom{n}{2}}\) graphs on a fixed vertex set.
+
+\paragraph{Deduplication by cheap invariants.}
+Both steps of that induction produce isomorphic duplicates: different vertex
+extensions, and different label placements, can yield the same flag.  The
+enumeration therefore deduplicates as it goes, keeping a candidate only when
+it is isomorphic to no kept representative.  These isomorphism tests are the
+expensive part, so each candidate carries a cheap isomorphism-invariant key,
+derived from its edge count and degree sequence, and the expensive test runs
+only when two keys collide.
+
+\paragraph{Completeness by proof rather than search.}
+Each generation run must prove its completeness lemma, and deciding that
+statement directly would mean enumerating the full quotient type and
+comparing it against the named flags, which is exactly the brute force the
+inductive enumeration avoids.  Instead, the statement that the inductive
+enumeration misses no isomorphism class is proved once and for all, by
+induction on the size, as a theorem about the enumeration itself; the
+evaluation performed at generation time then only checks that the emitted
+constants coincide with the enumeration's output list.
+
+\paragraph{Pruning under a forbidden graph.}
 For a complete forbidden graph, the size induction itself prunes: only
 \(H\)-free representatives are extended, only \(H\)-free extensions are kept,
 and a cheap clique test decides containment, so flags containing \(H\) are
@@ -2982,6 +3057,7 @@ descends through the size induction; a proved bridge then equates the
 combinatorial containment test driving the pruning with the density condition
 stated in the lemma.
 
+\paragraph{Batched certification.}
 At realistic sizes, much of the elaboration cost is in certifying the
 generated density facts.  Rather than one evaluator invocation per pair
 density, the commands prove batch lemmas, each certifying a block of
