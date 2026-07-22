@@ -3556,26 +3556,30 @@ $\mathcal{H}$-free $\emptyset$-flags, with coefficients given by the single-flag
 generated in Part~1.
 
 All certificates considered here have a singleton forbidden family
-$\mathcal{H}=\{H\}$.  For a complete $H$, the generated proof invokes the
-\lean{flag\_expand\_hfree N K hmem} tactic, where $N$ is the host size and $K$ is the
+$\mathcal{H}=\{H\}$.  The generated proof invokes the
+\lean{flag\_expand\_hfree N K} tactic, where $N$ is the host size and $K$ is the
 reflection-layer \lean{Sym2Graph} encoding of $H$ (for example, \lean{K3} in
 the Mantel proof).  The expansion theorem is stated using the
 specification-level $H$-free semantic condition from
 \Cref{def:ensemble-semantic-order}, whereas the host $\emptyset$-flags were enumerated and
-filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
-two representations: it proves that the $\emptyset$-flag decoded from $K$ belongs to
-\lean{forbiddenFlags H}, the set of $\emptyset$-flags whose underlying graphs contain $H$
-as a subgraph.
-Consequently, the $H$-free condition forces the decoded $K$ to have density
-zero, which justifies removing from the objective expansion the host $\emptyset$-flags
-that the reflection computation found to contain $K$.
+filtered using the concrete graph $K$.  Bridging the two representations
+requires proving that the flags the reflection computation discarded belong to
+\lean{forbiddenFlags H}, the set of $\emptyset$-flags whose underlying graphs contain
+$H$ as a subgraph.  The $H$-free condition then forces those flags to have
+density zero, which justifies removing them from the objective expansion.
 
-For a non-complete $H$, a subgraph copy may have additional edges
-and therefore need not be an induced copy of $H$.  The alternative tactic
-\lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
-supergraphs internally.  Thus, the two tactics implement the same lifting step
-for two representations of subgraph-freeness; neither introduces additional
-forbidden graphs into the certificate.
+The tactic establishes that bridge itself, with no argument beyond $N$ and $K$.
+It dispatches on $K$ by the same test the Part~1 commands use, so it always
+rewrites onto the filter those commands actually emitted.  When $K$ is complete,
+induced and subgraph containment coincide, so Part~1 filtered the enumeration on
+the single decoded flag of $K$ having density zero, and the bridge is the
+complete-graph membership lemma instantiated at the clique order the tactic
+reads off $K$.  When $K$ is not complete, a subgraph copy of $H$ may carry
+additional edges and therefore need not be induced; Part~1 filtered instead on
+every induced supergraph of $K$ having density zero, and the bridge is the
+corresponding membership statement for that finite family.  Either route
+performs the same lifting step, and neither introduces additional forbidden
+graphs into the certificate.
 
 \paragraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward

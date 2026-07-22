@@ -748,9 +748,10 @@ def render_expand_under_forbid(
     subgraph_mode = _tag is None
     forbid_graph_expr = (f"{forbid_tag}.toLabeledGraph.graph" if subgraph_mode
                          else f"completeGraph (Fin {forbid_n})")
-    expand_tac = (f"flag_expand_hfree_subgraph {N} {forbid_tag}" if subgraph_mode
-                  else f"flag_expand_hfree {N} {forbid_tag} "
-                       f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})")
+    # One tactic for both routes: `flag_expand_hfree` inspects `forbid_tag` itself and
+    # takes the clique route iff it unfolds to `completeSym2Graph r` (the same test the
+    # `generate_forbid_free_*` commands use to pick which `flagSetHfree_…_eq` to emit).
+    expand_tac = f"flag_expand_hfree {N} {forbid_tag}"
     admissible, _forbidden = _expansion_coefficients(
         obj_flagmatic, N, forbid_n, forbid_edges)
     if not admissible:

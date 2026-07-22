@@ -112,7 +112,7 @@ expanded directly over the K4-free 4-vertex flags via
 lemma K4turan_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 4)] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
-  flag_expand_hfree 4 K4 (completeSym2Graph_finFlag_mem_forbiddenFlags 4)
+  flag_expand_hfree 4 K4
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 4:121314232434'
