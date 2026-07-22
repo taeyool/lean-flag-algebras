@@ -1612,7 +1612,7 @@ index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\le
 The family \lean{Vl : Fin t $\to$ Type} records the vertex type of each entry, so
 the $t$ pattern $\sigma$-flags are not forced to share one ambient vertex type.
 
-The second definition is the finite ratio corresponding to
+The second definition gives the finite ratio corresponding to
 $\den{F_1,\ldots,F_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
 graphs and \lean{G} is the concrete labeled graph in which they are counted.
 The local function \lean{r\_list} records, for each pattern, how many unlabeled
@@ -1620,14 +1620,16 @@ vertices it contributes:
 \[
   r_i = |V(F_i)| - |\sigma|.
 \]
-The numerator \lean{labeledGraphListCount Hl G}, defined immediately before
-this function in the Lean development, counts the induced subgraph lists of
-\lean{G} that realize the patterns in \lean{Hl}, that is, the tuples
-$(S_1,\ldots,S_t)$ satisfying the conditions above.  The denominator applies
-\lean{multinomialCoefficient} to \lean{r\_list} and
-\(|V(G)| - |\sigma|\); it counts the possible choices of
-pairwise-disjoint vertex sets of those sizes among the unlabeled vertices of
-\lean{G}.  Thus, the quotient is a rational number.
+The helper \lean{labeledGraphListCount}, whose Lean definition is omitted from
+the displayed excerpt, supplies the numerator.  It counts tuples of induced
+labeled subgraphs of \lean{G} such that the entry at each index \lean{i} is
+isomorphic, as a $\sigma$-flag, to the pattern \lean{Hl i}, and different
+entries use pairwise-disjoint sets of unlabeled vertices.  The denominator
+applies \lean{multinomialCoefficient} to \lean{r\_list} and
+\(|V(G)| - |\sigma|\); it counts all ways to choose disjoint vertex sets of
+the required sizes from the unlabeled vertices of \lean{G}.  Their ratio is
+the multi-flag density $\den{F_1,\ldots,F_t}{G}$, represented as a rational
+number.
 The square-bracket assumptions in this signature provide the finite
 enumeration and equality tests needed for counting.  A \lean{Fintype} instance
 for a vertex type gives Lean a finite list of all its vertices, and a
