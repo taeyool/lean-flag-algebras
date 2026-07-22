@@ -1722,7 +1722,7 @@ for each \lean{i : Fin t}.  The term
 \lean{FlagList.coe Fl} has type
 \lean{QuotLabeledGraphList}~$\sigma$~\lean{t Vl}; concretely, it chooses a
 representative \lean{(Fl i).out} for each $\sigma$-flag in the tuple and forms the
-quotient class of the concrete tuple \lean{fun i => (Fl i).out}.  Thus
+quotient class of the concrete tuple \lean{fun i => (Fl i).out}.  Thus,
 \lean{flagListDensity} can call
 \lean{quotLabeledGraphListDensity} after converting the
 input tuple of $\sigma$-flags into the quotient-of-tuples input expected by the
@@ -2558,7 +2558,7 @@ The expression \lean{SetLike.coe edges} is the coercion that views the
 finite edge set \lean{edges : Finset (Sym2 (Fin n))} as an ordinary set of
 unordered pairs.  This coercion is needed because Mathlib's constructor
 \lean{fromEdgeSet} builds an abstract \lean{SimpleGraph} from a set of
-unordered vertex pairs, not from a \lean{Finset}.  Thus
+unordered vertex pairs, not from a \lean{Finset}.  Thus,
 \lean{fromEdgeSet (SetLike.coe edges)} is the abstract graph decoded from the
 concrete edge data.  The field \lean{type\_embed} then says that the graph
 decoded from \(\sigma\)'s edge set embeds into the graph decoded from the field
@@ -2936,7 +2936,7 @@ a fixed canonical order: graphs are listed by edge count, with ties broken
 lexicographically by the smallest edge list over all vertex relabelings, and
 the flags over a graph are listed by the placement of their labels.  The
 reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
-scheme, and the empty flag type is written \(k=m=0\).  Thus
+scheme, and the empty flag type is written \(k=m=0\).  Thus,
 \lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
 number \(1\) among the three-vertex flags of the unique one-vertex type,
 namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is the
@@ -3224,7 +3224,7 @@ scalar multiplication; the second uses preservation of multiplication, which
 rewrites the flag-algebra square as the square of the real number
 $\phi((\fKtwobull)-(\fbarKtwobull))$.  This makes the source of the
 non-negativity explicit: the right-hand side is a positive multiple of a square
-of a real number.  Thus $f$ is non-negative in $\mathcal A^\sigma$, and
+of a real number.  Thus, $f$ is non-negative in $\mathcal A^\sigma$, and
 \Cref{thm:downward-nonneg} gives $0\leq_{K_3}Q$.
 
 To calculate $Q$ in the common size-three basis, we use the triangle-free
@@ -3593,7 +3593,7 @@ theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@
 Here $C$ is a predicate encoding the forbidden-subgraph set $\mathcal{H}$; for a problem
 forbidding a single graph $H$, it is \lean{forbiddenCondition H}, the
 $H$-freeness condition of \Cref{def:ensemble-semantic-order} used throughout
-this section.  Thus
+this section.  Thus,
 \lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$.
 The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
@@ -4132,7 +4132,7 @@ function
 The dependency is in the codomain: at index $i$, the value $\mathbf{F}(i)$ has
 type \lean{Flag $\sigma$ $V_i$}, so the vertex type of the returned $\sigma$-flag varies with
 $i$.  If $\pi$ swaps the two positions, \lean{FlagList.permute} produces a
-tuple with vertex-type family~$i\mapsto V_{\pi(i)}$; thus Lean does track that
+tuple with vertex-type family~$i\mapsto V_{\pi(i)}$; thus, Lean does track that
 position $0$ now contains a $\sigma$-flag on $U_2$ and position $1$ a $\sigma$-flag on $U_1$.
 
 The difficulty arises when the tuple produced by \lean{FlagList.permute} is
@@ -4689,7 +4689,7 @@ the following two-vertex \(\sigma_1\)-flag:
     \node[font=\scriptsize] at (0,-0.32) {\(1\)};
   \end{tikzpicture}
 \]
-The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus
+The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus,
 the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
 its labeled vertex: the probability that one additional uniformly sampled
 vertex is adjacent to it.  The preceding observation implies that every
