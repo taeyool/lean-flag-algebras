@@ -3613,79 +3613,185 @@ generated theorem itself is checked by Lean.
 The certificates of \Cref{sec:results} establish the flag-algebra upper
 bounds; the matching lower bounds, which pin down the Tur\'an densities exactly,
 are formalized separately in Lean, as are a few further inequalities.  We
-collect them here.
+collect them here.  Both lower bounds follow the pattern described after
+\Cref{lem:semantic-bound}: an explicit family of triangle-free graphs (the
+balanced complete bipartite graphs for Mantel's theorem, the balanced
+blow-ups of the pentagon for the Erd\H{o}s pentagon theorem) attains the
+target density at infinitely many orders, and the convergence of the
+normalized extremal numbers carries these finite bounds to the Tur\'an
+density.
 
 \paragraph{Mantel's theorem.}
-Combined with its complete-bipartite lower-bound construction, the upper bound
-gives the Tur\'an-density theorem:
+\Cref{ex:mantel} states $\tdensity{K_2}{K_3}=\tfrac12$.  The upper bound is
+the square certificate worked through in \Cref{sec:flagmatic-background}.
+For the lower bound, the balanced complete bipartite graph
+$K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ is triangle-free, since among any
+three of its vertices some two lie on the same side and are non-adjacent, and
+its $\lfloor n^2/4\rfloor$ edges make up at least half of the $\binom{n}{2}$
+vertex pairs.  The Lean development records the certificate bound, the
+construction, and the resulting Tur\'an density:
 \begin{lstlisting}
+theorem Mantel_theorem : K2 (*@$\leq$@*) (1 / 2 : (*@$\mathbb{R}$@*)) (*@$\leansmul$@*) 1 + K3 := ...
+
+lemma extremal_density_K3_ge (n : (*@$\mathbb{N}$@*)) (hn2 : n (*@$\geq$@*) 2)
+    : (extremalNumber n (completeGraph (Fin 3)) / n.choose 2 : (*@$\mathbb{R}$@*)) (*@$\geq$@*) 1 / 2 := ...
+
 theorem Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2 := ...
 \end{lstlisting}
+Here \lean{K2} and \lean{K3} denote the basis elements $[K_2]$ and $[K_3]$.
+\lean{Mantel\_theorem} restates the certificate derivation of
+\Cref{sec:flagmatic-background} in the ambient algebra of
+\Cref{sec:forbidden}, where no triangle-free condition is available: the
+triangle terms that the constrained calculation drops are instead collected
+in the extra summand \lean{K3} on the right, and evaluating at a positive
+homomorphism $\phi$ with $\phi([K_3])=0$ recovers the conditional bound
+$\phi([K_2])\leq\tfrac12$.  \lean{extremal\_density\_K3\_ge} formalizes the
+construction.  In its statement, \lean{extremalNumber} is Mathlib's classical
+extremal number, the maximum number of edges of a $K_3$-free graph on $n$
+vertices; it agrees with $\mathrm{ex}(n,\,K_2;\,K_3)$ because the induced
+copies of $K_2$ in a graph are exactly its edges.  For even orders $n=2k$,
+the witness is \lean{completeBipartiteGraph (Fin k) (Fin k)}: the formal
+proof derives its triangle-freeness from two-colorability and compares its
+$k^2$ edges with $\tfrac12\binom{2k}{2}$; odd orders then follow because the
+normalized extremal numbers are non-increasing.  Finally,
+\lean{Turan\_density\_K3} combines the two bounds, mirroring the compactness
+proof of \Cref{lem:semantic-bound}: if the normalized extremal numbers, which
+are at least $\tfrac12$ by the construction, exceeded $\tfrac12+\varepsilon$
+at infinitely many orders, then extremal triangle-free graphs of those orders
+would converge, by \Cref{thm:convergent-hom}, to a positive homomorphism
+$\phi$ with $\phi([K_3])=0$ and $\phi([K_2])\geq\tfrac12+\varepsilon$,
+contradicting \lean{Mantel\_theorem}.  The normalized extremal numbers
+therefore converge to $\tfrac12$, and Mathlib's \lean{tendsto\_turanDensity}
+identifies their limit with \lean{turanDensity}.  Since
+\lean{extremalNumber} and \lean{turanDensity} are Mathlib's own notions, the
+final statement composes directly with the rest of the library.
 
 \paragraph{The Erd\H{o}s pentagon theorem.}
-The full result
+The full result of \Cref{ex:pentagon},
 \begin{lstlisting}
 theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
 \end{lstlisting}
-is the conjunction of the upper bound of \Cref{sec:results} and a lower
+is the conjunction of the upper bound of \Cref{sec:results} and the lower
 bound
 \begin{lstlisting}
-theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= (*@$\,$@*) 24/625 := ...
+theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 (*@$\geq$@*) 24/625 := ...
 \end{lstlisting}
-proved by an explicit construction in Lean.  The blow-up construction is:
-\begin{lstlisting}
-def blowUp {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat) : SimpleGraph (Prod V (Fin n)) :=
-  { Adj v w := G.Adj v.1 w.1
-    symm v w := by apply G.symm }
-\end{lstlisting}
-The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set of
-$n$ vertices and each edge by a complete bipartite graph) is
-triangle-free.  We prove this in Lean by transporting any
-hypothetical triangle in the blow-up back to a triangle in the base graph:
-\begin{lstlisting}
-theorem blowUp_K3_free {m : Nat} {G : SimpleGraph (Fin m)} (n : Nat) (hfree : K3.Free G)
-    : K3.Free (blowUp G n) := ...
-\end{lstlisting}
-The $n$-fold blow-up of $C_5$ has $5n$ vertices,
-and at least $n^5$ copies of $C_5$:
-\begin{lstlisting}
-lemma subgraphCount_blowUp_C5_ge (n : Nat) : subgraphCount C5 (blowUp C5 n) >= (*@$\,$@*) n ^ 5
-\end{lstlisting}
-The proof of this counting lemma builds an injection from
-\lean{(Fin 5 $\to$ Fin n)} to \lean{(blowUp C5 n).Subgraph},
-the set of subgraphs of the blow-up: choosing one vertex in each
-of the five parts gives a set of vertices that induces a copy of $C_5$, and
-distinct choices give distinct subgraphs.  Thus, for every $n$, there is a
-triangle-free graph on $5n$ vertices containing at least $n^5$ induced copies
-of $C_5$.  More generally, every $C_5$ subgraph of a triangle-free graph is
-induced, since any chord of the cycle would create a triangle.  The normalized
-$C_5$ count of the blow-up satisfies
+proved by an explicit construction in Lean.  We first describe the
+construction and the analytic steps mathematically, and then match them with
+the formal development.
+
+Since, by the convergence theorem
+\lean{tendsto\_\allowbreak generalizedTuranDensity} of \Cref{sec:forbidden},
+the normalized extremal numbers $\mathrm{ex}(n,\,C_5;\,K_3)/\binom{n}{5}$
+converge to $\tdensity{C_5}{K_3}$, it suffices to exhibit, at infinitely many
+orders, one triangle-free graph whose normalized count of induced pentagons
+is at least $\tfrac{24}{625}$.  The
+witness is the \emph{$n$-fold blow-up} of $C_5$: replace each vertex of the
+pentagon by a class of $n$ vertices, and join two vertices of distinct
+classes exactly when the underlying pentagon vertices are adjacent; vertices
+of a common class remain non-adjacent.  The blow-up is triangle-free:
+adjacent vertices lie in distinct classes, so the classes of a hypothetical
+triangle would form a triangle in $C_5$ itself, which has none.  It also
+contains many pentagons: picking one vertex from each of the five classes
+yields five vertices that inherit exactly the adjacencies of $C_5$, so each
+of the $n^5$ choice functions induces a copy of $C_5$, and distinct choices
+give distinct vertex sets.  These copies are induced, as the density
+convention of \Cref{sec:intro} requires.  (In a triangle-free graph the
+distinction disappears anyway: every $C_5$ subgraph is induced, since any
+chord of the cycle would create a triangle.)  The blow-up is therefore a
+triangle-free graph on $5n$ vertices with at least $n^5$ induced pentagons,
+so $\mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5$, and normalizing gives, for every
+$n\geq1$,
 \[
+  \frac{\mathrm{ex}(5n,\,C_5;\,K_3)}{\binom{5n}{5}}
+  \;\geq\;
   \frac{n^5}{\binom{5n}{5}}
   \;\geq\;
   \frac{n^5}{(5n)^5 / 5!}
   \;=\;
   \frac{24}{625}.
 \]
-Since the normalized generalized extremal numbers converge to the generalized
-Tur\'an density, the lower bound along the subsequence of orders $5n$ implies
-\[
-  \operatorname{generalizedTuranDensity}(K_3,C_5)
-  \geq \frac{24}{625},
-\]
-which is formalized as \lean{ErdosPentagon\_Turan\_lowerBound}.
+The bound thus holds along the subsequence of orders $5n$, and taking the
+limit yields $\tdensity{C_5}{K_3}\geq\tfrac{24}{625}$.
+
+The Lean development mirrors each step of this outline:
+\begin{lstlisting}
+def blowUp {V : Type} [Fintype V] (G : SimpleGraph V) (n : (*@$\mathbb{N}$@*))
+    : SimpleGraph (V (*@$\times$@*) Fin n) :=
+  { Adj v w := G.Adj v.1 w.1
+    symm v w := by apply G.symm }
+
+theorem blowUp_K3_free {m : (*@$\mathbb{N}$@*)} {G : SimpleGraph (Fin m)}
+    (n : (*@$\mathbb{N}$@*)) (hfree : K3.Free G) : K3.Free (blowUp G n) := ...
+
+lemma subgraphCount_blowUp_C5_ge (n : (*@$\mathbb{N}$@*))
+    : subgraphCount C5 (blowUp C5 n) (*@$\geq$@*) n ^ 5 := ...
+
+theorem generalizedExtremalNumber_K3_C5_ge (n : (*@$\mathbb{N}$@*))
+    : generalizedExtremalNumber (5 * n) K3 C5 (*@$\geq$@*) n ^ 5 := ...
+\end{lstlisting}
+\lean{blowUp G n} is the blow-up of an arbitrary base graph $G$: its vertex
+type is the product $V\times\Fin{n}$, so the class of a base vertex $v$ is
+the fiber $\{v\}\times\Fin{n}$, and its \lean{Adj} field compares first
+coordinates through $G$.  Both clauses of the informal description follow:
+vertices of a common class are non-adjacent because $G$ has no loops, and two
+classes over adjacent base vertices are completely joined.
+\lean{blowUp\_K3\_free} is the triangle-freeness property.  Its proof
+transports a hypothetical triangle back to the base graph: composing a copy
+of $K_3$ in the blow-up with the first projection gives a copy of $K_3$ in
+$G$, where injectivity survives the projection because vertices of a common
+class are non-adjacent.  Instantiating $G$ with $C_5$, whose own
+triangle-freeness is a finite check, shows that the blow-up of the pentagon
+is triangle-free.
+\lean{subgraphCount\_blowUp\_C5\_ge} is the counting property; here
+\lean{subgraphCount C5 G} is the number of induced subgraphs of \lean{G}
+isomorphic to $C_5$, matching the induced-copy convention of
+\Cref{sec:intro}.  The proof converts the one-vertex-per-class recipe into an
+injection from \lean{(Fin 5 $\to$ Fin n)} into the pentagon subgraphs of the
+blow-up: a choice function $g$ is sent to the subgraph induced on
+$\{(i,g(i)) \mid i\in\Fin{5}\}$, and distinct choice functions give distinct
+subgraphs.
+\lean{generalizedExtremalNumber\_K3\_C5\_ge} combines the previous two
+results into the finite bound $\mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5$; the Lean
+function \lean{generalizedExtremalNumber} is the extremal number of
+\Cref{sec:intro}, the maximum of \lean{subgraphCount C5} over the $K_3$-free
+graphs on \lean{Fin (5 * n)}.  One representation detail intervenes: this
+maximum ranges over graphs on \lean{Fin (5 * n)}, whereas \lean{blowUp C5 n}
+lives on a product type, so a \lean{Fin}-indexed variant \lean{blowUp\_fin},
+proved isomorphic to \lean{blowUp}, supplies the witness (an instance of the
+representation issues of \Cref{sec:obstacles}).  The remaining steps, the
+displayed normalization and the passage to the limit along the subsequence of
+orders $5n$, produce \lean{ErdosPentagon\_Turan\_lowerBound}.
 
 \paragraph{Additional Goodman-style consequences.}
-The formalization also includes two additional flag-algebraic inequalities proved
-with the same basic infrastructure:
-\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
-$K_3 \geq K_2\cdot(2K_2-\mathbf{1})$, and
+The formalization also includes two further flag-algebra inequalities, both
+due to Goodman~\cite{goodman1959} and both proved with the same basic
+infrastructure.
+\lean{Goodman\_\allowbreak bound\_\allowbreak on\_\allowbreak triangle\_\allowbreak density}
+proves the algebraic lower bound
+\[
+  K_3 \;\geq\; K_2\cdot(2K_2-\mathbf{1}),
+\]
+which bounds the triangle density from below in terms of the edge density:
+under a positive homomorphism with edge density $e$, the triangle density is
+at least $e(2e-1)$, a quantity that becomes positive as soon as $e$ exceeds
+the Mantel threshold $\tfrac12$.  The proof combines the size-three expansion
+of $K_2$ with a Cauchy--Schwarz inequality for the downward operator, applied
+to the edge flag labeled at one endpoint.
 \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
-$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
-These statements illustrate that the formalized algebraic layer supports
-inequalities among flag-algebra expressions beyond generalized Tur\'an
-problems that maximize the induced density of one graph subject to forbidding
-another as a subgraph.
+\[
+  \overline{K_3} + K_3 \;\geq\; \tfrac14\cdot\mathbf{1},
+\]
+where $\overline{K_3}$ is the empty graph on three vertices, written
+\lean{O3} in the development: asymptotically, at least a quarter of all
+vertex triples induce a triangle or an independent set.  Reading a graph and
+its complement as the two color classes of a $2$-edge-colored complete graph
+turns this into Goodman's classical bound on the number of monochromatic
+triangles; the proof reuses the downward square certificate of Mantel's
+theorem.  These statements illustrate that the formalized algebraic layer
+supports inequalities among flag-algebra expressions beyond Tur\'an problems
+that maximize the induced density of one graph subject to forbidding another
+as a subgraph.
 
 \section{Engineering Obstacles}
 \label{sec:obstacles}
@@ -4948,6 +5054,12 @@ Y.~Dillies and B.~Mehta.
 
 \bibitem{mantel}
 W.~Mantel, Problem 28, Wiskundige Opgaven, 10:60--61, 1907.
+
+\bibitem{goodman1959}
+A.~W.~Goodman.
+\newblock On sets of acquaintances and strangers at any party.
+\newblock \textit{The American Mathematical Monthly}, 66(9):778--783, 1959.
+  \DOI{10.2307/2310464}.
 
 \bibitem{mehta2022kruskal}
 B.~Mehta.
