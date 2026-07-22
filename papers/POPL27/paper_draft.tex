@@ -3430,7 +3430,7 @@ density generation commands of Part~1, the matrices and basis-element vectors
 of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
 proof of the bound in Part~4.
 
-For example, applying the translator to the Mantel certificate with
+For example, applying the compiler to the Mantel certificate with
 the following command
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton \
@@ -3486,40 +3486,46 @@ to derive the required product expansions.
 
 \paragraph{Certifying the matrices (Part~2).}
 With the flags and their rewrite theorems in place, Part~2 discharges the
-positive-semidefiniteness obligations.  The certificate supplies rational
-matrices $Q'_t$ and $R_t$ that already give an exact rational congruence
-factorization
-$M_t=R_tQ'_tR_t^\top$.  Here $R_t$ may be rectangular and $Q'_t$ is a smaller
+positive-semidefiniteness obligations.  For each SDP block, the certificate
+stores rational matrices $Q'_t$ and $R_t$ with
+$M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a smaller
 symmetric matrix; in the certificates used here, $Q'_t$ is diagonal with
-positive entries.  Thus, these data already witness positive semidefiniteness in
-principle, but they are not an $LDL^\top$ factorization of $M_t$: $R_t$ need not
-be square or unit lower triangular, and $Q'_t$ need not have the same dimension
-as $M_t$.
+positive entries.  Flagmatic's user guide explains the format: $Q'_t$ is
+chosen to be positive definite, which is easy to check directly, for instance
+through Sylvester's criterion, and the congruence then transfers the
+non-negativity of $Q'_t$'s quadratic form to $M_t$.
 
-The external Python translator first constructs $M_t$ from these certificate
-data using exact rational arithmetic.  For the interface used by our Lean PSD
-lemma, it then computes a second exact rational factorization
-$M_t=L_t\operatorname{diag}(d_t)L_t^\top$, where $L_t$ is square and unit lower
-triangular.  It emits $M_t$, $L_t$, and $d_t$ in the generated Lean file.  Lean
-treats this second factorization only as a candidate witness: the
-\lean{psd\_real\_ldlt} tactic must prove two rational facts required by the
-lemma \lean{posSemidef\_real\_of\_LDLt}.  First, it checks that every entry of
-$d_t$ is non-negative, using \lean{fin\_cases} and \lean{norm\_num}.  Second,
-it checks the exact factorization equality
-$M_t=L_t\operatorname{diag}(d_t)L_t^\top$.  Since both sides are concrete finite
-matrices over $\mathbb{Q}$, \lean{decide +kernel} evaluates their decidable
-equality and has the Lean kernel certify that their rational entries agree.
-The lemma then casts these two verified facts from $\mathbb{Q}$ to
-$\mathbb{R}$ and concludes that the entrywise real cast of $M_t$ is positive
-semidefinite.  No eigenvalue or floating-point calculation enters this check.
-These checks certify the positive semidefiniteness of the matrix $M_t$ emitted
-in the Lean file.  Lean does not separately compare $M_t$ with the original
-$Q'_t$ and $R_t$ fields of the certificate; that reconstruction is performed
-by the unverified translator.  An incorrect $LDL^\top$ witness is therefore
+Our verification takes these data through a different, equally elementary
+witness.  We state one Lean lemma for every PSD obligation, based on an exact
+rational $LDL^\top$ factorization:
+\begin{lstlisting}
+theorem posSemidef_real_of_LDLt {n : (*@$\mathbb{N}$@*)}
+    {M L : Matrix (Fin n) (Fin n) (*@$\mathbb{Q}$@*)} {d : Fin n -> (*@$\,\mathbb{Q}$@*)}
+    (hd : forall (*@$\,$@*)i, 0 <= (*@$\,$@*)d i) (hM : M = L * Matrix.diagonal d * L(*@$^\top$@*))
+    : (ratMatrixToReal M).PosSemidef := ...
+\end{lstlisting}
+The lemma says that if a rational matrix $M$ factors as
+$L\operatorname{diag}(d)L^\top$ with every entry of $d$ non-negative, then the
+entrywise real cast of $M$, written \lean{ratMatrixToReal M}, is positive
+semidefinite; the $\mathbb{Q}$-to-$\mathbb{R}$ casting happens inside the
+lemma.  To use it, the compiler script reconstructs $M_t$ from $Q'_t$ and
+$R_t$ in exact rational arithmetic, computes a factorization
+$M_t=L_t\operatorname{diag}(d_t)L_t^\top$ with $L_t$ square and unit lower
+triangular, and emits $M_t$, $L_t$, and $d_t$ in the generated Lean file.
+Lean treats the emitted factorization only as a candidate witness: the
+\lean{psd\_real\_ldlt} tactic must prove the lemma's two hypotheses.  The
+non-negativity of every entry of $d_t$ is checked with \lean{fin\_cases} and
+\lean{norm\_num}.  For the factorization equality, both sides are concrete
+finite matrices over $\mathbb{Q}$, so \lean{decide +kernel} evaluates their
+decidable equality and has the Lean kernel certify that their rational
+entries agree.  No eigenvalue or floating-point calculation enters this
+check.  Lean does not separately compare $M_t$ with the original $Q'_t$ and
+$R_t$ fields of the certificate; that reconstruction is performed by the
+unverified compiler script.  An incorrect $LDL^\top$ witness is therefore
 rejected, while fidelity to the source certificate is a separate concern
-discussed in \Cref{sec:flagmatic-trust}.  In either case, the emitted matrix can
-contribute to the final theorem only if both its PSD proof and the subsequent
-algebraic calculation are accepted by Lean.
+discussed in \Cref{sec:flagmatic-trust}.  In either case, the emitted matrix
+can contribute to the final theorem only if both its PSD proof and the
+subsequent algebraic calculation are accepted by Lean.
 
 \paragraph{Lifting the objective (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
@@ -3604,28 +3610,28 @@ the normalization and the final non-negativity check together verify the
 conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
 $c\cdot\mathbf 1-r\leq_H c\cdot\mathbf 1$.
 
-\paragraph{The translator.}
-The translator connects the certificate's external representation to the four
+\paragraph{The compiler script.}
+The compiler script connects the certificate's external representation to the four
 parts above.  Flagmatic represents a graph or flag by a compact string, so the
-translator parses each string and searches the canonical enumeration used by
+script parses each string and searches the canonical enumeration used by
 the reflection generators for the same graph or flag after a relabeling of
 vertices that preserves the flag labels.  The selected entry determines the
 corresponding Lean basis element and hence the entries of each flag vector.
-The translator then reads the objective and bound, the forbidden graph, the
+The script then reads the objective and bound, the forbidden graph, the
 host size, and the SDP blocks; reconstructs the rational matrices; computes the
 $LDL^\top$ witnesses; and selects the appropriate objective-lifting and
 forbidden-subgraph routes.
 
-For each certificate, the translator writes one Lean source file containing all
+For each certificate, the script writes one Lean source file containing all
 four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
 proof, and one addition of a non-negative quadratic form.  Branch~B additionally
 contributes the Part~3 objective expansion, while Branch~A omits it.  A
 non-complete forbidden graph selects the subgraph-free variants of the same
-generation and normalization steps.  Thus, the translator varies the data and
+generation and normalization steps.  Thus, the script varies the data and
 the required route, but the argument assembled in Part~4 has the same structure
 in every generated file.
 
-The translator itself determines which Lean basis element corresponds to each
+The script itself determines which Lean basis element corresponds to each
 certificate flag and converts the objective, bound, forbidden graph, and matrix
 data into Lean declarations.  These choices are made in Python.  Lean
 typechecks the generated file and verifies its propositions, including the
@@ -3638,14 +3644,14 @@ translation is central to the following trust model.
 
 There are two distinct questions of trust.  First, the complete generated
 files used here introduce neither axiom declarations nor \lean{sorry}.
-Within this output discipline, neither the SDP solver nor the Python translator
+Within this output discipline, neither the SDP solver nor the compiler script
 is trusted for the logical validity of a theorem that Lean accepts.  The
 emitted matrices must be proved positive semidefinite, the certificate
 calculation must normalize to non-negative coefficients, and the final theorem
 must typecheck.  Subject to Lean's trusted base, erroneous data cannot make an
 invalid proof term valid.
 
-Second, the translator is trusted for \emph{translation fidelity}: it parses the
+Second, the compiler script is trusted for \emph{translation fidelity}: it parses the
 certificate, chooses the corresponding entry in Lean's canonical enumeration
 for each certificate flag, reconstructs $M_t=R_tQ'_tR_t^\top$, and selects the
 objective, bound, and forbidden graph.
@@ -3670,7 +3676,7 @@ retain the trust boundary just described.
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
-We evaluated the translator on seven certificates spanning both objective
+We evaluated the compiler on seven certificates spanning both objective
 branches, host sizes $N\in\{3,4,5\}$, between one and four SDP blocks, and four
 forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
 \lean{gen-skeleton} produces a complete Lean source file.  All seven files compile
@@ -3681,7 +3687,7 @@ the implementation filenames.
 
 \begin{table}
   \centering
-\caption{Certificates carried end-to-end through the translator.  ``Branch''
+\caption{Certificates carried end-to-end through the compiler.  ``Branch''
   is A when the target and host have the same size
   (\(n_{\mathit{obj}}=N\)), and B when \(n_{\mathit{obj}}<N\);
   \(T\) is the number of SDP blocks.}
@@ -3728,9 +3734,9 @@ and~\ref{ex:pentagon}.
 
 \paragraph{Limitations.}
 \label{sec:flagmatic-open}
-We point out two limitations of the current translator.
+We point out two limitations of the current compiler.
 First, this evaluation establishes coverage of the seven cases above, not
-completeness of the translator.  The current input language assumes the
+completeness of the compiler.  The current input language assumes the
 supported simple-graph certificate format, a parseable objective and singleton
 forbidden graph, and one of the currently supported certificate-matrix
 dimensions.
@@ -3742,7 +3748,7 @@ the failure of constructing a complete Lean proof, not an unchecked theorem.
 Second, as explained in the trust model, we do not verify translation fidelity:
 Lean does not check that the generated declarations faithfully transcribe the
 source certificate.  For each of the seven evaluated certificates, however,
-the translator fills the fixed proof skeleton without manual editing, and Lean
+the compiler fills the fixed proof skeleton without manual editing, and Lean
 checks every proof obligation in the generated file under the trust model of
 \Cref{sec:flagmatic-trust}.  Thus, the fidelity of the generated theorem to the
 source certificate remains a limitation, while the logical validity of the
@@ -4869,7 +4875,7 @@ type-class and instance-search mechanism.  Our elaboration-time command
 elaborators play a complementary role: they run the in-Lean finite enumerators
 and specialize the adequacy theorems to produce the density and
 multiplication facts (\Cref{sec:reflection-generation}).  The unverified
-certificate translator operates outside this reflected core and emits source
+certificate compiler operates outside this reflected core and emits source
 whose mathematical obligations Lean subsequently checks.
 
 \paragraph{Computer-assisted flag algebra arguments.}
@@ -4979,7 +4985,7 @@ including the quotient constructions, their interface theorems, and the
 adequacy proofs, were formalized manually by the authors.  In the
 certificate-to-proof compiler of \Cref{sec:flagmatic}, most of the required
 metaprogramming, including the elaboration-time generation commands, the custom
-tactics, and the certificate translator, was developed with the help of
+tactics, and the certificate compiler, was developed with the help of
 Claude Code.  Finally, the mathematical results of the meta-theory
 summarized in \Cref{sec:metatheory} were obtained with the help of GPT~Pro,
 and their Lean development was autoformalized entirely by Claude Code.
@@ -5069,9 +5075,9 @@ lightweight metadata channel for proof automation.
 \paragraph{Lesson 4 (External computation is a candidate generator, not a
 proof).}
 The rational certificate produced by the SDP workflow, and the Python
-translator that turns it into Lean source, are both unverified.  Neither is
+compiler script that turns it into Lean source, are both unverified.  Neither is
 trusted for the logical validity of a theorem accepted by Lean.  The
-translator emits flags, matrices, factorizations, and a target inequality;
+script emits flags, matrices, factorizations, and a target inequality;
 Lean then checks the resulting PSD obligations, density and multiplication
 identities, algebraic calculation, and final statement.  Candidate data that
 do not support that statement cause proof construction to fail.
