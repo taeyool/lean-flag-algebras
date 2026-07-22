@@ -3275,7 +3275,7 @@ The fractions produced by the downward operator are its normalizing factors:
 they record whether one, two, or all three choices of the labeled vertex
 produce the displayed $\sigma$-flag.
 
-Combining these identities now gives a forward derivation of the desired bound:
+Combining these identities now gives a derivation of the desired bound:
 \begin{align*}
   K_2
   &\leq_{K_3} K_2+Q \\
@@ -3355,7 +3355,7 @@ condition, of the form
 \]
 where every $M_t$ is PSD and $r$ is a linear combination of $\mathcal H$-free
 flags with non-negative coefficients.  Equivalently,
-the certificate justifies the forward derivation
+the certificate justifies the derivation
 \begin{align*}
   [F]
   \leq_{\mathcal H}
@@ -3581,12 +3581,13 @@ expanding over exactly the flags Part~1 emitted.  From $N$ and $K$ alone, the
 tactic establishes this bridge itself.
 
 \paragraph{Assembling the main theorem (Part~4).}
-Part~4 assembles the outputs of the preceding parts and realizes the forward
-chain from \Cref{sec:flagmatic-background}.  The certificate identity
+Part~4 assembles the outputs of the preceding parts and realizes the
+chain of inequalities from \Cref{sec:flagmatic-background}.  The certificate identity
 $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ supplies its middle equality, while the
 non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
-Mantel example, there is one $Q_t$, namely the downward image of the halved
-square, and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
+Mantel example, there is one $Q_t$, namely
+$Q=\bigl\llbracket\tfrac12((\fKtwobull)-(\fbarKtwobull))^2\bigr\rrbracket_\sigma$,
+and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
 define $r$ explicitly; it appears as the coefficientwise difference left after
 the two sides are expanded in a common basis.
 
@@ -3599,7 +3600,9 @@ theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@
     : forbidLEWith C f g -> (*@$\,$@*) forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
 \end{lstlisting}
 Here $C$ is a predicate encoding the forbidden-subgraph set $\mathcal{H}$; for a problem
-forbidding a single graph $H$, it is \lean{forbiddenCondition H}.  Thus
+forbidding a single graph $H$, it is \lean{forbiddenCondition H}, the
+$H$-freeness condition of \Cref{def:ensemble-semantic-order} used throughout
+this section.  Thus
 \lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$.
 The lemma says that if $f\leq_H g$, then the inequality remains true after the
 non-negative downward quadratic form determined by the PSD matrix $M$ and flag
@@ -3610,13 +3613,14 @@ lemma once for each SDP block.  After all blocks have been added, its conclusion
 $[F]\leq_H[F]+\sum_tQ_t$.
 
 It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf{1}$.  The compiler checks
-this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
-flags.  When necessary, the Part~3 lemma first expands $[F]$ to host size.
+this comparison by rewriting both sides in the basis of $H$-free flags at the
+host size $N$.  When necessary, the Part~3 lemma first expands $[F]$ to that
+basis.
 Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
 and downward identities generated in Part~1.  The
 \lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf{1}$ in the same
-host-size basis, dispatching on the forbidden graph exactly as
+basis, dispatching on the forbidden graph exactly as
 \lean{flag\_expand\_hfree} does in Part~3.  Finally,
 the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects the coefficients of matching
 basis elements.
