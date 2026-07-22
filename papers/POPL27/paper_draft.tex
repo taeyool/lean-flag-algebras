@@ -1979,9 +1979,12 @@ Mathematically, we read it in the usual set-comprehension form
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
 In other words, the only extra condition imposed by \lean{PositiveHom} is
-non-negativity on flag basis elements.  In Lean syntax, this is the
-\lean{$\forall$ F : FinFlag $\sigma$} field after the subtype separator
-\lean{//}.
+non-negativity on flag basis elements.  In Lean syntax, the expression after
+the subtype separator \lean{//},
+\[
+  \lean{$\forall$ F : FinFlag $\sigma$, $\phi$ $\llbracket$basisVector F$\rrbracket$ $\geq$ 0},
+\]
+is the predicate that imposes this condition.
 Here \lean{basisVector F} is the formal basis vector representing \(F\), and
 the unsubscripted quotient brackets send that flag vector to its class in the flag
 algebra before \(\phi\) evaluates it.
