@@ -1989,32 +1989,46 @@ Here \lean{basisVector F} is the formal basis vector representing \(F\), and
 the unsubscripted quotient brackets send that flag vector to its class in the flag
 algebra before \(\phi\) evaluates it.
 
-Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
+Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two
+separate theorems.\footnote{For readability, the displayed statements give the
+limit profile the ambient function type
+\lean{FinFlag $\sigma$ $\to$ $\mathbb{R}$}.  The Lean implementation instead
+packages such profiles in the auxiliary subtype
+\lean{FlagDensitySpace}~\(\sigma\), which records that every value lies in
+\([0,1]\), and packages the profile induced by a positive homomorphism as
+\lean{$\phi$.coe}.  Accordingly, the implemented conclusions are written more
+compactly as \lean{$\phi$.coe = a} and
+\lean{ConvergesTo s $\phi$.coe}.  The formulations are equivalent: every flag
+density lies in \([0,1]\), so the pointwise limit of a convergent flag sequence
+does as well.}
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)} (hs_conv : ConvergesTo s a)
-    : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a := ...
+    (s : FlagSeq (*@$\sigma$@*)) {a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)} (hs_conv : ConvergesTo s a)
+    : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\forall$@*) (F : FinFlag (*@$\sigma$@*)), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) = a F := ...
 
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
 theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
-    : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe := ...
+    : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (fun F => (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*)) := ...
 \end{lstlisting}
-Here \lean{FlagDensitySpace}~\(\sigma\) is the set of functions
-\(\mathcal{F}^\sigma\to\mathbb{R}\) whose values lie in \([0,1]\), so its
-points are density profiles of finite \(\sigma\)-flags.  The expression
-\lean{$\phi$.coe} denotes the map \lean{PositiveHom.coe}, which forgets the
-algebra-homomorphism structure of \(\phi\) and remembers only the density
-profile it induces:
+Here \(a\) is the same real-valued function on finite \(\sigma\)-flags that
+appears in the definition of \lean{ConvergesTo}.  The first theorem assumes
+\lean{ConvergesTo s a} and produces a positive homomorphism \(\phi\) satisfying
 \[
-  F\longmapsto \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr).
+  \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr)=a(F)
+  \qquad\text{for every finite \(\sigma\)-flag \(F\)}.
 \]
-Thus, the first theorem says that the limiting density profile \(a\) of a
-convergent \(\sigma\)-flag sequence is equal to this profile of some positive
-homomorphism \(\phi\).  Conversely, the second theorem says that every
-positive homomorphism \(\phi\), after passing to this profile, arises as the
-limit of some \(\sigma\)-flag sequence.
+Thus, the limiting density profile of every convergent \(\sigma\)-flag
+sequence is induced by a positive homomorphism.  Conversely, the second
+theorem starts with a positive homomorphism \(\phi\) and produces a
+\(\sigma\)-flag sequence \(s\) satisfying
+\[
+  \lean{ConvergesTo}\;s\;
+    \bigl(F\mapsto\phi(\llbracket\lean{basisVector F}\rrbracket)\bigr).
+\]
+In other words, the density profile induced by every positive homomorphism
+arises as the limit of a \(\sigma\)-flag sequence.
 Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a \(\sigma\)-flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
