@@ -2882,8 +2882,8 @@ the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
 \lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
 uniform: they prove the reflected evaluators correct for every possible input.
 What repeats in a concrete development is not the correctness argument, but
-its specialization to each concrete $\sigma$-flag and to each pattern-pair/host
-combination used by the later algebraic proof.
+its specialization to each concrete $\sigma$-flag and to each concrete density
+instance used by the later algebraic proof.
 
 The generated flags are named by a fixed scheme, already visible in the
 constants of \Cref{sec:reflection-adequacy}.  A name such as
@@ -2902,10 +2902,10 @@ number \(1\) among the three-vertex flags of the unique one-vertex type,
 namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is the
 corresponding basis element of the flag algebra.
 
-We automate this repetition, the specialization of the uniform adequacy
-theorems to concrete flags and pattern-pair/host combinations, using Lean's
-metaprogramming facilities.  More
-precisely, the generation commands displayed below are custom command
+We use Lean's metaprogramming facilities to automate this repetition.  They
+specialize the uniform adequacy theorems to concrete flags and to the required
+single-pattern and pattern-pair density instances.  More precisely, the
+generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
 elaboration, the phase in which Lean processes source commands and produces
 checked definitions and theorems, they run the finite enumerators and
@@ -2916,7 +2916,7 @@ For the
 sizes and flag type used in the two examples of
 \Cref{sec:reflection-adequacy}, the relevant commands have
 the following form:
-\begin{lstlisting}
+\begin{lstlisting}[emph={generate_empty_typed_flags,generate_flags,generate_flag_pair_density_theorems_no_forbid,generate_mul_theorems},emphstyle=\color{blue!70!black}\bfseries]
 -- Generate empty-typed flags at pattern size 2 and host size 3.
 generate_empty_typed_flags 2
 generate_empty_typed_flags 3
@@ -3018,13 +3018,13 @@ single-flag densities \(\lean{flagDensity}_1\) of the empty-typed flag
 certificate compiler of \Cref{sec:flagmatic} uses this table when the flag
 whose density is being bounded is smaller than the certificate's host size.
 
-\subsubsection{Optimizations}
-\label{sec:reflection-generation-optimizations}
-
+\medskip
+\noindent\textbf{Optimizations.}
 The pipeline just described is organized so that elaboration remains
 tractable as the flag sizes grow.  The main optimizations are the following.
 
-\paragraph{Size-inductive enumeration.}
+\begin{itemize}
+\item \textbf{Size-inductive enumeration.}
 The enumeration of flags is inductive in the size: the underlying
 \(n\)-vertex graph representatives are obtained by extending the
 \((n-1)\)-vertex representatives by one vertex in all possible ways, and the
@@ -3033,7 +3033,7 @@ those representatives in every valid way.  The working lists therefore stay
 close to one representative per isomorphism class, rather than covering all
 \(2^{\binom{n}{2}}\) graphs on a fixed vertex set.
 
-\paragraph{Deduplication by cheap invariants.}
+\item \textbf{Deduplication by cheap invariants.}
 Both steps of that induction produce isomorphic duplicates: different vertex
 extensions, and different label placements, can yield the same flag.  The
 enumeration therefore deduplicates as it goes, keeping a candidate only when
@@ -3042,7 +3042,7 @@ expensive part, so each candidate carries a cheap isomorphism-invariant key,
 derived from its edge count and degree sequence, and the expensive test runs
 only when two keys collide.
 
-\paragraph{Completeness by proof rather than search.}
+\item \textbf{Completeness by proof rather than search.}
 Each generation run must prove its completeness lemma, and deciding that
 statement directly would mean enumerating the full quotient type and
 comparing it against the named flags, which is exactly the brute force the
@@ -3052,7 +3052,7 @@ induction on the size, as a theorem about the enumeration itself; the
 evaluation performed at generation time then only checks that the emitted
 constants coincide with the enumeration's output list.
 
-\paragraph{Pruning under a forbidden graph.}
+\item \textbf{Pruning under a forbidden graph.}
 For a complete forbidden graph, the size induction itself prunes: only
 \(H\)-free representatives are extended, only \(H\)-free extensions are kept,
 and a cheap clique test decides containment, so flags containing \(H\) are
@@ -3066,7 +3066,7 @@ descends through the size induction; a proved bridge then equates the
 combinatorial containment test driving the pruning with the density condition
 stated in the lemma.
 
-\paragraph{Batched certification.}
+\item \textbf{Batched certification.}
 At realistic sizes, much of the elaboration cost is in certifying the
 generated density facts.  Rather than one evaluator invocation per pair
 density, the commands prove batch lemmas, each certifying a block of
@@ -3076,6 +3076,8 @@ of invocations grows with the number of blocks rather than with the number of
 pairs.  A single option switches all of these evaluations between the
 compiled evaluator and the kernel, so a development whose sizes permit kernel
 reduction adds no compiled-evaluation axioms.
+
+\end{itemize}
 
 Metaprogramming automates theorem construction, not verification: Lean still
 checks every generated proof, and a wrong coefficient makes that proof fail.
