@@ -1657,14 +1657,14 @@ congruence proofs, omitted below, show that the density is unchanged when the
 host $\sigma$-flag or any pattern $\sigma$-flag is replaced by an isomorphic
 representative.
 \begin{lstlisting}
-def flagListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
+def labeledGraphListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
   (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
 
 instance labeledGraphListSetoid {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
     : Setoid (LabeledGraphList (*@$\sigma$@*) t Vl) where
-  r     := flagListEqv
+  r     := labeledGraphListEqv
   iseqv := ... -- proof that the entrywise isomorphism is an equivalence
 
 def QuotLabeledGraphList {T : Type} [Fintype T]
@@ -1707,7 +1707,7 @@ noncomputable def flagListDensity
     : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   fun Fl => quotLabeledGraphListDensity (FlagList.coe Fl)
 \end{lstlisting}
-Here \lean{flagListEqv} says that two concrete tuples are equivalent exactly
+Here \lean{labeledGraphListEqv} says that two concrete tuples are equivalent exactly
 when their entries are isomorphic as labeled graphs: for each index \lean{i},
 there must exist an isomorphism \lean{Gl i}~\(\simeq_f\)~\lean{Gl' i}.  The
 instance \lean{labeledGraphListSetoid} supplies the setoid required by
