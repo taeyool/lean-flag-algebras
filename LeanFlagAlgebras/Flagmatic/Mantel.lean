@@ -71,7 +71,7 @@ expanded directly over the K3-free 3-vertex flags via
 lemma mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
-  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+  flag_expand_hfree 3 K3
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'

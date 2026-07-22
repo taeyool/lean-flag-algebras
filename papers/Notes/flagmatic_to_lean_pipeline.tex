@@ -480,7 +480,7 @@ lemma mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)]
         (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
-  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+  flag_expand_hfree 3 K3
 \end{lstlisting}
 and, inside the main proof, right after the
 \texttt{one\_forbidEq\_forbidExpand\_one} step:
@@ -491,8 +491,9 @@ and, inside the main proof, right after the
 \paragraph{Why it is now one tactic.}
 The pruned generator's \texttt{flagSetHfree} already excludes the forbidden
 hosts, so the stated right-hand side is \emph{just} the admissible (forbid-free)
-expansion, and the whole lemma closes with \texttt{flag\_expand\_hfree}
-(Route~A) or \texttt{flag\_expand\_hfree\_subgraph} (Route~B). There is no manual
+expansion, and the whole lemma closes with the single tactic
+\texttt{flag\_expand\_hfree}, which itself dispatches between Route~A and
+Route~B on whether the forbid graph is complete. There is no manual
 peeling of forbidden terms. (The old branch-B lemma carried, per forbidden host,
 an \texttt{h\_unit\_i}/\texttt{h\_zero\_i} pair identifying the flag with its
 unit-vector representative and proving it forbid-equivalent to zero, then dropped

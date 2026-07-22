@@ -167,13 +167,16 @@ def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
     some (args[args.size - 2]!, args[args.size - 1]!)
   else none
 
-/-- If `e` is `x * y`, return `(x, y)`. -/
+/-- If `e` is `x * y`, return `(x, y)`. Only matches an actual `HMul.hMul`/`Mul.mul`
+head — unlike `getMulArgs?`'s previous implementation, this does *not* fall back to
+`getBinAppArgs?`, which would otherwise misidentify e.g. an `HSMul.hSMul` application
+`c • x` as a product `(c, x)` (its head is also a two-explicit-argument application). -/
 def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
   let fn   := e.getAppFn
   let args := e.getAppArgs
   if (fn.isConstOf ``HMul.hMul || fn.isConstOf ``Mul.mul) && args.size >= 2 then
     some (args[args.size - 2]!, args[args.size - 1]!)
-  else getBinAppArgs? e
+  else none
 
 /-- Strip an outer `FlagAlgebras.downward` application, returning its argument. -/
 def stripDownward? (e : Expr) : Option Expr :=

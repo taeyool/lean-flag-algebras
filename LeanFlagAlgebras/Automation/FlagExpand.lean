@@ -1,3 +1,4 @@
+import LeanFlagAlgebras.Automation.Basic
 import LeanFlagAlgebras.Automation.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Forbid.CommonGraphs
@@ -175,25 +176,42 @@ elab_rules : tactic
 
 /--
 `flag_expand_hfree N F` is the forbid-free single-flag analogue of `flag_expand N`.
-On a goal `FlagAlgebra_n_k_m_i =ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩] (its size-`N` forbid-free
-expansion)`, it expands the flag with `basisVector_quot_inducedForbidEq_sum` rewritten directly onto the
-explicitly-generated forbid-free set `flagSetHfree_N_k_m_<F>` (via its filtered-completeness lemma
-`…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the forbidden terms
-automatically (no manual `basisVector_inducedForbidEq_zero` step).
+On a goal `FlagAlgebra_n_k_m_i =[H] (its size-`N` forbid-free expansion)`, it expands the flag onto
+the explicitly-generated forbid-free set `flagSetHfree_N_k_m_<F>` (via its filtered-completeness
+lemma `…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the forbidden
+terms automatically (no manual `basisVector_inducedForbidEq_zero` step).
 
 `F` is the **edge-based** forbidden graph: a `Sym2Graph mF` term (e.g. `K3 : Sym2Graph 3`), the
-same identifier passed to `generate_forbid_free_*`. The forbidden flag is built directly
-from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=ᵢ[ ]`),
-so no canonical forbidden flag / `.toFinFlag` is needed.
+same identifier passed to `generate_forbid_free_*`.
+
+The tactic **dispatches on `F`** by the same criterion as those generators
+(`detectCompleteSym2GraphR?` / `detectCompleteR`), so it always rewrites onto the set the generator
+actually emitted:
+
+* **`F` a complete graph** (`completeSym2Graph r`, e.g. `K3`, `K4`, `K5`) — the generator took the
+  clique route and `flagSetHfree_…_eq` is stated with the *single-flag* filter
+  `flagDensity₁ (Sym2EmptyTypedFlag.toFlag ⟦F⟧) (unlabel F') = 0`. The tactic expands with
+  `Forbid.basisVector_quot_forbidEq_sum_ofMem`, discharging its membership obligation
+  automatically with `completeSym2Graph_finFlag_mem_forbiddenFlags r` (`r` read off `F`'s value).
+  The goal's forbidden graph is then `completeGraph (Fin r)`.
+* **`F` any other graph** (e.g. a `C5` written out as an edge set) — the generator took the
+  subgraph route and `flagSetHfree_…_eq` is stated with the *family* filter over
+  `supergraphFamily F`. The tactic expands with `basisVector_quot_forbidEq_sum_subgraph`, whose
+  membership obligation is discharged internally by `supergraphFamily_mem_forbiddenFlags`; the
+  goal's forbidden graph is then `F.toLabeledGraph.graph`. For a non-complete `F` a subgraph copy
+  need not be induced, which is exactly what the supergraph family accounts for.
+
+Both routes forbid `F` as a (not necessarily induced) subgraph; for a complete `F` induced and
+subgraph containment coincide, which is why the cheaper single-flag route is sound there.
 
 Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags N k m F`,
 or the empty-typed `generate_forbid_free_empty_typed_flags N F` for `k = m = 0`), and the
 relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]`.
 -/
-syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident term : tactic
+syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident : tactic
 
 elab_rules : tactic
-  | `(tactic| flag_expand_hfree $N:num $forbid:ident $hmem:term) =>
+  | `(tactic| flag_expand_hfree $N:num $forbid:ident) =>
       withMainContext do
         let nVal := N.getNat
         -- Strip any namespace qualifier so the tag matches the generated `flagSetHfree_*` names
@@ -217,79 +235,39 @@ elab_rules : tactic
         let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}")
         let setEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_eq")
         let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
-        -- The forbidden flag is the `FinFlag` of the term `⟦F⟧` (no canonical flag); its `.2` is
-        -- `Sym2EmptyTypedFlag.toFlag ⟦F⟧`, matching the generators' `flagSetHfree_…_eq` filter and
-        -- the goal's `=ᵢ[ ]`.
-        let forbidFlagTm : TSyntax `term ←
-          `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$forbid⟧⟩ : FlagAlgebras.FinFlag ∅ₜ))
-        evalTactic (← `(tactic|
-          apply Forbid.forbidEqWith_trans
-            (Forbid.basisVector_quot_forbidEq_sum_ofMem $forbidFlagTm
-              $hmem ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+        -- Dispatch on the forbidden graph, matching the route the `generate_forbid_free_*`
+        -- command took when it emitted `flagSetHfree_…` (see the docstring above).
+        match ← detectCompleteSym2GraphR? forbid with
+        | some r =>
+            -- Clique route. The forbidden flag is the `FinFlag` of the term `⟦F⟧` (no canonical
+            -- flag); its `.2` is `Sym2EmptyTypedFlag.toFlag ⟦F⟧`, matching the generators'
+            -- `flagSetHfree_…_eq` filter. The membership obligation is the complete-graph bridge,
+            -- so no `hmem` argument is needed from the caller.
+            let forbidFlagTm : TSyntax `term ←
+              `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$forbid⟧⟩
+                  : FlagAlgebras.FinFlag ∅ₜ))
+            let rStx : TSyntax `term := Syntax.mkNumLit (toString r)
+            evalTactic (← `(tactic|
+              apply Forbid.forbidEqWith_trans
+                (Forbid.basisVector_quot_forbidEq_sum_ofMem $forbidFlagTm
+                  (completeSym2Graph_finFlag_mem_forbiddenFlags $rStx)
+                  ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+        | none =>
+            -- Subgraph route: the capstone derives its membership obligation from
+            -- `supergraphFamily`, so again nothing is required from the caller.
+            evalTactic (← `(tactic|
+              apply Forbid.forbidEqWith_trans
+                (basisVector_quot_forbidEq_sum_subgraph $forbid ⟨$lhsNStx, $flagId⟩ $N (by decide))))
         evalTactic (← `(tactic|
           rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
         evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
         evalTactic (← `(tactic| simp))
-        -- Close the residual `produced =ᵢ[F] stated`. For a ≤2-term expansion `produced` is
+        -- Close the residual `produced =[H] stated`. For a ≤2-term expansion `produced` is
         -- definitionally the stated RHS (`FlagAlgebra_n_k_m_i` unfolds to its `⟦basisVector⟧`),
-        -- so `inducedForbidEq_refl` closes it directly. For ≥3-term expansions the produced sum is
+        -- so `forbidEqWith_refl` closes it directly. For ≥3-term expansions the produced sum is
         -- *right*-associated while the stated RHS is *left*-associated, so we first unfold the
         -- `FlagAlgebra_*` constants (making both sides `⟦basisVector⟧`-atoms) and finish with an
         -- additive-commutative normalization that is insensitive to the bracketing.
-        evalTactic (← `(tactic| try exact Forbid.forbidEqWith_refl _ _))
-        unless (← getGoals).isEmpty do
-          withMainContext do
-            let faIdents := (collectPrefixConstants "FlagAlgebra_" (← getMainTarget)).map mkIdent
-            evalTactic (← `(tactic| refine Forbid.forbidEqWith_of_eq ?_))
-            unless faIdents.isEmpty do
-              evalTactic (← `(tactic| dsimp only [$[$faIdents:ident],*]))
-            evalTactic (← `(tactic|
-              first
-                | rfl
-                | abel
-                | simp only [add_assoc, add_comm, add_left_comm]))
-
-/--
-`flag_expand_hfree_subgraph N F` is the **subgraph**-forbidding analogue of `flag_expand_hfree`.
-On a goal `FlagAlgebra_n_k_m_i =[F.toLabeledGraph.graph] (its size-`N` subgraph-`F`-free expansion)`,
-it expands the flag with the subgraph capstone `basisVector_quot_forbidEq_sum_subgraph` rewritten onto
-the subgraph-`F`-free set `flagSetHfree_N_k_m_<F>` (via its `…_eq` / `…_val_eq`). Unlike the induced
-`flag_expand_hfree`, it needs **no** membership argument — the capstone derives it from
-`supergraphFamily`. Prerequisite: run `generate_forbid_free_flags N k m F` (or the empty-typed
-`generate_forbid_free_empty_typed_flags N F`).
--/
-syntax (name := flagExpandHfreeSubgraphTac) "flag_expand_hfree_subgraph " num ident : tactic
-
-elab_rules : tactic
-  | `(tactic| flag_expand_hfree_subgraph $N:num $forbid:ident) =>
-      withMainContext do
-        let nVal := N.getNat
-        let tagFull := forbid.getId.toString
-        let tag := (tagFull.splitOn ".").getLastD tagFull
-        let target ← getMainTarget
-        let lhsExpr ←
-          match target.getAppFnArgs with
-          | (``Forbid.forbidEq, args) =>
-              match args[args.size - 2]? with
-              | some e => pure e
-              | none => throwError "flag_expand_hfree_subgraph: malformed `=[ ]` goal."
-          | _ => throwError "flag_expand_hfree_subgraph: goal must be `f =[H] g`."
-        let some lhsConst := findFlagAlgebraConst? lhsExpr
-          | throwError "flag_expand_hfree_subgraph: no `FlagAlgebra_*` constant on the LHS of `=[ ]`."
-        let some (lhsN, kVal, mVal, iVal) := parseFlagAlgebraIndices? lhsConst
-          | throwError m!"flag_expand_hfree_subgraph: could not parse indices from `{lhsConst}`."
-        let flagId : TSyntax `term := mkIdent (Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}")
-        let lhsNStx : TSyntax `term := Syntax.mkNumLit (toString lhsN)
-        let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}")
-        let setEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_eq")
-        let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
-        evalTactic (← `(tactic|
-          apply Forbid.forbidEqWith_trans
-            (basisVector_quot_forbidEq_sum_subgraph $forbid ⟨$lhsNStx, $flagId⟩ $N (by decide))))
-        evalTactic (← `(tactic|
-          rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
-        evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
-        evalTactic (← `(tactic| simp))
         evalTactic (← `(tactic| try exact Forbid.forbidEqWith_refl _ _))
         unless (← getGoals).isEmpty do
           withMainContext do
