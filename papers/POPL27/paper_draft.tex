@@ -2058,9 +2058,9 @@ Thus, almost every sampled sequence has the limiting density profile prescribed
 by \(\phi\).  Selecting one such realization and calling it
 \(G_0,G_1,\ldots\) gives the deterministic \(\sigma\)-flag sequence required by
 Theorem~\ref{thm:convergent-hom}(b).  The Lean proof formalizes this argument
-by building the probability distributions, proving the concentration estimate,
-and then extracting one sequence whose density profile is the profile obtained
-from the Lean expression \lean{PositiveHom.coe}.
+by constructing the product measure on flag sequences, proving that the
+required coordinatewise convergence event has probability one, and selecting
+a realization from that event.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
