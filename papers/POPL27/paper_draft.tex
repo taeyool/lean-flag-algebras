@@ -454,7 +454,7 @@ downward, and multiplication identities required by a certificate.  The
 \emph{automation layer} (\Cref{sec:flagmatic}) contains the
 certificate-to-proof compiler.  It checks exact rational $LDL^\top$
 factorizations to prove positive semidefiniteness over $\mathbb{R}$, expands
-the objective when necessary, and uses the reflected identities and custom
+the target when necessary, and uses the reflected identities and custom
 tactics to normalize the certificate calculation under the forbidden-graph
 assumption and assemble the final bound.
 
@@ -837,12 +837,13 @@ its expansion at any size $n \geq m$ have the same density in every host
 $\sigma$-flag of size $\geq n$.
 The quotient by $\mathcal{Z}^\sigma$ records this expansion identity as the
 equality
-\[
+\begin{equation}
+  \label{eq:expansion-identity}
   [F]
   =
   \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G}\,[G]
   \qquad\text{in }\mathcal{A}^\sigma .
-\]
+\end{equation}
 We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
@@ -2333,7 +2334,7 @@ measure \(\Ext_\sigma(\phi_0)\) is defined.  The final display says that, when a
 \(\sigma\)-typed positive homomorphism \(\phi\) is sampled from this measure, the
 inequality \(\phi(f)\leq\phi(g)\) holds with probability one.
 
-\begin{remark}[Relation to built-in \(H\)-free semantics]
+\begin{remark}[Relation to built-in \(H\)-free semantics]\label{rem:builtin-hfree}
 The background approach builds the \(H\)-free condition into the flag algebra
 from the outset, whereas the ensemble approach retains the ambient algebra and
 imposes the condition only when comparing its elements.  At the empty type,
@@ -3305,7 +3306,7 @@ the non-negative remainder $r=\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
 analogous flags, positive semidefinite matrices, and remainder coefficients.
 Checking even this certificate requires expanding a product, computing its
-downward image, expanding the objective and the unit to a common host size,
+downward image, expanding the target and the unit to a common host size,
 and collecting coefficients.  These calculations remain suitable for
 automation but become impractical to perform and transcribe by hand for larger
 certificates; they are exactly what our compiler automates.
@@ -3398,7 +3399,7 @@ parts are:
     $\sigma_t$-flags $E_{t,i}$.  The proof must define the vector~$v_t$ of
     their basis elements $e_{t,i}:=[E_{t,i}]$ and must prove that $M_t$ is
     positive semidefinite.
-  \item \textbf{Lifting the objective (when needed).}  If the target graph $F$
+  \item \textbf{Lifting the target (when needed).}  If the target graph $F$
     has fewer than $N$ vertices, where $N$ is the host size chosen up front to
     bound the certificate search in \Cref{sec:flagmatic-background}, the proof
     must first lift $[F]$ to the
@@ -3420,7 +3421,7 @@ parts are:
     \]
     The first inequality adds the non-negative downward quadratic forms arising
     from the matrices certified in Part~2.  The middle equality is checked using
-    the identities from Part~1 and, when needed, the objective-lifting identity
+    the identities from Part~1 and, when needed, the target-lifting identity
     from Part~3.  The final inequality follows because $r$ has non-negative
     coefficients.
 \end{enumerate}
@@ -3441,7 +3442,7 @@ the flag types and flags used by each SDP block, and the rational matrix data.  
 argument \lean{<target>.lean} is the path at which the script should write the
 generated Lean source file.  The output file contains the flag and
 density generation commands of Part~1, the matrices and basis-element vectors
-of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
+of Part~2, the target-lifting lemma when Part~3 is needed, and the complete
 proof of the bound in Part~4.
 
 For example, applying the compiler to the Mantel certificate with
@@ -3489,7 +3490,7 @@ factor~$q_\sigma(F)$ from \Cref{sec:formal-downward}.
 For each relevant pair of $\sigma$-flags $F_1,F_2$ and host $\sigma$-flag $G$, it also
 evaluates the pair density
 \(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
-in the product expansion of $[F_1]\cdot[F_2]$.  When the objective must be
+in the product expansion of $[F_1]\cdot[F_2]$.  When the target must be
 lifted in Part~3, the generated file similarly contains proved evaluations of
 the required single-flag densities.  The adequacy theorems from
 \Cref{sec:reflection} turn all these reflection-layer evaluations into
@@ -3542,44 +3543,42 @@ discussed in \Cref{sec:flagmatic-trust}.  In either case, the emitted matrix
 can contribute to the final theorem only if both its PSD proof and the
 subsequent algebraic calculation are accepted by Lean.
 
-\paragraph{Lifting the objective (Part~3).}
+\paragraph{Lifting the target (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
-aligns the objective with that data when necessary.  The certificate identities
-are expressed at the host size $N$, but the objective basis element is not
-always represented by an $\emptyset$-flag of that size.  This splits the certificates into
-two branches.  When the objective is already represented at host size
-(\emph{Branch~A}: the $P_3$- and $C_4$-density bounds and Erd\H{o}s pentagon),
-this part is empty.  When the objective is smaller (\emph{Branch~B}: Mantel,
-the $K_4$- and $K_5$-Tur\'an bounds, and the $C_5$-free edge-density bound), the
-compiler proves an auxiliary identity that expands it over the $N$-vertex
-$\mathcal{H}$-free $\emptyset$-flags, with coefficients given by the single-flag densities
+aligns the target with that data when necessary.  The certificate identities
+are expressed at the host size $N$, so when the target graph $F$ itself has
+$N$ vertices, its basis element $[F]$ already lives in that basis and nothing
+needs to be done.  When $F$ is smaller, the compiler proves an auxiliary
+identity that expands $[F]$ over the $N$-vertex $\mathcal{H}$-free
+$\emptyset$-flags,
+\[
+  [F]
+  \;=\;
+  \sum_{\substack{G \in \mathcal{F}^{\emptyset}_{N} \\ G\ \mathcal{H}\text{-free}}}
+  \den{F}{G}\,[G]
+  \qquad\text{modulo the \(\mathcal{H}\)-free condition,}
+\]
+with coefficients $\den{F}{G}$ given by the single-flag densities
 generated in Part~1.
 
 All certificates considered here have a singleton forbidden family
 $\mathcal{H}=\{H\}$.  The generated proof invokes the
 \lean{flag\_expand\_hfree N K} tactic, where $N$ is the host size and $K$ is the
-reflection-layer \lean{Sym2Graph} encoding of $H$ (for example, \lean{K3} in
-the Mantel proof).  The expansion theorem is stated using the
-specification-level $H$-free semantic condition from
-\Cref{def:ensemble-semantic-order}, whereas the host $\emptyset$-flags were enumerated and
-filtered using the concrete graph $K$.  Bridging the two representations
-requires proving that the flags the reflection computation discarded belong to
-\lean{forbiddenFlags H}, the set of $\emptyset$-flags whose underlying graphs contain
-$H$ as a subgraph.  The $H$-free condition then forces those flags to have
-density zero, which justifies removing them from the objective expansion.
-
-The tactic establishes that bridge itself, with no argument beyond $N$ and $K$.
-It dispatches on $K$ by the same test the Part~1 commands use, so it always
-rewrites onto the filter those commands actually emitted.  When $K$ is complete,
-induced and subgraph containment coincide, so Part~1 filtered the enumeration on
-the single decoded flag of $K$ having density zero, and the bridge is the
-complete-graph membership lemma instantiated at the clique order the tactic
-reads off $K$.  When $K$ is not complete, a subgraph copy of $H$ may carry
-additional edges and therefore need not be induced; Part~1 filtered instead on
-every induced supergraph of $K$ having density zero, and the bridge is the
-corresponding membership statement for that finite family.  Either route
-performs the same lifting step, and neither introduces additional forbidden
-graphs into the certificate.
+reflection-layer \lean{Sym2Graph} encoding of $H$.  The qualifier on the
+identity matters, because our development works in the ambient algebra.  In
+the built-in \(H\)-free algebra (\Cref{rem:builtin-hfree}) the restricted sum
+would simply be the expansion identity~\eqref{eq:expansion-identity}, all of
+whose flags are \(H\)-free there.  In the ambient algebra the flags containing
+\(H\) are nonzero basis elements, so dropping their terms cannot give a
+literal equality; the auxiliary identity instead says that every empty-type
+positive homomorphism satisfying the \(H\)-freeness condition of
+\Cref{def:ensemble-semantic-order} gives both sides the same value.
+Part~1, however, selected the $H$-free flags by a concrete
+computation on $K$.  Bridging the two requires proving that the underlying
+graph of every flag that computation discarded contains $H$ as a subgraph; the
+$H$-free condition then forces those flags' terms to vanish, which justifies
+expanding over exactly the flags Part~1 emitted.  From $N$ and $K$ alone, the
+tactic establishes this bridge itself.
 
 \paragraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward
@@ -3637,15 +3636,16 @@ script parses each string and searches the canonical enumeration used by
 the reflection generators for the same graph or flag after a relabeling of
 vertices that preserves the flag labels.  The selected entry determines the
 corresponding Lean basis element and hence the entries of each flag vector.
-The script then reads the objective and bound, the forbidden graph, the
+The script then reads the target and bound, the forbidden graph, the
 host size, and the SDP blocks; reconstructs the rational matrices; computes the
-$LDL^\top$ witnesses; and selects the objective-lifting branch and the form in
+$LDL^\top$ witnesses; and selects the target-lifting branch and the form in
 which the bound states its forbidden graph.
 
 For each certificate, the script writes one Lean source file containing all
 four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
-proof, and one addition of a non-negative quadratic form.  Branch~B additionally
-contributes the Part~3 objective expansion, while Branch~A omits it.  A
+proof, and one addition of a non-negative quadratic form.  When the target is
+smaller than the host size, the file additionally contains the Part~3
+expansion.  A
 non-complete forbidden graph changes how the bound states that graph and which
 unit-expansion lemma Part~4 cites; the generation commands of Part~1 and the
 expansion tactics of Parts~3 and~4 need no such selection, since each dispatches
@@ -3654,7 +3654,7 @@ data and the required route, but the argument assembled in Part~4 has the same
 structure in every generated file.
 
 The script itself determines which Lean basis element corresponds to each
-certificate flag and converts the objective, bound, forbidden graph, and matrix
+certificate flag and converts the target, bound, forbidden graph, and matrix
 data into Lean declarations.  These choices are made in Python.  Lean
 typechecks the generated file and verifies its propositions, including the
 final bound, but it does not compare the file with the source JSON\@.  This
@@ -3676,7 +3676,7 @@ invalid proof term valid.
 Second, the compiler script is trusted for \emph{translation fidelity}: it parses the
 certificate, chooses the corresponding entry in Lean's canonical enumeration
 for each certificate flag, reconstructs $M_t=R_tQ'_tR_t^\top$, and selects the
-objective, bound, and forbidden graph.
+target, bound, and forbidden graph.
 These choices are visible in the generated declarations and theorem statement,
 but Lean does not prove that they faithfully reproduce the source certificate.
 A translation error could therefore produce a valid theorem different from
@@ -3698,7 +3698,7 @@ retain the trust boundary just described.
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
-We evaluated the compiler on seven certificates spanning both objective
+We evaluated the compiler on seven certificates spanning both target-size
 branches, host sizes $N\in\{3,4,5\}$, between one and four SDP blocks, and four
 forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
 \lean{gen-skeleton} produces a complete Lean source file.  All seven files compile
@@ -3711,12 +3711,12 @@ the implementation filenames.
   \centering
 \caption{Certificates carried end-to-end through the compiler.  ``Branch''
   is A when the target and host have the same size
-  (\(n_{\mathit{obj}}=N\)), and B when \(n_{\mathit{obj}}<N\);
+  (\(n_F=N\)), and B when \(n_F<N\);
   \(T\) is the number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lcccccc}
     \toprule
-    Case & Forbid & $N$ & $n_{\mathit{obj}}$ & Branch & $T$ & Bound \\
+    Case & Forbid & $N$ & $n_F$ & Branch & $T$ & Bound \\
     \midrule
     Mantel ($K_2$)              & $K_3$ & 3 & 2 & B & 1 & $1/2$    \\
     $P_3$ density               & $K_3$ & 3 & 3 & A & 1 & $3/4$    \\
@@ -3737,7 +3737,7 @@ flag vector.  The $C_4$-density certificate has two blocks, with matrices of
 dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
 has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
 $5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
-all with~$8\times8$ matrices.  Together, these examples exercise both objective
+all with~$8\times8$ matrices.  Together, these examples exercise both target-size
 branches and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
@@ -3759,7 +3759,7 @@ and~\ref{ex:pentagon}.
 We point out two limitations of the current compiler.
 First, this evaluation establishes coverage of the seven cases above, not
 completeness of the compiler.  The current input language assumes the
-supported simple-graph certificate format, a parseable objective and singleton
+supported simple-graph certificate format, a parseable target and singleton
 forbidden graph, and one of the currently supported certificate-matrix
 dimensions.
 Malformed inputs are rejected; an otherwise well-formed certificate outside
