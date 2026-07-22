@@ -105,13 +105,6 @@
 
 % Inline flag macros: fv = unlabeled (open white), fr = labeled (filled black)
 % 2-vertex flags
-\newcommand{\fKtwo}{%
-  \begin{tikzpicture}[inline]
-    \draw (-1,0) -- (1,0);
-    \node[fv] at (-1,0) {};
-    \node[fv] at (1,0) {};
-  \end{tikzpicture}%
-}
 \newcommand{\fKtwobull}{%
   \begin{tikzpicture}[inline]
     \draw (-1,0) -- (1,0);
@@ -854,19 +847,19 @@ We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
 % That is, counting $F$ directly agrees with counting through an intermediate
 % sample of size $n$.
 
-\begin{example}[$\fKtwo$ expanded at size $3$ in the triangle-free algebra]
+\begin{example}[$K_2$ expanded at size $3$ in the triangle-free algebra]
   Working in the triangle-free flag algebra (i.e., $\mathcal{H} = \{K_3\}$),
   the $\emptyset$-flags of size $3$ are the three triangle-free graphs on three vertices:
   $\fbarKthree$, $\fbarPthree$, and $\fPthree$.
   The density of an edge in each of them is
   \[
-    \den{\fKtwo}{\fbarKthree}=0,\quad
-    \den{\fKtwo}{\fbarPthree}=\frac13,\quad
-    \den{\fKtwo}{\fPthree}=\frac23,
+    \den{K_2}{\fbarKthree}=0,\quad
+    \den{K_2}{\fbarPthree}=\frac13,\quad
+    \den{K_2}{\fPthree}=\frac23,
   \]
   so the zero-space quotient identifies
   \begin{equation}
-    \fKtwo
+    K_2
     \;=\;
     \frac13\,\fbarPthree
     + \frac23\,\fPthree
@@ -1206,7 +1199,7 @@ Equation~\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
-We prove $\fKtwo \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
+We prove $K_2 \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
 Let $\sigma$ be the one-vertex flag type.
 
 \textit{Step 1: A key inequality.}
@@ -1228,7 +1221,7 @@ gives the following inequality in $\mathcal{A}^{\emptyset}$:
 \textit{Step 2: Algebraic derivation.}
 Starting from Equation~\eqref{eq:k2-expansion}, we add two non-negative terms and simplify using Equation~\eqref{eq:sum-to-one}:
 \begin{align*}
-  \fKtwo
+  K_2
   &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
   &&\text{by Equation~\eqref{eq:k2-expansion}}\\
   &\leq_{K_3} \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
