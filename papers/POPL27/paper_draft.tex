@@ -1184,7 +1184,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $0 \leq_{\mathcal{H},\sigma} f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
   $\mathbb{E}[\boldsymbol{\phi}^\sigma(f)] \geq 0$.
-  Rearranging~\eqref{eq:ensemble}:
+  Rearranging Equation~\eqref{eq:ensemble}:
   \[
     \phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)
     \;=\;
@@ -1202,7 +1202,7 @@ non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 \Cref{thm:downward-nonneg} to obtain $0 \leq_{\mathcal{H}} \llbracket f \rrbracket_\sigma$;
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
-\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
+Equation~\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
@@ -1226,18 +1226,18 @@ gives the following inequality in $\mathcal{A}^{\emptyset}$:
 \end{align}
 
 \textit{Step 2: Algebraic derivation.}
-Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplify using \eqref{eq:sum-to-one}:
+Starting from Equation~\eqref{eq:k2-expansion}, we add two non-negative terms and simplify using Equation~\eqref{eq:sum-to-one}:
 \begin{align*}
   \fKtwo
   &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
-  &&\text{by \eqref{eq:k2-expansion}}\\
+  &&\text{by Equation~\eqref{eq:k2-expansion}}\\
   &\leq_{K_3} \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
     \frac{1}{2}\left(\fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree\right) +
     \frac{1}{3}\,\fbarPthree
-  &&\text{by \eqref{eq:mantel-key} and $0 \leq_{K_3} \fbarPthree$}\\
+  &&\text{by Equation~\eqref{eq:mantel-key} and $0 \leq_{K_3} \fbarPthree$}\\
   &= \frac{1}{2}\cdot\left(\fbarKthree + \fbarPthree + \fPthree\right)
   \;=\; \frac{1}{2}\cdot\mathbf{1}.
-  &&\text{by \eqref{eq:sum-to-one}}
+  &&\text{by Equation~\eqref{eq:sum-to-one}}
 \end{align*}
 \end{example}
 
@@ -3221,11 +3221,11 @@ of a real number.  Thus $f$ is non-negative in $\mathcal A^\sigma$, and
 
 To calculate $Q$ in the common size-three basis, we use the triangle-free
 flags $\fbarKthree$, $\fbarPthree$, and $\fPthree$.  The size-three expansion
-of $K_2$ from \eqref{eq:k2-expansion} is
+of $K_2$ from Equation~\eqref{eq:k2-expansion} is
 \[
   K_2 = \tfrac13\cdot\fbarPthree + \tfrac23\cdot\fPthree.
 \]
-Applying \eqref{eq:sum-to-one} to the triangle-free empty-type flags of size
+Applying Equation~\eqref{eq:sum-to-one} to the triangle-free empty-type flags of size
 three gives
 \[
   \mathbf 1 = \fbarKthree + \fbarPthree + \fPthree.
@@ -4474,7 +4474,7 @@ Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
 downward operator to \([F]\) produces a non-negative multiple of
 \([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
 Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if~\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
-identity~\eqref{eq:ensemble} gives
+identity in Equation~\eqref{eq:ensemble} gives
 \[
   \mathbb{E}[\phi([F])]=0.
 \]
@@ -4483,7 +4483,7 @@ follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
 \(\phi([F])=0\) with probability one.  Applying this argument to
 the countable collection of \(\sigma\)-flags outside \(\mathcal K\) shows that a positive
 homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
-probability one.  Since \(Q_\sigma\) is closed, \Cref{eq:S-sigma} yields the
+probability one.  Since \(Q_\sigma\) is closed, Equation~\eqref{eq:S-sigma} yields the
 fundamental inclusion
 \begin{equation}\label{eq:S-subset-Q}
   S_\sigma\subseteq Q_\sigma.
@@ -4569,7 +4569,7 @@ The proof explains why support closure is the exact criterion.  Evaluation of
 measure is equivalent to non-negativity on its support; continuity then shows
 that ensemble non-negativity is exactly non-negativity on \(S_\sigma\).
 Quotient non-negativity is, by definition, non-negativity on \(Q_\sigma\).
-The inclusion \eqref{eq:S-subset-Q} proves the forward implication, and
+The inclusion in Equation~\eqref{eq:S-subset-Q} proves the forward implication, and
 \(S_\sigma=Q_\sigma\) proves equivalence.
 
 The necessity of root-plantability requires more than this observation.  If
@@ -4644,7 +4644,7 @@ Therefore \(U\) intersects \(\operatorname{supp}(\Ext_\sigma(\phi_0))\).  Since
 every neighborhood \(U\) of \(\chi\) has this property, \(\chi\) lies in the
 closure of the union of these supports, namely \(S_\sigma\).  Hence
 \(Q_\sigma\subseteq S_\sigma\), while the opposite inclusion is
-\eqref{eq:S-subset-Q}.
+Equation~\eqref{eq:S-subset-Q}.
 
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
@@ -4694,8 +4694,8 @@ paper; it concerns the completeness of the intermediate typed calculus.
 The Lean formalization of the meta-theory presented in this section is included
 in the public release of our flag-algebra development linked in
 \Cref{sec:intro}, under the module \lean{LeanFlagAlgebras.MetaTheory}.  The
-constrained space \(Q_\sigma\) in \eqref{eq:Q-sigma}, the root-planting space
-\(S_\sigma\) in \eqref{eq:S-sigma}, and the condition
+constrained space \(Q_\sigma\) in Equation~\eqref{eq:Q-sigma}, the root-planting space
+\(S_\sigma\) in Equation~\eqref{eq:S-sigma}, and the condition
 \(S_\sigma=Q_\sigma\) are formalized as \lean{Q$\sigma$}, \lean{S$\sigma$}, and
 \lean{RootPlantable}, respectively.  The special cases
 \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
@@ -4712,7 +4712,7 @@ nonempty-type and empty-type claims of
 \Cref{thm:blowup-root-plantability-summary}; and
 \lean{c4free\_not\_rootPlantable}, together with
 \lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion in
-\eqref{eq:c4-strict-inclusion}.
+Equation~\eqref{eq:c4-strict-inclusion}.
 
 These Lean files were generated by Claude Code from an already-developed
 mathematical account and its theorem targets.  Lean checks the resulting proof
