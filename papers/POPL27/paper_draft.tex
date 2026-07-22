@@ -1630,14 +1630,17 @@ applies \lean{multinomialCoefficient} to \lean{r\_list} and
 the required sizes from the unlabeled vertices of \lean{G}.  Their ratio is
 the multi-flag density $\den{F_1,\ldots,F_t}{G}$, represented as a rational
 number.
-The square-bracket assumptions in this signature provide the finite
-enumeration and equality tests needed for counting.  A \lean{Fintype} instance
-for a vertex type gives Lean a finite list of all its vertices, and a
-\lean{DecidableEq} instance gives a decision procedure for testing whether two
-vertices are equal.  The typeclasses \lean{FintypeList Vl} and
-\lean{DecidableEqList Vl} are componentwise versions of these assumptions:
-they supply the corresponding enumeration and equality-test instances for
-each vertex type \lean{Vl i} in the tuple.
+
+The square-bracketed parameters tell Lean what finite data and decision
+procedures are available.  For a type \lean{X}, \lean{[Fintype X]} supplies an
+enumeration of all elements of \lean{X}, while \lean{[DecidableEq X]} supplies
+a procedure for deciding whether two elements are equal.  The pattern tuple
+may use a different vertex type \lean{Vl i} at each index.  Accordingly,
+\lean{[FintypeList Vl]} and \lean{[DecidableEqList Vl]} package the same
+information for every type \lean{Vl i}.  In Lean, such square-bracketed
+parameters are called \emph{typeclass parameters}, and Lean normally supplies
+them automatically through its typeclass inference mechanism.
+
 The \lean{noncomputable} keyword signals that Lean cannot synthesize an
 algorithm to evaluate this definition directly.  This poses no obstacle to
 formalizing flag algebra itself, but becomes relevant when applying the algebra
@@ -1679,7 +1682,7 @@ noncomputable def labeledGraphListDensityLifted
     : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G => labeledGraphListDensity Hl G)
-    (...) -- proof that host equivalence preserves density
+    (...) -- proof that host-graph equivalence preserves density
 
 noncomputable def quotLabeledGraphListDensity
     {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
