@@ -1542,15 +1542,15 @@ precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
 \lean{V}.
 
 \lean{Quotient} comes with double-bracket notation for equivalence classes.  In
-Lean code, the bare notation \(\llbracket x\rrbracket\), with no subscript,
+Lean code, the unsubscripted notation \(\llbracket x\rrbracket\)
 means ``the quotient class of the representative \(x\),'' with the relevant
 quotient inferred from the expected type.  Thus, in this subsection, when the
 expected type is \lean{Flag}~\(\sigma\)~\lean{V},
 \(\llbracket G\rrbracket\) is the \(\sigma\)-flag represented by the concrete
-labeled graph \(G\).  Throughout the paper, bare double brackets denote
+labeled graph \(G\).  Throughout the paper, unsubscripted double brackets denote
 quotient classes, whereas the subscripted brackets
 \(\llbracket-\rrbracket_\sigma\) and \(\llbracket-\rrbracket_0\) denote the
-downward operator.  We return to the bare quotient notation in
+downward operator.  We return to this quotient-class notation in
 \Cref{sec:formal-flag-algebra}.
 
 We can now represent $\mathcal{F}^\sigma_n$ in Lean by
@@ -1836,7 +1836,7 @@ abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
 Since \lean{FlagAlgebra}~$\sigma$ is another quotient type, if $f$ is a
-\lean{FlagVector}~$\sigma$, the bare notation $\llbracket f\rrbracket$ denotes
+\lean{FlagVector}~$\sigma$, the unsubscripted notation $\llbracket f\rrbracket$ denotes
 its class in this quotient.
 
 The quotient therefore imposes a family of expansion identities: for every
@@ -1983,7 +1983,7 @@ non-negativity on flag basis elements.  In Lean syntax, this is the
 \lean{$\forall$ F : FinFlag $\sigma$} field after the subtype separator
 \lean{//}.
 Here \lean{basisVector F} is the formal basis vector representing \(F\), and
-the bare quotient brackets send that flag vector to its class in the flag
+the unsubscripted quotient brackets send that flag vector to its class in the flag
 algebra before \(\phi\) evaluates it.
 
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
