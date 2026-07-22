@@ -2975,6 +2975,9 @@ the forbid-free variants described below.
       the pair-density theorems over the \(H\)-free flags \\
     \lean{generate\_forbid\_free\_mul\_theorems p h k m H} &
       the product expansions, valid modulo flags containing \(H\) \\
+    \lean{generate\_forbid\_free\_flag\_density\_theorems p i h H} &
+      the single-flag densities of \lean{Flag\_p\_0\_0\_i} in every
+      \(H\)-free size-\(h\) host \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -3008,6 +3011,12 @@ graph does not contain \(H\) as a subgraph, and their completeness lemmas
 change accordingly, stating that the named flags exhaust the \(H\)-free ones,
 with \(H\)-freeness phrased as a vanishing subflag density so that the lemma
 composes with the forbidden-graph machinery of \Cref{sec:forbidden}.
+One member of the family has no unforbidden counterpart:
+\lean{generate\_forbid\_free\_flag\_density\_theorems p i h H} evaluates the
+single-flag densities \(\lean{flagDensity}_1\) of the empty-typed flag
+\lean{Flag\_p\_0\_0\_i} in every \(H\)-free host of size \(h\).  The
+certificate compiler of \Cref{sec:flagmatic} uses this table when the flag
+whose density is being bounded is smaller than the certificate's host size.
 
 \subsubsection{Optimizations}
 \label{sec:reflection-generation-optimizations}
