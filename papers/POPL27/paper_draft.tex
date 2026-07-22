@@ -325,7 +325,7 @@ mathematical and formal account.
 \paragraph{Why flag algebras matter.}
 Many central questions in extremal combinatorics ask how often one finite
 pattern can occur when another pattern is forbidden.  Let $F$ be a finite
-simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
+simple graph and $\mathcal{H}$ a finite collection of finite simple graphs.  We write
 \[
   \mathrm{ex}(n,\,F;\,\mathcal{H})
   :=
@@ -2279,20 +2279,27 @@ built inside the \(\mathcal{H}\)-free world.  In that setup, an inequality
 before the semantic order is tested.
 
 Our Lean formalization deliberately separates building the algebra from
-imposing the constraint.  The core
-development constructs the ambient flag algebra \(\mathcal{A}^\sigma\) of all
-finite simple graphs, with no forbidden family as a parameter.  A forbidden
-graph is introduced only later, as an assumption on the semantic comparison
-between two ambient algebra elements \(f,g\in\mathcal{A}^\sigma\): we test only
-base positive homomorphisms~\(\phi_0\) that assign density zero to every graph
-containing the forbidden graph as a (not necessarily induced)
-subgraph, and then require the desired typed inequality to hold almost surely
-under the random extension \(\Ext_\sigma(\phi_0)\), which labels an occurrence
-of \(\sigma\) at random.  Thus, forbiddenness is not a new
-flag-algebra universe in the implementation; it is an a posteriori condition on
-which positive homomorphisms are allowed to interpret the ambient algebra.  The
-definitions of flags, densities, products, the downward operator, and positive
-homomorphisms are therefore reusable across extremal problems.
+imposing the constraint.  The core development constructs the ambient flag
+algebra \(\mathcal{A}^\sigma\) of all finite simple graphs, with no forbidden
+family as a parameter.  A forbidden graph enters only when we compare two
+ambient algebra elements \(f,g\in\mathcal{A}^\sigma\).  We restrict attention to
+empty-type positive homomorphisms~\(\phi_0\) that assign density zero to every
+graph containing the forbidden graph as a (not necessarily induced) subgraph.
+For each such \(\phi_0\) for which \(\sigma\) has positive density, take a
+sequence of finite graphs whose unlabeled density profiles converge to
+\(\phi_0\).  In each graph, choose an embedding of \(\sigma\) uniformly at random
+and use the embedded vertices as labels.  The limiting distribution of the
+resulting \(\sigma\)-typed density profiles is \(\Ext_\sigma(\phi_0)\), and we
+require \(\phi(f)\leq\phi(g)\) with probability one when \(\phi\) is sampled from
+this distribution.
+
+Thus, the forbidden-graph condition does not define a separate flag-algebra
+universe in the implementation.  Instead, it restricts the empty-type positive
+homomorphisms~\(\phi_0\) from which the random extensions used in the comparison
+are formed.  The elements \(f\) and \(g\), as well as the definitions of flags,
+densities, products, the downward operator, and positive homomorphisms, remain
+those of the ambient algebra and can therefore be reused across extremal
+problems.
 
 The order used for this a posteriori condition is the
 \emph{ensemble semantic order}.  We state it for a single forbidden graph
@@ -2317,28 +2324,31 @@ the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 \]
 \end{definition}
 
+The first condition restricts \(\phi_0\) to the \(H\)-free unlabeled limits: it
+assigns density zero to every graph containing \(H\).  The second condition,
+\(\phi_0(\langle\sigma\rangle_0)>0\), says that the underlying unlabeled graph of
+\(\sigma\) has positive limiting density in the finite graphs approximating
+\(\phi_0\).  This is precisely the hypothesis under which the random-extension
+measure \(\Ext_\sigma(\phi_0)\) is defined.  The final display says that, when a
+\(\sigma\)-typed positive homomorphism \(\phi\) is sampled from this measure, the
+inequality \(\phi(f)\leq\phi(g)\) holds with probability one.
+
 \begin{remark}[Relation to built-in \(H\)-free semantics]
-The built-in approach of \Cref{sec:background} tests inequalities inside a
-separately built \(H\)-free algebra, whereas the ensemble order tests them on
-random labelings of a constrained limit.
-For unlabeled density bounds this distinction is harmless: the final
-Tur\'an-density statements are recovered by the transfer theorem below.  For
-labeled intermediate inequalities, however, the two viewpoints need not agree.
-The built-in \(H\)-free algebra may allow one to place the labels at a specially
-chosen, vanishingly rare vertex configuration, whereas the ensemble order only
-sees configurations that occur with nonzero probability when the labels are
-sampled at random.  \Cref{thm:support-closure-summary} gives an exact criterion
-for when this difference disappears, and \Cref{sec:metatheory} also gives an
-example showing that it can be real.
+The background approach builds the \(H\)-free condition into the flag algebra
+from the outset, whereas the ensemble approach retains the ambient algebra and
+imposes the condition only when comparing its elements.  At the empty type,
+where no labels are chosen, the two approaches agree, so this distinction does
+not affect the final unlabeled Tur\'an-density bounds.  For nonempty types,
+however, the two approaches can differ: the built-in approach may fix the
+labels at an exceptional vertex configuration, whereas the ensemble approach
+obtains its labels by uniform random sampling.  An exceptional choice of labels
+may therefore affect the built-in comparison while remaining invisible to the
+ensemble comparison.
+\Cref{sec:metatheory} gives a precise criterion for when the two approaches
+agree and an example showing that they need not.
 \end{remark}
 
-The first condition says that \(\phi_0\) assigns density zero to every graph
-containing the forbidden graph \(H\); the second says that \(\sigma\) has positive density under
-\(\phi_0\), so a random occurrence of \(\sigma\) can be chosen and the random
-extension \(\Ext_\sigma(\phi_0)\) exists.  The last line
-then requires \(\phi(f)\leq\phi(g)\) for almost every \(\sigma\)-typed positive
-homomorphism \(\phi\) obtained by randomly labeling from such a \(\phi_0\).  The Lean
-predicate \lean{forbidLE} is the formalization of
+The Lean predicate \lean{forbidLE} is the formalization of
 \Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
 def forbidLEWith {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -2365,25 +2375,26 @@ positive homomorphisms \(\phi_0\) such that
 \[
   \phi_0([F])=0
   \qquad
-  \text{for every \(\emptyset\)-flag } A
+  \text{for every \(\emptyset\)-flag } F
   \text{ whose underlying graph contains } H \text{ as a subgraph}.
 \]
 
 The body of \lean{forbidLEWith} ranges over empty-type positive homomorphisms
-\lean{$\phi_0$}.  The
-hypothesis \lean{C $\phi_0$} is the condition being imposed on
-\lean{$\phi_0$}; for \lean{forbidLE H}, this is exactly the \(H\)-free
-condition described above.  The measure \lean{$\mathbb{P}$[$\phi_0$]} is the
-random extension \(\Ext_\sigma(\phi_0)\), which
-\lean{exists\_\allowbreak probMeasure\_\allowbreak extend\_\allowbreak
-emptyType\_\allowbreak positiveHom} of
-\Cref{sec:formal-downward} supplies from the hypothesis
-\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0}, and the conclusion says that the event
-\lean{\{$\phi$ : PositiveHomSpace $\sigma$ | $\phi$ f $\leq$ $\phi$ g\}} has
-probability one under it.  Here a sampled
-\lean{$\phi$} is a \(\sigma\)-typed positive
-homomorphism, so the event is exactly that the sampled homomorphism evaluates
-\lean{f} at most \lean{g}.
+\lean{$\phi_0$}.  The hypothesis \lean{C $\phi_0$} imposes the chosen condition
+on \lean{$\phi_0$}; for \lean{forbidLE H}, this is the \(H\)-free condition
+described above.  Recall that \lean{PositiveHomSpace $\sigma$} is the measurable
+space of \(\sigma\)-typed density profiles, each of which determines a positive
+homomorphism on \(\mathcal{A}^\sigma\).  The measure
+\lean{$\mathbb{P}$[$\phi_0$]} is the random-extension measure
+\(\Ext_\sigma(\phi_0)\) on this space.  In the final line of the definition, the
+set
+\[
+  \{\phi\mid \phi(f)\leq\phi(g)\}
+\]
+is therefore the event that the real number assigned to \(f\) is at most the
+real number assigned to \(g\).  The equality to \(1\) says that this inequality
+holds with probability one when a density profile \(\phi\) is sampled from
+\(\Ext_\sigma(\phi_0)\).
 
 What remains is to connect
 the semantic predicate above to the corresponding asymptotic bound on induced densities.
@@ -2419,22 +2430,25 @@ Tur\'an-density bound, written in Lean as
   \den{F}{G}
   \leq c .
 \]
-Thus, a certificate proof only has to
-establish one semantic inequality in the ambient algebra; the passage from
-that inequality to the extremal-density statement is handled once and
-reused.
+Consequently, for each later application, it is enough to prove the empty-type
+ensemble inequality
+\[
+  [F]\leq^{\mathrm{ens}}_{H,\emptyset}c\cdot\mathbf{1}.
+\]
+The theorem above then yields the corresponding Tur\'an-density bound
+\(\tdensity{F}{H}\leq c\).  The same theorem performs this final conversion in
+every application.
 
-One point about this limit is worth recording, since the definition of the
-Tur\'an density \(\tdensity{F}{H}\) takes its existence for granted.  In Lean,
-\lean{generalizedTuranDensity H F} is Mathlib's \lean{limUnder} applied to the
-normalized extremal numbers.  Lean functions are total, so \lean{limUnder} must
-return a value even when the sequence does not converge, and that value is then
-unspecified.  A bound on it
-would therefore say nothing on its own, so we also prove
-\lean{tendsto\_\allowbreak generalizedTuranDensity}, which shows that the
-normalized extremal numbers do converge to it.  The argument is the standard
-one, deriving convergence from the fact that they are non-increasing in the
-number of vertices.
+The Tur\'an density \(\tdensity{F}{H}\) is represented in Lean by
+\lean{generalizedTuranDensity H F}, whose definition uses Mathlib's
+\lean{limUnder}.  This operation returns a real number even before the
+normalized extremal numbers have been shown to converge; if they did not
+converge, the returned value would have no asymptotic meaning.  We therefore
+prove \lean{tendsto\_\allowbreak generalizedTuranDensity}, which shows that the
+normalized extremal numbers converge to \(\tdensity{F}{H}\), namely to
+\lean{generalizedTuranDensity H F}.  The proof is standard: once
+\(n\geq |V(F)|\), the normalized extremal numbers are non-increasing, and they
+are bounded below by zero, so they converge.
 
 \section{The Reflection Layer}
 \label{sec:reflection}
@@ -3128,7 +3142,7 @@ uses those tables to automate complete flag-algebra arguments.
 All certificate problems considered in this section have the same form: among
 graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
 element $[F]$ of a target graph $F$ satisfies
-$[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  Here $\leq_{\mathcal H}$ is the empty-type semantic order of
+$[F]\leq_{\mathcal H}c\cdot\mathbf{1}$.  Here $\leq_{\mathcal H}$ is the empty-type semantic order of
 \Cref{sec:background-semantic-order}, for the certificate's forbidden family
 $\mathcal{H}$.  The Lean development establishes the corresponding ensemble
 form (\Cref{def:ensemble-semantic-order}); the two agree at the empty flag type
@@ -3159,7 +3173,7 @@ trust model and evaluate the compiler on seven certificates.
 \label{sec:flagmatic-background}
 
 At a high level, a flag-algebra certificate proves
-$[F] \leq_{\mathcal H} c\cdot\mathbf 1$ by constructing two kinds of
+$[F] \leq_{\mathcal H} c\cdot\mathbf{1}$ by constructing two kinds of
 non-negative correction term.  One kind consists of terms $Q_t$, each obtained
 by applying the downward operator to a positive-semidefinite quadratic
 expression.  The other is a remainder $r$, a linear combination of
@@ -3168,13 +3182,13 @@ $\mathcal H$-free condition, these data yield the chain
 \[
   [F]
   \leq_{\mathcal H} [F]+\sum_t Q_t
-  = c\cdot\mathbf 1-r
-  \leq_{\mathcal H} c\cdot\mathbf 1.
+  = c\cdot\mathbf{1}-r
+  \leq_{\mathcal H} c\cdot\mathbf{1}.
 \]
 The first inequality uses the non-negativity of the $Q_t$, the equality is the
 finite calculation recorded by the certificate, and the final inequality uses
 the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
-$c\cdot\mathbf 1-[F]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
+$c\cdot\mathbf{1}-[F]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
 searches for this data using an SDP solver and outputs it as a certificate.  Our
 compiler consumes the certificate as untrusted input and asks Lean to verify
 the non-negativity of the $Q_t$ and $r$ and the intervening equality.
@@ -3187,7 +3201,7 @@ $f\in\mathcal A^\sigma$, and use \Cref{thm:downward-nonneg} to make its
 downward image $Q:=\llbracket f\rrbracket_\sigma$ a non-negative correction
 term.  We then show that
 \[
-  K_2 + Q = \tfrac12\cdot\mathbf 1 - \tfrac13\cdot\fbarPthree.
+  K_2 + Q = \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree.
 \]
 Write $r:=\tfrac13\cdot\fbarPthree$ for the displayed remainder.  The
 non-negativity of $Q$ and $r$ then proves the desired bound.
@@ -3228,7 +3242,7 @@ of $K_2$ from Equation~\eqref{eq:k2-expansion} is
 Applying Equation~\eqref{eq:sum-to-one} to the triangle-free empty-type flags of size
 three gives
 \[
-  \mathbf 1 = \fbarKthree + \fbarPthree + \fPthree.
+  \mathbf{1} = \fbarKthree + \fbarPthree + \fPthree.
 \]
 A size-three product expansion followed by the downward operator gives
 \begin{align*}
@@ -3274,14 +3288,14 @@ Combining these identities now gives a forward derivation of the desired bound:
   &= \tfrac12\cdot
      \left(\fbarKthree+\fbarPthree+\fPthree\right)
      - \tfrac13\cdot\fbarPthree\\
-  &= \tfrac12\cdot\mathbf 1 - \tfrac13\cdot\fbarPthree\\
-  &\leq_{K_3} \tfrac12\cdot\mathbf 1.
+  &= \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree\\
+  &\leq_{K_3} \tfrac12\cdot\mathbf{1}.
 \end{align*}
 The first inequality adds the non-negative downward square $Q$.  The
 successive equalities substitute the expansions of $K_2$ and $Q$, collect their
-coefficients, and regroup the result as $\tfrac12\cdot\mathbf 1$ minus the
+coefficients, and regroup the result as $\tfrac12\cdot\mathbf{1}$ minus the
 remainder using the unit expansion
-$\mathbf 1 = \fbarKthree+\fbarPthree+\fPthree$.  The final inequality follows
+$\mathbf{1} = \fbarKthree+\fbarPthree+\fPthree$.  The final inequality follows
 because the remainder $r=\tfrac13\cdot\fbarPthree$ is non-negative.
 
 The essential certificate data for this example are precisely the nontrivial
@@ -3346,8 +3360,8 @@ the certificate justifies the forward derivation
   \leq_{\mathcal H}
   \bigl([F]+\sum_t Q_t\bigr)
   =
-  \bigl(c\cdot\mathbf 1-r\bigr)
-  \leq_{\mathcal H} c\cdot\mathbf 1.
+  \bigl(c\cdot\mathbf{1}-r\bigr)
+  \leq_{\mathcal H} c\cdot\mathbf{1}.
 \end{align*}
 The first inequality adds the non-negative downward quadratic forms.  The
 equality is the certificate identity checked after all terms have been
@@ -3400,9 +3414,9 @@ parts are:
       \;\leq_{\mathcal H}\;
       [F] + \sum_t Q_t
       \;=\;
-      c\cdot\mathbf 1-r
+      c\cdot\mathbf{1}-r
       \;\leq_{\mathcal H}\;
-      c\cdot\mathbf 1.
+      c\cdot\mathbf{1}.
     \]
     The first inequality adds the non-negative downward quadratic forms arising
     from the matrices certified in Part~2.  The middle equality is checked using
@@ -3566,7 +3580,7 @@ forbidden graphs into the certificate.
 \paragraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward
 chain from \Cref{sec:flagmatic-background}.  The certificate identity
-$[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
+$[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ supplies its middle equality, while the
 non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
 Mantel example, there is one $Q_t$, namely the downward image of the halved
 square, and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
@@ -3592,13 +3606,13 @@ The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
 $[F]\leq_H[F]+\sum_tQ_t$.
 
-It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
+It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf{1}$.  The compiler checks
 this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
 flags.  When necessary, the Part~3 lemma first expands $[F]$ to host size.
 Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
 and downward identities generated in Part~1.  The appropriate
-\lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf 1$ in the same
+\lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf{1}$ in the same
 host-size basis.  Finally,
 the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects the coefficients of matching
 basis elements.
@@ -3608,8 +3622,8 @@ exactly the remainder $r$ from the certificate calculation.  The tactic
 \lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
 the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
 the normalization and the final non-negativity check together verify the
-conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
-$c\cdot\mathbf 1-r\leq_H c\cdot\mathbf 1$.
+conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ and the last inequality
+$c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
 
 \paragraph{The compiler script.}
 The compiler script connects the certificate's external representation to the four
