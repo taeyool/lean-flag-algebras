@@ -3615,9 +3615,10 @@ this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
 flags.  When necessary, the Part~3 lemma first expands $[F]$ to host size.
 Expanding each quadratic form produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
-and downward identities generated in Part~1.  The appropriate
+and downward identities generated in Part~1.  The
 \lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf{1}$ in the same
-host-size basis.  Finally,
+host-size basis, dispatching on the forbidden graph exactly as
+\lean{flag\_expand\_hfree} does in Part~3.  Finally,
 the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects the coefficients of matching
 basis elements.
 
@@ -3638,17 +3639,19 @@ vertices that preserves the flag labels.  The selected entry determines the
 corresponding Lean basis element and hence the entries of each flag vector.
 The script then reads the objective and bound, the forbidden graph, the
 host size, and the SDP blocks; reconstructs the rational matrices; computes the
-$LDL^\top$ witnesses; and selects the appropriate objective-lifting and
-forbidden-subgraph routes.
+$LDL^\top$ witnesses; and selects the objective-lifting branch and the form in
+which the bound states its forbidden graph.
 
 For each certificate, the script writes one Lean source file containing all
 four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
 proof, and one addition of a non-negative quadratic form.  Branch~B additionally
 contributes the Part~3 objective expansion, while Branch~A omits it.  A
-non-complete forbidden graph selects the subgraph-free variants of the same
-generation and normalization steps.  Thus, the script varies the data and
-the required route, but the argument assembled in Part~4 has the same structure
-in every generated file.
+non-complete forbidden graph changes how the bound states that graph and which
+unit-expansion lemma Part~4 cites; the generation commands of Part~1 and the
+expansion tactics of Parts~3 and~4 need no such selection, since each dispatches
+on the forbidden graph itself during elaboration.  Thus, the script varies the
+data and the required route, but the argument assembled in Part~4 has the same
+structure in every generated file.
 
 The script itself determines which Lean basis element corresponds to each
 certificate flag and converts the objective, bound, forbidden graph, and matrix

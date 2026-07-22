@@ -1,3 +1,4 @@
+import LeanFlagAlgebras.Automation.Basic
 import LeanFlagAlgebras.Automation.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Forbid.CommonGraphs
@@ -172,24 +173,6 @@ elab_rules : tactic
           runIfGoals (← `(tactic| apply FlagAlgebras.flagVector_eq_eqv; simp [add_assoc, add_left_comm, add_comm]))
         catch _ =>
           pure ()
-
-/-- If the forbid identifier `forbid` names a definition whose value is (definitionally)
-`completeSym2Graph r` for a literal `r`, return `some r`; otherwise `none`.
-
-This is the tactic-side twin of `detectCompleteR` in `Flags/Densities/DensityThmGenerator.lean`,
-which the `generate_forbid_free_*` commands use to pick the clique route. Keeping the two in sync
-is what makes `flag_expand_hfree` able to dispatch on the *same* criterion as the generator that
-produced the `flagSetHfree_*` set it rewrites onto. -/
-def detectCompleteSym2GraphR? (forbid : TSyntax `ident) : TacticM (Option Nat) := do
-  let ns ← getCurrNamespace
-  let env ← getEnv
-  let nm := forbid.getId
-  let some name := ([ns ++ nm, nm].filter (env.contains ·)).head? | return none
-  let some ci := env.find? name | return none
-  let some val := ci.value? | return none
-  match val.getAppFnArgs with
-  | (``FlagAlgebras.Compute.completeSym2Graph, #[rArg]) => (Meta.evalNat rArg).run
-  | _ => return none
 
 /--
 `flag_expand_hfree N F` is the forbid-free single-flag analogue of `flag_expand N`.

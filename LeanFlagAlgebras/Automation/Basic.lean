@@ -23,6 +23,24 @@ open Lean Elab Command Tactic
 
 namespace FlagAlgebras.Automation
 
+/-- If the forbid identifier `forbid` names a definition whose value is (definitionally)
+`completeSym2Graph r` for a literal `r`, return `some r`; otherwise `none`.
+
+This is the tactic-side twin of `detectCompleteR` in `Flags/Densities/DensityThmGenerator.lean`,
+which the `generate_forbid_free_*` commands use to pick the clique route. Keeping the two in sync
+is what lets `flag_expand_hfree` / `expand_one_hfree_at` dispatch on the *same* criterion as the
+generator that produced the `flagSetHfree_*` set they rewrite onto. -/
+def detectCompleteSym2GraphR? (forbid : TSyntax `ident) : TacticM (Option Nat) := do
+  let ns ← Lean.MonadResolveName.getCurrNamespace
+  let env ← getEnv
+  let nm := forbid.getId
+  let some name := ([ns ++ nm, nm].filter (env.contains ·)).head? | return none
+  let some ci := env.find? name | return none
+  let some val := ci.value? | return none
+  match val.getAppFnArgs with
+  | (``FlagAlgebras.Compute.completeSym2Graph, #[rArg]) => (Meta.evalNat rArg).run
+  | _ => return none
+
 /-- The constant `1`, re-expressed under the forbidden subgraph `F_forbid` as
 the conditioned sum over unlabeled flags of size `expandSize` whose density
 within `F_forbid` is `0`, each weighted by its empty-type density. -/
@@ -212,14 +230,25 @@ elab_rules : tactic
 
 /--
 `expand_one_hfree_at n F` is the forbid-free analogue of `expand_one_at n`.
-It unfolds `forbidExpand_one` for a graph of size `n` and reduces the resulting
+It unfolds the unit expansion for a graph of size `n` and reduces the resulting
 `Finset` sum directly onto the explicitly-generated `F`-free flag set
 `flagSetHfree_n_0_0_<F>` (via its filtered-completeness lemma `…_eq` and
 `…_val_eq`), instead of materializing the full `flagSet` and dropping forbidden
-terms. The tactic is forbid-agnostic (the forbidden flag is read from the goal's
-`forbidExpand_one`); `F` is only used to name the `flagSetHfree_*` lemmas, so it is
-the same identifier (a `Sym2Graph` term, e.g. `K3`) passed to
+terms. `F` is the same identifier (a `Sym2Graph` term, e.g. `K3`) passed to
 `generate_forbid_free_empty_typed_flags n F`. Prerequisite: run that command first.
+
+The tactic **dispatches on `F`** with `detectCompleteSym2GraphR?`, the same criterion the
+`generate_forbid_free_*` commands use, so it unfolds whichever unit expansion the matching
+`one_forbidEq_forbidExpand_one_*` step put in the goal and rewrites onto the filter the generator
+actually emitted:
+
+* **`F` a complete graph** (`completeSym2Graph r`) — `forbidExpand_one`, whose filter is the
+  single-flag condition `flagDensity₁ F_forbid.2 (unlabel F') = 0` (paired with
+  `one_forbidEq_forbidExpand_one_ofMem`);
+* **`F` any other graph** — `forbidExpand_one_subgraph`, whose filter ranges over
+  `supergraphFamily F` (paired with `one_forbidEq_forbidExpand_one_subgraph`).
+
+Everything after the unfold is identical: only the unfolded definition differs.
 -/
 syntax "expand_one_hfree_at" num ident : tactic
 
@@ -232,32 +261,9 @@ elab_rules : tactic
       let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}")
       let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
       let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
-      evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
-      evalTactic (← `(tactic|
-        rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; try congr 1) (fun _ _ => rfl)]))
-      evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))
-      evalTactic (← `(tactic| simp [unlabel_emptyType]))
-      evalTactic (← `(tactic| simp [default, flagDensity_empty]))
-      evalTactic (← `(tactic| fold_basis_vectors))
-
-/--
-`expand_one_hfree_at_subgraph n F` is the **subgraph**-forbidding analogue of `expand_one_hfree_at`:
-it unfolds `forbidExpand_one_subgraph` (the family-filter unit expansion) and reduces it onto the
-subgraph-`F`-free flag set `flagSetHfree_n_0_0_<F>` (via its `…_eq` / `…_val_eq`). Same name reuse as
-`expand_one_hfree_at`; only the unfolded definition differs. Prerequisite:
-`generate_forbid_free_empty_typed_flags n F`.
--/
-syntax "expand_one_hfree_at_subgraph" num ident : tactic
-
-elab_rules : tactic
-  | `(tactic| expand_one_hfree_at_subgraph $n:num $forbid:ident) => do
-      let nVal := n.getNat
-      let tagFull := forbid.getId.toString
-      let tag := (tagFull.splitOn ".").getLastD tagFull
-      let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}")
-      let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
-      let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
-      evalTactic (← `(tactic| dsimp only [forbidExpand_one_subgraph]))
+      match ← detectCompleteSym2GraphR? forbid with
+      | some _ => evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
+      | none => evalTactic (← `(tactic| dsimp only [forbidExpand_one_subgraph]))
       evalTactic (← `(tactic|
         rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; try congr 1) (fun _ _ => rfl)]))
       evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))

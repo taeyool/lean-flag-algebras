@@ -251,7 +251,7 @@ theorem C5free_flagAlgebra
   simp [v₄, M₄_real, ratMatrixToReal, M₄]
   reduce_downward_flagmul
 
-  expand_one_hfree_at_subgraph 5 ForbidGraph
+  expand_one_hfree_at 5 ForbidGraph
 
   simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline

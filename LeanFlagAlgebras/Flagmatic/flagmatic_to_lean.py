@@ -926,7 +926,6 @@ def render_proof_body(
             f"(forbidEqWith_smul (forbidEqWith_symm "
             f"(one_forbidEq_forbidExpand_one_subgraph {forbid_tag} {N})))\n"
         )
-        expand_one_line = f"  expand_one_hfree_at_subgraph {N} {forbid_tag}\n"
     else:
         one_expand_line = (
             f"  apply forbidLEWith_trans_forbidEqWith_right ?_  "
@@ -934,7 +933,10 @@ def render_proof_body(
             f"(one_forbidEq_forbidExpand_one_ofMem {forbid_expr} "
             f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n}) {N})))\n"
         )
-        expand_one_line = f"  expand_one_hfree_at {N} {forbid_tag}\n"
+    # One tactic for both routes: `expand_one_hfree_at` inspects `forbid_tag` itself and
+    # unfolds `forbidExpand_one` or `forbidExpand_one_subgraph` accordingly, matching
+    # whichever `one_forbidEq_forbidExpand_one_*` step was emitted just above.
+    expand_one_line = f"  expand_one_hfree_at {N} {forbid_tag}\n"
 
     proof = (
         f"{prefix}"
