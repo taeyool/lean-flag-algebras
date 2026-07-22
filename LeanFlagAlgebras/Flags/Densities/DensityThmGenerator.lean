@@ -638,7 +638,7 @@ elab "generate_forbid_free_flag_pair_density_theorems" patS:num hostS:num kS:num
 
 When the objective flag is smaller than the host size (branch B), `flag_expand_hfree` needs
 `@[simp]` lemmas evaluating `flagDensity₁ objective host` to a concrete rational for every
-forbid-free host flag. `generate_forbid_free_density1_theorems` emits that table; the values
+forbid-free host flag. `generate_forbid_free_flag_density_theorems` emits that table; the values
 are computed at elaboration time by the elementary combinatorics below (the elaboration-time
 analogue of `sym2EmptyTypeFlagDensity₁`), and every emitted theorem is independently verified
 by `flag_bridge_decide`. -/
@@ -659,7 +659,7 @@ def inducedDensity1
       else (acc.1 + 1, acc.2)) (0, 0)
     fracReduce res.2 res.1
 
--- `generate_forbid_free_density1_theorems objN objIdx hostN F`
+-- `generate_forbid_free_flag_density_theorems objN objIdx hostN F`
 --
 -- The auto-generated `flagDensity₁` evaluation table for the branch-B objective
 -- expansion: for the objective flag `Flag_objN_0_0_objIdx` and every `F`-free
@@ -688,8 +688,8 @@ def inducedDensity1
 -- `generate_forbid_free_empty_typed_flags hostN F` (the named flags must exist).
 --
 -- Example — the edge density inside every K5-free 5-vertex flag:
---   `generate_forbid_free_density1_theorems 2 1 5 K5`
-elab "generate_forbid_free_density1_theorems" objNS:num objIdxS:num hostNS:num
+--   `generate_forbid_free_flag_density_theorems 2 1 5 K5`
+elab "generate_forbid_free_flag_density_theorems" objNS:num objIdxS:num hostNS:num
     fStx:ident : command => do
   let objN := objNS.getNat
   let objIdx := objIdxS.getNat

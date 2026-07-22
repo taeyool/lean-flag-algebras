@@ -10,7 +10,7 @@
 #       generate_forbid_free_flags             <n> <k> <m> K{r}
 #       generate_forbid_free_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
 #       generate_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
-#       generate_forbid_free_density1_theorems <objN> <objIdx> <hostN> K{r}   [branch B only]
+#       generate_forbid_free_flag_density_theorems <objN> <objIdx> <hostN> K{r}   [branch B only]
 #     (densities are computed inside Lean -- no `*.json`, no Python regeneration;
 #     the last command emits the `auto_flagDensity1_*` `@[simp]` table in-Lean, so
 #     the skeleton no longer spells those theorems out), preceded by the
@@ -582,7 +582,7 @@ def _objective_from_description(desc: str) -> tuple[str, int, int]:
     flagmatic string is unlabeled (no parenthesized type size). The canonical
     index is the objective's position in the Lean `genSym2Graphs n` enumeration
     (i.e. `Flag_{n}_0_0_{idx}`), consumed by the
-    `generate_forbid_free_density1_theorems` command line.
+    `generate_forbid_free_flag_density_theorems` command line.
     """
     m = _DESC_OBJ_RE.search(desc)
     if not m:
@@ -736,7 +736,7 @@ def render_expand_under_forbid(
     The `@[simp]` density-evaluation lemmas the expansion tactic needs
     (`flag_expand_hfree N F` relies on `flagDensity₁` evaluating to concrete
     rationals via simp) are NOT spelled out here: they are generated in-Lean by
-    the `generate_forbid_free_density1_theorems` command that
+    the `generate_forbid_free_flag_density_theorems` command that
     `render_pruned_commands` emits with the other generation commands (its free
     mask skips every forbid-containing host, exactly matching the
     `generate_forbid_free_*` output).
@@ -1068,8 +1068,8 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
         the objective + host expansion name `FlagAlgebra_{n_obj/N}_0_0_*`);
       * typed flags        = (patN, k, m) and (N, k, m) per block;
       * pair-density + mul = (patN, N, k, m) per block;
-      * density1 table     = (n_obj, obj_idx, N) — only when n_obj < N (branch B):
-        `generate_forbid_free_density1_theorems` emits the `auto_flagDensity1_*`
+      * flag-density table = (n_obj, obj_idx, N) — only when n_obj < N (branch B):
+        `generate_forbid_free_flag_density_theorems` emits the `auto_flagDensity1_*`
         `@[simp]` lemmas `flag_expand_hfree` consumes.
     Only complete-graph forbids are supported (the forbid is `completeSym2Graph r`).
 
@@ -1078,7 +1078,7 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
     theorem later in the file — the AC-sort / re-association on a long RHS sum
     otherwise hits "maximum recursion depth has been reached"), and, when
     `kernel_decide` is True (the default), `set_option flagGen.kernelDecide true`
-    so that all bridging lemmas — including the density1 table — are proved with
+    so that all bridging lemmas — including the flag-density table — are proved with
     `decide +kernel` instead of `native_decide`.
     """
     desc = cert.get("description", "")
@@ -1091,7 +1091,7 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
     N = int(cert["order_of_admissible_graphs"])
 
     # Objective size / canonical index — the empty-typed flags the objective /
-    # its expansion name, and the density1-table parameters.
+    # its expansion name, and the flag-density-table parameters.
     obj_idx: int | None = None
     try:
         _obj_ident, n_obj, obj_idx = _objective_from_description(desc)
@@ -1130,12 +1130,12 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
 
     # Branch B only: the `auto_flagDensity1_*` `@[simp]` evaluation table, emitted
     # in-Lean (last — it needs the empty-typed flags at both n_obj and N).
-    density1_lines: list[str] = []
+    flag_density_lines: list[str] = []
     if obj_idx is not None and n_obj < N:
-        density1_lines = [
+        flag_density_lines = [
             f"-- `flagDensity₁` evaluation table for the objective expansion "
             f"(the `auto_flagDensity1_*` `@[simp]` lemmas).",
-            f"generate_forbid_free_density1_theorems {n_obj} {obj_idx} {N} {tag}",
+            f"generate_forbid_free_flag_density_theorems {n_obj} {obj_idx} {N} {tag}",
         ]
 
     if subgraph_mode:
@@ -1159,7 +1159,7 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
         for (patN, k, m) in block_params:
             lines.append(f"generate_forbid_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
             lines.append(f"generate_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
-        lines.extend(density1_lines)
+        lines.extend(flag_density_lines)
         return "\n".join(lines)
 
     lines = [
@@ -1180,7 +1180,7 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
             f"generate_forbid_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
         lines.append(
             f"generate_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
-    lines.extend(density1_lines)
+    lines.extend(flag_density_lines)
     return "\n".join(lines)
 
 
@@ -1230,7 +1230,7 @@ def render_skeleton(
 ) -> str:
     """Render a complete starter Lean API file for the edge-based pruned pipeline:
     imports, opens, namespace, `def K{r}` + the `set_option` block +
-    `generate_forbid_free_*` commands (including the branch-B density1 table), the
+    `generate_forbid_free_*` commands (including the branch-B flag-density table), the
     matrix/PSD defs, σ_t / v_t definitions, the forbid-free objective expansion
     (branch B), and the auto-proved main theorem.
 
@@ -1511,7 +1511,7 @@ def main(argv: list[str] | None = None) -> None:
         default=True,
         help=(
             "Emit `set_option flagGen.kernelDecide true` before the generate commands "
-            "(default). All bridging lemmas — including the auto density1 table — are "
+            "(default). All bridging lemmas — including the auto flag-density table — are "
             "proved with `decide +kernel` instead of `native_decide`, so the file "
             "carries no compiled-evaluation axioms. Slower than --native-decide for "
             "host size N = 5."

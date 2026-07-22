@@ -19,22 +19,26 @@ open FlagAlgebras.Compute
 
 namespace Mantel
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
--- `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical forbidden flag, no
--- `generate_complete_graph`), and the K3-containing flags are never generated. The pruned
--- commands emit only the K3-free flags, their completeness, and the forbid-free pair-density /
--- multiplication theorems consumed by the proof below.
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
+-- graph is the `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical
+-- forbidden flag, no `generate_complete_graph`); the K3-containing flags are never
+-- generated. The pruned commands emit only the K3-free flags, their completeness, and
+-- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
 -- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
--- `decide +kernel` (viable at n ≤ 3), so this file carries no
--- compiled-evaluation axioms.
+-- `decide +kernel` instead of `native_decide`, so this file carries no
+-- compiled-evaluation axioms.  Slower than `native_decide` for host size N = 5.
 set_option flagGen.kernelDecide true
+set_option maxHeartbeats 0
+set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K3
 generate_forbid_free_empty_typed_flags 3 K3
 generate_forbid_free_flags 2 1 0 K3
 generate_forbid_free_flags 3 1 0 K3
 generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3
 generate_forbid_free_mul_theorems 2 3 1 0 K3
+-- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
+generate_forbid_free_flag_density_theorems 2 1 3 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -60,41 +64,12 @@ noncomputable def v : FlagAlgebraVec σ 2 := ![
   FlagAlgebra_2_1_0_1
 ]
 
-set_option maxHeartbeats 0
-set_option maxRecDepth 1500
-
--- Auto-generated `flagDensity₁` evaluation table (used by
--- `flag_expand 3` to evaluate density coefficients).
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_3_0_0_0
-    : flagDensity₁ Flag_2_0_0_1 Flag_3_0_0_0 = 0
-  := by
-  dsimp [Flag_2_0_0_1, Flag_3_0_0_0]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_3_0_0_1
-    : flagDensity₁ Flag_2_0_0_1 Flag_3_0_0_1 = 1 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_3_0_0_1]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
-    : flagDensity₁ Flag_2_0_0_1 Flag_3_0_0_2 = 2 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_3_0_0_2]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
-over the K3-free 3-vertex flags via `flag_expand_hfree 3 K3` (`basisVector_quot_inducedForbidEq_sum`
-rewritten onto `flagSetHfree_3_0_0_K3`; the triangle term is dropped automatically). -/
+/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
+expanded directly over the K3-free 3-vertex flags via
+`flag_expand_hfree 3 K3` (`basisVector_quot_forbidEq_sum` rewritten onto
+`flagSetHfree_3_0_0_K3`; the forbidden terms are dropped automatically). -/
 lemma mantel_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)]
-        (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
   flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
@@ -118,7 +93,7 @@ theorem mantel_flagAlgebra
 
   expand_one_hfree_at 3 K3
 
-  simp [smul_smul, downward_add, downward_smul]
+  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline
 
   apply forbidLEWith_of_le

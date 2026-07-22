@@ -19,12 +19,14 @@ open FlagAlgebras.Compute
 
 namespace K5turan
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
--- `Sym2Graph 5` term `K5 := completeSym2Graph 5` (no canonical forbidden flag); the K5-containing
--- flags are never generated (genuine pruning). The pruned commands emit only the K5-free flags,
--- their completeness, and the forbid-free pair-density / multiplication theorems for all four
--- σ-types.
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
+-- graph is the `Sym2Graph 5` term `K5 := completeSym2Graph 5` (no canonical
+-- forbidden flag, no `generate_complete_graph`); the K5-containing flags are never
+-- generated. The pruned commands emit only the K5-free flags, their completeness, and
+-- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K5 : Sym2Graph 5 := completeSym2Graph 5
+set_option maxHeartbeats 0
+set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K5
 generate_forbid_free_empty_typed_flags 4 K5
 generate_forbid_free_empty_typed_flags 5 K5
@@ -44,6 +46,8 @@ generate_forbid_free_flag_pair_density_theorems 4 5 3 2 K5
 generate_forbid_free_mul_theorems 4 5 3 2 K5
 generate_forbid_free_flag_pair_density_theorems 4 5 3 3 K5
 generate_forbid_free_mul_theorems 4 5 3 3 K5
+-- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
+generate_forbid_free_flag_density_theorems 2 1 5 K5
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -213,281 +217,12 @@ noncomputable def v₄ : FlagAlgebraVec σ₄ 8 := ![
   FlagAlgebra_4_3_3_7
 ]
 
-set_option maxHeartbeats 0
-set_option maxRecDepth 2000
-
--- Auto-generated `flagDensity₁` evaluation table (used by
--- `flag_expand 5` to evaluate density coefficients).
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_0
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_0 = 0
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_0]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_1
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_1 = 1 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_1]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_2
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_2 = 1 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_2]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_3
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_3 = 1 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_3]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_4
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_4 = 3 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_4]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_5
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_5 = 3 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_5]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_6
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_6 = 3 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_6]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_7
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_7 = 3 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_7]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_8
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_8 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_8]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_9
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_9 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_9]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_10
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_10 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_10]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_11
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_11 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_11]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_12
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_12 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_12]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_13
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_13 = 2 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_13]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_14
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_14 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_14]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_15
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_15 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_15]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_16
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_16 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_16]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_17
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_17 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_17]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_18
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_18 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_18]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_19
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_19 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_19]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_20
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_20 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_20]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_21
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_21 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_21]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_22
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_22 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_22]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_23
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_23 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_23]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_24
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_24 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_24]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_25
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_25 = 3 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_25]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_26
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_26 = 7 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_26]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_27
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_27 = 7 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_27]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_28
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_28 = 7 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_28]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_29
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_29 = 7 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_29]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_30
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_30 = 4 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_30]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_31
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_31 = 4 / 5
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_31]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_5_0_0_32
-    : flagDensity₁ Flag_2_0_0_1 Flag_5_0_0_32 = 9 / 10
-  := by
-  dsimp [Flag_2_0_0_1, Flag_5_0_0_32]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
-over the K5-free 5-vertex flags via `flag_expand_hfree 5 K5` (`basisVector_quot_inducedForbidEq_sum`
-rewritten onto `flagSetHfree_5_0_0_K5`; the K5 term `Flag_5_0_0_33` is dropped automatically). -/
+/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
+expanded directly over the K5-free 5-vertex flags via
+`flag_expand_hfree 5 K5` (`basisVector_quot_forbidEq_sum` rewritten onto
+`flagSetHfree_5_0_0_K5`; the forbidden terms are dropped automatically). -/
 lemma K5turan_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)]
-        (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
   := by
   flag_expand_hfree 5 K5 (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 
@@ -518,7 +253,7 @@ theorem K5turan_flagAlgebra
 
   expand_one_hfree_at 5 K5
 
-  simp [smul_smul, downward_add, downward_smul]
+  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline
 
   apply forbidLEWith_of_le

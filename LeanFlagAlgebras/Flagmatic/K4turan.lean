@@ -1,19 +1,17 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 4:121314232434').
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
--- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
--- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Automation.FlagSumSort
 import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.Automation.FlagExpand
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -21,19 +19,18 @@ open FlagAlgebras.Compute
 
 namespace K4turan
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
--- `Sym2Graph 4` term `K4 := completeSym2Graph 4` (no canonical forbidden flag); the K4-containing
--- flags are never generated (genuine pruning). The pruned commands emit only the K4-free flags,
--- their completeness, and the forbid-free pair-density / multiplication theorems for both σ-types.
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
+-- graph is the `Sym2Graph 4` term `K4 := completeSym2Graph 4` (no canonical
+-- forbidden flag, no `generate_complete_graph`); the K4-containing flags are never
+-- generated. The pruned commands emit only the K4-free flags, their completeness, and
+-- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K4 : Sym2Graph 4 := completeSym2Graph 4
 -- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
--- `decide +kernel` (viable at n ≤ 4), so this file carries no
--- compiled-evaluation axioms.  The heartbeat/recursion limits must be lifted
--- *before* the generate commands: at n = 4 the batched pair-density bridges
--- exceed the default 200k-heartbeat elaboration budget.
+-- `decide +kernel` instead of `native_decide`, so this file carries no
+-- compiled-evaluation axioms.  Slower than `native_decide` for host size N = 5.
 set_option flagGen.kernelDecide true
 set_option maxHeartbeats 0
-set_option maxRecDepth 1500
+set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K4
 generate_forbid_free_empty_typed_flags 3 K4
 generate_forbid_free_empty_typed_flags 4 K4
@@ -45,6 +42,8 @@ generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K4
 generate_forbid_free_mul_theorems 3 4 2 0 K4
 generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K4
 generate_forbid_free_mul_theorems 3 4 2 1 K4
+-- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
+generate_forbid_free_flag_density_theorems 2 1 4 K4
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -106,97 +105,12 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 4 := ![
   FlagAlgebra_3_2_1_3
 ]
 
-set_option maxHeartbeats 0
-set_option maxRecDepth 1500
-
--- Auto-generated `flagDensity₁` evaluation table (used by
--- `flag_expand 4` to evaluate density coefficients).
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_0
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_0 = 0
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_0]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_1
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_1 = 1 / 6
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_1]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_2
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_2 = 1 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_2]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_3
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_3 = 1 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_3]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_4
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_4 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_4]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_5
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_5 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_5]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_6
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_6 = 1 / 2
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_6]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_7
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_7 = 2 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_7]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_8
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_8 = 2 / 3
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_8]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_9
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_9 = 5 / 6
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_9]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  decide +kernel
-
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
-over the K4-free 4-vertex flags via `flag_expand_hfree 4 K4` (`basisVector_quot_inducedForbidEq_sum`
-rewritten onto `flagSetHfree_4_0_0_K4`; the K4 term `Flag_4_0_0_10` is dropped automatically). -/
+/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
+expanded directly over the K4-free 4-vertex flags via
+`flag_expand_hfree 4 K4` (`basisVector_quot_forbidEq_sum` rewritten onto
+`flagSetHfree_4_0_0_K4`; the forbidden terms are dropped automatically). -/
 lemma K4turan_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 4)]
-        (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 4)] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
   flag_expand_hfree 4 K4 (completeSym2Graph_finFlag_mem_forbiddenFlags 4)
 
@@ -223,7 +137,7 @@ theorem K4turan_flagAlgebra
 
   expand_one_hfree_at 4 K4
 
-  simp [smul_smul, downward_add, downward_smul]
+  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline
 
   apply forbidLEWith_of_le

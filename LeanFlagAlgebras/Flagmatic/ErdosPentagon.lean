@@ -1,14 +1,12 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 5:1213243545 density; forbid 3:121323').
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
--- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
--- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Automation.FlagSumSort
 import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
@@ -19,13 +17,18 @@ open FlagAlgebras.Compute
 
 namespace ErdosPentagon
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
--- `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical forbidden flag); the K3-containing
--- flags are never generated (genuine pruning). The pruned commands emit only the K3-free flags
--- (the pentagon `C₅` objective `FlagAlgebra_5_0_0_19` among them), their completeness, and the
--- forbid-free pair-density / multiplication theorems for all three σ-types.
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
+-- graph is the `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical
+-- forbidden flag, no `generate_complete_graph`); the K3-containing flags are never
+-- generated. The pruned commands emit only the K3-free flags, their completeness, and
+-- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
-generate_forbid_free_empty_typed_flags 3 K3
+-- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
+-- `decide +kernel` instead of `native_decide`, so this file carries no
+-- compiled-evaluation axioms.  Slower than `native_decide` for host size N = 5.
+set_option flagGen.kernelDecide true
+set_option maxHeartbeats 0
+set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 4 K3
 generate_forbid_free_empty_typed_flags 5 K3
 generate_forbid_free_flags 4 3 0 K3
@@ -152,9 +155,6 @@ noncomputable def v₃ : FlagAlgebraVec σ₃ 5 := ![
   FlagAlgebra_4_3_2_6
 ]
 
-set_option maxHeartbeats 0
-set_option maxRecDepth 1500
-
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 5:1213243545 density; forbid 3:121323'
 Bound: '24/625'. -/
@@ -178,7 +178,7 @@ theorem ErdosPentagon_flagAlgebra
 
   expand_one_hfree_at 5 K3
 
-  simp [smul_smul, downward_add, downward_smul]
+  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline
 
   apply forbidLEWith_of_le

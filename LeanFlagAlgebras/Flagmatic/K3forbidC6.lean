@@ -18,19 +18,14 @@ open FlagAlgebras.Compute
 
 namespace K3forbidC6
 
-set_option maxHeartbeats 0
--- size-6 is the largest example: the RHS flag-sum has far more summands than the
--- size-4/5 examples, so the AC-sort pipeline's `simp only [add_assoc, …]` re-association
--- recurses deeper than the usual 1500/2000. Bumped accordingly (still a Lean-level
--- `maxRecDepth` guard, well within the elaboration thread's native stack).
-set_option maxRecDepth 100000
-
 -- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
 -- graph is the `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical
 -- forbidden flag, no `generate_complete_graph`); the K3-containing flags are never
 -- generated. The pruned commands emit only the K3-free flags, their completeness, and
 -- the forbid-free pair-density / multiplication theorems consumed by the proof below.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+set_option maxHeartbeats 0
+set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 4 K3
 generate_forbid_free_empty_typed_flags 6 K3
 generate_forbid_free_flags 4 2 0 K3
@@ -174,7 +169,7 @@ theorem K3forbidC6_flagAlgebra
 
   expand_one_hfree_at 6 K3
 
-  simp [smul_smul, downward_add, downward_smul]
+  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
   flagsum_ac_sort_rhs_pipeline
 
   apply forbidLEWith_of_le
