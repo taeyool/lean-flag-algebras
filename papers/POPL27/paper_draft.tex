@@ -469,9 +469,9 @@ uniformly at random, uses its vertices as labels, and requires the inequality
 to hold with probability one.  \Cref{sec:metatheory} calls this ensemble
 semantics and compares it with the built-in (or quotient) semantics.  Every
 quotient-valid inequality is ensemble-valid.  The two orders agree at the
-empty type, but they can differ at a nonempty type; they agree for all
-inequalities at a fixed type exactly when the constrained class is
-root-plantable at that type.  We prove that blow-up closure guarantees this
+empty flag type, but they can differ at a nonempty flag type; they agree for all
+inequalities at a fixed flag type exactly when the constrained class is
+root-plantable at that flag type.  We prove that blow-up closure guarantees this
 agreement and give a \(C_4\)-free counterexample showing that heredity alone
 does not.
 
@@ -543,7 +543,7 @@ algebras defined below are relative to this fixed $\mathcal{H}$.
 \subsection{Flag Types and Flags}
 
 \paragraph{Flag Types.}
-A flag type specifies the labeled part shared by all flags of that type.
+A flag type specifies the labeled part shared by all flags of that flag type.
 Formally, a \emph{flag type} of size $k$ is an \(\mathcal{H}\)-free graph
 \(\sigma\) with vertex set $[k]$.  The \emph{empty flag type} $\emptyset$, of
 size zero, is the unique graph on the empty vertex set.
@@ -569,7 +569,7 @@ we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
 \emph{$\sigma$-flag induced by $F$ on $S$}.
 Flags over the empty flag type $\emptyset$ are simply ordinary
 \(\mathcal{H}\)-free graphs with no labeled vertices.
-\Cref{fig:flag-examples} illustrates several flags of different types.
+\Cref{fig:flag-examples} illustrates several flags of different flag types.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
 \emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
@@ -581,8 +581,8 @@ $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
 $\mathcal{F}^\sigma$ itself is infinite.
 When a flag type~$\sigma$ is fixed, we consistently call an individual flag
-of that type a $\sigma$-flag.  We reserve the unqualified term \emph{flag} for
-statements in which the type is unspecified, varies, or is irrelevant.
+of that flag type a $\sigma$-flag.  We reserve the unqualified term \emph{flag} for
+statements in which the flag type is unspecified, varies, or is irrelevant.
 
 \begin{figure}[t]
   \centering
@@ -1129,7 +1129,7 @@ For $f\in\mathcal{A}^\sigma$, we call
 $\llbracket f\rrbracket_\sigma$ the \emph{downward image} of $f$.
 
 We write $\langle\sigma\rangle_0\in\mathcal{A}^\emptyset$ for the empty-type
-flag-algebra basis element represented by the underlying graph of the type
+flag-algebra basis element represented by the underlying graph of the flag type
 $\sigma$, with its vertex labels forgotten.  Applying the downward operator to
 the typed unit therefore gives
 \[
@@ -1906,10 +1906,10 @@ theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\s
 \end{lstlisting}
 The hypotheses \lean{h$\ell_1$} and \lean{h$\ell_2$} are the admissibility
 assumptions on the two output sizes: \(\ell_1\) and \(\ell_2\) must both be
-large enough to contain the two input $\sigma$-flags after identifying their common
+large enough to contain the two input $\sigma$-flags after identifying their common flag
 type \(\sigma\).  Here \(F_j.1\) is the total number of vertices of \(F_j\),
 and \(n_0\) is the number of labeled vertices in \(\sigma\).  Equivalently, the intended output
-size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the
+size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the flag
 type are sampled disjointly in the two $\sigma$-flags, while the \(n_0\) labeled vertices
 are shared.  The theorem then says that any two such admissible output sizes
 give equivalent flag vectors, justifying the choice of the minimal size in
@@ -2909,14 +2909,14 @@ The generated flags are named by a fixed scheme, already visible in the
 constants of \Cref{sec:reflection-adequacy}.  A name such as
 \lean{Flag\_n\_k\_m\_i} or \lean{FlagAlgebra\_n\_k\_m\_i} carries four
 indices: \(n\) is the size of the flag, \(k\) is the size of its flag type,
-\(m\) is the position of the type's graph in the enumeration of the
+\(m\) is the position of the flag type's graph in the enumeration of the
 \(k\)-vertex graphs, and \(i\) is the position of the flag itself in the
-enumeration of the \(n\)-vertex flags of that type.  Both enumerations are in
+enumeration of the \(n\)-vertex flags of that flag type.  Both enumerations are in
 a fixed canonical order: graphs are listed by edge count, with ties broken
 lexicographically by the smallest edge list over all vertex relabelings, and
 the flags over a graph are listed by the placement of their labels.  The
 reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
-scheme, and the empty type is written \(k=m=0\).  Thus
+scheme, and the empty flag type is written \(k=m=0\).  Thus
 \lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
 number \(1\) among the three-vertex flags of the unique one-vertex type,
 namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is the
@@ -2941,7 +2941,7 @@ the following form:
 generate_empty_typed_flags 2
 generate_empty_typed_flags 3
 
--- Use the unique type on one labeled vertex (k = 1, m = 0),
+-- Use the unique flag type on one labeled vertex (k = 1, m = 0),
 -- and generate its flags at the sizes 2 and 3.
 generate_flags 2 1 0
 generate_flags 3 1 0
@@ -2954,10 +2954,10 @@ generate_mul_theorems 2 3 1 0
 The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.
 \lean{generate\_empty\_typed\_flags n} generates the empty-typed flags on
 \(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
-flags of the type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique
+flags of the flag type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique flag
 type on one labeled vertex.  The density and multiplication commands take a
 pattern size \(p\) and a host size \(h\), followed by the same \(k,m\)
-describing the type, and the suffix \lean{no\_forbid} says that no
+describing the flag type, and the suffix \lean{no\_forbid} says that no
 forbidden-graph filter is being applied.
 \Cref{tab:generation-commands} collects the whole command family, including
 the forbid-free variants described below.
@@ -2976,10 +2976,10 @@ the forbid-free variants described below.
     Command & Generates \\
     \midrule
     \lean{generate\_empty\_typed\_flags n} &
-      the empty-typed flags on \(n\) vertices, with completeness \\
+      the empty-typed flags on \(n\) vertices, with the completeness lemma \\
     \lean{generate\_flags n k m} &
-      the \(n\)-vertex flags of type \((k,m)\), with unlabelings, downward
-      coefficients, and completeness \\
+      the \(n\)-vertex flags of flag type \((k,m)\), with unlabelings, downward
+      coefficients, and the completeness lemma \\
     \lean{generate\_flag\_pair\_density\_theorems\_no\_forbid p h k m} &
       the pair-density theorems for size-\(p\) patterns in size-\(h\) hosts \\
     \lean{generate\_mul\_theorems p h k m} &
@@ -2987,10 +2987,10 @@ the forbid-free variants described below.
       size-\(h\) hosts \\
     \midrule
     \lean{generate\_forbid\_free\_empty\_typed\_flags n H} &
-      the \(H\)-free empty-typed flags, with filtered completeness \\
+      the \(H\)-free empty-typed flags, with the filtered completeness lemma \\
     \lean{generate\_forbid\_free\_flags n k m H} &
       the \(H\)-free typed flags, with unlabelings, downward coefficients,
-      and filtered completeness \\
+      and the filtered completeness lemma \\
     \lean{generate\_forbid\_free\_flag\_pair\_density\_theorems p h k m H} &
       the pair-density theorems over the \(H\)-free flags \\
     \lean{generate\_forbid\_free\_mul\_theorems p h k m H} &
@@ -3048,7 +3048,7 @@ tractable as the flag sizes grow.  The main optimizations are the following.
 The enumeration of flags is inductive in the size: the underlying
 \(n\)-vertex graph representatives are obtained by extending the
 \((n-1)\)-vertex representatives by one vertex in all possible ways, and the
-typed flags on \(n\) vertices are obtained by placing the type's labels on
+typed flags on \(n\) vertices are obtained by placing the flag type's labels on
 those representatives in every valid way.  The working lists therefore stay
 close to one representative per isomorphism class, rather than covering all
 \(2^{\binom{n}{2}}\) graphs on a fixed vertex set.
@@ -3081,8 +3081,9 @@ is filtered before any typed structure is built, so the labeled-graph work is
 spent only on the surviving graphs.  The pruned generation nevertheless
 proves the same filtered completeness lemma.  Its enumeration misses no
 \(H\)-free isomorphism class because \(H\)-freeness is invariant under
-isomorphism and preserved by deleting a vertex, so the completeness argument
-descends through the size induction; a proved bridge then equates the
+isomorphism and preserved by deleting a vertex, so the proof of the
+completeness lemma descends through the size induction; a proved bridge then
+equates the
 combinatorial containment test driving the pruning with the density condition
 stated in the lemma.
 
@@ -3118,7 +3119,7 @@ element $[F]$ of a target graph $F$ satisfies
 $[F]\leq_{\mathcal H}c\cdot\mathbf 1$.  Here $\leq_{\mathcal H}$ is the empty-type semantic order of
 \Cref{sec:background-semantic-order}, for the certificate's forbidden family
 $\mathcal{H}$.  The Lean development establishes the corresponding ensemble
-form (\Cref{def:ensemble-semantic-order}); the two agree at the empty type
+form (\Cref{def:ensemble-semantic-order}); the two agree at the empty flag type
 (\Cref{sec:metatheory}).  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
 the flags whose basis elements enter the proof, together with the rational
@@ -3308,8 +3309,11 @@ them into exact rational matrices.
 A full certificate uses several flag types at once, one PSD matrix per flag
 type, so the single matrix $M$ above becomes a family indexed by the flag type.
 The index $t$ ranges over the chosen flag types $\sigma_t$, each contributing
-its own flag vector $v_t$ and matrix $M_t$; the downward quadratic form it
-produces is
+its own flag vector $v_t$ and matrix $M_t$.  We call the data for one such
+index, the flag type $\sigma_t$ together with $v_t$ and $M_t$, an \emph{SDP block};
+the name reflects that the matrices $M_t$ are the diagonal blocks of the
+semidefinite program's matrix variable.  The downward quadratic form
+block~$t$ produces is
 \[
   Q_t := \bigl\llbracket
     \langle v_t, M_t\, v_t\rangle
@@ -3353,31 +3357,30 @@ them.
 % subsection absorbed the former proof-skeleton and per-part subsections.
 
 We organize the compiler around a four-part proof skeleton, with one part
-for each obligation in turning a certificate into a verified proof.
-The compiler uses the reflection machinery of \Cref{sec:reflection} to make
-the finite bookkeeping involving flags and densities executable and
-checkable.  We explain this connection in detail under Part~1 below.  The four
+for each obligation in turning a certificate into a verified proof.  The four
 parts are:
 
 \begin{enumerate}
-  \item \textbf{Flags and density data.}  The named flags and corresponding
-    flag-algebra basis elements used by the proof (restricted to those that are
-    free of the chosen forbidden graph), together with proved identities for
-    single-flag densities, flag-pair densities, and products of flags sharing
-    a common type.
+  \item \textbf{Generating the flags and density data.}  The proof must name
+    the flags and corresponding flag-algebra basis elements it uses,
+    restricted to those that are free of the chosen forbidden graph, and must
+    prove the identities for single-flag densities, flag-pair densities, and
+    products of flags sharing a common flag type.
     These identities support the algebraic rewrites used later in the proof.
-  \item \textbf{Certificate matrices and basis-element vectors.}  For each SDP
-    block $t$, a subflag type $\sigma_t$ and a rational matrix $M_t$ paired with
-    a list of $\sigma_t$-flags $E_{t,i}$; their basis elements
-    $e_{t,i}:=[E_{t,i}]$ form the vector~$v_t$ and the quadratic form
-    $\langle v_t, M_t\, v_t\rangle$.
+  \item \textbf{Certifying the matrices.}  For each SDP block $t$, the
+    certificate supplies a rational matrix $M_t$ and a list of
+    $\sigma_t$-flags $E_{t,i}$.  The proof must define the vector~$v_t$ of
+    their basis elements $e_{t,i}:=[E_{t,i}]$ and must prove that $M_t$ is
+    positive semidefinite.
   \item \textbf{Lifting the objective (when needed).}  If the target graph $F$
-    has fewer than $N$ vertices, one auxiliary lemma first lifts $[F]$ to the
+    has fewer than $N$ vertices, where $N$ is the host size chosen up front to
+    bound the certificate search in \Cref{sec:flagmatic-background}, the proof
+    must first lift $[F]$ to the
     host-size basis, dropping the contributions that contain a copy of the
     forbidden graph.
-  \item \textbf{The main theorem.}  With
+  \item \textbf{Assembling the main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
-    and the certificate's non-negative remainder~$r$, the compiler assembles
+    and the certificate's non-negative remainder~$r$, the proof must assemble
     the bound $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
     in \Cref{sec:flagmatic-background}:
     \[
@@ -3408,16 +3411,12 @@ python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
 Here \lean{<cert>.json} is a placeholder for a Flagmatic certificate file, which
 identifies the target and forbidden graphs and contains the proposed bound,
-the types and flags used by each SDP block, and the rational matrix data.  The
+the flag types and flags used by each SDP block, and the rational matrix data.  The
 argument \lean{<target>.lean} is the path at which the script should write the
-generated Lean source file.  The name
-\lean{gen-skeleton} refers to the fixed four-part proof skeleton above; for the
-supported cases, the command fills in all four parts rather than leaving an
-incomplete template.  In particular, the output file contains the flag and
+generated Lean source file.  The output file contains the flag and
 density generation commands of Part~1, the matrices and basis-element vectors
 of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
-proof of the bound in Part~4.  The resulting file compiles with no
-\lean{sorry} gaps.
+proof of the bound in Part~4.
 
 For example, applying the translator to the Mantel certificate with
 the following command
@@ -3440,17 +3439,21 @@ the resulting identifier mapping and the Part~1 generation commands.  We now
 explain the generated Lean file one part at a time before showing an abridged
 assembled output.
 
-\paragraph{Flags and density data (Part~1).}
+\paragraph{Generating the flags and density data (Part~1).}
 This is where the reflection layer of \Cref{sec:reflection} enters the
-compiler.  Part~1 defines the certificate's forbidden graph as a
+compiler, making the finite bookkeeping involving flags and densities
+executable and checkable.  Part~1 defines the certificate's forbidden graph as a
 \lean{Sym2Graph} term and invokes the \lean{generate\_forbid\_free\_*}
 commands of \Cref{sec:reflection-generation} on it; the commands dispatch
 internally on whether the forbidden graph is complete.  During elaboration,
 they enumerate the flags that avoid the forbidden graph, with isomorphic
 flags appearing only once.  For each enumerated flag, the commands emit a concrete
-reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty type
-or a \lean{Sym2Flag} at a nonempty type, together with its decoded
-specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
+reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty flag type
+or a \lean{Sym2Flag} at a nonempty flag type, together with its decoded
+specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.  As in
+\Cref{sec:reflection-generation}, the commands also prove the completeness
+lemma stating that the emitted flags exhaust the flags avoiding the forbidden
+graph.
 
 After emitting these flags, Part 1 generates
 the rewrite theorems, which are used later
@@ -3466,10 +3469,10 @@ the required single-flag densities.  The adequacy theorems from
 \Cref{sec:reflection} turn all these reflection-layer evaluations into
 specification-level statements about the decoded flags.  The multiplication
 generator then combines the pair-density identities with the general
-multiplication theorem and the completeness theorem for the generated flag set
+multiplication theorem and the completeness lemma for the generated flag set
 to derive the required product expansions.
 
-\paragraph{Certificate matrices (Part~2).}
+\paragraph{Certifying the matrices (Part~2).}
 With the flags and their rewrite theorems in place, Part~2 discharges the
 positive-semidefiniteness obligations.  The certificate supplies rational
 matrices $Q'_t$ and $R_t$ that already give an exact rational congruence
@@ -3541,7 +3544,7 @@ supergraphs internally.  Thus, the two tactics implement the same lifting step
 for two representations of subgraph-freeness; neither introduces additional
 forbidden graphs into the certificate.
 
-\paragraph{The main theorem (Part~4).}
+\paragraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the forward
 chain from \Cref{sec:flagmatic-background}.  The certificate identity
 $[F]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
@@ -4474,7 +4477,7 @@ fundamental inclusion
   S_\sigma\subseteq Q_\sigma.
 \end{equation}
 We say that \((\mathcal G,\mathcal K,\sigma)\) is
-\emph{root-plantable}\footnote{The vertices distinguished by the type
+\emph{root-plantable}\footnote{The vertices distinguished by the flag type
 \(\sigma\) are often called the \emph{roots}, which explains the first part of
 the term \emph{root-plantable}.  A finite \(\sigma\)-flag \((G,\theta)\)
 records a profile of \(\sigma\)-flag densities relative to a specified embedding
@@ -4586,10 +4589,10 @@ existence of a suitable interior, not that every interior works.
 \begin{theorem}[Blow-up closure implies root-plantability]
 \label{thm:blowup-root-plantability-summary}
 Every blow-up-closed hereditary graph class is root-plantable at every
-nonempty type that is non-degenerate for the class.  The empty type is
+nonempty flag type that is non-degenerate for the class.  The empty flag type is
 root-plantable for every hereditary graph class, independently of blow-up
 closure.  Consequently, quotient and ensemble orders agree at every
-non-degenerate type in a blow-up-closed class.
+non-degenerate flag type in a blow-up-closed class.
 \end{theorem}
 
 The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
@@ -4924,7 +4927,7 @@ graphs.  A further case study proves a $K_4$-free $P_4$ density bound using the
 same automation layer.  We also summarized a separately developed
 mathematical meta-theory of constrained semantics: quotient non-negativity
 always implies ensemble non-negativity, and the converse holds for every typed
-expression exactly when the constrained class is root-plantable at that type.
+expression exactly when the constrained class is root-plantable at that flag type.
 Its Lean development was generated by a Claude-driven autoformalization
 workflow that reused the manually developed flag-algebra library.
 
@@ -5034,7 +5037,7 @@ without replacing the mathematical specification.
 \paragraph{Lesson 3 (Generated names can carry metadata for automation).}
 Every flag and flag-algebra constant in the development is named according
 to the scheme \lean{Flag\_n\_k\_m\_i} and \lean{FlagAlgebra\_n\_k\_m\_i},
-where $n$ is the vertex count, $k$ and $m$ identify the type graph, and $i$
+where $n$ is the vertex count, $k$ and $m$ identify the flag type, and $i$
 is a canonical index.  The convention is not merely organizational.  While
 Lean processes a proof script and turns tactic output into typed terms, the
 sorting tactics inspect each constant's syntactic \lean{Name} and parse its
