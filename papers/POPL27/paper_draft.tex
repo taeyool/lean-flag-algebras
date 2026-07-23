@@ -3874,22 +3874,26 @@ Since, by the convergence theorem
 \lean{tendsto\_\allowbreak generalizedTuranDensity} of \Cref{sec:forbidden},
 the normalized extremal numbers $\mathrm{ex}(n,\,C_5;\,K_3)/\binom{n}{5}$
 converge to $\tdensity{C_5}{K_3}$, it suffices to exhibit, at infinitely many
-orders, one triangle-free graph whose normalized count of induced pentagons
-is at least $\tfrac{24}{625}$.  The
-witness is the \emph{$n$-fold blow-up} of $C_5$: replace each vertex of the
-pentagon by a class of $n$ vertices, and join two vertices of distinct
-classes exactly when the underlying pentagon vertices are adjacent; vertices
+orders, one triangle-free graph whose normalized count of induced copies of
+$C_5$ is at least $\tfrac{24}{625}$.  The
+witness is the \emph{$n$-fold blow-up} of $C_5$: replace each vertex of
+$C_5$ by a class of $n$ vertices, and join two vertices of distinct
+classes exactly when the corresponding vertices of $C_5$ are adjacent;
+vertices
 of a common class remain non-adjacent.  The blow-up is triangle-free:
 adjacent vertices lie in distinct classes, so the classes of a hypothetical
 triangle would form a triangle in $C_5$ itself, which has none.  It also
-contains many pentagons: picking one vertex from each of the five classes
+contains many copies of $C_5$: picking one vertex from each of the five
+classes
 yields five vertices that inherit exactly the adjacencies of $C_5$, so each
-of the $n^5$ choice functions induces a copy of $C_5$, and distinct choices
-give distinct vertex sets.  These copies are induced, as the density
+of the $n^5$ choice functions induces a copy of $C_5$.  These copies are
+induced, as the density
 convention of \Cref{sec:intro} requires.  (In a triangle-free graph the
 distinction disappears anyway: every $C_5$ subgraph is induced, since any
-chord of the cycle would create a triangle.)  The blow-up is therefore a
-triangle-free graph on $5n$ vertices with at least $n^5$ induced pentagons,
+chord, an edge joining two non-consecutive vertices of the cycle, would
+create a triangle.)  The blow-up is therefore a
+triangle-free graph on $5n$ vertices with at least $n^5$ induced copies
+of~$C_5$,
 so $\mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5$, and normalizing gives, for every
 $n\geq1$,
 \[
@@ -3920,26 +3924,29 @@ lemma subgraphCount_blowUp_C5_ge (n : (*@$\mathbb{N}$@*))
 theorem generalizedExtremalNumber_K3_C5_ge (n : (*@$\mathbb{N}$@*))
     : generalizedExtremalNumber (5 * n) K3 C5 (*@$\geq$@*) n ^ 5 := ...
 \end{lstlisting}
-\lean{blowUp G n} is the blow-up of an arbitrary base graph $G$: its vertex
-type is the product $V\times\Fin{n}$, so the class of a base vertex $v$ is
-the fiber $\{v\}\times\Fin{n}$, and its \lean{Adj} field compares first
-coordinates through $G$.  Both clauses of the informal description follow:
-vertices of a common class are non-adjacent because $G$ has no loops, and two
+\lean{blowUp G n} is the $n$-fold blow-up of an arbitrary base graph $G$: its
+vertex type is the product type \lean{V $\times$ Fin n}, whose elements are
+the pairs $(v,i)$ of a vertex \lean{v : V} and an index \lean{i : Fin n}, so
+the class of a base vertex $v$ consists of the pairs with first coordinate
+$v$, and the \lean{Adj} field compares first coordinates through $G$.
+Vertices of a common class are non-adjacent because $G$ has no loops, and two
 classes over adjacent base vertices are completely joined.
 \lean{blowUp\_K3\_free} is the triangle-freeness property.  Its proof
 transports a hypothetical triangle back to the base graph: composing a copy
 of $K_3$ in the blow-up with the first projection gives a copy of $K_3$ in
 $G$, where injectivity survives the projection because vertices of a common
 class are non-adjacent.  Instantiating $G$ with $C_5$, whose own
-triangle-freeness is a finite check, shows that the blow-up of the pentagon
+triangle-freeness is a finite check, shows that the blow-up of $C_5$
 is triangle-free.
 \lean{subgraphCount\_blowUp\_C5\_ge} is the counting property; here
 \lean{subgraphCount C5 G} is the number of induced subgraphs of \lean{G}
 isomorphic to $C_5$, matching the induced-copy convention of
 \Cref{sec:intro}.  The proof converts the one-vertex-per-class recipe into an
-injection from \lean{(Fin 5 $\to$ Fin n)} into the pentagon subgraphs of the
-blow-up: a choice function $g$ is sent to the subgraph induced on
-$\{(i,g(i)) \mid i\in\Fin{5}\}$, and distinct choice functions give distinct
+injection from \lean{(Fin 5 $\to$ Fin n)} into the induced copies of $C_5$
+in the
+blow-up: a choice function $g$ is sent to the subgraph induced on the five
+vertices $(i, g(i))$ for \lean{i : Fin 5}, and distinct choice functions give
+distinct
 subgraphs.
 \lean{generalizedExtremalNumber\_K3\_C5\_ge} combines the previous two
 results into the finite bound $\mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5$; the Lean
@@ -3953,7 +3960,7 @@ representation issues of \Cref{sec:obstacles}).  The remaining steps, the
 displayed normalization and the passage to the limit along the subsequence of
 orders $5n$, produce \lean{ErdosPentagon\_Turan\_lowerBound}.
 
-\paragraph{Additional Goodman-style consequences.}
+\paragraph{Other inequalities.}
 The formalization also includes two further flag-algebra inequalities, both
 due to Goodman~\cite{goodman1959} and both proved with the same basic
 infrastructure.
@@ -3966,19 +3973,27 @@ which bounds the triangle density from below in terms of the edge density:
 under a positive homomorphism with edge density $e$, the triangle density is
 at least $e(2e-1)$, a quantity that becomes positive as soon as $e$ exceeds
 the Mantel threshold $\tfrac12$.  The proof combines the size-three expansion
-of $K_2$ with a Cauchy--Schwarz inequality for the downward operator, applied
-to the edge flag labeled at one endpoint.
+of $K_2$ with the Cauchy--Schwarz inequality for the downward operator,
+\[
+  \llbracket f\,g\rrbracket_\sigma^{\,2}
+  \;\leq\;
+  \llbracket f^2\rrbracket_\sigma\cdot\llbracket g^2\rrbracket_\sigma,
+\]
+which is a separate theorem in Razborov's paper~\cite{razborov2007flag} and
+is proved in the development in this general form as
+\lean{Cauchy\_\allowbreak Schwarz\_\allowbreak inequality}; here it is
+applied to the edge flag labeled at one endpoint.
 \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
 \[
   \overline{K_3} + K_3 \;\geq\; \tfrac14\cdot\mathbf{1},
 \]
-where $\overline{K_3}$ is the empty graph on three vertices, written
-\lean{O3} in the development: asymptotically, at least a quarter of all
+where $\overline{K_3}$ is the empty graph on three vertices: asymptotically,
+at least a quarter of all
 vertex triples induce a triangle or an independent set.  Reading a graph and
 its complement as the two color classes of a $2$-edge-colored complete graph
 turns this into Goodman's classical bound on the number of monochromatic
 triangles; the proof reuses the downward square certificate of Mantel's
-theorem.  These statements illustrate that the formalized algebraic layer
+theorem.  These statements illustrate that the specification layer
 supports inequalities among flag-algebra expressions beyond Tur\'an problems
 that maximize the induced density of one graph subject to forbidding another
 as a subgraph.
