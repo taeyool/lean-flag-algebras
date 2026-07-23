@@ -3655,31 +3655,41 @@ translation is central to the following trust model.
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
 
-There are two distinct questions of trust.  First, the complete generated
-files used here introduce neither axiom declarations nor \lean{sorry}.
-Within this output discipline, neither the SDP solver nor the compiler script
-is trusted for the logical validity of a theorem that Lean accepts.  The
-emitted matrices must be proved positive semidefinite, the certificate
-calculation must normalize to non-negative coefficients, and the final theorem
-must typecheck.  Subject to Lean's trusted base, erroneous data cannot make an
-invalid proof term valid.
+There are two distinct questions of trust: is the theorem that Lean accepts
+valid, and is it the statement the certificate was meant to yield?
 
-Second, the compiler script is trusted for \emph{translation fidelity}: it parses the
+For the first question, neither the SDP solver nor the compiler script is
+trusted for the logical validity of a theorem that Lean accepts.  The
+complete generated files used here introduce neither axiom declarations nor
+\lean{sorry}, so every claim is carried by a proof term Lean checks: the
+emitted matrices must be proved positive semidefinite, the certificate
+calculation must normalize to non-negative coefficients, and the final
+theorem must typecheck.  Subject to Lean's trusted base, erroneous data
+cannot make an invalid proof term valid.
+
+For the second question, the compiler script is trusted for \emph{translation
+fidelity}: it parses the
 certificate, chooses the corresponding entry in Lean's canonical enumeration
 for each certificate flag, reconstructs $M_t=R_tQ'_tR_t^\top$, and selects the
 target, bound, and forbidden graph.
 These choices are visible in the generated declarations and theorem statement,
 but Lean does not prove that they faithfully reproduce the source certificate.
 A translation error could therefore produce a valid theorem different from
-the one intended.  This is an auditability boundary, rather than a soundness
-gap in the generated Lean theorem.
+the one intended.  Guarding against this does not require trusting the
+script; it requires reading the final theorem statement.  In this sense the
+script marks an auditability boundary, rather than a soundness gap in the
+generated Lean theorem.
 
-The proof obligations also use two evaluation mechanisms.  Exact matrix
-equalities in the PSD proof are discharged by \lean{decide +kernel}, so their
-computation is checked by the kernel.  The much larger finite enumerations and
-density calculations use \lean{native\_decide}; these checks additionally trust
-Lean's native compiler and runtime.  Direct kernel reduction of those
-computations is impractical at the sizes considered here.  Finally, the custom
+The proof obligations also use two evaluation mechanisms.  Five of the seven
+generated files evaluated in \Cref{sec:results}, including the Erd\H{o}s
+pentagon, discharge every finite
+computation, from the exact matrix equalities of the PSD proofs to the
+enumerations and density calculations, by \lean{decide +kernel}; the kernel
+checks all of it, and no compiled-evaluation axiom appears.  In the $K_5$-free
+and $C_5$-free edge-density certificates, kernel reduction of the density
+calculations was too slow to be practical, so those two files prove them by
+\lean{native\_decide} and additionally trust Lean's native compiler and
+runtime.  Finally, the custom
 tactics are unverified metaprograms whose dependence on elaborated expression
 shapes affects robustness and portability.  They construct proof terms that
 Lean checks, so a tactic failure leaves the proof incomplete rather than
@@ -4841,7 +4851,7 @@ calculations over graphs on three, four, or five vertices.  At this scale,
 batched theorem generation makes the required families of finite identities
 manageable.  For the five-vertex pentagon certificate, the three flag types
 require 1,800; 672; and 360 pair-density theorems, respectively.  Lean checks
-these 2,832 identities in 15 native-evaluation batches and then uses the
+these 2,832 identities in 15 batched \lean{decide +kernel} evaluations and then uses the
 resulting theorems in the complete certificate proof.  This demonstrates that
 the current reflection and automation layers can support calculations
 involving thousands of density facts at the five-vertex scale.
@@ -4969,8 +4979,8 @@ obstacles those choices exposed, the executable and automation layers we built
 around them, the recurring proof patterns we observed, the questions our work surfaced but
 did not resolve, and the lessons we believe are transferable beyond flag
 algebras.  In places where an outcome was forced by feasibility rather than
-chosen for principled reasons, most prominently the use of
-\lean{native\_decide} for the generated density theorems, we have said so.
+chosen for principled reasons, most prominently the residual use of
+\lean{native\_decide} in the two largest certificates, we have said so.
 
 We expect the architecture to transfer to further graph flag algebra
 arguments because the same concerns recur: quotient-level semantics, exact
@@ -5130,13 +5140,14 @@ native compiler, whereas \lean{decide +kernel} performs the evaluation inside
 the kernel.  This difference matters even though both commands close Lean
 goals.
 
-For the pentagon proof, \lean{native\_decide} checks 15 batch equalities, from
-which Lean derives the 2,832 individual pair-density theorems by projection.
-Kernel evaluation of these numerous closed reflection-layer computations is
-not practical at the current scale.  The three SDP matrix equalities (sizes
-$8 \times 8$, $6 \times 6$, $5 \times 5$ over $\mathbb{Q}$) are discharged
-by \lean{decide +kernel}.  These matrices are small enough for kernel
-evaluation, so their exact rational equalities remain kernel-checked.
+Five of the seven certificate proofs, the pentagon among them, discharge
+every finite computation by \lean{decide +kernel}; for the pentagon this
+means 15 batch equalities checked by the kernel, from which Lean derives the
+2,832 individual pair-density theorems by projection.  In the $K_5$-free and
+$C_5$-free edge-density proofs, kernel evaluation of the batched density
+computations is not practical at the current scale, so those files prove them
+by \lean{native\_decide}; their SDP matrix equalities are small enough for
+kernel evaluation and remain discharged by \lean{decide +kernel}.
 
 This asymmetry is a feasibility outcome, not a general recommendation about
 where trust should lie.  Reporting it lets a reader distinguish the
