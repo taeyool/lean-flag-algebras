@@ -2775,14 +2775,15 @@ stated in the
 specification layer, we need an explicit map from the latter representation to
 the former.  We call this map \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
-def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n) : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
+def Sym2Flag.toFlag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G : Sym2Flag (*@$\sigma$@*) n) 
+    : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
   Quotient.lift
     (fun G : Sym2LabeledGraph (*@$\sigma$@*) n => (*@$\llbracket$@*)G.toLabeledGraph(*@$\rrbracket$@*))
     ... -- proof that the lift respects the equivalence relation of the quotient
     G
 \end{lstlisting}
 
-With \lean{Sym2Flag.toFlag} in hand we can carry out the reflection described
+With \lean{Sym2Flag.toFlag} in hand, we can carry out the reflection described
 in \Cref{sec:reflection}.  It asks for a program and a theorem saying that the
 program's output agrees with the abstract definition in the specification
 layer.
