@@ -3012,8 +3012,8 @@ the forbid-free variants described below.
     \lean{generate\_flag\_pair\_density\_theorems\_no\_forbid p h k m} &
       the pair-density theorems for size-\(p\) patterns in size-\(h\) hosts \\
     \lean{generate\_mul\_theorems p h k m} &
-      the product expansions \([F_1]\cdot[F_2]=\sum_G c_G\,[G]\) over the
-      size-\(h\) hosts \\
+      for every pair \(F_1,F_2\in\mathcal F^\sigma_p\), the product expansion
+      \([F_1]\cdot[F_2]=\sum_{G\in\mathcal F^\sigma_h} c_G\,[G]\) \\
     \midrule
     \lean{generate\_forbid\_free\_empty\_typed\_flags n H} &
       the \(H\)-free empty-typed flags, with the filtered completeness lemma \\
@@ -3040,32 +3040,37 @@ flags also computes and proves their downward identities, including the
 coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
 generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
 pair of two-vertex patterns~\((F_1,F_2)\) and every three-vertex host \(G\);
-this family includes the displayed value \(c=1/2\).
+this family includes the identity
+\(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\) displayed in
+\Cref{sec:reflection-adequacy}.
 Finally, the multiplication
 command combines those coefficients with the completeness lemma for the hosts
 to prove the product expansion
 \([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair; completeness is
 what justifies summing over exactly the named hosts.  Thus, elaboration produces the
 flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
-and the multiplication table, together with proofs of every entry.
+and the multiplication table, together with proofs of all
+the entries of these tables.
 
 Extremal applications work under a forbidden-graph assumption, and each of
-the commands above has a forbid-free variant for this situation.  The
+the commands above has a forbid variant for this situation.  The
 \lean{generate\_forbid\_free\_*} commands take one additional argument, a
 concrete \lean{Sym2Graph} term for the forbidden graph \(H\); the Mantel
 development, for example, defines \lean{K3} as the complete graph on three
 vertices and runs \lean{generate\_forbid\_free\_flags 3 1 0 K3}.  These
-variants emit constants and theorems only for the flags whose underlying
-graph does not contain \(H\) as a subgraph, and their completeness lemmas
-change accordingly, stating that the named flags exhaust the \(H\)-free ones,
-with \(H\)-freeness phrased as a vanishing subflag density so that the lemma
-composes with the forbidden-graph machinery of \Cref{sec:forbidden}.
+variants emit constants and theorems only for flags whose underlying graphs
+avoid \(H\) as an ordinary, not necessarily induced, subgraph; their
+completeness lemmas state that the named flags exhaust precisely this set,
+using the same notion of \(H\)-freeness as the forbidden-graph machinery of
+\Cref{sec:forbidden}.
 One member of the family has no unforbidden counterpart:
 \lean{generate\_forbid\_free\_flag\_density\_theorems p i h H} evaluates the
 single-flag densities \(\lean{flagDensity}_1\) of the empty-typed flag
 \lean{Flag\_p\_0\_0\_i} in every \(H\)-free host of size \(h\).  The
-certificate compiler of \Cref{sec:flagmatic} uses this table when the flag
-whose density is being bounded is smaller than the certificate's host size.
+certificate compiler of \Cref{sec:flagmatic} uses this table when the target is
+the \(p\)-vertex empty-typed flag indexed by \(i\) and \(p<h\): the table
+provides the coefficients needed to express its density in terms of the
+\(H\)-free \(h\)-vertex flags.
 
 \medskip
 \noindent\textbf{Optimizations.}
