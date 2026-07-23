@@ -5425,39 +5425,53 @@ E.~Davey, E.~Hurley, R.~de~Joannis~de~Verclos, R.~J.~Kang, and J.~Volec.
 \section{Compilation Times}
 \label{sec:compile-times}
 
-Table~\ref{tab:compile-times} reports end-to-end compilation times for all seven
-compiler examples, compiled with Lean~4 (v4.27.0).
-Each time covers the complete source file: flag enumeration, pair-density and
-multiplication lemma generation, PSD certificate checking, and the main theorem.
-For host size $N\leq 4$, pair-density lemmas are proved by \lean{decide +kernel}
-(via the \lean{flagGen.kernelDecide} option), so those five files carry no
-\lean{native\_decide} axioms.
-For $N=5$, the primary times were measured using \lean{native\_decide};
-where \lean{decide +kernel} also succeeded, both times are reported.
+Table~\ref{tab:compile-times} reports end-to-end compilation time and peak
+memory for all seven compiler examples, compiled with Lean~4 (v4.27.0) on an
+Intel Core i7-14700K (20 cores) with 64\,GB of RAM under Windows~11.  Each
+measurement covers the complete source file: flag enumeration, pair-density and
+multiplication lemma generation, PSD certificate checking, the objective
+expansion, and the main theorem.  The generated files differ only in how their
+bridging lemmas are discharged.  Under \lean{decide +kernel} (the
+\lean{flagGen.kernelDecide} option) the file introduces no compiled-evaluation
+axiom; under \lean{native\_decide} it is faster but additionally depends on the
+\lean{Lean.ofReduceBool} and \lean{Lean.trustCompiler} axioms.  We report both
+modes for the five examples where kernel evaluation is tractable; for the two
+largest ($K_5$-Tur\'an and $C_5$-free) only \lean{native\_decide} was measured.
+
+Each figure is the mean over five runs of a single-file compilation against the
+prebuilt library, with the sample standard deviation; memory is the peak
+resident set, taken as the maximum over the five runs.  Wall-clock times are
+otherwise highly repeatable (standard deviation below $0.5\%$ of the mean in
+every configuration except the pentagon under kernel evaluation, at $3.9\%$).
+Two individual runs---one $C_4$-density \lean{native\_decide} run and one
+pentagon \lean{decide +kernel} run---were excluded as system-contention stalls,
+each identified by an anomalous wall-clock time with an unchanged peak resident
+set; the remaining four runs of those two configurations were averaged.
 
 \begin{table}[h]
   \centering
-  \caption{End-to-end Lean compilation times for all seven examples.
-    ``Density lemmas'' is the total count of generated
-    \lean{flagDensity\char`\_2} simp lemmas.
-    ${}^\dagger$\,\lean{decide +kernel};
-    ${}^\ddagger$\,\lean{native\_decide}.
-    For $N=5$ rows with two times, format is
-    $\text{native\_decide}^\ddagger \,/\, \text{decide+kernel}^\dagger$.}
+  \caption{End-to-end Lean compilation time (mean of five runs, $\pm$ sample
+    standard deviation) and peak resident memory (maximum over five runs) for
+    all seven examples, under \lean{decide +kernel} and \lean{native\_decide}.
+    ``Lemmas'' is the total count of generated \lean{flagDensity\char`\_2} simp
+    lemmas.  A dash marks a configuration not measured under kernel evaluation.}
   \label{tab:compile-times}
-  \begin{tabular}{lccrr}
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{lccr rr rr}
     \toprule
-    Case & Forbid & $N$ & Density lemmas & Build time (s) \\
+    & & & & \multicolumn{2}{c}{\lean{decide +kernel}}
+        & \multicolumn{2}{c}{\lean{native\_decide}} \\
+    \cmidrule(lr){5-6}\cmidrule(lr){7-8}
+    Case & Forbid & $N$ & Lemmas
+      & Time (s) & RAM (GB) & Time (s) & RAM (GB) \\
     \midrule
-    Mantel ($K_2$, induced route)    & $K_3$ & 3 &    15 &       $12^\dagger$ \\
-    Mantel ($K_2$, H-free route)     & $K_3$ & 3 &    15 &       $14^\dagger$ \\
-    $P_3$ density                    & $K_3$ & 3 &    15 &       $19^\dagger$ \\
-    $C_4$ density                    & $K_3$ & 4 &   210 &       $91^\dagger$ \\
-    Edge density ($K_4$-Tur\'an)     & $K_4$ & 4 &   390 &      $132^\dagger$ \\
-    \midrule
-    Erd\H{o}s pentagon ($C_5$)       & $K_3$ & 5 &  2832 & $124^\ddagger$ / $2781^\dagger$ \\
-    Edge density ($K_5$-Tur\'an)     & $K_5$ & 5 & 10332 &      $346^\ddagger$ \\
-    Edge density ($C_5$-free)        & $C_5$ & 5 &  8172 &      $540^\ddagger$ \\
+    Mantel ($K_2$)               & $K_3$ & 3 &    15 & $14.1\pm0.3$   &  2.4 & $11.5\pm0.1$  & 2.0 \\
+    $P_3$ density                & $K_3$ & 3 &    15 & $13.3\pm0.1$   &  2.4 & $11.1\pm0.0$  & 2.0 \\
+    $C_4$ density                & $K_3$ & 4 &   210 & $74.4\pm0.1$   &  8.2 & $19.8\pm0.2$  & 2.3 \\
+    Edge density ($K_4$-Tur\'an) & $K_4$ & 4 &   390 & $133.3\pm0.3$  & 11.2 & $27.9\pm0.1$  & 2.5 \\
+    Erd\H{o}s pentagon ($C_5$)   & $K_3$ & 5 &  2832 & $2786\pm108$   & 42.3 & $123.4\pm0.5$ & 4.2 \\
+    Edge density ($K_5$-Tur\'an) & $K_5$ & 5 & 10332 & ---            & ---  & $342.6\pm0.6$ & 8.1 \\
+    Edge density ($C_5$-free)    & $C_5$ & 5 &  8172 & ---            & ---  & $539.6\pm0.5$ & 8.6 \\
     \bottomrule
   \end{tabular}
 \end{table}

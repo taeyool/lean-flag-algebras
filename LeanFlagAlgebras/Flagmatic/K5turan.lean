@@ -1,5 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545').
--- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
+-- Do not edit by hand; regenerate with
+--   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+--     LeanFlagAlgebras/Flagmatic/Certificates/K5turan_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K5turan.lean --namespace K5turan --native-decide --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -19,12 +22,20 @@ open FlagAlgebras.Compute
 
 namespace K5turan
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
--- graph is the `Sym2Graph 5` term `K5 := completeSym2Graph 5` (no canonical
--- forbidden flag, no `generate_complete_graph`); the K5-containing flags are never
--- generated. The pruned commands emit only the K5-free flags, their completeness, and
--- the forbid-free pair-density / multiplication theorems consumed by the proof below.
+-- The forbidden graph, as the 5-vertex `Sym2Graph` term `K5`: the complete graph
+-- K₅, for which containing a copy and containing an induced copy coincide.
+-- The generation commands below prune against it: a flag containing K5 is never
+-- enumerated, and they emit the K5-free flags, the completeness lemma for that set, and
+-- the pair-density / multiplication theorems the proof consumes.
 def K5 : Sym2Graph 5 := completeSym2Graph 5
+-- Generated bridging lemmas are proved by `native_decide`, so the main theorem below
+-- additionally depends on the `Lean.ofReduceBool` and `Lean.trustCompiler` axioms,
+-- which trust Lean's compiler and runtime for the evaluated decision procedures.
+-- Regenerating without `--native-decide` proves the same lemmas by `decide +kernel`
+-- and removes both, at a higher build cost.
+-- The generation commands run large decision procedures during elaboration, and the
+-- closing normalization recurses over a long flag sum; both limits are lifted for the
+-- rest of the file.
 set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K5
@@ -62,6 +73,10 @@ def M₁ : Matrix (Fin 8) (Fin 8) ℚ :=
     (-1 / 4 : ℚ), 0, 0, 0, 0, 0, 0, (1 / 12 : ℚ)]
 noncomputable def M₁_real : Matrix (Fin 8) (Fin 8) ℝ :=
   ratMatrixToReal M₁
+-- Candidate exact-rational LDLᵀ witness for `M₁`: `M₁ = LM₁ * diag dM₁ * LM₁ᵀ`
+-- with `LM₁` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₁` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₁ : Fin 8 → ℚ :=
   ![(3 / 4 : ℚ), (55 / 144 : ℚ), (21 / 55 : ℚ), (5 / 14 : ℚ), (17 / 48 : ℚ), (6 / 17 : ℚ), (1 / 3 : ℚ), 0]
 def LM₁ : Matrix (Fin 8) (Fin 8) ℚ :=
@@ -90,6 +105,10 @@ def M₂ : Matrix (Fin 8) (Fin 8) ℚ :=
     0, 0, 0, 0, 0, 0, 0, (1 / 4 : ℚ)]
 noncomputable def M₂_real : Matrix (Fin 8) (Fin 8) ℝ :=
   ratMatrixToReal M₂
+-- Candidate exact-rational LDLᵀ witness for `M₂`: `M₂ = LM₂ * diag dM₂ * LM₂ᵀ`
+-- with `LM₂` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₂` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₂ : Fin 8 → ℚ :=
   ![(1 / 4 : ℚ), (5 / 16 : ℚ), (3 / 10 : ℚ), (1 / 2 : ℚ), (1 / 2 : ℚ), (17 / 48 : ℚ), (6 / 17 : ℚ), (1 / 4 : ℚ)]
 def LM₂ : Matrix (Fin 8) (Fin 8) ℚ :=
@@ -118,6 +137,10 @@ def M₃ : Matrix (Fin 8) (Fin 8) ℚ :=
     0, (-47 / 36 : ℚ), (-1 / 20 : ℚ), (-1 / 20 : ℚ), (-1 / 20 : ℚ), (-1 / 20 : ℚ), (-19 / 36 : ℚ), (11 / 12 : ℚ)]
 noncomputable def M₃_real : Matrix (Fin 8) (Fin 8) ℝ :=
   ratMatrixToReal M₃
+-- Candidate exact-rational LDLᵀ witness for `M₃`: `M₃ = LM₃ * diag dM₃ * LM₃ᵀ`
+-- with `LM₃` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₃` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₃ : Fin 8 → ℚ :=
   ![(1 / 4 : ℚ), (9 / 4 : ℚ), (1559 / 3600 : ℚ), (659 / 1559 : ℚ), (647 / 2636 : ℚ), (635 / 2588 : ℚ), (2170 / 3429 : ℚ), 0]
 def LM₃ : Matrix (Fin 8) (Fin 8) ℚ :=
@@ -146,6 +169,10 @@ def M₄ : Matrix (Fin 8) (Fin 8) ℚ :=
     (-3 / 8 : ℚ), (-11 / 48 : ℚ), (-11 / 48 : ℚ), (-11 / 48 : ℚ), (-29 / 36 : ℚ), (-29 / 36 : ℚ), (-29 / 36 : ℚ), (29 / 12 : ℚ)]
 noncomputable def M₄_real : Matrix (Fin 8) (Fin 8) ℝ :=
   ratMatrixToReal M₄
+-- Candidate exact-rational LDLᵀ witness for `M₄`: `M₄ = LM₄ * diag dM₄ * LM₄ᵀ`
+-- with `LM₄` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₄` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₄ : Fin 8 → ℚ :=
   ![(1 / 2 : ℚ), (5 / 18 : ℚ), (11 / 40 : ℚ), (7 / 22 : ℚ), (913 / 1008 : ℚ), (12835 / 14608 : ℚ), (90739 / 108720 : ℚ), 0]
 def LM₄ : Matrix (Fin 8) (Fin 8) ℚ :=
@@ -217,16 +244,18 @@ noncomputable def v₄ : FlagAlgebraVec σ₄ 8 := ![
   FlagAlgebra_4_3_3_7
 ]
 
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
-expanded directly over the K5-free 5-vertex flags via
-`flag_expand_hfree 5 K5` (`basisVector_quot_forbidEq_sum` rewritten onto
-`flagSetHfree_5_0_0_K5`; the forbidden terms are dropped automatically). -/
+/-- Objective expansion. `flag_expand_hfree 5 K5` expands `FlagAlgebra_2_0_0_1`
+over the 5-vertex K5-free flags, rewriting the expansion theorem onto the
+generated set `flagSetHfree_5_0_0_K5`. Under the hypothesis the flags
+containing K5 have density zero, so they never enter the sum. -/
 lemma K5turan_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
   := by
   flag_expand_hfree 5 K5
 
 /-- **Main theorem (auto-generated).**
+Every graph with no K₅ subgraph has edge density at most 3/4.
+
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545'
 Bound: '3/4'. -/
 theorem K5turan_flagAlgebra

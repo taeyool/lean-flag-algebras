@@ -1,5 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 3:121323').
--- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
+-- Do not edit by hand; regenerate with
+--   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+--     LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json \
+--     LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -19,16 +22,19 @@ open FlagAlgebras.Compute
 
 namespace Mantel
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
--- graph is the `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical
--- forbidden flag, no `generate_complete_graph`); the K3-containing flags are never
--- generated. The pruned commands emit only the K3-free flags, their completeness, and
--- the forbid-free pair-density / multiplication theorems consumed by the proof below.
+-- The forbidden graph, as the 3-vertex `Sym2Graph` term `K3`: the complete graph
+-- K₃, for which containing a copy and containing an induced copy coincide.
+-- The generation commands below prune against it: a flag containing K3 is never
+-- enumerated, and they emit the K3-free flags, the completeness lemma for that set, and
+-- the pair-density / multiplication theorems the proof consumes.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
--- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
--- `decide +kernel` instead of `native_decide`, so this file carries no
--- compiled-evaluation axioms.  Slower than `native_decide` for host size N = 5.
+-- Every generated bridging lemma is proved by `decide +kernel`, so this file
+-- introduces no compiled-evaluation axiom: `#print axioms` on the main theorem
+-- below lists only Lean's own three.
 set_option flagGen.kernelDecide true
+-- The generation commands run large decision procedures during elaboration, and the
+-- closing normalization recurses over a long flag sum; both limits are lifted for the
+-- rest of the file.
 set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K3
@@ -47,6 +53,10 @@ def M : Matrix (Fin 2) (Fin 2) ℚ :=
     (-1 / 2 : ℚ), (1 / 2 : ℚ)]
 noncomputable def M_real : Matrix (Fin 2) (Fin 2) ℝ :=
   ratMatrixToReal M
+-- Candidate exact-rational LDLᵀ witness for `M`: `M = LM * diag dM * LMᵀ`
+-- with `LM` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM : Fin 2 → ℚ :=
   ![(1 / 2 : ℚ), 0]
 def LM : Matrix (Fin 2) (Fin 2) ℚ :=
@@ -64,16 +74,18 @@ noncomputable def v : FlagAlgebraVec σ 2 := ![
   FlagAlgebra_2_1_0_1
 ]
 
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
-expanded directly over the K3-free 3-vertex flags via
-`flag_expand_hfree 3 K3` (`basisVector_quot_forbidEq_sum` rewritten onto
-`flagSetHfree_3_0_0_K3`; the forbidden terms are dropped automatically). -/
+/-- Objective expansion. `flag_expand_hfree 3 K3` expands `FlagAlgebra_2_0_0_1`
+over the 3-vertex K3-free flags, rewriting the expansion theorem onto the
+generated set `flagSetHfree_3_0_0_K3`. Under the hypothesis the flags
+containing K3 have density zero, so they never enter the sum. -/
 lemma mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
   flag_expand_hfree 3 K3
 
 /-- **Main theorem (auto-generated).**
+Every graph with no K₃ subgraph has edge density at most 1/2.
+
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'
 Bound: '1/2'. -/
 theorem mantel_flagAlgebra

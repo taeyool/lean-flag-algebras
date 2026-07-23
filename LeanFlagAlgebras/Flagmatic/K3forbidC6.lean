@@ -1,5 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 6:121324354656 density; forbid 3:121323').
--- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
+-- Do not edit by hand; regenerate with
+--   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+--     LeanFlagAlgebras/Flagmatic/Certificates/K3forbidC6_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K3forbidC6.lean --namespace K3forbidC6 --native-decide --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -18,12 +21,20 @@ open FlagAlgebras.Compute
 
 namespace K3forbidC6
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
--- graph is the `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical
--- forbidden flag, no `generate_complete_graph`); the K3-containing flags are never
--- generated. The pruned commands emit only the K3-free flags, their completeness, and
--- the forbid-free pair-density / multiplication theorems consumed by the proof below.
+-- The forbidden graph, as the 3-vertex `Sym2Graph` term `K3`: the complete graph
+-- K₃, for which containing a copy and containing an induced copy coincide.
+-- The generation commands below prune against it: a flag containing K3 is never
+-- enumerated, and they emit the K3-free flags, the completeness lemma for that set, and
+-- the pair-density / multiplication theorems the proof consumes.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
+-- Generated bridging lemmas are proved by `native_decide`, so the main theorem below
+-- additionally depends on the `Lean.ofReduceBool` and `Lean.trustCompiler` axioms,
+-- which trust Lean's compiler and runtime for the evaluated decision procedures.
+-- Regenerating without `--native-decide` proves the same lemmas by `decide +kernel`
+-- and removes both, at a higher build cost.
+-- The generation commands run large decision procedures during elaboration, and the
+-- closing normalization recurses over a long flag sum; both limits are lifted for the
+-- rest of the file.
 set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 4 K3
@@ -57,6 +68,10 @@ def M₁ : Matrix (Fin 15) (Fin 15) ℚ :=
     (42795 / 1048576 : ℚ), (-60125 / 1048576 : ℚ), (-59963 / 1048576 : ℚ), (-39863 / 262144 : ℚ), (8553 / 262144 : ℚ), (-38233 / 262144 : ℚ), (-152917 / 1048576 : ℚ), (-24163 / 262144 : ℚ), (149775 / 1048576 : ℚ), (46715 / 1048576 : ℚ), (254909 / 1048576 : ℚ), (18381 / 131072 : ℚ), (18715 / 131072 : ℚ), (254781 / 1048576 : ℚ), (50881 / 524288 : ℚ)]
 noncomputable def M₁_real : Matrix (Fin 15) (Fin 15) ℝ :=
   ratMatrixToReal M₁
+-- Candidate exact-rational LDLᵀ witness for `M₁`: `M₁ = LM₁ * diag dM₁ * LM₁ᵀ`
+-- with `LM₁` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₁` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₁ : Fin 15 → ℚ :=
   ![(18225 / 1048576 : ℚ), (383161 / 1048576 : ℚ), (72361 / 1048576 : ℚ), (5041 / 1048576 : ℚ), (1 / 1048576 : ℚ), (54289 / 1048576 : ℚ), 0, 0, 0, 0, 0, 0, 0, 0, 0]
 def LM₁ : Matrix (Fin 15) (Fin 15) ℚ :=
@@ -94,6 +109,10 @@ def M₂ : Matrix (Fin 10) (Fin 10) ℚ :=
     (-5461 / 65536 : ℚ), (57443 / 524288 : ℚ), (-6799 / 131072 : ℚ), (-34745 / 131072 : ℚ), (313355 / 524288 : ℚ), (-334697 / 524288 : ℚ), (-36771 / 524288 : ℚ), (300117 / 1048576 : ℚ), (-19525 / 262144 : ℚ), (70981 / 524288 : ℚ)]
 noncomputable def M₂_real : Matrix (Fin 10) (Fin 10) ℝ :=
   ratMatrixToReal M₂
+-- Candidate exact-rational LDLᵀ witness for `M₂`: `M₂ = LM₂ * diag dM₂ * LM₂ᵀ`
+-- with `LM₂` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₂` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₂ : Fin 10 → ℚ :=
   ![(1849 / 4096 : ℚ), (29241 / 65536 : ℚ), (1681 / 262144 : ℚ), (3136441 / 1048576 : ℚ), (1100401 / 262144 : ℚ), 0, 0, 0, 0, 0]
 def LM₂ : Matrix (Fin 10) (Fin 10) ℚ :=
@@ -149,6 +168,8 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 10 := ![
 ]
 
 /-- **Main theorem (auto-generated).**
+Every graph with no K₃ subgraph has C₆ density at most 92129/5242880.
+
 Certificate description: '2-graph; maximize 6:121324354656 density; forbid 3:121323'
 Bound: '92129/5242880'. -/
 theorem K3forbidC6_flagAlgebra

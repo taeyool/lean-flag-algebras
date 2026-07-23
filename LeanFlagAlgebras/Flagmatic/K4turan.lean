@@ -1,5 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 4:121314232434').
--- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
+-- Do not edit by hand; regenerate with
+--   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+--     LeanFlagAlgebras/Flagmatic/Certificates/K4turan_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K4turan.lean --namespace K4turan --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -19,16 +22,19 @@ open FlagAlgebras.Compute
 
 namespace K4turan
 
--- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden
--- graph is the `Sym2Graph 4` term `K4 := completeSym2Graph 4` (no canonical
--- forbidden flag, no `generate_complete_graph`); the K4-containing flags are never
--- generated. The pruned commands emit only the K4-free flags, their completeness, and
--- the forbid-free pair-density / multiplication theorems consumed by the proof below.
+-- The forbidden graph, as the 4-vertex `Sym2Graph` term `K4`: the complete graph
+-- K₄, for which containing a copy and containing an induced copy coincide.
+-- The generation commands below prune against it: a flag containing K4 is never
+-- enumerated, and they emit the K4-free flags, the completeness lemma for that set, and
+-- the pair-density / multiplication theorems the proof consumes.
 def K4 : Sym2Graph 4 := completeSym2Graph 4
--- `flagGen.kernelDecide`: all generated bridging lemmas are proved by
--- `decide +kernel` instead of `native_decide`, so this file carries no
--- compiled-evaluation axioms.  Slower than `native_decide` for host size N = 5.
+-- Every generated bridging lemma is proved by `decide +kernel`, so this file
+-- introduces no compiled-evaluation axiom: `#print axioms` on the main theorem
+-- below lists only Lean's own three.
 set_option flagGen.kernelDecide true
+-- The generation commands run large decision procedures during elaboration, and the
+-- closing normalization recurses over a long flag sum; both limits are lifted for the
+-- rest of the file.
 set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
 generate_forbid_free_empty_typed_flags 2 K4
@@ -54,6 +60,10 @@ def M₁ : Matrix (Fin 4) (Fin 4) ℚ :=
     (-1 / 3 : ℚ), 0, 0, (1 / 6 : ℚ)]
 noncomputable def M₁_real : Matrix (Fin 4) (Fin 4) ℝ :=
   ratMatrixToReal M₁
+-- Candidate exact-rational LDLᵀ witness for `M₁`: `M₁ = LM₁ * diag dM₁ * LM₁ᵀ`
+-- with `LM₁` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₁` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₁ : Fin 4 → ℚ :=
   ![(2 / 3 : ℚ), (3 / 4 : ℚ), (14 / 27 : ℚ), 0]
 def LM₁ : Matrix (Fin 4) (Fin 4) ℚ :=
@@ -74,6 +84,10 @@ def M₂ : Matrix (Fin 4) (Fin 4) ℚ :=
     (-2 / 3 : ℚ), (-7 / 12 : ℚ), (-7 / 12 : ℚ), (7 / 6 : ℚ)]
 noncomputable def M₂_real : Matrix (Fin 4) (Fin 4) ℝ :=
   ratMatrixToReal M₂
+-- Candidate exact-rational LDLᵀ witness for `M₂`: `M₂ = LM₂ * diag dM₂ * LM₂ᵀ`
+-- with `LM₂` unit lower triangular. Computed by the translator and re-checked below by
+-- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₂` inside Lean; an
+-- incorrect witness is rejected rather than trusted.
 def dM₂ : Fin 4 → ℚ :=
   ![(1 : ℚ), (5 / 9 : ℚ), (39 / 80 : ℚ), 0]
 def LM₂ : Matrix (Fin 4) (Fin 4) ℚ :=
@@ -105,16 +119,18 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 4 := ![
   FlagAlgebra_3_2_1_3
 ]
 
-/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is
-expanded directly over the K4-free 4-vertex flags via
-`flag_expand_hfree 4 K4` (`basisVector_quot_forbidEq_sum` rewritten onto
-`flagSetHfree_4_0_0_K4`; the forbidden terms are dropped automatically). -/
+/-- Objective expansion. `flag_expand_hfree 4 K4` expands `FlagAlgebra_2_0_0_1`
+over the 4-vertex K4-free flags, rewriting the expansion theorem onto the
+generated set `flagSetHfree_4_0_0_K4`. Under the hypothesis the flags
+containing K4 have density zero, so they never enter the sum. -/
 lemma K4turan_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 4)] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
   flag_expand_hfree 4 K4
 
 /-- **Main theorem (auto-generated).**
+Every graph with no K₄ subgraph has edge density at most 2/3.
+
 Certificate description: '2-graph; maximize 2:12 density; forbid 4:121314232434'
 Bound: '2/3'. -/
 theorem K4turan_flagAlgebra
