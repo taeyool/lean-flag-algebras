@@ -4981,6 +4981,28 @@ finite density calculations and algebraic certificates suggests that our
 infrastructure may apply beyond the case studies here, subject to the scaling
 limitations in \Cref{sec:unsure}.
 
+\paragraph{A concurrent formalization of local flag algebras.}
+Concurrently with and independently of our work, Davey, Hurley, de Joannis
+de Verclos, Kang, and Volec formalized in Lean~4 the theory of \emph{local
+flag algebras} introduced in their accompanying papers~\cite{davey2026local}.
+The local calculus normalizes densities by the maximum degree rather than by
+the number of vertices, so that the method remains informative for graphs of
+bounded maximum degree.  Under this normalization the exact density-expansion
+identity behind the classical quotient construction holds only up to an
+$O(1/\Delta)$ error, so no quotient is taken: their algebra is defined
+directly on formal combinations of isomorphism classes, evaluation at a
+finite graph is multiplicative only asymptotically, and positivity is again
+captured by a semantic cone.  Their formalization
+machine-certifies the new bounds of those papers, on pentagon counts in
+triangle-free graphs and on the strong chromatic index, and arrives
+independently at the reflection pattern of \Cref{sec:reflection}: a
+noncomputable specification mirrored by a computable Boolean-adjacency
+representation with adequacy lemmas.  Our development formalizes the
+classical theory instead---the quotient algebra, positive homomorphisms,
+and the ensemble semantics---and is organized as a reusable library and
+proof-generating pipeline rather than around individual bounds, so the two
+developments are complementary in both scope and design.
+
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
 sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
@@ -5063,9 +5085,10 @@ connect our development more directly to the Lov\'asz theory
 \cite{freer2026graphon}.
 Automating the discovery of SDP certificates from within Lean (rather than
 importing them from external solvers) remains a longer-term goal.  Most
-immediately, replacing \lean{native\_decide} with \lean{decide +kernel}
-throughout, or with a formally verified external checker, would eliminate
-the remaining dependency on the native compiler.  Its present use is a
+immediately, extending the \lean{decide +kernel} path that already covers
+the other five generated files to the two remaining \lean{native\_decide}
+certificates, or replacing them with a formally verified external checker,
+would eliminate the remaining dependency on the native compiler.  Its present use is a
 feasibility constraint of the current encoding, not a logical limitation of
 the method.
 
@@ -5389,6 +5412,11 @@ C.~Freer.
 \newblock Graphons in Lean~4.
 \newblock Computer software, 2026.
   \url{https://github.com/cameronfreer/graphon}.
+
+\bibitem{davey2026local}
+E.~Davey, E.~Hurley, R.~de~Joannis~de~Verclos, R.~J.~Kang, and J.~Volec.
+\newblock Local flag algebras.
+\newblock arXiv:2607.12461, 2026.
 
 \end{thebibliography}
 
