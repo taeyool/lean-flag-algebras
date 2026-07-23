@@ -2749,13 +2749,15 @@ isomorphism.
 The reflection layer repeats the same construction for the concrete graph
 representation from \Cref{sec:reflection-concrete}:
 \begin{lstlisting}
-def sym2LabeledGraphEqv (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) : Prop := ...
+def sym2LabeledGraphEqv {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) 
+    : Prop := ...
 
-instance sym2LabeledGraphSetoid : Setoid (Sym2LabeledGraph (*@$\sigma$@*) n) where
+instance sym2LabeledGraphSetoid {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) 
+    : Setoid (Sym2LabeledGraph (*@$\sigma$@*) n) where
   r     := sym2LabeledGraphEqv
   iseqv := ... -- reflexivity, symmetry, and transitivity of r
 
-def Sym2Flag ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
+def Sym2Flag {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
   Quotient (sym2LabeledGraphSetoid (*@$\sigma$@*) n)
 \end{lstlisting}
 The omitted definition of \lean{sym2LabeledGraphEqv} is standard, and says
