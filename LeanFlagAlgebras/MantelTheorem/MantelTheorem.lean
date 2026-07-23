@@ -9,9 +9,9 @@ import Mathlib.Combinatorics.SimpleGraph.CompleteMultipartite
 The headline file of the Mantel's theorem development. It proves, via the
 flag-algebra square-positivity certificate from `Lemmas.lean`:
 
-* `Mantel_theorem` / `Mantel_theorem'` — the flag-algebra density inequality
+* `Mantel_flag_bound` / `Mantel_flag_bound'` — the flag-algebra density inequality
   `K2 ≤ (1/2)·1 + K3`, i.e. any triangle-free graph has edge density `≤ 1/2`;
-* `Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2` — the
+* `Mantel_Turan : turanDensity (completeGraph (Fin 3)) = 1 / 2` — the
   classical Turán-density statement, obtained by transferring the flag-algebra
   bound to extremal numbers and matching it with the complete-bipartite
   lower-bound construction (`extremal_density_K3_ge`). -/
@@ -25,7 +25,7 @@ namespace MantelTheorem
 /-- Mantel's theorem in flag-algebra form: the edge-density basis element `K2`
 is bounded by `(1/2)·1 + K3`. Equivalently, the triangle density controls how
 far the edge density can exceed `1/2`. -/
-theorem Mantel_theorem
+theorem Mantel_flag_bound
   : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
   dsimp only [K2, K3]
@@ -69,11 +69,11 @@ theorem Mantel_theorem
 
 /-- Pointwise form of Mantel's theorem: for any positive homomorphism `φ`
 killing the triangle (`φ K3 = 0`), the edge density satisfies `φ K2 ≤ 1/2`. -/
-theorem Mantel_theorem'
+theorem Mantel_flag_bound'
   : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 ≤ 1 / 2
   := by
   intro φ h
-  simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_theorem φ
+  simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_flag_bound φ
 
 /-- The generated flag `Flag_3_0_0_3` is the triangle `K₃`: it equals the
 empty-typed flag of `completeGraph (Fin 3)`. -/
@@ -186,9 +186,9 @@ lemma extremal_density_K3_ge
     simpa using hmono hn2 hn2_succ
 
 /-- **Mantel's theorem (Turán density form).** The Turán density of the
-triangle `K₃` is `1/2`: the flag-algebra upper bound (`Mantel_theorem'`) meets
+triangle `K₃` is `1/2`: the flag-algebra upper bound (`Mantel_flag_bound'`) meets
 the complete-bipartite lower bound (`extremal_density_K3_ge`). -/
-theorem Turan_density_K3
+theorem Mantel_Turan
     : turanDensity (completeGraph (Fin 3)) = 1 / 2
   := by
   let f : ℕ → ℝ := fun n ↦ extremalNumber n (completeGraph (Fin 3)) / n.choose 2
@@ -409,7 +409,7 @@ theorem Turan_density_K3
         simpa [flagDensitySeq, s] using congrArg (fun x : ℚ ↦ (x : ℝ)) (hF_free (ϕ n))
       rw [tendsto_congr hK3_zero, tendsto_const_nhds_iff]
 
-  have hφ_K2_le : φ FlagAlgebra_2_0_0_1 ≤ 1 / 2 := Mantel_theorem' φ hφ_K3
+  have hφ_K2_le : φ FlagAlgebra_2_0_0_1 ≤ 1 / 2 := Mantel_flag_bound' φ hφ_K3
   have hφ_K2_tendsto :
       Tendsto (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨2, Flag_2_0_0_1⟩) atTop (nhds (φ FlagAlgebra_2_0_0_1)) := by
     have h_eval_K2 : a ⟨2, Flag_2_0_0_1⟩ = φ ⟦basisVector ⟨2, Flag_2_0_0_1⟩⟧ := by

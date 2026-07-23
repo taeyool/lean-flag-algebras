@@ -93,6 +93,6 @@ theorem Mantel_theorem
   simp only [Assert.eval_le, Assert.eval_eq] at *
   rw [PositiveHom.map_smul, PositiveHom.map_one, mul_one]
   rw [PositiveHom.map_zero] at h
-  exact Mantel_theorem' φ h
+  exact Mantel_flag_bound' φ h
 
 end FlagLogic
