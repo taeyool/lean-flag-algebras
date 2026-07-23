@@ -3188,7 +3188,8 @@ compiler consumes the certificate as untrusted input and asks Lean to verify
 the non-negativity of the $Q_t$ and $r$ and the intervening equality.
 
 Mantel's theorem gives a small certificate with exactly the structure above.
-Here the target is $F=K_2$, and we abbreviate its basis element $[K_2]$ by
+Here the target is $F=K_2$, whose density is the edge density, and we
+abbreviate its basis element $[K_2]$ by
 $K_2$.
 We work with the one-vertex type $\sigma$, choose a non-negative element
 $f\in\mathcal A^\sigma$, and use \Cref{thm:downward-nonneg} to make its
@@ -3699,8 +3700,9 @@ retain the trust boundary just described.
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
-We evaluated the compiler on seven certificates spanning both target-size
-branches, host sizes $N\in\{3,4,5\}$, between one and four SDP blocks, and four
+We evaluated the compiler on seven certificates spanning host sizes
+$N\in\{3,4,5\}$, targets at and below the host size, between one and four SDP
+blocks, and four
 forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
 \lean{gen-skeleton} produces a complete Lean source file.  All seven files compile
 and contain neither \lean{sorry} nor generated axiom declarations.  No
@@ -3710,22 +3712,21 @@ the implementation filenames.
 
 \begin{table}
   \centering
-\caption{Certificates carried end-to-end through the compiler.  ``Branch''
-  is A when the target and host have the same size
-  (\(n_F=N\)), and B when \(n_F<N\);
-  \(T\) is the number of SDP blocks.}
+\caption{Certificates carried end-to-end through the compiler.  \(H\) is the
+  forbidden graph, \(N\) the host size, \(n_F\) the number of vertices of the
+  target graph \(F\), and \(T\) the number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
-  \begin{tabular}{lcccccc}
+  \begin{tabular}{lccccc}
     \toprule
-    Case & Forbid & $N$ & $n_F$ & Branch & $T$ & Bound \\
+    Case & $H$ & $N$ & $n_F$ & $T$ & Bound \\
     \midrule
-    Mantel ($K_2$)              & $K_3$ & 3 & 2 & B & 1 & $1/2$    \\
-    $P_3$ density               & $K_3$ & 3 & 3 & A & 1 & $3/4$    \\
-    $C_4$ density               & $K_3$ & 4 & 4 & A & 2 & $3/8$    \\
-    Edge density                & $K_4$ & 4 & 2 & B & 2 & $2/3$    \\
-    Erd\H{o}s pentagon ($C_5$)  & $K_3$ & 5 & 5 & A & 3 & $24/625$ \\
-    Edge density                & $K_5$ & 5 & 2 & B & 4 & $3/4$    \\
-    Edge density                & $C_5$ & 5 & 2 & B & 4 & $1/2$    \\
+    Mantel (edge density)               & $K_3$ & 3 & 2 & 1 & $1/2$    \\
+    $P_3$ density                       & $K_3$ & 3 & 3 & 1 & $3/4$    \\
+    $C_4$ density                       & $K_3$ & 4 & 4 & 2 & $3/8$    \\
+    Edge density                        & $K_4$ & 4 & 2 & 2 & $2/3$    \\
+    Erd\H{o}s pentagon ($C_5$ density)  & $K_3$ & 5 & 5 & 3 & $24/625$ \\
+    Edge density                        & $K_5$ & 5 & 2 & 4 & $3/4$    \\
+    Edge density                        & $C_5$ & 5 & 2 & 4 & $1/2$    \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -3738,8 +3739,8 @@ flag vector.  The $C_4$-density certificate has two blocks, with matrices of
 dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
 has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
 $5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
-all with~$8\times8$ matrices.  Together, these examples exercise both target-size
-branches and increasingly large multi-block normalizations.
+all with~$8\times8$ matrices.  Together, these examples exercise targets both
+at and below the host size, and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
 forbidden graph.  For a complete forbidden graph, induced containment and subgraph
