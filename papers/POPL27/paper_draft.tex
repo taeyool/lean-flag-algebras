@@ -2938,10 +2938,12 @@ constants of \Cref{sec:reflection-adequacy}.  A name such as
 indices: \(n\) is the size of the flag, \(k\) is the size of its flag type,
 \(m\) is the position of the flag type's graph in the enumeration of the
 \(k\)-vertex graphs, and \(i\) is the position of the flag itself in the
-enumeration of the \(n\)-vertex flags of that flag type.  Both enumerations are in
-a fixed canonical order: graphs are listed by edge count, with ties broken
-lexicographically by the smallest edge list over all vertex relabelings, and
-the flags over a graph are listed by the placement of their labels.  The
+enumeration of the \(n\)-vertex flags of that flag type.  Both enumerations are
+in a fixed canonical order.  Graphs are ordered first by their number of edges
+and then by their canonical edge lists.  The canonical edge list of a graph is
+the lexicographically smallest sorted edge list obtained by relabeling its
+vertices in all possible ways.  The flags over a graph are ordered by the
+placement of their labels.  The
 reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
 scheme, and the empty flag type is written \(k=m=0\).  Thus,
 \lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
@@ -2955,10 +2957,10 @@ single-pattern and pattern-pair density instances.  More precisely, the
 generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
 elaboration, the phase in which Lean processes source commands and produces
-checked definitions and theorems, they run the finite enumerators and
-generate statements and proofs for the required specialized facts.  Each finite
-computation is therefore performed once, when its theorem family is generated,
-and later proofs recover the result by rewriting rather than recomputing it.
+checked definitions and theorems, these commands run the finite enumerators
+and generate proofs of the required specialized facts.  Once the resulting
+theorem families have been accepted by Lean, subsequent flag-algebra proofs
+use them as rewrite rules instead of evaluating the finite enumerators again.
 For the
 sizes and flag type used in the two examples of
 \Cref{sec:reflection-adequacy}, the relevant commands have
