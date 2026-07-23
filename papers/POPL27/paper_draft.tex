@@ -4070,35 +4070,32 @@ We instead keep the quotient specification close to Razborov's mathematics
 and concentrate the representation-specific work at the boundaries where a
 construction is lifted to equivalence classes.
 
-\subsection{Making the Auxiliary Expansion Size Irrelevant}
+\subsection{Comparing Flags of Different Sizes}
 
-The product formula in Equation~\eqref{eq:mul} chooses an auxiliary size
-$\ell$ and expands the product of $F_1$ and $F_2$ as a linear combination of
-all $\sigma$-flags of that size.  The choice of $\ell$ is only bookkeeping:
-any sufficiently large value should define the same element of the flag
-algebra.  The formalization must prove this independence explicitly.  The
-term \lean{flagMulWithSize} denotes the expansion at one chosen size, and
-\lean{flagMulWithSize\_indep\_on\_size} proves that the expansions
-at two admissible sizes are equivalent modulo the zero-space relations, and
-hence equal in the flag algebra.
+In Lean, a flag's size is part of its type: the $\sigma$-flags of size $\ell$
+form the type \lean{Flag $\sigma$ (Fin $\ell$)}, which varies with $\ell$.  A
+statement comparing flags of different sizes must therefore cross between
+different types, a crossing that paper mathematics performs silently.  The
+situation arises throughout the development: the expansion
+identity~\eqref{eq:expansion-identity} equates a size-$m$ flag with a
+linear combination of size-$n$ flags, and the product formula of
+Equation~\eqref{eq:mul} must be proved independent of its auxiliary size.
+This subsection explains how such cross-size statements are made and proved.
 
-The mathematical comparison is familiar.  Given $\ell_1\leq\ell_2$, expand
-each size-$\ell_1$ $\sigma$-flag into $\sigma$-flags of size $\ell_2$ and apply the chain rule of
-\Cref{lem:chain-rule} to collect the coefficients.  Both completed expansions
-are flag vectors, so their equivalence is a well-formed statement.  The
-difficulty appears inside this comparison: the first sum ranges over
-\lean{Flag $\sigma$ (Fin $\ell_1$)}, whereas the second ranges over
-\lean{Flag $\sigma$ (Fin $\ell_2$)}.  A term from the first type cannot be used
-where Lean expects a term of the second, and an ordinary equality can only
-compare terms having the same type.  Thus, a term-by-term rewrite is not merely
-hard to prove; it is not a well-typed statement.
+Consider the expansion identity~\eqref{eq:expansion-identity}.  Its
+left-hand side involves a flag of type \lean{Flag $\sigma$ (Fin $m$)},
+whereas the flags on the right have type \lean{Flag $\sigma$ (Fin $n$)}.  A
+term of the first type cannot be used where Lean expects a term of the
+second, and an ordinary equality can only compare terms having the same
+type.  Thus, the identity is not merely hard to prove; as written, it is not
+a well-typed statement.
 
-The first additional formalization task is therefore to construct explicitly
+The first formalization task is therefore to construct explicitly
 the common ambient space that paper mathematics leaves implicit.
 Mathematically, we regard every fixed-size family
 $\mathcal{F}^{\sigma}_{\ell}$ as part of the all-size family
-$\mathcal{F}^{\sigma}$, and hence regard expansions at different sizes as
-vectors in the same space.  In Lean, however, the types
+$\mathcal{F}^{\sigma}$, and hence regard combinations of flags of different
+sizes as vectors in the same space.  In Lean, however, the types
 \lean{Flag $\sigma$ (Fin $\ell$)} vary with $\ell$ and do not come with such a
 common ambient type.  We therefore use the dependent sum
 \[
@@ -4107,61 +4104,28 @@ common ambient type.  We therefore use the dependent sum
   \mathop{\Sigma}_{\ell : \mathbb{N}}
     \text{\lean{Flag}}~\sigma~(\text{\lean{Fin}}~\ell).
 \]
-A size-$\ell_1$ $\sigma$-flag $G'$ is therefore stored as the tagged pair
-$\langle\ell_1,G'\rangle$, while a size-$\ell_2$ $\sigma$-flag $G$ is stored as
-$\langle\ell_2,G\rangle$.  The second components have different types, but
+A size-$m$ $\sigma$-flag $F$ is therefore stored as the tagged pair
+$\langle m,F\rangle$, while a size-$n$ $\sigma$-flag $G$ is stored as
+$\langle n,G\rangle$.  The second components have different types, but
 both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
 Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
 supported real-valued functions on \lean{FinFlag}~$\sigma$, or equivalently
 of finite formal real linear combinations of its elements.  Thus, the two
-tagged $\sigma$-flags index basis vectors in the same vector space, and both product
-expansions can be stated in that common space.
+tagged $\sigma$-flags index basis vectors in the same vector space, and
+equations mixing flags of different sizes can be stated in that common space.
 
-This dependent-sum packaging solves the typing problem, but it is not an equality
-principle for dependent pairs.  The tagged pairs
-$\langle\ell_1,G'\rangle$ and $\langle\ell_2,G\rangle$ remain different basis
-indices when their size tags differ.  What the packaging provides is a common
-ambient type in which linear combinations involving either index can be
-formed.  At this point the comparison is well typed, but no equality between
-the two product expansions has yet been proved.
+The packaging provides a common home, not an identification: when their size
+tags differ, $\langle m,F\rangle$ and $\langle n,G\rangle$ remain distinct
+elements of \lean{FinFlag}~$\sigma$ and index distinct basis vectors.
+Identifying them is the quotient's job, and it needs no further argument:
+the difference between the two sides of the expansion identity is one of the
+generators of the zero space, so the identity holds
+in the flag algebra by definition.  Later cross-size comparisons, including
+the independence of the
+product formula from its auxiliary size, reason modulo this relation.
 
-The missing bridge is the zero-space expansion identity.  It relates linear
-combinations in the common flag algebra without equating their vertex types.
-For every
-$G'\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
-\[
-  [G']
-  =
-  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
-    \den{G'}{G}\,[G]
-  \qquad\text{in }\mathcal{A}^{\sigma}.
-\]
-Substituting this identity into the size-$\ell_1$ product gives
-\[
-\begin{aligned}
-  \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
-    \den{F_1,F_2}{G'}\,[G']
-  &=
-  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
-    \left(
-      \sum_{G'\in\mathcal{F}_{\ell_1}^{\sigma}}
-        \den{F_1,F_2}{G'}\,\den{G'}{G}
-    \right)[G] \\
-  &=
-  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
-    \den{F_1,F_2}{G}\,[G].
-\end{aligned}
-\]
-The first equality expands every $H$ into size $\ell_2$; the second is the
-chain rule.  Thus, the ``flag-expansion relation'' is not a relationship
-between the two vertex types.  It is an equality, in the common flag algebra,
-between two linear combinations whose basis $\sigma$-flags carry different size tags.
-In the Lean proof, \lean{flagExpansion} constructs the size-$\ell_2$ linear
-combination for each tagged size-$\ell_1$ $\sigma$-flag, and the zero-space relation
-\lean{flagVectorEqv} justifies replacing the original basis vector by that
-combination.  The proof reasons about equality modulo this relation.
+\subsection{Comparing Two Descriptions of a Reordered Tuple}
 
-\paragraph{A separate issue: comparing two descriptions of a reordered tuple.}
 Another type-theoretic issue appears, for example, when proving the symmetry
 \(
   \den{F_1,F_2}{G}=\den{F_2,F_1}{G}
