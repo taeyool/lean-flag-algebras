@@ -526,6 +526,10 @@ is assumed.  For a nonnegative integer $n$, we write $[n]$ for the set of
 positive integers at most $n$.  We consider only undirected, finite, and simple
 graphs; for a graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$,
 respectively.
+We use the standard graph names: $K_n$ is the complete graph on $n$ vertices,
+$P_n$ the path and $C_n$ the cycle on $n$ vertices, $\overline{G}$ the
+complement of $G$, and $K_{a,b}$ the complete bipartite graph with parts of
+sizes $a$ and $b$.
 
 We fix a (possibly empty) finite set $\mathcal{H}$ of forbidden graphs.  In this
 paper, an unqualified \emph{subgraph} is an ordinary, not necessarily induced,
@@ -3687,8 +3691,8 @@ pentagon, discharge every finite
 computation, from the exact matrix equalities of the PSD proofs to the
 enumerations and density calculations, by \lean{decide +kernel}; the kernel
 checks all of it, and no compiled-evaluation axiom appears.  In the $K_5$-free
-and $C_5$-free edge-density certificates, kernel reduction of the density
-calculations was too slow to be practical, so those two files prove them by
+and $C_5$-free edge-density certificates, kernel reduction of the generated
+computations was too slow to be practical, so those two files use
 \lean{native\_decide} and additionally trust Lean's native compiler and
 runtime.  Finally, the custom
 tactics are unverified metaprograms whose dependence on elaborated expression
@@ -3704,72 +3708,77 @@ We evaluated the compiler on seven certificates spanning host sizes
 $N\in\{3,4,5\}$, targets at and below the host size, between one and four SDP
 blocks, and four
 forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
-\lean{gen-skeleton} produces a complete Lean source file.  All seven files compile
+the compiler produces a complete Lean source file.  All seven files compile
 and contain neither \lean{sorry} nor generated axiom declarations.  No
-certificate coefficient is transcribed into Lean by hand.
-Table~\ref{tab:flagmatic-scenarios} reports the mathematical cases rather than
-the implementation filenames.
+certificate coefficient is transcribed into Lean by hand.  All but the
+$K_5$- and $C_5$-free edge-density files are checked entirely by
+\lean{decide +kernel}; those two use
+\lean{native\_decide}.
+Table~\ref{tab:flagmatic-scenarios} summarizes the seven cases.
 
 \begin{table}
   \centering
 \caption{Certificates carried end-to-end through the compiler.  \(H\) is the
-  forbidden graph, \(N\) the host size, \(n_F\) the number of vertices of the
-  target graph \(F\), and \(T\) the number of SDP blocks.}
+  forbidden graph, \(n_F\) the number of vertices of the target graph \(F\),
+  \(N\) the host size, and \(T\) the number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lccccc}
     \toprule
-    Case & $H$ & $N$ & $n_F$ & $T$ & Bound \\
+    Case & $H$ & $n_F$ & $N$ & $T$ & Bound \\
     \midrule
-    Mantel (edge density)               & $K_3$ & 3 & 2 & 1 & $1/2$    \\
+    Mantel (edge density)               & $K_3$ & 2 & 3 & 1 & $1/2$    \\
     $P_3$ density                       & $K_3$ & 3 & 3 & 1 & $3/4$    \\
     $C_4$ density                       & $K_3$ & 4 & 4 & 2 & $3/8$    \\
-    Edge density                        & $K_4$ & 4 & 2 & 2 & $2/3$    \\
+    Edge density                        & $K_4$ & 2 & 4 & 2 & $2/3$    \\
     Erd\H{o}s pentagon ($C_5$ density)  & $K_3$ & 5 & 5 & 3 & $24/625$ \\
-    Edge density                        & $K_5$ & 5 & 2 & 4 & $3/4$    \\
-    Edge density                        & $C_5$ & 5 & 2 & 4 & $1/2$    \\
+    Edge density                        & $K_5$ & 2 & 5 & 4 & $3/4$    \\
+    Edge density                        & $C_5$ & 2 & 5 & 4 & $1/2$    \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 The cases play complementary roles.  Mantel is a hand-checkable baseline: its
-single $2\times2$ block is the explicit square from
-\Cref{sec:flagmatic-background}.  Here the dimension of an SDP block is the
+single $2\times2$ SDP block is the explicit square from
+\Cref{sec:flagmatic-background}.  Here the dimension of a block is the
 dimension of its certificate matrix, equivalently the length of its associated
 flag vector.  The $C_4$-density certificate has two blocks, with matrices of
 dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
 has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
 $5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
-all with~$8\times8$ matrices.  Together, these examples exercise targets both
+all with~$8\times8$ matrices.  These certificates are Flagmatic's output as
+produced, with no attempt to minimize the number of blocks or the matrix
+dimensions; more compact certificates for the same bounds may exist, but the
+unoptimized output already compiles end to end.  Together, these examples
+exercise targets both
 at and below the host size, and increasingly large multi-block normalizations.
 
-The $C_5$-free edge-density case also tests the route for a non-complete
-forbidden graph.  For a complete forbidden graph, induced containment and subgraph
-containment coincide, so the compiler may use the induced-graph filter.  They
-do not coincide for $C_5$, and this example therefore uses the
-subgraph-forbidding generators and expansion tactics.  The certificate still
-proves the statement that graphs containing no $C_5$ subgraph have
-edge density at most $1/2$.
+The $C_5$-free edge-density case shows that the forbidden graph need not be
+complete; the generated file proves that graphs containing no $C_5$ subgraph
+have edge density at most $1/2$.
 
 The generated certificate argument establishes only the upper-bound direction.
-For Mantel and the pentagon,
-the matching lower bounds are formalized separately in Lean, completing the
+For Mantel and the Erd\H{o}s pentagon,
+the matching lower bounds are formalized separately in Lean
+(\Cref{sec:lowerbounds}), completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
 
 \paragraph{Limitations.}
 \label{sec:flagmatic-open}
-We point out two limitations of the current compiler.
+We point out three limitations of the current compiler.
 First, this evaluation establishes coverage of the seven cases above, not
-completeness of the compiler.  The current input language assumes the
-supported simple-graph certificate format, a parseable target and singleton
-forbidden graph, and one of the currently supported certificate-matrix
-dimensions.
-Malformed inputs are rejected; an otherwise well-formed certificate outside
-this proof fragment produces an explicitly incomplete skeleton containing
-\lean{sorry}.  Within the fragment, a future certificate may still expose a
-normalization shape not handled by the custom tactics.  Each situation leads to
-the failure of constructing a complete Lean proof, not an unchecked theorem.
-Second, as explained in the trust model, we do not verify translation fidelity:
+completeness of the compiler.  Even a certificate within the compiler's
+intended scope may expose a normalization shape not handled by the custom
+tactics.  Such failures are safe: an unsupported or malformed input is
+rejected or yields an explicitly incomplete skeleton containing \lean{sorry},
+and a tactic failure leaves the proof incomplete, so neither case produces an
+unchecked theorem.
+Second, fully kernel-checked compilation does not yet scale.  For the
+$K_5$-free and $C_5$-free edge-density certificates, we attempted to check the
+generated files entirely by \lean{decide +kernel}; the runs did not finish in
+an acceptable time and were abandoned, which is why those two files use
+\lean{native\_decide} (\Cref{sec:flagmatic-trust}).
+Third, as explained in the trust model, we do not verify translation fidelity:
 Lean does not check that the generated declarations faithfully transcribe the
 source certificate.  For each of the seven evaluated certificates, however,
 the compiler fills the fixed proof skeleton without manual editing, and Lean
@@ -5145,9 +5154,9 @@ Five of the seven certificate proofs, the pentagon among them, discharge
 every finite computation by \lean{decide +kernel}; for the pentagon this
 means 15 batch equalities checked by the kernel, from which Lean derives the
 2,832 individual pair-density theorems by projection.  In the $K_5$-free and
-$C_5$-free edge-density proofs, kernel evaluation of the batched density
-computations is not practical at the current scale, so those files prove them
-by \lean{native\_decide}; their SDP matrix equalities are small enough for
+$C_5$-free edge-density proofs, kernel evaluation of the generated
+computations is not practical at the current scale, so those files use
+\lean{native\_decide}; their SDP matrix equalities are small enough for
 kernel evaluation and remain discharged by \lean{decide +kernel}.
 
 This asymmetry is a feasibility outcome, not a general recommendation about
