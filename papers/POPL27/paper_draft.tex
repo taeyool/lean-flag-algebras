@@ -2325,8 +2325,8 @@ the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 The first condition restricts \(\phi_0\) to the \(H\)-free unlabeled limits: it
 assigns density zero to every graph containing \(H\).  The second condition,
 \(\phi_0(\langle\sigma\rangle_0)>0\), says that the underlying unlabeled graph of
-\(\sigma\) has positive limiting density in the finite graphs approximating
-\(\phi_0\).  This is precisely the hypothesis under which the random-extension
+\(\sigma\) has positive limiting density along any sequence of finite
+graphs converging to \(\phi_0\).  This is precisely the hypothesis under which the random-extension
 measure \(\Ext_\sigma(\phi_0)\) is defined.  The final display says that, when a
 \(\sigma\)-typed positive homomorphism \(\phi\) is sampled from this measure, the
 inequality \(\phi(f)\leq\phi(g)\) holds with probability one.
@@ -4546,8 +4546,9 @@ there is some \(\phi_0\in Q_0\) for which
 \(\phi_0(\langle\sigma\rangle_0)>0\).  By Razborov's random-extension result
 recalled in \Cref{sec:background-downward}, every such \(\phi_0\) determines a
 unique probability measure \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\).  It is
-obtained by choosing a uniformly random occurrence of \(\sigma\) in finite
-graphs approaching \(\phi_0\) and passing to the limit.  For a probability
+obtained by choosing a uniformly random occurrence of \(\sigma\) in each
+member of a graph sequence converging to \(\phi_0\) and passing to the
+limit.  For a probability
 measure~\(\mu\) on~\(X_\sigma\), its
 support \(\operatorname{supp}(\mu)\) consists of those points
 \(\chi\in X_\sigma\) for which every open neighborhood of \(\chi\) has positive
@@ -4622,24 +4623,27 @@ For \(f,g\in\FlagAlg{\sigma}[\mathcal G]\), define
 \]
 and
 \[
+\begin{aligned}
   f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g
   \quad\Longleftrightarrow\quad
   \Ext_\sigma(\phi_0)
   \bigl(\{\chi\in X_\sigma\mid \chi(f)\leq\chi(g)\}\bigr)=1
+  \quad\text{for every }\phi_0\in Q_0\text{ with }
+  \phi_0(\langle\sigma\rangle_0)>0.
+\end{aligned}
 \]
-for every \(\phi_0\in Q_0\) satisfying
-\(\phi_0(\langle\sigma\rangle_0)>0\).
 \end{definition}
 
 The first is the ordinary semantic order in the constrained quotient algebra:
 equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
 \(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second quantifies over each
-\(\phi_0\in Q_0\) appearing at the end of the definition.  For such a
+\(\phi_0\in Q_0\) on its right-hand side.  For such a
 \(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
-on \(X_\sigma\) obtained by choosing uniformly at random an embedding of
-\(\sigma\) into finite graphs approximating \(\phi_0\), using the embedded
-vertices as labels, and passing to the limit.  Thus, the second display requires
+on \(X_\sigma\) obtained by taking a sequence of finite graphs converging
+to \(\phi_0\), choosing uniformly at random an embedding of \(\sigma\) into
+each of them, using the embedded vertices as labels, and passing to the
+limit.  Thus, the second display requires
 that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
 \(\chi(f)\leq\chi(g)\) with probability one.
 For the \(H\)-free class, consisting of graphs containing no subgraph
@@ -4670,7 +4674,8 @@ is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-The proof explains why support closure is the exact criterion.  Evaluation of
+The proof explains why the support closure \(S_\sigma\) is the exact
+criterion.  Evaluation of
 \(g-f\) defines a continuous function
 \(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
 measure is equivalent to non-negativity on its support; continuity then shows
