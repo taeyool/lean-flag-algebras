@@ -2988,7 +2988,7 @@ generate_mul_theorems 2 3 1 0
 \end{lstlisting}
 
 The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.  The
-command \lean{generate\_empty\_typed\_flags n} generates the empty-typed flags
+command \lean{generate\allowbreak\_empty\allowbreak\_typed\allowbreak\_flags n} generates the empty-typed flags
 on \(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
 flags of the flag type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique
 flag type on one labeled vertex.  The density and multiplication commands take a
@@ -4700,8 +4700,9 @@ criterion.  Evaluation of
 \(g-f\) defines a continuous function
 \(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
 measure is equivalent to non-negativity on its support; continuity then shows
-that ensemble non-negativity is exactly non-negativity on \(S_\sigma\).
-Quotient non-negativity is, by definition, non-negativity on \(Q_\sigma\).
+that non-negativity in the ensemble semantics is exactly non-negativity on
+\(S_\sigma\).  Non-negativity in the quotient semantics is, by definition,
+non-negativity on \(Q_\sigma\).
 The inclusion in Equation~\eqref{eq:S-subset-Q} proves the forward implication, and
 \(S_\sigma=Q_\sigma\) proves equivalence.
 
@@ -4711,7 +4712,8 @@ The necessity of root-plantability requires more than this observation.  If
 continuous function that is strictly positive on \(S_\sigma\) and strictly
 negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
 function by evaluation of a flag-algebra element.  The resulting element is
-ensemble non-negative but fails to be quotient non-negative, so the two orders
+non-negative in the ensemble semantics but not in the quotient semantics,
+so the two orders
 cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
 quotient proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
@@ -4809,16 +4811,21 @@ The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus,
 the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
 its labeled vertex: the probability that one additional uniformly sampled
 vertex is adjacent to it.  The preceding observation implies that every
-\(\chi\in S_{\sigma_1}\) satisfies \(\chi(d)=0\), so \(-d\) is ensemble
-non-negative.  On the other hand, arbitrarily large stars are \(C_4\)-free.
-Selecting the center of each star as the labeled vertex gives a limiting
-positive homomorphism \(\chi_*\in Q_{\sigma_1}\) with \(\chi_*(d)=1\).  Since
+\(\chi\in S_{\sigma_1}\) satisfies \(\chi(d)=0\), so \(-d\) is non-negative
+in the ensemble semantics.  On the other hand, arbitrarily large stars are
+\(C_4\)-free: the star \(K_{1,t}\) consists of one vertex, its
+\emph{center}, adjacent to \(t\) pairwise non-adjacent leaves, and contains
+no cycle at all.  Label the center of \(K_{1,t}\) to obtain a
+\(\sigma_1\)-flag, and let \(\chi_*\in Q_{\sigma_1}\) be the positive
+homomorphism arising as the limit of this sequence of \(\sigma_1\)-flags.
+Every leaf is adjacent to the center, so \(\chi_*(d)=1\).  Since
 every point of \(S_{\sigma_1}\) evaluates \(d\) to zero,
 \(\chi_*\notin S_{\sigma_1}\), and hence
 \begin{equation}\label{eq:c4-strict-inclusion}
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \end{equation}
-Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be quotient non-negative.
+Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be non-negative in the
+quotient semantics.
 The example exhibits a genuine gap between the two typed orders: quotient
 semantics permits a specially chosen vertex to carry the label, whereas
 ensemble semantics obtains the labeled vertex by uniform random sampling.
@@ -4826,7 +4833,8 @@ ensemble semantics obtains the labeled vertex by uniform random sampling.
 The gap does not invalidate the final unlabeled density bounds of this
 paper.  The
 certificate pipeline consumes its typed inequalities only through the
-downward operator, which preserves ensemble non-negativity
+downward operator, which preserves non-negativity in the ensemble
+semantics
 (\lean{downward\_\allowbreak preserve\_\allowbreak semanticCone},
 \Cref{sec:formal-downward}).  Its conclusions land at the empty flag type,
 which is root-plantable for every hereditary class by
@@ -5117,8 +5125,8 @@ developments show that the formalization is useful beyond compilation: they
 give a separate proof of Mantel's upper bound, formalize the constructions
 that complete the Mantel and Erd\H{o}s pentagon results, and prove two
 inequalities of Goodman.  We also summarized a separately developed
-mathematical meta-theory of constrained semantics: quotient non-negativity
-always implies ensemble non-negativity, and the converse holds for every typed
+mathematical meta-theory of constrained semantics: non-negativity in the quotient semantics
+always implies non-negativity in the ensemble semantics, and the converse holds for every typed
 expression exactly when the constrained class is root-plantable at that flag type.
 Its Lean development was generated by a Claude-driven autoformalization
 workflow that reused the manually developed flag-algebra library.
