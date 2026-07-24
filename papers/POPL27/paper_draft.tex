@@ -4027,31 +4027,36 @@ as a subgraph.
 \label{sec:obstacles}
 
 The specification layer of \Cref{sec:abstract} exposed several proof
-obligations that ordinary combinatorial notation hides.  A construction on
-graphs considered up to isomorphism must be shown to be independent of the
-chosen representatives.  Lean records the vertex set, and hence its size, in
-the type of each flag.  When multiplication or another construction changes
-the number of vertices, its input and output therefore have different Lean
-types, and the proof must explicitly relate them.  Finally, when a density is
-defined by counting a finite set, Lean must be made to use a consistent finite
-enumeration.  None of these issues changes the underlying mathematics, but
-each recurs often enough to become a substantial proof-engineering cost.
+obligations that ordinary combinatorial notation hides.  A construction
+described on a concrete labeled graph must be shown to be independent of
+the chosen representative before it descends to flags.  A flag's size is
+part of its Lean type, so statements comparing flags of different sizes,
+such as the expansion identity, are not even well typed as written.  A
+theorem about tuples of flags, once proved in general, must still be
+instantiated, and the instantiation is itself work: two terms for the same
+reordered tuple can inhabit types that Lean does not identify.  Counting a
+finite set requires an enumeration of it, and Lean's typeclass search can
+synthesize different enumerations for the same set at different
+occurrences, so a single choice must be recorded and reused.  None of these
+issues changes the underlying mathematics, but each recurs often enough to
+become a substantial proof-engineering cost.
 
-These obligations have related but not identical causes.  Lean automatically
-identifies types only when their definitions reduce to the same expression;
-size-indexed representations that are mathematically equivalent may therefore
-require explicit transport.  By contrast, well-definedness on quotient classes
-is an ordinary quotient obligation, while ambiguity between finite
-enumerations is more specific to Lean's elaboration and typeclass mechanisms.
-We therefore report the concrete obstacles without claiming that they all
-arise from a single foundational feature.
+These obligations have related but not identical causes.  Representative
+independence is an ordinary quotient obligation.  The size and tuple issues
+share a root in definitional equality: Lean identifies types only when
+their definitions reduce to a common expression, so mathematically equal
+objects may still require explicit transport.  Ambiguity between
+enumerations, by contrast, is specific to Lean's elaboration and typeclass
+mechanisms.  We therefore report the concrete obstacles without claiming
+that they all arise from a single foundational feature.
 
-A final recurring challenge is to prove equality between numerical densities
-whose numerators count differently presented finite sample spaces.  Our most
-reliable solution is combinatorial: name the two sample spaces, construct an
-explicit bijection between them, and deduce equality of their cardinalities.
-The final subsection describes this proof pattern after the representation and
-enumeration issues that motivate it.
+A final recurring challenge is to prove equality between densities whose
+numerators count differently presented finite sets of configurations.  Our
+most reliable method is to name the two sets, construct an explicit
+bijection between them, and deduce equality of their cardinalities; the
+bijection carries the mathematical content of the proof.  The final
+subsection describes this pattern after the representation and enumeration
+issues that motivate it.
 
 \subsection{Computing with Graphs up to Isomorphism}
 
