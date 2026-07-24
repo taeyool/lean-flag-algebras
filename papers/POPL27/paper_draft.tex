@@ -3654,32 +3654,25 @@ conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ and the last inequality
 $c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
 
 \paragraph{The compiler script.}
-The compiler script connects the certificate's external representation to the four
-parts above.  Flagmatic represents a graph or flag by a compact string, so the
-script parses each string and searches the canonical enumeration used by
-the reflection generators for the entry isomorphic to it.  The index of the
-matching entry determines the corresponding \lean{FlagAlgebra\_n\_k\_m\_i}
-constant, and hence the entries of each flag vector.
-The script then reads the target and bound, the forbidden graph, the
-host size, and the SDP blocks; reconstructs the rational matrices; computes the
-$LDL^\top$ witnesses; and decides whether the target must be lifted.
+The compiler script performs the certificate-specific assembly.  It parses
+the target, bound, forbidden graph, host size, and SDP blocks from the
+Flagmatic file.  For each graph or flag represented by a compact string, it
+finds the isomorphic entry in Lean's canonical enumeration; the resulting
+index selects the corresponding \lean{FlagAlgebra\_n\_k\_m\_i} constant.  The
+script also reconstructs the rational matrices, computes candidate exact
+$LDL^\top$ witnesses, and determines whether the target requires lifting.
 
-For each certificate, the script writes one Lean source file containing all
-four parts.  Each SDP block contributes one matrix, one flag vector, one PSD
-proof, and one addition of a non-negative quadratic form.  When the target is
-smaller than the host size, the file additionally contains the Part~3
-expansion.  Thus, the script varies the
-data, but the argument assembled in Part~4 has the same
-structure in every generated file.
+From these data, the script emits one Lean source file organized according to
+the four parts above: the generation commands of Part~1, the matrix and flag
+vector declarations and PSD proofs of Part~2, the optional target expansion
+of Part~3, and the final theorem of Part~4.  Certificates change the generated
+data and the number of SDP blocks, but not this proof structure.
 
-The script itself determines which \lean{FlagAlgebra\_n\_k\_m\_i} constant
-corresponds to each
-certificate flag and converts the target, bound, forbidden graph, and matrix
-data into Lean declarations.  These choices are made in Python.  Lean
-typechecks the generated file and verifies its propositions, including the
-final bound, but it does not compare the file with the source certificate.  This
-distinction between validity of the generated theorem and fidelity of the
-translation is central to the following trust model.
+The generated file is a proof proposal that Lean checks independently,
+including all its intermediate propositions and its final bound.  The source
+certificate itself is not an input to Lean, however, so this check establishes
+the validity of the generated theorem rather than the fidelity of the
+translation.  The next subsection makes this boundary precise.
 
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
@@ -3722,8 +3715,7 @@ runtime.  Finally, the custom
 tactics are unverified metaprograms whose dependence on elaborated expression
 shapes affects robustness and portability.  They construct proof terms that
 Lean checks, so a tactic failure leaves the proof incomplete rather than
-establishing an invalid theorem; any premises proved by \lean{native\_decide}
-retain the trust boundary just described.
+establishing an invalid theorem.
 
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
