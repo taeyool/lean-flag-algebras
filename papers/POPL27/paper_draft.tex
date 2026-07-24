@@ -2988,6 +2988,12 @@ type on one labeled vertex.  The density and multiplication commands take a
 pattern size \(p\) and a host size \(h\), followed by the same \(k,m\)
 describing the flag type, and the suffix \lean{no\_forbid} says that no
 forbidden-graph filter is being applied.
+Here, a completeness lemma states that the generated names exhaust the
+relevant finite set: every \(n\)-vertex \(\sigma\)-flag, up to
+label-preserving isomorphism, appears among the generated flags.  For the empty
+flag type, this means that every \(n\)-vertex graph is represented up to
+isomorphism; for a forbid-free enumeration, the same statement is restricted
+to the \(H\)-free flags.
 \Cref{tab:generation-commands} collects the whole command family, including
 the forbid-free variants described below.
 
@@ -3034,8 +3040,7 @@ the forbid-free variants described below.
 The important point is what each command contributes to subsequent proofs.  The
 first four commands create the named two- and three-vertex flags
 used in the examples of \Cref{sec:reflection-adequacy}, and each of the four
-also proves a completeness lemma stating that the flags it names exhaust the
-corresponding \(\mathcal{F}^\sigma_n\).  Generating the typed
+also proves the corresponding completeness lemma.  Generating the typed
 flags also computes and proves their downward identities, including the
 coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
 generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
@@ -3074,8 +3079,10 @@ provides the coefficients needed to express its density in terms of the
 
 \medskip
 \noindent\textbf{Optimizations.}
-The pipeline just described is organized so that elaboration remains
-tractable as the flag sizes grow.  The main optimizations are the following.
+The pipeline employs the following optimizations to reduce the computational
+cost of elaboration.  These optimizations do not eliminate the inherent
+combinatorial growth of flag enumeration and density computation, but they
+make the nontrivial examples considered in this paper feasible.
 
 \begin{itemize}
 \item \textbf{Size-inductive enumeration.}
@@ -3096,15 +3103,17 @@ expensive part, so each candidate carries a cheap isomorphism-invariant key,
 derived from its edge count and degree sequence, and the expensive test runs
 only when two keys collide.
 
-\item \textbf{Completeness by proof rather than search.}
-Each generation run must prove its completeness lemma, and deciding that
-statement directly would mean enumerating the full quotient type and
-comparing it against the named flags, which is exactly the brute force the
-inductive enumeration avoids.  Instead, the statement that the inductive
-enumeration misses no isomorphism class is proved once and for all, by
-induction on the size, as a theorem about the enumeration itself; the
-evaluation performed at generation time then only checks that the emitted
-constants coincide with the enumeration's output list.
+\item \textbf{Completeness from a verified enumerator.}
+One way to certify a particular generated list would be to enumerate the full
+quotient type independently and compare it with that list.  Such a check would
+establish completeness only for that particular run and would repeat the
+brute-force search that the size-inductive enumeration is designed to avoid.
+Instead, we prove once and for all, by induction on the size, that the
+enumeration algorithm of our Lean implementation produces a representative of every isomorphism class.
+A concrete generation run then needs only to check that the emitted constants
+coincide with the algorithm's computed output.  The completeness of that
+output follows by specializing the general theorem about the algorithm, rather
+than by independently searching the full space again.
 
 \item \textbf{Pruning under a forbidden graph.}
 For a complete forbidden graph, the size induction itself prunes: only
@@ -3116,10 +3125,13 @@ spent only on the surviving graphs.  The pruned generation nevertheless
 proves the same filtered completeness lemma.  Its enumeration misses no
 \(H\)-free isomorphism class because \(H\)-freeness is invariant under
 isomorphism and preserved by deleting a vertex, so the proof of the
-completeness lemma descends through the size induction; a proved bridge then
-equates the
-combinatorial containment test driving the pruning with the density condition
-stated in the lemma.
+completeness lemma descends through the size induction.  The pruning algorithm
+decides \(H\)-freeness using ordinary subgraph containment.  The filtered
+completeness lemma expresses the same condition in flag-algebra terms, by
+requiring every induced pattern whose underlying graph contains \(H\) to have
+density zero.  Lean proves that these two tests retain exactly the same flags,
+so the enumeration can use the executable containment test while later proofs
+use the density-based completeness statement.
 
 % \item \textbf{Batched certification.}
 % At realistic sizes, much of the elaboration cost is in certifying the
