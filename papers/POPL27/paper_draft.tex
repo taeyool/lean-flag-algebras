@@ -1560,7 +1560,7 @@ $\hat F = \langle n, F\rangle$, where $n$ records the size and $F$ is the
 $\sigma$-flag of that size.  In Lean, the two components are accessed as
 $\hat F.1$ and $\hat F.2$.
 \begin{lstlisting}
-def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+def FinFlag {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
@@ -1780,10 +1780,10 @@ Mathlib's \lean{Finsupp} type.  \lean{FlagVector} $\sigma$ is the resulting
 type, and \lean{basisVector} is the constructor that produces the basis vector
 for each $\sigma$-flag:
 \begin{lstlisting}
-abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+abbrev FlagVector {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
 
-def basisVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
+def basisVector {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
 Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector $\mathbf e_F$ for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
@@ -1796,19 +1796,19 @@ Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
 collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the
 linear subspace they span, represented in Lean by a \lean{Submodule}:
 \begin{lstlisting}
-noncomputable def flagExpansion {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+noncomputable def flagExpansion {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
     : FlagVector (*@$\sigma$@*) :=
   (*@$\sum$@*) F' : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)), flagDensity(*@$_1$@*) F.2 F' (*@$\leansmul$@*) basisVector (*@$\langle$@*)(*@$\ell$@*), F'(*@$\rangle$@*)
 
-noncomputable def zeroElement {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+noncomputable def zeroElement {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
     : FlagVector (*@$\sigma$@*) :=
   basisVector F - flagExpansion F (*@$\ell$@*)
 
-noncomputable def zeroSet {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+noncomputable def zeroSet {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k))
     : Set (FlagVector (*@$\sigma$@*)) :=
-  {k | (*@$\exists$@*) (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)), F.1 (*@$\leq$@*) (*@$\ell$@*) (*@$\wedge$@*) k = zeroElement F (*@$\ell$@*)}
+  {z | (*@$\exists$@*) (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)), F.1 (*@$\leq$@*) (*@$\ell$@*) (*@$\wedge$@*) z = zeroElement F (*@$\ell$@*)}
 
-noncomputable def ZeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+noncomputable def ZeroSpace {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k))
     : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
   Submodule.span (*@$\mathbb{R}$@*) (zeroSet (*@$\sigma$@*))
 \end{lstlisting}
@@ -1823,14 +1823,14 @@ The equivalence relation \lean{flagVectorEqv} declares two elements of \lean{Fla
 when their difference lies in \lean{ZeroSpace} $\sigma$, and \lean{flagVectorSetoid} $\sigma$
 packages this relation into a setoid so that Lean's quotient type can be applied.
 \begin{lstlisting}
-def flagVectorEqv {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (f g : FlagVector (*@$\sigma$@*)) : Prop :=
+def flagVectorEqv {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (f g : FlagVector (*@$\sigma$@*)) : Prop :=
   f - g (*@$\in$@*) ZeroSpace (*@$\sigma$@*)
 
-instance flagVectorSetoid {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Setoid (FlagVector (*@$\sigma$@*)) where
+instance flagVectorSetoid {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Setoid (FlagVector (*@$\sigma$@*)) where
   r     := flagVectorEqv
   iseqv := ... -- proof that flagVectorEqv is an equivalence relation
 
-abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+abbrev FlagAlgebra {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
 Since \lean{FlagAlgebra}~$\sigma$ is another quotient type, if $f$ is a
@@ -1847,24 +1847,24 @@ Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
 The term \lean{flagMulWithSize} defines the product
 of two $\sigma$-flags at a chosen output size $\ell$ as in
 Equation~\eqref{eq:mul}. The term \lean{flagMul} specializes this product to the minimal admissible
-size $\ell = F.1 + F'.1 - n_0$. Then, \lean{bilinearExtension} extends
+size $\ell = F.1 + F'.1 - k$. Then, \lean{bilinearExtension} extends
 \lean{flagMul} linearly in each argument to give a product on
 \lean{FlagVector} $\sigma$.  This intermediate product is only a bilinear
 operation on formal sums; the quotient is where the usual algebra laws are
 established.  Finally, \lean{Quotient.map$_2$} lifts the product to
 \lean{FlagAlgebra} $\sigma$.
 \begin{lstlisting}
-noncomputable def flagMulWithSize {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+noncomputable def flagMulWithSize {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
     : FlagVector (*@$\sigma$@*) :=
   (*@$\sum$@*) G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)), flagDensity(*@$_2$@*) F.2 F'.2 G (*@$\leansmul$@*) basisVector (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
 
-noncomputable def flagMul {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F F' : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
-  flagMulWithSize F F' (F.1 + F'.1 - n(*@$_0$@*))
+noncomputable def flagMul {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F F' : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
+  flagMulWithSize F F' (F.1 + F'.1 - k)
 
-noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Mul (FlagVector (*@$\sigma$@*)) where
+noncomputable instance {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Mul (FlagVector (*@$\sigma$@*)) where
   mul := bilinearExtension flagMul
 
-noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Mul (FlagAlgebra (*@$\sigma$@*)) where
+noncomputable instance {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Mul (FlagAlgebra (*@$\sigma$@*)) where
   mul := by
     apply Quotient.map(*@$_2$@*) ((*@$\cdot$@*) * (*@$\cdot$@*))
     -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$\sigma$}@*),
@@ -1883,9 +1883,9 @@ obligation amounts to showing that this multiplication respects
 is that \lean{ZeroSpace} $\sigma$ is
 closed under multiplication by arbitrary flag vectors:
 \begin{lstlisting}
-theorem flagVector_mul_zeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (f : FlagVector (*@$\sigma$@*)) {k : FlagVector (*@$\sigma$@*)} (hk_zero : k (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
-    : f * k (*@$\in$@*) ZeroSpace (*@$\sigma$@*) := ...
+theorem flagVector_mul_zeroSpace {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
+    (f : FlagVector (*@$\sigma$@*)) {z : FlagVector (*@$\sigma$@*)} (hz_zero : z (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
+    : f * z (*@$\in$@*) ZeroSpace (*@$\sigma$@*) := ...
 \end{lstlisting}
 Together with commutativity, this says that \lean{ZeroSpace} $\sigma$ is an
 ideal in the algebraic sense: multiplying a zero-space element by any flag
@@ -1897,18 +1897,18 @@ depend on the chosen representatives.  This is the compatibility condition
 that allows the Lean definition to use \lean{Quotient.map$_2$}.  A separate
 theorem handles the choice of output size:
 \begin{lstlisting}
-theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem flagMulWithSize_indep_on_size {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)}
-    (h(*@$\ell_1$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_1$@*) + n(*@$_0$@*)) (h(*@$\ell_2$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_2$@*) + n(*@$_0$@*))
+    (h(*@$\ell_1$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_1$@*) + k) (h(*@$\ell_2$@*) : F(*@$_1$@*).1 + F(*@$_2$@*).1 (*@$\leq$@*) (*@$\ell_2$@*) + k)
     : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*)) := ...
 \end{lstlisting}
 The hypotheses \lean{h$\ell_1$} and \lean{h$\ell_2$} are the admissibility
 assumptions on the two output sizes: \(\ell_1\) and \(\ell_2\) must both be
 large enough to contain the two input $\sigma$-flags after identifying their common flag
 type \(\sigma\).  Here \(F_j.1\) is the total number of vertices of \(F_j\),
-and \(n_0\) is the number of labeled vertices in \(\sigma\).  Equivalently, the intended output
-size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the flag
-type are sampled disjointly in the two $\sigma$-flags, while the \(n_0\) labeled vertices
+and \(k\) is the number of labeled vertices in \(\sigma\).  Equivalently, the intended output
+size is at least \(F_1.1 + F_2.1 - k\): the unlabeled vertices outside the flag
+type are sampled disjointly in the two $\sigma$-flags, while the \(k\) labeled vertices
 are shared.  The theorem then says that any two such admissible output sizes
 give equivalent flag vectors, justifying the choice of the minimal size in
 \lean{flagMul}.
@@ -1932,10 +1932,10 @@ make each of these surrounding notions explicit.
 $\mathbb{N}$.  The predicate \lean{ConvergesTo} says that such a sequence has a
 prescribed limiting density function.
 \begin{lstlisting}
-abbrev FlagSeq {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
+abbrev FlagSeq {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) :=
   (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
 
-def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
+def ConvergesTo {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
   Increases s (*@$\wedge$@*) Tendsto (flagDensitySeq s) atTop ((*@$\mathcal{N}$@*) a)
 \end{lstlisting}
 Here the candidate limit \(a\) is a real-valued function on finite
@@ -1958,10 +1958,10 @@ multiplication, multiplication by real scalars, and the unit, and satisfies
 \(\phi([F])\ge 0\) for every finite \(\sigma\)-flag \(F\).  The Lean definition
 follows this sentence almost literally:
 \begin{lstlisting}
-abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
+abbrev Hom {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) :=
   FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[(*@$\mathbb{R}$@*)] (*@$\mathbb{R}$@*)
 
-def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+def PositiveHom {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
 The arrow \lean{$\to_a$[$\mathbb{R}$]} in the first definition is Lean's
@@ -2001,12 +2001,12 @@ density lies in \([0,1]\), so the pointwise limit of a convergent flag sequence
 does as well.}
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
-theorem flagSeq_limit_mem_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem flagSeq_limit_mem_positiveHom {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     (s : FlagSeq (*@$\sigma$@*)) {a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)} (hs_conv : ConvergesTo s a)
     : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\forall$@*) (F : FinFlag (*@$\sigma$@*)), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) = a F := ...
 
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
-theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem positiveHom_as_flagSeq_limit {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (fun F => (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*)) := ...
 \end{lstlisting}
@@ -2049,7 +2049,7 @@ One then samples an entire sequence
 \[
   X=(X_0,X_1,\ldots),
 \]
-where \(X_n\) is chosen from the distribution on \(\sigma\)-flags of size \(n^2+n_0\).
+where \(X_n\) is chosen from the distribution on \(\sigma\)-flags of size \(n^2+k\).
 The key estimate says that, for each fixed test \(\sigma\)-flag \(F\), the density
 \(\den{F}{X_n}\) is very likely to be close to \(\phi([F])\) once \(n\) is large.
 Thus, almost every sampled sequence has the limiting density profile prescribed
@@ -2069,10 +2069,10 @@ evaluates non-negatively.  The induced order is installed as a Lean
 \lean{LE} instance, with $f \leq g$ defined to mean
 $g - f \in \mathcal{C}^\sigma$.
 \begin{lstlisting}
-def semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
+def semanticCone {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
 
-instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : LE (FlagAlgebra (*@$\sigma$@*)) where
+instance {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : LE (FlagAlgebra (*@$\sigma$@*)) where
   le := fun f g => g - f (*@$\in$@*) semanticCone (*@$\sigma$@*)
 \end{lstlisting}
 
@@ -2097,16 +2097,16 @@ result is a well-defined operator
   \mathcal{A}^\sigma\longrightarrow\mathcal{A}^\emptyset.
 \]
 
-Fix a flag type $\sigma$ with $n_0$ vertices. We regard
+Fix a flag type $\sigma$ with $k$ vertices. We regard
 these vertices of $\sigma$ as labels.  A concrete $\sigma$-typed labeled
 graph~$G$ on~$n$ vertices includes an embedding of $\sigma$ into $G$, which
-places these labels on $n_0$ vertices of $G$.  Its normalizing factor is
+places these labels on $k$ vertices of $G$.  Its normalizing factor is
 computed by counting such label placements.  The numerator,
-\lean{isomorphismCount G}, counts the injections of the $n_0$ labels into the
+\lean{isomorphismCount G}, counts the injections of the $k$ labels into the
 underlying graph that produce a typed labeled graph isomorphic to~$G$.  Its
 denominator
 \[
-  \frac{n!}{(n-n_0)!}
+  \frac{n!}{(n-k)!}
 \]
 is the total number of injections of those labels into the $n$ vertices.
 Their ratio is $q_\sigma(G)$.
@@ -2117,23 +2117,23 @@ definitions of the two ingredients, their lifts to isomorphism classes, and
 the map \lean{downwardFlag} that combines them.  The subsequent listing carries
 out the linear extension and the passage to the flag algebra described above.
 \begin{lstlisting}
-noncomputable def downwardNormalizingFactor_labeledGraph {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardNormalizingFactor_labeledGraph {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
-  let num_of_all_injections := n.factorial / (n - n(*@$_0$@*)).factorial
+  let num_of_all_injections := n.factorial / (n - k).factorial
   isomorphismCount G / num_of_all_injections
 
-noncomputable def downwardNormalizingFactor {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardNormalizingFactor {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G) (...)
 
-def unlabel_labeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (G : LabeledGraph (*@$\sigma$@*) V)
+def unlabel_labeledGraph {k : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin k)} (G : LabeledGraph (*@$\sigma$@*) V)
     : LabeledGraph (*@$\emptyt$@*) V := ...
 
-noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def unlabel {k : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin k)}
     : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
   Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabel_labeledGraph G(*@$\rrbracket$@*)) (...)
 
-noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : Flag (*@$\sigma$@*) (Fin n))
+noncomputable def downwardFlag {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)} (F : Flag (*@$\sigma$@*) (Fin n))
     : FlagVector (*@$\emptyt$@*) :=
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
@@ -2163,19 +2163,19 @@ their downward images represent the same element of the empty-type algebra.
 This is exactly the compatibility condition needed to define \lean{downward}
 by a final quotient lift.
 \begin{lstlisting}
-noncomputable def downwardFlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardFlagVector {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     : FlagVector (*@$\sigma$@*) (*@$\to$@*) FlagVector (*@$\emptyt$@*) :=
   linearExtension (fun F : FinFlag (*@$\sigma$@*) => downwardFlag F.2)
 
-noncomputable def downwardFlagVectorQuot {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardFlagVectorQuot {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     : FlagVector (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   fun f : FlagVector (*@$\sigma$@*) => (*@$\llbracket$@*)downwardFlagVector f(*@$\rrbracket$@*)
 
-lemma downwardFlagVectorQuot_respect_eqv {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+lemma downwardFlagVectorQuot_respect_eqv {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     {f f' : FlagVector (*@$\sigma$@*)} (h : f - f' (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
     : downwardFlagVectorQuot f = downwardFlagVectorQuot f' := ...
 
-noncomputable def downward {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downward {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   Quotient.lift (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f) (...)
 
@@ -2208,7 +2208,7 @@ homomorphism on $f$.  Thus, a probability measure on
 positive homomorphisms.  With this representation, the random-extension
 identity is stated as follows.
 \begin{lstlisting}
-theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
     : (*@$\exists$@*) (*@$\mathbb{P}$@*) : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)), (*@$\forall$@*) f : FlagAlgebra (*@$\sigma$@*),
         (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)), PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)(*@$\mathbb{P}$@*)
@@ -2255,7 +2255,7 @@ rearranged identity therefore shows that the downward image of $f$ is
 non-negative under every empty-type positive homomorphism.  This is the Lean
 counterpart of \Cref{thm:downward-nonneg}:
 \begin{lstlisting}
-theorem downward_preserve_semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem downward_preserve_semanticCone {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*))
     : (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*) := ...
 \end{lstlisting}
@@ -2349,14 +2349,14 @@ agree and an example showing that they need not.
 The Lean predicate \lean{forbidLE} is the formalization of
 \Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
-def forbidLEWith {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+def forbidLEWith {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     (C : ForbidCondition) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)),
     (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0
     -> (*@$\,$@*) C (*@$\phi_0$@*)
     -> (*@$\,$@*) (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
 
-def forbidLE {n(*@$_0$@*) m : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+def forbidLE {k m : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     (H : SimpleGraph (Fin m)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   forbidLEWith (forbiddenCondition H) f g
 \end{lstlisting}
@@ -3614,7 +3614,7 @@ the two sides are expanded in a common basis.
 The first step is to prove
 $[F]\leq_H[F]+\sum_tQ_t$.  It uses the following general lemma:
 \begin{lstlisting}
-theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem forbidLEWith_add_QuadraticForm {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
     (M : Matrix (Fin n) (Fin n) (*@$\mathbb{R}$@*)) (hM : M.PosSemidef) (v : FlagAlgebraVec (*@$\sigma$@*) n)
     : forbidLEWith C f g -> (*@$\,$@*) forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
