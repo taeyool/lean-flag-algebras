@@ -5007,23 +5007,30 @@ limitations in \Cref{sec:unsure}.
 Concurrently with and independently of our work, Davey, Hurley, de Joannis
 de Verclos, Kang, and Volec formalized in Lean~4 the theory of \emph{local
 flag algebras} introduced in their accompanying papers~\cite{davey2026local}.
-The local calculus normalizes densities by the maximum degree rather than by
-the number of vertices, so that the method remains informative for graphs of
-bounded maximum degree.  Under this normalization the exact density-expansion
+The local calculus normalizes densities by the maximum degree $\Delta$
+rather than by the number of vertices, so that the method still yields
+nontrivial bounds for sparse graphs of bounded maximum degree.  Under this normalization the exact density-expansion
 identity behind the classical quotient construction holds only up to an
-$O(1/\Delta)$ error, so no quotient is taken: their algebra is defined
+error bounded by a constant multiple of $1/\Delta$, so no quotient is taken: their algebra is defined
 directly on formal combinations of isomorphism classes, evaluation at a
 finite graph is multiplicative only asymptotically, and positivity is again
 captured by a semantic cone.  Their formalization
 machine-certifies the new bounds of those papers, on pentagon counts in
-triangle-free graphs and on the strong chromatic index, and arrives
-independently at the reflection pattern of \Cref{sec:reflection}: a
+triangle-free graphs and on the strong chromatic index.  Independently,
+their design arrives at the reflection pattern of \Cref{sec:reflection}: a
 noncomputable specification mirrored by a computable Boolean-adjacency
 representation with adequacy lemmas.  Our development formalizes the
 classical theory instead---the quotient algebra, positive homomorphisms,
 and the ensemble semantics---and is organized as a reusable library and
 proof-generating pipeline rather than around individual bounds, so the two
 developments are complementary in both scope and design.
+
+\paragraph{A concurrent formalization of computational flag algebras.}
+A further concurrent development is Spiegel's \emph{computational flag
+algebras} in Lean~\cite{spiegel2026computational}.  It is an independent
+ongoing work on the Lean formalization of the flag algebras, which focuses
+on carrying out flag-algebra inequality proofs fully and automatically
+inside Lean, without relying on an external tool or solver.
 
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
@@ -5439,6 +5446,13 @@ C.~Freer.
 E.~Davey, E.~Hurley, R.~de~Joannis~de~Verclos, R.~J.~Kang, and J.~Volec.
 \newblock Local flag algebras.
 \newblock arXiv:2607.12461, 2026.
+
+\bibitem{spiegel2026computational}
+C.~Spiegel.
+\newblock Computational flag algebras in Lean.
+\newblock Talk at the workshop \textit{Flags in the Mountains}, CSU Mountain
+  Campus, June 2026.  Slides at
+  \url{https://christophspiegel.berlin/assets/slides/FlagsMountains_2026.pdf}.
 
 \end{thebibliography}
 
