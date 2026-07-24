@@ -3248,9 +3248,13 @@ For every positive homomorphism $\phi\in\poshom{\sigma}$,
 The first equality unfolds the definition of $f$ and uses preservation of
 scalar multiplication; the second uses preservation of multiplication, which
 rewrites the flag-algebra square as the square of the real number
-$\phi((\fKtwobull)-(\fbarKtwobull))$.  This makes the source of the
-non-negativity explicit: the right-hand side is a positive multiple of a square
-of a real number.  Thus, $f$ is non-negative in $\mathcal A^\sigma$, and
+\(\phi((\fKtwobull)-(\fbarKtwobull))\).  This makes the source of the
+non-negativity explicit: the final expression for \(\phi(f)\),
+\[
+  \tfrac12\bigl(\phi((\fKtwobull)-(\fbarKtwobull))\bigr)^2,
+\]
+is non-negative because it is a positive scalar multiple of the square of a
+real number.  Thus, $f$ is non-negative in $\mathcal A^\sigma$, and
 \Cref{thm:downward-nonneg} gives $0\leq_{K_3}Q$.
 
 To calculate $Q$ in the common size-three basis, we use the triangle-free
@@ -3345,7 +3349,7 @@ Flagmatic finds the matrices by turning this decomposition problem into a
 \emph{semidefinite program} (SDP).  It first fixes a host size $N$ and chooses
 the flag types and flags that may occur.  It expands the target, the unit, and
 the downward quadratic forms in the common basis of allowed $N$-vertex graphs,
-namely those that avoid $\mathcal H$.  At this point the entries of the matrices
+namely those that avoid $\mathcal H$.  At this point, the entries of the matrices
 are unknowns.  Requiring the coefficient left over for every host graph to be
 non-negative gives linear constraints on those entries, and requiring each
 matrix to be PSD gives the semidefinite constraints.  An SDP solver finds
