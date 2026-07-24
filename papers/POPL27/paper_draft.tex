@@ -4713,9 +4713,11 @@ non-degenerate flag type in a blow-up-closed class.
 
 The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
 of finite \(\sigma\)-flags whose underlying graphs lie in \(\mathcal K\).  For
-each such \(\sigma\)-flag \((G,\theta)\), the proof repeatedly applies the preceding
-replacement construction, replacing every vertex \(v\in V(G)\) by a graph
-\(J_v\).  The resulting blow-up has a natural projection back to \(G\): every
+each such \(\sigma\)-flag \((G,\theta)\), the proof applies the preceding
+replacement construction once for each vertex of \(G\): the vertices
+\(v\in V(G)\) are replaced one at a time by graphs \(J_v\), and at every
+step blow-up closure supplies an interior for which the current graph
+remains in \(\mathcal K\), so the final blow-up also lies in \(\mathcal K\).  The resulting blow-up has a natural projection back to \(G\): every
 vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
 \(v\) under this projection, the \emph{fiber over~\(v\)}.
 
@@ -4791,8 +4793,21 @@ Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be quotient non-negative.
 The example exhibits a genuine gap between the two typed orders: quotient
 semantics permits a specially chosen vertex to carry the label, whereas
 ensemble semantics obtains the labeled vertex by uniform random sampling.
-The gap does not invalidate the final unlabeled density bounds used in this
-paper; it concerns the completeness of the intermediate typed calculus.
+
+The gap does not invalidate the final unlabeled density bounds of this
+paper.  The
+certificate pipeline consumes its typed inequalities only through the
+downward operator, which preserves ensemble non-negativity
+(\lean{downward\_\allowbreak preserve\_\allowbreak semanticCone},
+\Cref{sec:formal-downward}).  Its conclusions land at the empty flag type,
+which is root-plantable for every hereditary class by
+\Cref{thm:blowup-root-plantability-summary}.  The final conversion
+(\lean{generalizedTuranDensity\_\allowbreak le\_\allowbreak of\_\allowbreak forbidLE},
+\Cref{sec:forbidden}) then turns these conclusions into classical
+statements about Tur\'an densities.  Root-plantability is therefore not a
+hypothesis of any of these results.  It concerns only the completeness of
+the intermediate typed calculus, whether typed ensemble reasoning proves
+exactly the typed inequalities of the constrained algebra.
 
 \paragraph{Formalization and scope.}
 The Lean formalization of the meta-theory presented in this section is included
