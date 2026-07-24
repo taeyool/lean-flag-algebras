@@ -32,7 +32,7 @@ HANDOFF.md
 *.pdf
 *.run.xml
 *.snm
-*.synctex.gz
+*.synctex*
 *.toc
 *.xdv
 
