@@ -295,11 +295,14 @@ density and multiplication facts independently and check those computations
 against the mathematical definitions, verify positive semidefiniteness exactly
 over $\mathbb{Q}$, and carry out the algebraic normalization steps that occur in
 flag-algebra proofs.  In our case studies, the compiler yields machine-checked
-proofs of several Tur\'an-type bounds, including Mantel's theorem, a
-$C_4$-density bound for triangle-free graphs, edge-density bounds for
-$K_4$-free, $K_5$-free, and $C_5$-free graphs, and the
-Erd\H{o}s pentagon theorem, for which no proof that avoids flag algebras is
-known.
+proofs of seven Tur\'an-type upper bounds.  These include the upper bounds in
+Mantel's theorem and the Erd\H{o}s pentagon theorem; no proof of the latter
+that avoids flag algebras is known.  They also include a $C_4$-density bound
+for triangle-free graphs and edge-density bounds for $K_4$-free, $K_5$-free,
+and $C_5$-free graphs.  We use the underlying formalization directly as well,
+without the compiler, to give a separate proof of Mantel's upper bound,
+formalize the matching constructions that complete both exact
+Tur\'an-density results, and prove two inequalities of Goodman.
 
 The design of our constrained semantics also prompted a separate
 meta-theoretic investigation comparing two ways of imposing graph constraints:
@@ -479,10 +482,12 @@ that translates externally generated rational certificate data into algebraic
 proofs checked by Lean.  Third, it evaluates the compiler on seven upper-bound
 certificates, including the bounds needed for Mantel's theorem and the
 Erd\H{o}s pentagon theorem, as well as a bound on the \(C_4\)-density of
-triangle-free graphs.  The matching lower bounds for Mantel's theorem and the
-Erd\H{o}s pentagon theorem are formalized separately, completing both
-Tur\'an-density results; the same infrastructure also proves Goodman-type
-inequalities outside the certificate pipeline.  Fourth, it compares the
+triangle-free graphs.  A separate direct proof of Mantel's theorem shows how
+to work with the flag-algebra formalization without the compiler.  Matching
+lower bounds for Mantel's theorem and the Erd\H{o}s pentagon theorem complete
+both Tur\'an-density results, while two inequalities of Goodman further
+illustrate uses of the same infrastructure outside the certificate pipeline.
+Fourth, it compares the
 semantics obtained by building a hereditary constraint into the flag algebra
 with the ensemble semantics used by our implementation.  This comparison
 yields the root-plantability criterion, a sufficient condition based on
@@ -503,9 +508,10 @@ specification, and explains how elaboration-time commands generate flags and
 their theorems.  \Cref{sec:flagmatic} describes the
 certificate-to-proof compiler, its exact checks of positive semidefiniteness
 and proof automation, and its evaluation on seven certificates.
-\Cref{sec:lowerbounds} formalizes the
-matching lower-bound constructions and two additional Goodman-style
-inequalities outside the certificate pipeline.  \Cref{sec:obstacles} discusses
+\Cref{sec:lowerbounds} illustrates direct uses of the underlying formalization
+beyond certificate compilation: a direct proof of Mantel's theorem, matching
+lower-bound constructions for Mantel's theorem and the Erd\H{o}s pentagon
+theorem, and two inequalities of Goodman.  \Cref{sec:obstacles} discusses
 the main engineering obstacles and a recurring bijective proof pattern for
 finite counting identities.  \Cref{sec:metatheory} presents the core results
 of our meta-theory of constrained semantics and describes its separate
@@ -1519,7 +1525,8 @@ instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-\lean{LabeledGraphIso} represents an isomorphism of concrete $\sigma$-flags.
+The structure \lean{LabeledGraphIso} represents an isomorphism of concrete
+$\sigma$-flags.
 It consists of a graph isomorphism \lean{graph\_iso} between the underlying
 graphs, together with a compatibility proof \lean{type\_preserve} saying that
 this isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy
@@ -1539,7 +1546,8 @@ symmetric, and transitive.  Finally,
 precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
 \lean{V}.
 
-\lean{Quotient} comes with double-bracket notation for equivalence classes.  In
+Lean's \lean{Quotient} type comes with double-bracket notation for equivalence
+classes.  In
 Lean code, the unsubscripted notation \(\llbracket x\rrbracket\)
 means ``the quotient class of the representative \(x\),'' with the relevant
 quotient inferred from the expected type.  Thus, in this subsection, when the
@@ -1776,9 +1784,9 @@ theorem flagDensity_eq_sum_density_prods
 To define the flag algebra, we first construct the free real vector space on
 $\mathcal{F}^\sigma$.  Each element of this vector space is represented as a
 finitely supported function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using
-Mathlib's \lean{Finsupp} type.  \lean{FlagVector} $\sigma$ is the resulting
-type, and \lean{basisVector} is the constructor that produces the basis vector
-for each $\sigma$-flag:
+Mathlib's \lean{Finsupp} type.  We call the resulting type
+\lean{FlagVector}~$\sigma$; the constructor \lean{basisVector} produces the
+basis vector for each $\sigma$-flag:
 \begin{lstlisting}
 abbrev FlagVector {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
@@ -1928,9 +1936,9 @@ Theorem~\ref{thm:convergent-hom} is the main mathematical bridge between finite
 $\sigma$-flag sequences and positive homomorphisms, but the formalization first has to
 make each of these surrounding notions explicit.
 
-\lean{FlagSeq}~$\sigma$ is the type of sequences of $\sigma$-flags indexed by
-$\mathbb{N}$.  The predicate \lean{ConvergesTo} says that such a sequence has a
-prescribed limiting density function.
+A sequence of $\sigma$-flags indexed by $\mathbb{N}$ is represented by
+\lean{FlagSeq}~$\sigma$.  The predicate \lean{ConvergesTo} says that such a
+sequence has a prescribed limiting density function.
 \begin{lstlisting}
 abbrev FlagSeq {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) :=
   (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
@@ -2138,10 +2146,10 @@ noncomputable def downwardFlag {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Flag
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
 
-The definitions appear in the order of this construction.
-\lean{downwardNormalizingFactor\_labeledGraph} implements the counting ratio
-on concrete $\sigma$-typed labeled graphs, and
-\lean{downwardNormalizingFactor} lifts that ratio to isomorphism classes.
+The definitions appear in the order of this construction.  The counting ratio
+on concrete $\sigma$-typed labeled graphs is implemented by
+\lean{downwardNormalizingFactor\_labeledGraph}, and its lift to isomorphism
+classes is \lean{downwardNormalizingFactor}.
 Similarly, \lean{unlabel\_labeledGraph} forgets the type embedding at the concrete
 level, while \lean{unlabel} lifts this operation to flags.  Finally,
 \lean{downwardFlag} forms the empty-type basis vector indexed by the pair
@@ -2838,10 +2846,9 @@ the closed reflection-layer computation
 \begin{lstlisting}
   sym2FlagDensity(*@$_2$@*)  Sym2Flag_2_1_0_0  Sym2Flag_2_1_0_1  Sym2Flag_3_1_0_1  =  1 / 2
 \end{lstlisting}
-\lean{decide +kernel} is a Lean tactic for closing a decidable goal by
-evaluating it inside the kernel.  Here it runs the reflection-layer density
-computation above and closes the goal, so nothing outside the kernel is
-trusted.
+The tactic \lean{decide +kernel} closes a decidable goal by evaluating it
+inside the kernel.  Here it runs the reflection-layer density computation above
+and closes the goal, so nothing outside the kernel is trusted.
 
 The downward operator from \Cref{sec:formal-downward} follows the same
 reflection pattern.  The specification-level definition uses the abstract
@@ -2980,11 +2987,11 @@ generate_flag_pair_density_theorems_no_forbid 2 3 1 0
 generate_mul_theorems 2 3 1 0
 \end{lstlisting}
 
-The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.
-\lean{generate\_empty\_typed\_flags n} generates the empty-typed flags on
-\(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
-flags of the flag type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique flag
-type on one labeled vertex.  The density and multiplication commands take a
+The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.  The
+command \lean{generate\_empty\_typed\_flags n} generates the empty-typed flags
+on \(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
+flags of the flag type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique
+flag type on one labeled vertex.  The density and multiplication commands take a
 pattern size \(p\) and a host size \(h\), followed by the same \(k,m\)
 describing the flag type, and the suffix \lean{no\_forbid} says that no
 forbidden-graph filter is being applied.
@@ -3774,8 +3781,8 @@ have edge density at most $1/2$.
 
 The generated certificate argument establishes only the upper-bound direction.
 For Mantel and the Erd\H{o}s pentagon,
-the matching lower bounds are formalized separately in Lean
-(\Cref{sec:lowerbounds}), completing the
+the matching lower bounds are proved directly in Lean using the underlying
+formalization (\Cref{sec:lowerbounds}), completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
 
@@ -3804,22 +3811,24 @@ source certificate remains a limitation, while the logical validity of the
 generated theorem itself is checked by Lean.
 
 
-\section{Lower Bounds and Other Inequalities}
+\section{Using the Formalization Beyond Certificate Compilation}
 \label{sec:lowerbounds}
 
-The certificates of \Cref{sec:results} establish the flag-algebra upper
-bounds; the matching lower bounds, which pin down the Tur\'an densities exactly,
-are formalized separately in Lean, as are a few further inequalities.  We
-collect them here.  Both lower bounds follow the pattern described after
-\Cref{lem:semantic-bound}: an explicit family of triangle-free graphs (the
-balanced complete bipartite graphs for Mantel's theorem, the balanced
-blow-ups of $C_5$ for the Erd\H{o}s pentagon theorem) attains the
-target density at infinitely many orders, and the convergence of the
-normalized extremal numbers carries these finite bounds to the Tur\'an
-density.  The further inequalities are two results of Goodman, a lower bound
-on the triangle density in terms of the edge density and a bound on Ramsey
-multiplicity, proved with the same flag-algebra infrastructure outside the
-certificate pipeline.
+The certificate compiler of \Cref{sec:flagmatic} is one application of our
+development, not its full scope.  Underlying the compiler is a reusable
+formalization of flag-algebra expressions, positive homomorphisms and their
+semantics, and the passage from finite graphs to limiting densities.  These
+components can also be used directly, without first translating an argument
+into a certificate.
+
+This section illustrates three such uses.  The Mantel development gives a
+direct flag-algebra proof and shows what it is like to work with the
+formalization without the compiler.  The matching lower bounds for Mantel's
+theorem and the Erd\H{o}s pentagon theorem combine explicit finite
+constructions with the convergence of normalized extremal numbers, completing
+the corresponding exact Tur\'an-density results.  Finally, two inequalities of
+Goodman show that the same framework supports flag-algebra arguments outside
+the certificate problems considered in \Cref{sec:flagmatic}.
 
 \paragraph{Mantel's theorem.}
 \Cref{ex:mantel} states $\tdensity{K_2}{K_3}=\tfrac12$.  The Lean development
@@ -3836,43 +3845,54 @@ lemma extremal_density_K3_ge (n : (*@$\mathbb{N}$@*)) (hn2 : n (*@$\geq$@*) 2)
 theorem Mantel_Turan : turanDensity (completeGraph (Fin 3)) = 1 / 2 := ...
 \end{lstlisting}
 Here \lean{K2} and \lean{K3} denote the basis elements $[K_2]$ and $[K_3]$.
-The Mantel development predates the compiler of \Cref{sec:flagmatic} and the
-forbidden-graph semantics of \Cref{sec:forbidden}, and uses neither.
-\lean{Mantel\_flag\_bound} formalizes the certificate derivation of
-\Cref{sec:flagmatic-background} directly, restated in the ambient algebra
-with no triangle-free condition anywhere: the
-triangle terms that the constrained calculation drops are instead collected
-in the extra summand \lean{K3} on the right, rather than removed under a
-\lean{forbidLE} hypothesis.  Evaluating at a positive
-homomorphism $\phi$ with $\phi([K_3])=0$ recovers the conditional bound
-$\phi([K_2])\leq\tfrac12$; this is \lean{Mantel\_flag\_bound'}, and the remaining
-argument runs entirely from this pointwise form.
+The compiler of \Cref{sec:flagmatic} already produces the upper bound in
+Mantel's theorem.  We include this separate development for a different
+reason: it shows what a proof looks like when one works directly with the
+flag-algebra formalization instead of supplying a certificate to the compiler.
+Accordingly, this proof uses neither the compiler nor the
+\lean{forbidLE} interface of \Cref{sec:forbidden}.
 
-\lean{extremal\_density\_K3\_ge} formalizes the lower-bound construction, the
-balanced complete bipartite graph
-$K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$: it is triangle-free, since among
-any three of its vertices some two lie on the same side and are non-adjacent,
-and its $\lfloor n^2/4\rfloor$ edges make up at least half of the
-$\binom{n}{2}$ vertex pairs.  In its statement, \lean{extremalNumber} is
-Mathlib's classical
-extremal number, the maximum number of edges of a $K_3$-free graph on $n$
-vertices; it agrees with $\mathrm{ex}(n,\,K_2;\,K_3)$ because the induced
-copies of $K_2$ in a graph are exactly its edges.  For even orders $n=2k$,
-the witness is \lean{completeBipartiteGraph (Fin k) (Fin k)}: the formal
-proof derives its triangle-freeness from two-colorability and compares its
-$k^2$ edges with $\tfrac12\binom{2k}{2}$; odd orders then follow because the
-normalized extremal numbers are non-increasing.  Finally,
-\lean{Mantel\_Turan} combines the two bounds, mirroring the compactness
-proof of \Cref{lem:semantic-bound} directly, again without the machinery of
-\Cref{sec:forbidden}: if the normalized extremal numbers, which
-are at least $\tfrac12$ by the construction, exceeded $\tfrac12+\varepsilon$
-at infinitely many orders, then extremal triangle-free graphs of those orders
-would converge, by \Cref{thm:convergent-hom}, to a positive homomorphism
-$\phi$ with $\phi([K_3])=0$ and $\phi([K_2])\geq\tfrac12+\varepsilon$,
-contradicting \lean{Mantel\_flag\_bound'}.  The normalized extremal numbers
-therefore converge to $\tfrac12$, giving \lean{Mantel\_Turan}.
+The direct upper-bound argument takes place in the ambient algebra and keeps
+the triangle contribution explicitly:
+\[
+  K_2\leq\tfrac12\cdot\mathbf{1}+K_3.
+\]
+This inequality is formalized as \lean{Mantel\_flag\_bound}.  If a positive
+homomorphism $\phi$ represents a triangle-free limit, then
+$\phi([K_3])=0$, and evaluating the displayed inequality gives
+$\phi([K_2])\leq\tfrac12$.  This pointwise statement is recorded as
+\lean{Mantel\_flag\_bound'}, and the remaining argument proceeds from it.
+
+The matching lower bound comes from the balanced complete bipartite graph
+$K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ and is formalized as
+\lean{extremal\_density\_K3\_ge}.  This graph is triangle-free:
+among any three vertices, two lie in the same part and are therefore
+non-adjacent.  Its $\lfloor n^2/4\rfloor$ edges make up at least half of the
+$\binom{n}{2}$ vertex pairs.  Here \lean{extremalNumber} denotes the maximum
+number of edges in a $K_3$-free graph on $n$ vertices.  It agrees with
+$\mathrm{ex}(n,\,K_2;\,K_3)$ because the induced copies of $K_2$ are precisely
+the edges.  When $n=2k$, Lean uses
+\lean{completeBipartiteGraph (Fin k) (Fin k)} as the witness and compares its
+$k^2$ edges with $\tfrac12\binom{2k}{2}$.  The case of odd $n$ follows by
+comparison with the next even graph size, using the fact that the normalized
+extremal numbers are non-increasing.
+
+Finally, the construction and the upper bound are combined in
+\lean{Mantel\_Turan}, using the compactness argument of
+\Cref{lem:semantic-bound} directly rather than the machinery of
+\Cref{sec:forbidden}.  If the normalized extremal
+numbers exceeded $\tfrac12+\varepsilon$ for infinitely many values of $n$, we
+could choose extremal triangle-free graphs of those sizes and pass, by
+\Cref{thm:convergent-hom}, to a convergent subsequence.  Its limit would be a
+positive homomorphism $\phi$ with $\phi([K_3])=0$ and
+$\phi([K_2])\geq\tfrac12+\varepsilon$, contradicting
+\lean{Mantel\_flag\_bound'}.  The construction gives the lower bound
+$\tfrac12$, so the normalized extremal numbers converge to $\tfrac12$, which
+is the statement of \lean{Mantel\_Turan}.
 
 \paragraph{The Erd\H{o}s pentagon theorem.}
+This example shows how an explicit construction and the passage from finite
+graphs to limiting densities complement a compiler-generated upper bound.
 The full result of \Cref{ex:pentagon},
 \begin{lstlisting}
 theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
@@ -3889,8 +3909,8 @@ the formal development.
 Since, by the convergence theorem
 \lean{tendsto\_\allowbreak generalizedTuranDensity} of \Cref{sec:forbidden},
 the normalized extremal numbers $\mathrm{ex}(n,\,C_5;\,K_3)/\binom{n}{5}$
-converge to $\tdensity{C_5}{K_3}$, it suffices to exhibit, at infinitely many
-orders, one triangle-free graph whose normalized count of induced copies of
+converge to $\tdensity{C_5}{K_3}$, it suffices to exhibit, for infinitely many
+graph sizes, one triangle-free graph whose normalized count of induced copies of
 $C_5$ is at least $\tfrac{24}{625}$.  The
 witness is the \emph{$n$-fold blow-up} of $C_5$: replace each vertex of
 $C_5$ by a class of $n$ vertices, and join two vertices of distinct
@@ -3904,7 +3924,7 @@ classes
 yields five vertices that inherit exactly the adjacencies of $C_5$, so each
 of the $n^5$ choice functions induces a copy of $C_5$.  These copies are
 induced, as the density
-convention of \Cref{sec:intro} requires.  (In a triangle-free graph the
+convention of \Cref{sec:intro} requires.  (In a triangle-free graph, the
 distinction disappears anyway: every $C_5$ subgraph is induced, since any
 chord, an edge joining two non-consecutive vertices of the cycle, would
 create a triangle.)  The blow-up is therefore a
@@ -3921,7 +3941,7 @@ $n\geq1$,
   \;=\;
   \frac{24}{625}.
 \]
-The bound thus holds along the subsequence of orders $5n$, and taking the
+The bound thus holds along the subsequence of graph sizes $5n$, and taking the
 limit yields $\tdensity{C_5}{K_3}\geq\tfrac{24}{625}$.
 
 The Lean development mirrors each step of this outline:
@@ -3940,48 +3960,50 @@ lemma subgraphCount_blowUp_C5_ge (n : (*@$\mathbb{N}$@*))
 theorem generalizedExtremalNumber_K3_C5_ge (n : (*@$\mathbb{N}$@*))
     : generalizedExtremalNumber (5 * n) K3 C5 (*@$\geq$@*) n ^ 5 := ...
 \end{lstlisting}
-\lean{blowUp G n} is the $n$-fold blow-up of an arbitrary base graph $G$: its
+The \lean{blowUp G n} is the $n$-fold blow-up of an arbitrary base graph $G$: its
 vertex type is the product type \lean{V $\times$ Fin n}, whose elements are
 the pairs $(v,i)$ of a vertex \lean{v : V} and an index \lean{i : Fin n}, so
 the class of a base vertex $v$ consists of the pairs with first coordinate
 $v$, and the \lean{Adj} field compares first coordinates through $G$.
 Vertices of a common class are non-adjacent because $G$ has no loops, and two
 classes over adjacent base vertices are completely joined.
-\lean{blowUp\_K3\_free} is the triangle-freeness property.  Its proof
+The \lean{blowUp\_K3\_free} theorem states the triangle-freeness property.  Its proof
 transports a hypothetical triangle back to the base graph: composing a copy
 of $K_3$ in the blow-up with the first projection gives a copy of $K_3$ in
 $G$, where injectivity survives the projection because vertices of a common
 class are non-adjacent.  Instantiating $G$ with $C_5$, whose own
 triangle-freeness is a finite check, shows that the blow-up of $C_5$
-is triangle-free.
-\lean{subgraphCount\_blowUp\_C5\_ge} is the counting property; here
+is triangle-free.  The
+\lean{subgraphCount\_blowUp\_C5\_ge} lemma
+expresses the counting property; here
 \lean{subgraphCount C5 G} is the number of induced subgraphs of \lean{G}
 isomorphic to $C_5$, matching the induced-copy convention of
 \Cref{sec:intro}.  The proof converts the one-vertex-per-class recipe into an
 injection from \lean{(Fin 5 $\to$ Fin n)} into the induced copies of $C_5$
-in the
-blow-up: a choice function $g$ is sent to the subgraph induced on the five
+in the blow-up: a choice function $g$ is sent to the subgraph induced on the five
 vertices $(i, g(i))$ for \lean{i : Fin 5}, and distinct choice functions give
-distinct
-subgraphs.
-\lean{generalizedExtremalNumber\_K3\_C5\_ge} combines the previous two
-results into the finite bound $\mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5$; the Lean
-function \lean{generalizedExtremalNumber} is the extremal number of
-\Cref{sec:intro}, the maximum of \lean{subgraphCount C5} over the $K_3$-free
-graphs on \lean{Fin (5 * n)}.  One representation detail intervenes: this
-maximum ranges over graphs on \lean{Fin (5 * n)}, whereas \lean{blowUp C5 n}
-lives on a product type, so a \lean{Fin}-indexed variant \lean{blowUp\_fin},
-proved isomorphic to \lean{blowUp}, supplies the witness (an instance of the
-representation issues of \Cref{sec:obstacles}).  The remaining steps, the
-displayed normalization and the passage to the limit along the subsequence of
-orders $5n$, produce \lean{ErdosPentagon\_Turan\_lowerBound}.
+distinct subgraphs.
 
-\paragraph{Other inequalities.}
-The formalization also includes two further flag-algebra inequalities, both
-due to Goodman~\cite{goodman1959} and both proved with the same basic
-infrastructure.
-\lean{Goodman\_\allowbreak bound\_\allowbreak on\_\allowbreak triangle\_\allowbreak density}
-proves the algebraic lower bound
+The preceding two results give a triangle-free graph on $5n$ vertices
+containing at least $n^5$ induced copies of $C_5$.  The theorem
+\lean{generalizedExtremalNumber\_K3\_C5\_ge} records the resulting finite bound
+\[
+  \mathrm{ex}(5n,\,C_5;\,K_3)\geq n^5.
+\]
+There is one additional representation step in Lean.  The natural vertex set
+of \lean{blowUp C5 n} is the product \lean{Fin 5 $\times$ Fin n}, while
+\lean{generalizedExtremalNumber} takes its maximum over graphs on
+\lean{Fin (5 * n)}.  The graph \lean{blowUp\_fin} simply reindexes the blow-up
+on this latter vertex set; it is proved isomorphic to \lean{blowUp} and is used
+as the witness.  Normalizing the finite bound above and passing to the limit
+along the graph sizes $5n$ then gives
+\lean{ErdosPentagon\_Turan\_lowerBound}.
+
+\paragraph{Direct Goodman inequalities.}
+The final examples use the core flag-algebra infrastructure directly for two
+inequalities outside the Tur\'an-density certificate problems considered in
+\Cref{sec:flagmatic}.  Both are due to Goodman~\cite{goodman1959}.
+The first is the algebraic lower bound
 \[
   K_3 \;\geq\; K_2\cdot(2K_2-\mathbf{1}),
 \]
@@ -3998,8 +4020,11 @@ of $K_2$ with the Cauchy--Schwarz inequality for the downward operator,
 which is a separate theorem in Razborov's paper~\cite{razborov2007flag} and
 is proved in the development in this general form as
 \lean{Cauchy\_\allowbreak Schwarz\_\allowbreak inequality}; here it is
-applied to the edge flag labeled at one endpoint.
-\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
+applied to the edge flag labeled at one endpoint.  The resulting inequality is
+formalized as
+\lean{Goodman\_\allowbreak bound\_\allowbreak on\_\allowbreak triangle\_\allowbreak density}.
+
+The second result is
 \[
   \overline{K_3} + K_3 \;\geq\; \tfrac14\cdot\mathbf{1},
 \]
@@ -4009,10 +4034,14 @@ vertex triples induce a triangle or an independent set.  Reading a graph and
 its complement as the two color classes of a $2$-edge-colored complete graph
 turns this into Goodman's classical bound on the number of monochromatic
 triangles; the proof reuses the downward square certificate of Mantel's
-theorem.  These statements illustrate that the specification layer
-supports inequalities among flag-algebra expressions beyond Tur\'an problems
-that maximize the induced density of one graph subject to forbidding another
-as a subgraph.
+theorem.  It is formalized as
+\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity}.
+
+Together, the examples in this section show that certificate compilation is
+only one use of the formalization.  The same framework supports direct
+flag-algebra derivations, explicit finite constructions and their limiting
+arguments, and inequalities beyond maximizing the induced density of one graph
+while forbidding another as a subgraph.
 
 \section{Engineering Obstacles}
 \label{sec:obstacles}
@@ -5079,12 +5108,15 @@ mathematical theory: flags as quotients modulo isomorphism, the quotient
 algebra of density-expansion relations, positive homomorphisms and the
 semantic non-negativity cone, and the predicate-based forbidden-subgraph
 framework.  It also contains reflection and automation layers that turn specifications
-written in this language into proofs that Lean can check.  The case
-studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
-pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
-inequalities, and an inequality bounding the $C_4$-density of triangle-free
-graphs.  A further case study proves a $K_4$-free $P_4$ density bound using the
-same automation layer.  We also summarized a separately developed
+written in this language into proofs that Lean can check.  We evaluate the
+compiler on seven upper-bound certificates, including those needed for
+Mantel's theorem and the Erd\H{o}s pentagon theorem
+($\tdensity{C_5}{K_3} = 24/625$), an inequality bounding the $C_4$-density of
+triangle-free graphs, and a $K_4$-free $P_4$ density bound.  The direct
+developments show that the formalization is useful beyond compilation: they
+give a separate proof of Mantel's upper bound, formalize the constructions
+that complete the Mantel and Erd\H{o}s pentagon results, and prove two
+inequalities of Goodman.  We also summarized a separately developed
 mathematical meta-theory of constrained semantics: quotient non-negativity
 always implies ensemble non-negativity, and the converse holds for every typed
 expression exactly when the constrained class is root-plantable at that flag type.
