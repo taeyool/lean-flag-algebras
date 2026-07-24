@@ -3159,30 +3159,29 @@ uses those tables to automate complete flag-algebra arguments.
 \section{Automating Flag-Algebra Proofs}
 \label{sec:flagmatic}
 
-All certificate problems considered in this section have the same form: among
-graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
-element $[F]$ of a target graph $F$ satisfies
-$[F]\leq_{\mathcal H}c\cdot\mathbf{1}$.  Here $\leq_{\mathcal H}$ is the empty-type semantic order of
-\Cref{sec:background-semantic-order}, for the certificate's forbidden family
-$\mathcal{H}$.  The Lean development establishes the corresponding ensemble
-form (\Cref{def:ensemble-semantic-order}); the two agree at the empty flag type
-(\Cref{sec:metatheory}).  A \emph{flag-algebra certificate} is a
-finite package of algebraic data that makes this proposed bound checkable.  It lists
-the flags whose basis elements enter the proof, together with the rational
-matrices needed to rewrite the difference between the
-claimed bound and the target density as a combination of quantities already
-known to be non-negative.  Verifying this finite calculation is enough to prove
-the bound for the entire graph class.  Flagmatic~\cite{vaughan2013flagmatic}
-uses semidefinite programming to search for such certificates.
+Fix a forbidden family \(\mathcal H\), a target graph \(F\), and a proposed
+bound \(c\).  The task addressed in this section is to turn finite certificate
+data into a Lean proof of
+\[
+  [F]\leq_{\mathcal H}c\cdot\mathbf{1},
+\]
+which expresses the desired asymptotic upper bound on the induced density of
+\(F\) in \(\mathcal H\)-free graphs.  A \emph{flag-algebra certificate} is a
+finite witness for this inequality: it specifies flags, rational matrices, and
+coefficients that purport to express the gap
+\(c\cdot\mathbf{1}-[F]\) as a sum of terms that are non-negative under the
+\(\mathcal H\)-free condition.  Flagmatic~\cite{vaughan2013flagmatic} uses
+semidefinite programming to search for such a witness.
 
-This section presents a compiler whose input is a certificate produced by
-Flagmatic.  The compiler does not run the semidefinite program or search for a
-decomposition.  Instead, it translates the certificate's flags, matrices, and
-target data into Lean, generates the required flags, asks Lean to recompute
-their density and multiplication identities, verifies the rational matrix
-factorizations, and assembles the final inequality.  Thus, Flagmatic proposes
-the data, while Lean checks every mathematical obligation; no manual copying
-of coefficients or reconstruction of the finite bookkeeping is required.
+This section concerns certificate verification rather than certificate
+search.  Our compiler accepts a certificate produced by Flagmatic as untrusted
+input, translates its flags, matrices, and target data into Lean, regenerates
+the required flags, recomputes their density and multiplication identities,
+verifies the rational matrix factorizations, and assembles the final
+inequality.  Automating this translation is important because nontrivial
+certificates contain extensive finite bookkeeping that would be tedious and
+error-prone to reproduce manually.  The resulting theorem is accepted only
+after Lean has checked every mathematical obligation.
 
 We first explain how positive semidefinite matrices justify the inequalities
 encoded by a certificate.  We then identify the four obligations common to our
