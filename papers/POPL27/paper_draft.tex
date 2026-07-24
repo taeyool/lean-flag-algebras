@@ -2962,7 +2962,8 @@ We use Lean's metaprogramming facilities to automate this repetition.  They
 specialize the uniform adequacy theorems to concrete flags and to the required
 single-pattern and pattern-pair density instances.  More precisely, the
 generation commands displayed below are custom command
-elaborators written using Lean's metaprogramming framework.  During
+elaborators written using Lean's metaprogramming
+framework~\cite{ebner2017structured}.  During
 elaboration, the phase in which Lean processes source commands and produces
 checked definitions and theorems, these commands run the finite enumerators
 and generate proofs of the required specialized facts.  Once the resulting
@@ -4999,66 +5000,59 @@ optimizations will extend the practical range of the formalization.
 
 \paragraph{Formalizations of combinatorics.}
 Substantial combinatorial arguments have already been formalized in Lean.
-Dillies and Mehta~\cite{dillies2022szemeredi} formalized a strong form of
-Szemer\'edi's regularity lemma and derived the qualitative form of Roth's
-theorem.  Mehta~\cite{mehta2022kruskal} formalized the Kruskal--Katona theorem.
-Subercaseaux et al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon
-number by connecting a geometric formalization to a SAT certificate.  The
-collaborative PFR project~\cite{pfr2023} produced a Lean~4
-formalization of the Gowers--Green--Manners--Tao proof \cite{gowers2025marton} of the polynomial
-Freiman--Ruzsa conjecture in characteristic two.  These developments illustrate several
-ways in which formal combinatorics can depend on computation or a large
-supporting library.  Our distinctive concern is the reconstruction of a
-flag-algebra argument: quotient and measure-theoretic semantics are combined
-with thousands of exact finite-density computations and an externally
-suggested semidefinite certificate.
+Dillies and Mehta formalized Szemer\'edi's regularity lemma and the
+qualitative form of Roth's theorem~\cite{dillies2022szemeredi}, and Mehta
+the Kruskal--Katona theorem~\cite{mehta2022kruskal}.  Subercaseaux et
+al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon number against
+a SAT certificate.  The collaborative PFR project~\cite{pfr2023} formalized
+the Gowers--Green--Manners--Tao proof~\cite{gowers2025marton} of the
+polynomial Freiman--Ruzsa conjecture in characteristic two.  These developments lean on heavy
+computation or on a large supporting library.  A flag-algebra argument needs
+both at once: it combines quotient and measure-theoretic semantics with
+thousands of exact finite-density computations and an externally computed
+semidefinite certificate.
 
 \paragraph{Proof by reflection in proof assistants.}
-Proof by reflection is a classical technique in the Coq community; Chlipala
-gives an extended treatment~\cite{chlipala2013cpdt}.  Lean likewise supports
-verified computation, for example through Mathlib's \lean{decide} and
-\lean{norm\_num} tactics.  Cohen et al.~\cite{cohen2013refinements} develop
+Proof by reflection is a classical technique in the Rocq (previously called
+Coq) community; Chlipala
+gives an extended treatment~\cite{chlipala2013cpdt}, and Lean supports
+verified computation through tactics such as \lean{decide} and
+\lean{norm\_num}.  Cohen et al.~\cite{cohen2013refinements} develop
 a systematic methodology for building efficiently computable representations
-alongside their abstract counterparts in Rocq (previously called Coq); our \lean{Sym2Graph} /
-\lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
-type-class and instance-search mechanism.  Our elaboration-time command
-elaborators play a complementary role: they run the in-Lean finite enumerators
-and specialize the adequacy theorems to produce the density and
-multiplication facts (\Cref{sec:reflection-generation}).  The unverified
-certificate compiler operates outside this reflected core and emits source
-whose mathematical obligations Lean subsequently checks.
+alongside their abstract counterparts in Rocq.  Our
+\lean{Sym2Graph}/\lean{SimpleGraph} pair with its adequacy theorems follows
+the same philosophy, adapted to Lean~4's type-class and instance-search
+mechanism.
 
 \paragraph{Computer-assisted flag algebra arguments.}
 The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
 of exact and approximate flag-algebra bounds, but it does not produce
-proof-assistant proof terms.  Our work adds a proof-producing reconstruction
-stage: certificate data proposes a calculation, while Lean verifies the
-finite identities, positive-semidefinite matrices, and final combinatorial
-statement.  Razborov's survey~\cite{razborov2013flag} organizes many early
-applications into several connected lines of work.  Their shared use of
-finite density calculations and algebraic certificates suggests that our
-infrastructure may apply beyond the case studies here, subject to the scaling
-limitations in \Cref{sec:unsure}.
+proof-assistant proof terms; Razborov's survey~\cite{razborov2013flag}
+organizes many early applications of the method.  Our work adds a
+proof-producing reconstruction stage: certificate data proposes a
+calculation, while Lean verifies the finite identities, the
+positive-semidefinite matrices, and the final combinatorial statement.
 
 \paragraph{A concurrent formalization of local flag algebras.}
 Concurrently with and independently of our work, Davey, Hurley, de Joannis
 de Verclos, Kang, and Volec formalized in Lean~4 the theory of \emph{local
-flag algebras} introduced in their accompanying papers~\cite{davey2026local}.
+flag algebras} introduced in their accompanying paper~\cite{davey2026local}
+and applied in its companion~\cite{davey2026strong}.
 The local calculus normalizes densities by the maximum degree $\Delta$
 rather than by the number of vertices, so that the method still yields
-nontrivial bounds for sparse graphs of bounded maximum degree.  Under this normalization the exact density-expansion
-identity behind the classical quotient construction holds only up to an
-error bounded by a constant multiple of $1/\Delta$, so no quotient is taken: their algebra is defined
-directly on formal combinations of isomorphism classes, evaluation at a
-finite graph is multiplicative only asymptotically, and positivity is again
-captured by a semantic cone.  Their formalization
-machine-certifies the new bounds of those papers, on pentagon counts in
-triangle-free graphs and on the strong chromatic index.  Independently,
+nontrivial bounds for sparse graphs of small maximum degree.  Under this
+normalization no quotient is taken: their algebra is defined directly on
+formal combinations of isomorphism classes, evaluation at a finite graph is
+multiplicative only up to an error bounded by a constant multiple of
+$1/\Delta$, and positivity is again captured by a semantic cone.  Their formalization
+machine-certifies the new bounds of both papers, on pentagon counts in
+triangle-free graphs~\cite{davey2026local} and on the strong chromatic
+index~\cite{davey2026strong}.  Independently,
 their design arrives at the reflection pattern of \Cref{sec:reflection}: a
 noncomputable specification mirrored by a computable Boolean-adjacency
 representation with adequacy lemmas.  Our development formalizes the
-classical theory instead---the quotient algebra, positive homomorphisms,
-and the ensemble semantics---and is organized as a reusable library and
+classical theory instead (the quotient algebra, positive homomorphisms,
+and the ensemble semantics) and is organized as a reusable library and
 proof-generating pipeline rather than around individual bounds, so the two
 developments are complementary in both scope and design.
 
@@ -5070,41 +5064,32 @@ on carrying out flag-algebra inequality proofs fully and automatically
 inside Lean, without relying on an external tool or solver.
 
 \paragraph{SDP certificate verification.}
-The verification of SDP certificates has been studied in the context of
-sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
-sum-of-squares certificates for polynomial inequalities in HOL Light, with
-numerical methods used to find certificates and the proof assistant used to check them.  We use
-the same discovery-versus-verification separation, but our certificates are
-rational matrices whose claimed LDL$^\top$ factorizations are checked exactly
-in Lean.  Parrilo and Sturmfels~\cite{parrilo2003minimizing} develop
-sum-of-squares and semidefinite relaxations for polynomial optimization.  In
-our setting, positive-semidefinite quadratic forms instead live over finite
-vectors of flags.
-
-\paragraph{Tactic metaprogramming.}
-Lean's metaprogramming framework supports domain-specific tactics that inspect
-and construct expressions~\cite{ebner2017structured}.  Our tactics use this
-facility together with a generated naming convention.  A constant's name
-encodes its enumeration index, which the tactic reads as metadata without
-reducing the graph represented by the constant.  The mechanism is deliberately
-local to our generated declarations; attributes or an explicit metadata table
-could provide the same information in a different design.
+The verification of SDP certificates has been studied for sum-of-squares
+proofs, which relax polynomial optimization problems to semidefinite
+programs, as studied by Parrilo and
+Sturmfels~\cite{parrilo2003minimizing}.  Harrison~\cite{harrison2007verifying}
+verifies sum-of-squares certificates for polynomial inequalities in HOL
+Light, with numerical methods finding the certificates and the proof
+assistant checking them.  Morrison's \lean{sos} tactic, recently added
+under the official \lean{leanprover} organization~\cite{morrison2026sos},
+implements Harrison's procedure in Lean~4: it finds a certificate with an
+external semidefinite solver, rounds it to rational form, and verifies it
+through an LDL$^\top$ factorization.  We use the same
+discovery-versus-verification separation, applied to flag-algebra
+certificates rather than polynomial inequalities.
 
 \paragraph{Graph limits and Turán densities.}
 The mathematical foundation of flag algebras (convergent graph sequences,
 positive homomorphisms, the graphon limit) is developed in depth by
 Lov\'asz and Szegedy and by Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.
 Freer has independently formalized a
-substantial graphon theory in Lean~4, including cut distance, regularity,
+substantial graphon theory in Lean~4, including cut distance, weak
+regularity,
 counting and inverse-counting lemmas, compactness, and the equivalence of two
-notions of convergence~\cite{freer2026graphon}.  The core development reported
-in \Cref{sec:abstract,sec:reflection} instead works with convergent flag
-sequences, positive homomorphisms, and random extensions.  The separate
-meta-theory development also contains graphon-specific machinery for later
-applications, including the construction of a positive homomorphism from a
-graphon, but not the converse representation of every positive homomorphism
-by a graphon.  Connecting these developments into a common formal account of
-the flag-algebra/graphon correspondence remains future work.
+notions of convergence~\cite{freer2026graphon}.  Our development works with
+convergent flag sequences, positive homomorphisms, and random extensions
+rather than graphons; connecting the two formalizations into a common formal
+account of the flag-algebra/graphon correspondence remains future work.
 
 
 \section{Conclusion}
@@ -5118,18 +5103,16 @@ semantic non-negativity cone, and the predicate-based forbidden-subgraph
 framework.  It also contains reflection and automation layers that turn specifications
 written in this language into proofs that Lean can check.  We evaluate the
 compiler on seven upper-bound certificates, including those needed for
-Mantel's theorem and the Erd\H{o}s pentagon theorem
-($\tdensity{C_5}{K_3} = 24/625$), an inequality bounding the $C_4$-density of
-triangle-free graphs, and a $K_4$-free $P_4$ density bound.  The direct
-developments show that the formalization is useful beyond compilation: they
-give a separate proof of Mantel's upper bound, formalize the constructions
-that complete the Mantel and Erd\H{o}s pentagon results, and prove two
-inequalities of Goodman.  We also summarized a separately developed
+Mantel's theorem and the Erd\H{o}s pentagon theorem, a bound on the
+$C_4$-density of triangle-free graphs, and edge-density bounds for
+$K_4$-free, $K_5$-free, and $C_5$-free graphs.  Outside the certificate
+pipeline, the same formalization is used directly: it proves the matching
+lower bounds for the Mantel and Erd\H{o}s pentagon theorems, and two
+inequalities of Goodman.  We
+also summarized a separately developed
 mathematical meta-theory of constrained semantics: non-negativity in the quotient semantics
 always implies non-negativity in the ensemble semantics, and the converse holds for every typed
 expression exactly when the constrained class is root-plantable at that flag type.
-Its Lean development was generated by a Claude-driven autoformalization
-workflow that reused the manually developed flag-algebra library.
 
 We do not claim to have found
 \emph{the} right way to formalize flag algebras.  We have described the
@@ -5429,7 +5412,7 @@ E.~R.~Vaughan.
 \bibitem{vaughan2013flagmatic}
 E.~R.~Vaughan.
 \newblock Flagmatic 2.0.
-\newblock Computer software, 2013. Maintained copy available at
+\newblock Computer software, 2013. Archived copy available at
   \url{https://github.com/jsliacan/flagmatic-2.0}.
 
 \bibitem{chlipala2013cpdt}
@@ -5456,6 +5439,13 @@ P.~A.~Parrilo and B.~Sturmfels.
 \newblock In \textit{Algorithmic and Quantitative Real Algebraic Geometry},
   DIMACS Series in Discrete Mathematics and Theoretical Computer Science,
   volume~60, pages 83--99, 2003.
+
+\bibitem{morrison2026sos}
+K.~Morrison.
+\newblock Harrison's sum-of-squares decision procedure for nonlinear real
+  arithmetic in Lean~4.
+\newblock Computer software, 2026.
+  \url{https://github.com/leanprover/sos}.
 
 \bibitem{ebner2017structured}
 G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de~Moura.
@@ -5486,6 +5476,11 @@ C.~Freer.
 E.~Davey, E.~Hurley, R.~de~Joannis~de~Verclos, R.~J.~Kang, and J.~Volec.
 \newblock Local flag algebras.
 \newblock arXiv:2607.12461, 2026.
+
+\bibitem{davey2026strong}
+E.~Davey, E.~Hurley, R.~de~Joannis~de~Verclos, R.~J.~Kang, and J.~Volec.
+\newblock Strong edge-colouring via local flag algebras.
+\newblock arXiv:2607.17421, 2026.
 
 \bibitem{spiegel2026computational}
 C.~Spiegel.
@@ -5519,8 +5514,8 @@ prebuilt library, with the sample standard deviation; memory is the peak
 resident set, taken as the maximum over the five runs.  Wall-clock times are
 otherwise highly repeatable (standard deviation below $0.5\%$ of the mean in
 every configuration except the pentagon under kernel evaluation, at $3.9\%$).
-Two individual runs---one $C_4$-density \lean{native\_decide} run and one
-pentagon \lean{decide +kernel} run---were excluded as system-contention stalls,
+Two individual runs, one $C_4$-density \lean{native\_decide} run and one
+pentagon \lean{decide +kernel} run, were excluded as system-contention stalls,
 each identified by an anomalous wall-clock time with an unchanged peak resident
 set; the remaining four runs of those two configurations were averaged.
 
