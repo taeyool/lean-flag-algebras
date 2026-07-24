@@ -3527,12 +3527,9 @@ With the flags and their rewrite theorems in place, Part~2 discharges the
 positive-semidefiniteness obligations.  For each SDP block, the certificate
 stores rational matrices $Q'_t$ and $R_t$ with
 $M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a smaller
-symmetric matrix; in the certificates used here, $Q'_t$ is diagonal with
-positive entries.  Flagmatic's user guide~\cite{vaughan2012flagmaticguide}
+symmetric matrix. Flagmatic's user guide~\cite{vaughan2012flagmaticguide}
 explains the format: $Q'_t$ is
-chosen to be positive definite, which is easy to check directly, for instance
-through Sylvester's criterion, and the congruence then transfers the
-non-negativity of $Q'_t$'s quadratic form to $M_t$.
+chosen to be positive definite, which implies the positive semi-definiteness of $M_t$.
 
 Our verification takes these data through a different, equally elementary
 witness.  We state one Lean lemma for every PSD obligation, based on an exact
@@ -3588,15 +3585,15 @@ All certificates considered here have a singleton forbidden family
 $\mathcal{H}=\{H\}$.  The generated proof invokes the
 \lean{flag\_expand\_hfree N K} tactic, where $N$ is the host size and $K$ is the
 reflection-layer \lean{Sym2Graph} encoding of $H$.  The qualifier on the
-identity matters, because our development works in the ambient algebra.  In
-the built-in \(H\)-free algebra (\Cref{rem:builtin-hfree}) the restricted sum
+identity above matters, because our development works in the ambient algebra.  In
+the built-in \(H\)-free algebra (\Cref{rem:builtin-hfree}), the restricted sum
 would simply be the expansion identity~\eqref{eq:expansion-identity}, all of
-whose flags are \(H\)-free there.  In the ambient algebra the flags containing
+whose flags are \(H\)-free there.  In the ambient algebra, however, the flags containing
 \(H\) are nonzero basis elements, so dropping their terms cannot give a
 literal equality; the auxiliary identity instead says that every empty-type
 positive homomorphism satisfying the \(H\)-freeness condition of
 \Cref{def:ensemble-semantic-order} gives both sides the same value.
-Part~1, however, selected the $H$-free flags by a concrete
+Part~1 selected the $H$-free flags by a concrete
 computation on $K$.  Bridging the two requires proving that the underlying
 graph of every flag that computation discarded contains $H$ as a subgraph; the
 $H$-free condition then forces those flags' terms to vanish, which justifies
