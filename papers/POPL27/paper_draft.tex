@@ -3492,8 +3492,10 @@ This is where the reflection layer of \Cref{sec:reflection} enters the
 compiler, making the finite bookkeeping involving flags and densities
 executable and checkable.  Part~1 defines the certificate's forbidden graph as a
 \lean{Sym2Graph} term and invokes the \lean{generate\_forbid\_free\_*}
-commands of \Cref{sec:reflection-generation} on it; the commands dispatch
-internally on whether the forbidden graph is complete.  During elaboration,
+commands of \Cref{sec:reflection-generation} on it.  The commands choose
+between two enumeration procedures according to the forbidden graph: they use
+size-inductive clique pruning when the forbidden graph is complete, and the
+general ordinary-subgraph filtering procedure otherwise.  During elaboration,
 they enumerate the flags that avoid the forbidden graph, with isomorphic
 flags appearing only once.  For each enumerated flag, the commands emit a concrete
 reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty flag type
