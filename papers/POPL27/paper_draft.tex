@@ -3739,7 +3739,9 @@ certificate coefficient is transcribed into Lean by hand.  All but the
 $K_5$- and $C_5$-free edge-density files are checked entirely by
 \lean{decide +kernel}; those two use
 \lean{native\_decide}.
-Table~\ref{tab:flagmatic-scenarios} summarizes the seven cases.
+Table~\ref{tab:flagmatic-scenarios} summarizes the seven cases;
+\Cref{sec:compile-times} reports their compilation times and peak memory
+under both evaluation modes.
 
 \begin{table}
   \centering
@@ -4967,23 +4969,34 @@ architecture minimizes the total proof and computation cost.
 \paragraph{Can the computational layer scale beyond five vertices?}
 Our seven end-to-end certificates (\Cref{sec:results}) expand their
 calculations over graphs on three, four, or five vertices.  At this scale,
-batched theorem generation makes the required families of finite identities
-manageable.  For the five-vertex pentagon certificate, the three flag types
-require 1,800; 672; and 360 pair-density theorems, respectively.  Lean checks
-these 2,832 identities in 15 batched \lean{decide +kernel} evaluations and then uses the
-resulting theorems in the complete certificate proof.  This demonstrates that
-the current reflection and automation layers can support calculations
-involving thousands of density facts at the five-vertex scale.
+the optimized enumeration of \Cref{sec:reflection-generation}, size-inductive,
+deduplicated, and pruned under the forbidden graph, keeps the required
+families of finite identities manageable.  For the Erd\H{o}s pentagon
+certificate, whose calculations expand over five-vertex graphs, the three
+flag types require 1,800; 672; and 360 pair-density theorems, respectively.
+Lean checks all 2,832 identities by \lean{decide +kernel} and then uses the
+resulting theorems in the complete certificate proof.  This confirms that
+certificates at the five-vertex scale do go through the current reflection
+and automation layers, though only just: the Erd\H{o}s pentagon is the
+largest certificate carried entirely on the kernel-checked path.
 
 Going substantially beyond five vertices remains a major engineering
 challenge.  As the number of vertices grows, so do the families of flags,
 the density and multiplication identities generated from their pairs, and the
-expressions that the final algebraic proof must normalize.  Scaling to larger
+expressions that the final algebraic proof must normalize.  The cost of
+kernel-checked evaluation grows with them: already at five vertices, the two
+largest certificates, with 10,332 and 8,172 pair-density theorems, could not
+be checked by \lean{decide +kernel} in acceptable time and fall back to
+\lean{native\_decide} (\Cref{tab:compile-times}), and eliminating that
+fallback is part of the same scaling problem.  Scaling to larger
 certificates will therefore likely require more efficient executable graph
 representations and counting algorithms in the reflection layer, as well as
-improvements to theorem generation and algebraic normalization.  We have not
-yet determined which of these costs will dominate or how far such
-optimizations will extend the practical range of the formalization.
+improvements to theorem generation and algebraic normalization.  This
+ceiling is not unique to formal verification: certificate generation itself
+faces the same combinatorial growth, and Flagmatic is in practice limited to
+hosts of about seven or eight vertices.  The formal pipeline reaches its
+limit earlier, and we have not yet determined which of its costs dominates
+or how much of the gap such optimizations can close.
 
 
 \section{Related Work}
@@ -5488,7 +5501,8 @@ C.~Spiegel.
 \label{sec:compile-times}
 
 Table~\ref{tab:compile-times} reports end-to-end compilation time and peak
-memory for all seven compiler examples, compiled with Lean~4 (v4.27.0) on an
+memory for all seven compiler examples of \Cref{sec:results}, compiled with
+Lean~4 (v4.27.0) on an
 Intel Core i7-14700K (20 cores) with 64\,GB of RAM under Windows~11.  Each
 measurement covers the complete source file: flag enumeration, pair-density and
 multiplication lemma generation, PSD certificate checking, the objective
@@ -5498,24 +5512,22 @@ bridging lemmas are discharged.  Under \lean{decide +kernel} (the
 axiom; under \lean{native\_decide} it is faster but additionally depends on the
 \lean{Lean.ofReduceBool} and \lean{Lean.trustCompiler} axioms.  We report both
 modes for the five examples where kernel evaluation is tractable; for the two
-largest ($K_5$-Tur\'an and $C_5$-free) only \lean{native\_decide} was measured.
+largest, the $K_5$- and $C_5$-free edge-density examples, only
+\lean{native\_decide} was measured.
 
 Each figure is the mean over five runs of a single-file compilation against the
 prebuilt library, with the sample standard deviation; memory is the peak
 resident set, taken as the maximum over the five runs.  Wall-clock times are
-otherwise highly repeatable (standard deviation below $0.5\%$ of the mean in
-every configuration except the pentagon under kernel evaluation, at $3.9\%$).
-Two individual runs, one $C_4$-density \lean{native\_decide} run and one
-pentagon \lean{decide +kernel} run, were excluded as system-contention stalls,
-each identified by an anomalous wall-clock time with an unchanged peak resident
-set; the remaining four runs of those two configurations were averaged.
+highly repeatable (standard deviation below $0.5\%$ of the mean in every
+configuration except the Erd\H{o}s pentagon under kernel evaluation, at
+$3.9\%$).
 
 \begin{table}[h]
   \centering
   \caption{End-to-end Lean compilation time (mean of five runs, $\pm$ sample
     standard deviation) and peak resident memory (maximum over five runs) for
     all seven examples, under \lean{decide +kernel} and \lean{native\_decide}.
-    ``Lemmas'' is the total count of generated \lean{flagDensity\char`\_2} simp
+    ``Lemmas'' is the total count of generated \lean{flagDensity}$_2$
     lemmas.  A dash marks a configuration not measured under kernel evaluation.}
   \label{tab:compile-times}
   \setlength{\tabcolsep}{4.5pt}
@@ -5527,13 +5539,13 @@ set; the remaining four runs of those two configurations were averaged.
     Case & Forbid & $N$ & Lemmas
       & Time (s) & RAM (GB) & Time (s) & RAM (GB) \\
     \midrule
-    Mantel ($K_2$)               & $K_3$ & 3 &    15 & $14.1\pm0.3$   &  2.4 & $11.5\pm0.1$  & 2.0 \\
-    $P_3$ density                & $K_3$ & 3 &    15 & $13.3\pm0.1$   &  2.4 & $11.1\pm0.0$  & 2.0 \\
-    $C_4$ density                & $K_3$ & 4 &   210 & $74.4\pm0.1$   &  8.2 & $19.8\pm0.2$  & 2.3 \\
-    Edge density ($K_4$-Tur\'an) & $K_4$ & 4 &   390 & $133.3\pm0.3$  & 11.2 & $27.9\pm0.1$  & 2.5 \\
-    Erd\H{o}s pentagon ($C_5$)   & $K_3$ & 5 &  2832 & $2786\pm108$   & 42.3 & $123.4\pm0.5$ & 4.2 \\
-    Edge density ($K_5$-Tur\'an) & $K_5$ & 5 & 10332 & ---            & ---  & $342.6\pm0.6$ & 8.1 \\
-    Edge density ($C_5$-free)    & $C_5$ & 5 &  8172 & ---            & ---  & $539.6\pm0.5$ & 8.6 \\
+    Mantel (edge density)              & $K_3$ & 3 &    15 & $14.1\pm0.3$   &  2.4 & $11.5\pm0.1$  & 2.0 \\
+    $P_3$ density                      & $K_3$ & 3 &    15 & $13.3\pm0.1$   &  2.4 & $11.1\pm0.0$  & 2.0 \\
+    $C_4$ density                      & $K_3$ & 4 &   210 & $74.4\pm0.1$   &  8.2 & $19.8\pm0.2$  & 2.3 \\
+    Edge density                       & $K_4$ & 4 &   390 & $133.3\pm0.3$  & 11.2 & $27.9\pm0.1$  & 2.5 \\
+    Erd\H{o}s pentagon ($C_5$ density) & $K_3$ & 5 &  2832 & $2786\pm108$   & 42.3 & $123.4\pm0.5$ & 4.2 \\
+    Edge density                       & $K_5$ & 5 & 10332 & ---            & ---  & $342.6\pm0.6$ & 8.1 \\
+    Edge density                       & $C_5$ & 5 &  8172 & ---            & ---  & $539.6\pm0.5$ & 8.6 \\
     \bottomrule
   \end{tabular}
 \end{table}
