@@ -1766,7 +1766,8 @@ add another quotienting operation.
 Building on the definitions above, we prove the following chain rule
 (\Cref{lem:chain-rule}) and several of its variants.
 Although the statement is the elementary counting identity of
-\Cref{sec:background}, its formal proof has to descend through the quotient:
+\Cref{sec:background}, its formal proof must account for the quotient
+representation:
 the counts are defined on concrete labeled graphs, and the identity between
 them comes from an explicit bijection between the choices the two sampling
 procedures make (\Cref{sec:proof-style}).
@@ -3132,8 +3133,8 @@ is filtered before any typed structure is built, so the labeled-graph work is
 spent only on the surviving graphs.  The pruned generation nevertheless
 proves the same filtered completeness lemma.  Its enumeration misses no
 \(H\)-free isomorphism class because \(H\)-freeness is invariant under
-isomorphism and preserved by deleting a vertex, so the proof of the
-completeness lemma descends through the size induction.  The pruning algorithm
+isomorphism and preserved by deleting a vertex; the completeness statement
+therefore follows by induction on size.  The pruning algorithm
 decides \(H\)-freeness using ordinary subgraph containment.  The filtered
 completeness lemma expresses the same condition in flag-algebra terms, by
 requiring every induced pattern whose underlying graph contains \(H\) to have
@@ -4081,10 +4082,11 @@ cardinalities.  The final subsection explains this recurring pattern.
 As described in \Cref{sec:flagtypes}, a flag is an isomorphism class of
 concrete labeled graphs.  Thus, two isomorphic labeled graphs $G$ and $G'$ may
 use different vertex names and be represented by different Lean values, but
-they represent the same flag.  This is the mathematically natural
-representation: subsequent statements should not depend on arbitrary vertex
-names.  It creates a recurring well-definedness obligation, however, whenever
-a construction is first described using a concrete representative.
+they denote the same flag.  Representing flags by isomorphism classes is
+mathematically natural because subsequent statements on flags should not depend on
+arbitrary vertex names.  At the same time, this quotient representation
+creates a recurring well-definedness obligation whenever a construction is
+first described using a concrete representative.
 
 Suppose such a construction assigns a value $A(G)$ to a labeled graph $G$.
 To define the corresponding value of the flag represented by $G$, one must
@@ -4105,7 +4107,7 @@ every later theorem, we prove this compatibility once and let subsequent
 proofs operate on the resulting flag.  The same issue appears one level higher
 when flag vectors are quotiented by the zero-space relations to form
 \lean{FlagAlgebra}: a construction on vectors must respect those relations
-before it descends to the algebra.
+before it can be lifted to the algebra.
 
 One could avoid these compatibility proofs by choosing a canonical
 representative for every isomorphism class.  That choice would make the
