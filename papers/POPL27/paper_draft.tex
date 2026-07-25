@@ -4946,7 +4946,7 @@ change.
 
 \paragraph{Should specification and computation use separate representations?}
 Our development maintains two representations
-(\Cref{sec:reflection,sec:flagmatic-pipeline}).  The specification layer uses
+(\Cref{sec:abstract,sec:reflection}).  The specification layer uses
 quotients and definitions close to the mathematics, allowing the abstract
 theory to ignore choices of graph representatives.  The reflection layer uses
 the concrete \lean{Sym2Graph} representation to evaluate finite densities,
@@ -4957,13 +4957,11 @@ studies are obtained in this way.
 
 This separation lets us keep the abstract development simple while retaining
 an efficient executable representation.  It also creates a substantial
-bridge of adequacy proofs.  One alternative is to use the abstract
-representation throughout and evaluate its definitions directly; this was
-not practical for our largest case study.  Another is to use a concrete,
-canonical representation throughout;
-this could reduce the bridge but would make representation and
-canonicalization choices visible in the abstract theory.  We have not carried
-either alternative through comparable case studies, so we do not know which
+bridge of adequacy proofs.  One alternative is to state the theory directly
+on a concrete, canonical representation: this would reduce the bridge, but
+representation and canonicalization choices would become visible in the
+statements and proofs of the abstract theory.  We have not carried this
+alternative through comparable case studies, so we do not know which
 architecture minimizes the total proof and computation cost.
 
 \paragraph{Can the computational layer scale beyond five vertices?}
