@@ -4903,24 +4903,27 @@ computations to determine.
 The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
 algebra independent of the forbidden graph and imposes the constraint later,
 when a semantic inequality is stated.  Razborov's universal-theory
-presentation instead fixes the forbidden graphs before constructing the
-flags, algebras, and positive homomorphisms.  As
-\Cref{thm:support-closure-summary} makes precise, this difference is not purely
-organizational: for intermediate statements about labeled flags, the two
-approaches agree exactly under the root-plantability condition.  Independently
-of that equivalence, quotient inequalities imply ensemble inequalities.  This
-soundness direction is the one needed by our case studies: their typed
-\lean{forbidLE} derivations are ultimately transferred to final unlabeled
-Tur\'an bounds.
+presentation instead incorporates the constraint into the construction of
+the flags, algebras, and positive homomorphisms.  Consequently, the two
+approaches give different semantics to intermediate inequalities involving
+labeled flags: the former restricts their interpretations, whereas the latter
+removes inadmissible flags through the constrained algebra.  As
+\Cref{thm:support-closure-summary} shows, this distinction disappears
+precisely when the underlying hereditary class is root-plantable; in that
+case, the two semantics validate the same typed inequalities.  Even without
+root-plantability, every quotient inequality implies the corresponding
+ensemble inequality.  This one-way implication is sufficient for
+transferring the formal flag-algebra inequalities used here to the final
+unlabeled Tur\'an bounds.
 
-The unresolved question is therefore architectural rather than a claim of
-semantic equivalence.  Even for a root-plantable class, where the two
-semantics validate the same typed inequalities, the two implementations may
-have very different proof-engineering costs.  Deferral lets the core
-definitions and algebraic lemmas be reused across forbidden graphs; fixing the
-forbidden graphs at the outset may make arguments specific to one extremal
-problem more direct.  Comparing the total cost would require carrying
-comparable case studies through both designs.
+These semantic results do not by themselves determine which design is
+preferable in a proof assistant.  Even when root-plantability ensures that the
+two semantics validate the same inequalities, the implementations may have
+different proof-engineering costs.  Deferring the constraint allows core
+definitions and algebraic lemmas to be reused across forbidden graphs;
+incorporating it at the outset may streamline arguments specific to a fixed
+extremal problem.  Evaluating this tradeoff would require formalizing
+comparable certificate proofs under both designs.
 
 \paragraph{Which engineering obstacles are Lean-specific?}
 \Cref{sec:obstacles} contains both representation-independent obligations and
