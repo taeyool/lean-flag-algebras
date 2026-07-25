@@ -4233,8 +4233,10 @@ symmetry introduced at the beginning of this subsection.
 To derive the second statement from the first, suppose the $\sigma$-flags
 $F_0$ and $F_1$ have vertex types $U_0$ and $U_1$, and let \lean{Vl} be the
 vertex-type family with
-\lean{Vl 0 = U}$_0$ and \lean{Vl 1 = U}$_1$, so that the pair
-\lean{[F}$_0$\lean{, F}$_1$\lean{]}$^{\mathtt{f}}$ is an element of
+\lean{Vl 0 = U}$_0$ and \lean{Vl 1 = U}$_1$, so that the two-entry flag tuple
+\lean{[F}$_0$\lean{, F}$_1$\lean{]}$^{\mathtt{f}}$, using the
+\lean{FlagList} notation introduced in
+\Cref{sec:formal-subflag-densities}, is an element of
 \lean{FlagList}~$\sigma$~\lean{2 Vl}.  Take $\pi$ to be the permutation of
 \lean{Fin 2} with $\pi(0)=1$ and $\pi(1)=0$.  Then
 \lean{flagDensity\_permute} equates the density of
@@ -4245,44 +4247,48 @@ position $1$, and its vertex-type family is
 of the directly constructed pair
 \lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$, an element of
 \lean{FlagList}~$\sigma$~\lean{2 Vl'} for the vertex-type family \lean{Vl'}
-with \lean{Vl' 0 = U}$_1$ and \lean{Vl' 1 = U}$_0$.  The families \lean{Vl'}
-and \lean{listTypePermute Vl $\pi$} are pointwise equal, since both send $0$
+with \lean{Vl' 0 = U}$_1$ and \lean{Vl' 1 = U}$_0$.  The families 
+\lean{listTypePermute Vl $\pi$} and \lean{Vl'} are pointwise equal, since both send $0$
 to $U_1$ and $1$ to $U_0$, but Lean need not reduce the two expressions to
 the same term.  The family is an argument of the tuple's type, so the
 permuted tuple and \lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$
-inhabit types, \lean{FlagList}~$\sigma$~\lean{2 (listTypePermute Vl $\pi$)}
+inhabit types, \lean{(FlagList}~$\sigma$~\lean{2 (listTypePermute Vl $\pi$))}
 and \lean{FlagList}~$\sigma$~\lean{2 Vl'}, that are not definitionally the
-same, and ordinary equality between the two tuples is not available until
-the equality of families has been made explicit.  What remains to be proved
-is that two Lean terms for the same reordered pair, the permuted tuple and
-\lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$, agree; on paper the two
-terms are not even distinguishable.
+same.  The permuted tuple and the directly constructed pair therefore cannot
+yet be compared by ordinary equality.  The formal proof must first establish
+equality of their vertex-type families and then use that equality to compare
+the tuples.  This type-alignment step has no counterpart on paper, where the
+two expressions simply denote the same reordered pair.
 
-The bridging lemma \lean{flagListDensity\_HEq\_eq} states that this
-agreement suffices: if the two vertex-type families are equal and the two
-tuples agree, then the two densities coincide.
+The bridging lemma \lean{flagListDensity\_HEq\_eq} packages these
+requirements: if the two vertex-type families are equal and the two tuples
+agree after their types are aligned, then the two densities coincide.
 \begin{lstlisting}
-theorem flagListDensity_HEq_eq
-    {Fl : FlagList (*@$\sigma$@*) t Vl} {Fl' : FlagList (*@$\sigma$@*) t Vl'}
-    (h_Vl_eq : Vl' = Vl) (h_HEq : HEq Fl Fl') (G : Flag (*@$\sigma$@*) W)
-    : flagListDensity Fl G = flagListDensity Fl' G := ...
+theorem flagListDensity_HEq_eq {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
+    {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
+    (h_Vl_eq : Vl(*@$_0$@*) = Vl(*@$_1$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
+    : flagListDensity Fl(*@$_0$@*) G = flagListDensity Fl(*@$_1$@*) G := ...
 \end{lstlisting}
-The hypothesis \lean{h\_Vl\_eq} is the equality of the two vertex-type
-families; in the instantiation
-it is \lean{Vl' = listTypePermute Vl $\pi$}, established by checking the two
-indices.  The hypothesis \lean{h\_HEq} states the agreement of the tuples
-themselves.
-Given an equality of types $A=B$, a term of type $A$ can be cast to
-type~$B$ without changing the underlying mathematical object.
-Heterogeneous equality, written \lean{HEq $x$ $y$}, allows~$x:A$ and~$y:B$
-to be compared even when $A$ and $B$ are not definitionally the same; it
-asserts that the two terms become equal once one is cast to the type of the
-other.  In the instantiation, \lean{h\_HEq} takes the form
-\lean{HEq ([F}$_0$\lean{, F}$_1$\lean{]}$^{\mathtt{f}}$\lean{.permute $\pi$) [F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$,
-and it holds because casting each entry of
-\lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$ into the corresponding
-entry type of the permuted tuple recovers, entry by entry, the permuted
-tuple.
+In this application, \lean{Vl}$_0$ is
+\lean{listTypePermute Vl $\pi$} and \lean{Vl}$_1$ is \lean{Vl'}, so
+\lean{h\_Vl\_eq} states
+\[
+  \lean{listTypePermute Vl $\pi$ = Vl'},
+\]
+proved by checking the two indices of \lean{Fin 2}.  The hypothesis
+\lean{h\_HEq} expresses that the permuted tuple and the directly constructed
+tuple \lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$ are equal even
+though Lean initially assigns them different types.  Concretely, both tuples
+place $F_1$ at position $0$ and $F_0$ at position $1$.
+
+The role of \lean{h\_Vl\_eq} is to align these two tuple types.  Once their
+vertex-type families have been identified, \lean{h\_HEq} can be used as an
+ordinary equality, allowing one tuple to be substituted for the other.  The
+lemma \lean{flagListDensity\_HEq\_eq} then concludes that their densities are
+equal.  Thus, the formal argument recovers the mathematically immediate fact
+that permuting \lean{[F}$_0$\lean{, F}$_1$\lean{]}$^{\mathtt{f}}$ produces
+the same pair as directly constructing
+\lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$.
 
 \subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
