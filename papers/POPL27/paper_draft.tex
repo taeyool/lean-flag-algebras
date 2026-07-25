@@ -4931,7 +4931,7 @@ Lean-specific symptoms.  Proving that a construction respects graph
 isomorphism is an ordinary cost of using quotient objects.  By contrast, the
 need to bind a particular \lean{Fintype} instance arises because Lean can fill
 two occurrences of the same finite carrier with different instance terms, and
-the use of \lean{cast} and \lean{HEq} arises because pointwise-equal dependent
+the use of \lean{HEq} arises because pointwise-equal dependent
 type families need not be definitionally equal: Lean's type checker may not
 regard them as the same type without an explicit proof.  Other proof
 assistants organize finite enumeration, implicit arguments, and dependent
