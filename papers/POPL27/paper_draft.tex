@@ -4047,37 +4047,34 @@ while forbidding another as a subgraph.
 \section{Engineering Obstacles}
 \label{sec:obstacles}
 
-The specification layer of \Cref{sec:abstract} exposed several proof
+The specification layer of \Cref{sec:abstract} makes explicit several proof
 obligations that ordinary combinatorial notation hides.  A construction
-described on a concrete labeled graph must be shown to be independent of
-the chosen representative before it descends to flags.  A flag's size is
-part of its Lean type, so statements comparing flags of different sizes,
-such as the expansion identity, are not even well typed as written.  A
-theorem about tuples of flags, once proved in general, must still be
-instantiated, and the instantiation is itself work: two terms for the same
-reordered tuple can inhabit types that Lean does not identify.  Counting a
-finite set requires an enumeration of it, and Lean's typeclass search can
-synthesize different enumerations for the same set at different
-occurrences, so a single choice must be recorded and reused.  None of these
-issues changes the underlying mathematics, but each recurs often enough to
-become a substantial proof-engineering cost.
+defined on a concrete labeled graph must be proved invariant under
+isomorphism before it can be lifted to flags.  Because a flag's size is part
+of its Lean type, identities relating flags of different sizes, such as the
+expansion identity, require additional type-level bookkeeping.  Reusing a
+theorem about a tuple of flags can create a similar problem after the tuple
+is reordered: mathematically identical tuples need not have types that Lean
+identifies.  Finally, finite counting depends on a chosen enumeration, and
+the same choice must be used consistently throughout a proof.  These
+obligations do not change the underlying mathematics, but they recur often
+enough to impose a substantial proof-engineering cost.
 
-These obligations have related but not identical causes.  Representative
-independence is an ordinary quotient obligation.  The size and tuple issues
-share a root in definitional equality: Lean identifies types only when
-their definitions reduce to a common expression, so mathematically equal
-objects may still require explicit transport.  Ambiguity between
-enumerations, by contrast, is specific to Lean's elaboration and typeclass
-mechanisms.  We therefore report the concrete obstacles without claiming
-that they all arise from a single foundational feature.
+Although these difficulties often appear together, their causes differ.
+Invariance under isomorphism is the well-definedness condition required to
+define an operation on a quotient.  The size and tuple-reordering issues
+reflect a limitation of Lean's underlying type theory: mathematically equal
+types need not be definitionally equal, and therefore may require explicit
+casts.  The enumeration issue, by contrast, is not primarily a
+consequence of the underlying type theory.  It arises from elaboration and
+typeclass inference, which may synthesize different enumerations at different
+occurrences.  The following subsections treat these obstacles separately.
 
-A final recurring challenge is to prove equality between densities whose
-numerators count differently presented finite sets of configurations.  Our
-most reliable method is to name the two sets, construct an explicit
-bijection between them, and deduce equality of their cardinalities; the
-bijection carries the mathematical content of the proof.  The final
-subsection describes this pattern after the representation and enumeration
-issues that motivate it.
+Counting identities present one further challenge: two density expressions
+may count the same configurations using different finite representations.
+Our most reliable proof method is to identify the two finite sets, construct
+an explicit bijection between them, and deduce equality of their
+cardinalities.  The final subsection explains this recurring pattern.
 
 \subsection{Computing with Graphs up to Isomorphism}
 
