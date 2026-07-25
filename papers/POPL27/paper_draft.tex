@@ -4908,9 +4908,11 @@ flags, algebras, and positive homomorphisms.  As
 \Cref{thm:support-closure-summary} makes precise, this difference is not purely
 organizational: for intermediate statements about labeled flags, the two
 approaches agree exactly under the root-plantability condition.  Independently
-of that equivalence, quotient inequalities imply ensemble inequalities.  This
-soundness direction is the one needed by our case studies: their typed
-\lean{forbidLE} derivations are ultimately transferred to final unlabeled
+of that equivalence, quotient inequalities always imply ensemble
+inequalities, so every typed inequality valid in Razborov's presentation
+remains valid in ours.  The case studies themselves depend on neither
+direction: their typed \lean{forbidLE} derivations are proved directly in
+the ensemble semantics and are ultimately transferred to final unlabeled
 Tur\'an bounds.
 
 The unresolved question is therefore architectural rather than a claim of
@@ -4928,7 +4930,7 @@ Lean-specific symptoms.  Proving that a construction respects graph
 isomorphism is an ordinary cost of using quotient objects.  By contrast, the
 need to bind a particular \lean{Fintype} instance arises because Lean can fill
 two occurrences of the same finite carrier with different instance terms, and
-the use of \lean{cast} and \lean{HEq} arises because pointwise-equal dependent
+the use of \lean{HEq} arises because pointwise-equal dependent
 type families need not be definitionally equal: Lean's type checker may not
 regard them as the same type without an explicit proof.  Other proof
 assistants organize finite enumeration, implicit arguments, and dependent
