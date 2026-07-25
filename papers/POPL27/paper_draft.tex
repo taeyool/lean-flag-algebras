@@ -4935,19 +4935,24 @@ extremal problem.  Evaluating this tradeoff would require formalizing
 comparable certificate proofs under both designs.
 
 \paragraph{Which engineering obstacles are Lean-specific?}
-\Cref{sec:obstacles} contains both representation-independent obligations and
-Lean-specific symptoms.  Proving that a construction respects graph
-isomorphism is an ordinary cost of using quotient objects.  By contrast, the
-need to bind a particular \lean{Fintype} instance arises because Lean can fill
-two occurrences of the same finite carrier with different instance terms, and
-the use of \lean{HEq} arises because pointwise-equal dependent
-type families need not be definitionally equal: Lean's type checker may not
-regard them as the same type without an explicit proof.  Other proof
-assistants organize finite enumeration, implicit arguments, and dependent
-equality differently.  We therefore do not know how much of this local
-scaffolding would survive a port to Rocq, Agda, or Isabelle/HOL\@.  The
-combinatorial obligations would remain, but their proof-engineering form may
-change.
+\Cref{sec:obstacles} includes both obligations common to quotient-based
+formalizations and difficulties tied more closely to Lean.  If flags are
+represented as isomorphism classes, a construction first defined on labeled
+graphs must be proved invariant under isomorphism before it can be applied to
+flags.  The same well-definedness obligation would arise in any proof
+assistant using this representation.  The remaining difficulties have causes
+more closely tied to Lean.  Binding a particular \lean{Fintype}
+instance is needed because Lean's elaborator may synthesize different instance
+terms for different occurrences of the same carrier type.  The use of
+\lean{HEq} reflects Lean's dependent type theory: pointwise-equal type families
+need not be definitionally equal, so terms indexed by them cannot immediately
+be compared using ordinary equality.
+Other proof assistants handle finite enumeration, implicit arguments, and
+dependent equality differently.  We therefore do not know which of these
+Lean-specific proof-engineering techniques would be needed in a port to Rocq,
+Agda, or Isabelle/HOL\@.  The underlying combinatorial identities and the
+well-definedness obligations created by quotient representations would remain,
+but their formal expression and proof cost could differ.
 
 \paragraph{Should specification and computation use separate representations?}
 Our development maintains two representations
