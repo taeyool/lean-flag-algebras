@@ -4399,14 +4399,10 @@ tuples have been identified, the two sides of the goal differ only in the
 \lean{Fintype} instances supplied for the component types; \lean{congr!}
 resolves these remaining differences.
 
-The bookkeeping above is not eliminated, but its location is made explicit.
-When a new finite construction is introduced, the formalization chooses the
-\lean{Fintype} instance its cardinalities will use and records that choice
-once, in a local binding or helper definition.  The subsequent proofs
-reuse the choice instead of asking typeclass search to reconstruct it at
-every occurrence.  Thus, a new counting construction still
-requires local enumeration setup, but that setup does not spread into the
-later algebraic argument.
+These explicit \lean{Fintype} choices are needed only where finite sets are
+converted to \lean{Finset}s or their cardinalities are compared.  Once the
+required counting identity has been proved, the subsequent algebraic argument
+uses that identity without referring to the chosen instances.
 
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
