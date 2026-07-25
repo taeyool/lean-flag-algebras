@@ -384,7 +384,7 @@ subterm — `simp` never descends into it), so the cost is independent of how la
 sum is.
 
 A prior version of this built each merge step's proof via raw `mkAppM ``add_smul`/``add_assoc``
-term construction; that caused a real regression in `K5turan.lean` (`flag_nonneg`'s
+term construction; that caused a real regression in `K5freeEdge.lean` (`flag_nonneg`'s
 `repeat apply add_nonneg` got stuck on a merged term, likely an instance-path mismatch — see
 `FLAGSUMSORT_PERF_PROGRESS.md`). This version instead proves each merge step via a small
 tactic-mode goal (`mkMergeStepProof`, the same "synthetic mvar + evalTactic" pattern
@@ -398,7 +398,7 @@ private def mkSmul (coeff base : Expr) : MetaM Expr :=
 `none, t ↦ t` *unchanged* — a term that wasn't `smul`-headed to begin with (e.g. a bare negated
 flag `-x` left over from something `pre-simp`'s lemma set didn't fully absorb into a coefficient)
 must be rebuilt exactly as `t`, not wrapped as `(1 : _) • t`: that wrapper is syntactically
-different (even though `one_smul`-defeq) and broke `K3forbidP3.lean`'s proof term downstream —
+different (even though `one_smul`-defeq) and broke `K3freeP3.lean`'s proof term downstream —
 see `FLAGSUMSORT_PERF_PROGRESS.md`. Terms with `none` therefore also never participate in
 merging (`mergeableCoeffs` below always rejects them), since merging would require synthesizing
 exactly this kind of coefficient wrapper. -/

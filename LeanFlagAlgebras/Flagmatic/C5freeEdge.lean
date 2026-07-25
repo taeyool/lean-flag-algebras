@@ -1,8 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 5:1223344551').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/C5free_cert.json \
---     LeanFlagAlgebras/Flagmatic/C5turan.lean --namespace C5turan --native-decide --force
+--     LeanFlagAlgebras/Flagmatic/Certificates/C5freeEdge_cert.json \
+--     LeanFlagAlgebras/Flagmatic/C5freeEdge.lean --namespace C5freeEdge --native-decide --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -20,7 +20,7 @@ open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
-namespace C5turan
+namespace C5freeEdge
 
 -- The forbidden graph, as the 5-vertex `Sym2Graph` term `ForbidGraph`. It is forbidden
 -- as a subgraph, not necessarily an induced one, so a copy of `ForbidGraph` may carry extra
@@ -59,7 +59,6 @@ generate_forbid_free_flag_pair_density_theorems 4 5 3 2 ForbidGraph
 generate_forbid_free_mul_theorems 4 5 3 2 ForbidGraph
 generate_forbid_free_flag_pair_density_theorems 4 5 3 3 ForbidGraph
 generate_forbid_free_mul_theorems 4 5 3 3 ForbidGraph
--- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
 generate_forbid_free_flag_density_theorems 2 1 5 ForbidGraph
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
@@ -250,7 +249,7 @@ noncomputable def v₄ : FlagAlgebraVec σ₄ 8 := ![
 over the 5-vertex ForbidGraph-free flags, rewriting the expansion theorem onto the
 generated set `flagSetHfree_5_0_0_ForbidGraph`. Under the hypothesis the flags
 containing ForbidGraph have density zero, so they never enter the sum. -/
-lemma C5free_flagAlgebra_expand_under_forbid
+lemma C5freeEdge_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[ForbidGraph.toLabeledGraph.graph] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27
   := by
   flag_expand_hfree 5 ForbidGraph
@@ -260,7 +259,7 @@ Every graph with no C₅ subgraph has edge density at most 1/2.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:1223344551'
 Bound: '1/2'. -/
-theorem C5free_flagAlgebra
+theorem C5freeEdge_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[ForbidGraph.toLabeledGraph.graph] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[ForbidGraph.toLabeledGraph.graph]
@@ -274,7 +273,7 @@ theorem C5free_flagAlgebra
   apply forbidLEWith_trans quadraticForm_trans
   apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_subgraph ForbidGraph 5)))
   simp only [add_assoc]
-  rw [forbidLEWith_rw_left_add_right C5free_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right C5freeEdge_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
@@ -290,4 +289,4 @@ theorem C5free_flagAlgebra
   apply forbidLEWith_of_le
   flag_nonneg
 
-end C5turan
+end C5freeEdge

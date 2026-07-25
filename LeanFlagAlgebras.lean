@@ -71,13 +71,14 @@ import LeanFlagAlgebras.Logic.Defs
 import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Logic.MantelTheorem
 
--- Flagmatic
+-- Flagmatic (the seven paper case studies, in the order of the paper's Section 5.4 table)
 import LeanFlagAlgebras.Flagmatic.Mantel
+import LeanFlagAlgebras.Flagmatic.K3freeP3
+import LeanFlagAlgebras.Flagmatic.K3freeC4
+import LeanFlagAlgebras.Flagmatic.K4freeEdge
 import LeanFlagAlgebras.Flagmatic.ErdosPentagon
-import LeanFlagAlgebras.Flagmatic.K3forbidP3
-import LeanFlagAlgebras.Flagmatic.K3forbidC4
-import LeanFlagAlgebras.Flagmatic.K4turan
-import LeanFlagAlgebras.Flagmatic.K5turan
+import LeanFlagAlgebras.Flagmatic.K5freeEdge
+import LeanFlagAlgebras.Flagmatic.C5freeEdge
 
 -- MetaTheory (paper.tex §1–8, plus §9 pinning obstruction): complete and sorry-free
 import LeanFlagAlgebras.MetaTheory

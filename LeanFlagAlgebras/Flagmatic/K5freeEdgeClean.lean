@@ -1,8 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/K5turan_clean_cert.json \
---     LeanFlagAlgebras/Flagmatic/K5turanClean.lean --namespace K5turanClean --native-decide --force
+--     LeanFlagAlgebras/Flagmatic/Certificates/K5freeEdge_clean_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K5freeEdgeClean.lean --namespace K5freeEdgeClean --native-decide --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -20,7 +20,7 @@ open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
-namespace K5turanClean
+namespace K5freeEdgeClean
 
 -- The forbidden graph, as the 5-vertex `Sym2Graph` term `K5`: the complete graph
 -- K₅, for which containing a copy and containing an induced copy coincide.
@@ -53,7 +53,6 @@ generate_forbid_free_flag_pair_density_theorems 4 5 3 2 K5
 generate_forbid_free_mul_theorems 4 5 3 2 K5
 generate_forbid_free_flag_pair_density_theorems 4 5 3 3 K5
 generate_forbid_free_mul_theorems 4 5 3 3 K5
--- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
 generate_forbid_free_flag_density_theorems 2 1 5 K5
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
@@ -198,7 +197,7 @@ noncomputable def v₃ : FlagAlgebraVec σ₃ 8 := ![
 over the 5-vertex K5-free flags, rewriting the expansion theorem onto the
 generated set `flagSetHfree_5_0_0_K5`. Under the hypothesis the flags
 containing K5 have density zero, so they never enter the sum. -/
-lemma K5turan_clean_flagAlgebra_expand_under_forbid
+lemma K5freeEdge_clean_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
   := by
   flag_expand_hfree 5 K5
@@ -208,7 +207,7 @@ Every graph with no K₅ subgraph has edge density at most 3/4.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545'
 Bound: '3/4'. -/
-theorem K5turan_clean_flagAlgebra
+theorem K5freeEdge_clean_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)]
@@ -221,7 +220,7 @@ theorem K5turan_clean_flagAlgebra
   apply forbidLEWith_trans quadraticForm_trans
   apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 5) 5)))
   simp only [add_assoc]
-  rw [forbidLEWith_rw_left_add_right K5turan_clean_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right K5freeEdge_clean_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
@@ -236,4 +235,4 @@ theorem K5turan_clean_flagAlgebra
   apply forbidLEWith_of_le
   flag_nonneg
 
-end K5turanClean
+end K5freeEdgeClean

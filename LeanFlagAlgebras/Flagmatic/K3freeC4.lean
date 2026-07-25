@@ -1,8 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 4:12132434 density; forbid 3:121323').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/K3forbidC4_cert.json \
---     LeanFlagAlgebras/Flagmatic/K3forbidC4.lean --namespace K3forbidC4 --force
+--     LeanFlagAlgebras/Flagmatic/Certificates/K3freeC4_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K3freeC4.lean --namespace K3freeC4 --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -18,7 +18,7 @@ open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
-namespace K3forbidC4
+namespace K3freeC4
 
 -- The forbidden graph, as the 3-vertex `Sym2Graph` term `K3`: the complete graph
 -- K₃, for which containing a copy and containing an induced copy coincide.
@@ -116,7 +116,7 @@ Every graph with no K₃ subgraph has C₄ density at most 3/8.
 
 Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
 Bound: '3/8'. -/
-theorem K3forbidC4_flagAlgebra
+theorem K3freeC4_flagAlgebra
     : FlagAlgebra_4_0_0_8 ≤[completeGraph (Fin 3)] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[completeGraph (Fin 3)]
@@ -140,4 +140,4 @@ theorem K3forbidC4_flagAlgebra
   apply forbidLEWith_of_le
   flag_nonneg
 
-end K3forbidC4
+end K3freeC4

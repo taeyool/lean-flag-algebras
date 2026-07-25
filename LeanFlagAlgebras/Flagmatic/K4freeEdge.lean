@@ -1,8 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 4:121314232434').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/K4turan_cert.json \
---     LeanFlagAlgebras/Flagmatic/K4turan.lean --namespace K4turan --force
+--     LeanFlagAlgebras/Flagmatic/Certificates/K4freeEdge_cert.json \
+--     LeanFlagAlgebras/Flagmatic/K4freeEdge.lean --namespace K4freeEdge --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -20,7 +20,7 @@ open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
-namespace K4turan
+namespace K4freeEdge
 
 -- The forbidden graph, as the 4-vertex `Sym2Graph` term `K4`: the complete graph
 -- K₄, for which containing a copy and containing an induced copy coincide.
@@ -48,7 +48,6 @@ generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K4
 generate_forbid_free_mul_theorems 3 4 2 0 K4
 generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K4
 generate_forbid_free_mul_theorems 3 4 2 1 K4
--- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
 generate_forbid_free_flag_density_theorems 2 1 4 K4
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
@@ -123,7 +122,7 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 4 := ![
 over the 4-vertex K4-free flags, rewriting the expansion theorem onto the
 generated set `flagSetHfree_4_0_0_K4`. Under the hypothesis the flags
 containing K4 have density zero, so they never enter the sum. -/
-lemma K4turan_flagAlgebra_expand_under_forbid
+lemma K4freeEdge_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 4)] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
   flag_expand_hfree 4 K4
@@ -133,7 +132,7 @@ Every graph with no K₄ subgraph has edge density at most 2/3.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 4:121314232434'
 Bound: '2/3'. -/
-theorem K4turan_flagAlgebra
+theorem K4freeEdge_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 4)] (2 / 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 4)]
@@ -145,7 +144,7 @@ theorem K4turan_flagAlgebra
   apply forbidLEWith_trans quadraticForm_trans
   apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 4) 4)))
   simp only [add_assoc]
-  rw [forbidLEWith_rw_left_add_right K4turan_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right K4freeEdge_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
@@ -159,4 +158,4 @@ theorem K4turan_flagAlgebra
   apply forbidLEWith_of_le
   flag_nonneg
 
-end K4turan
+end K4freeEdge

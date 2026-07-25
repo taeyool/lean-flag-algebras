@@ -1,7 +1,7 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 3:121323').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json \
+--     LeanFlagAlgebras/Flagmatic/Certificates/Mantel_cert.json \
 --     LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
@@ -43,7 +43,6 @@ generate_forbid_free_flags 2 1 0 K3
 generate_forbid_free_flags 3 1 0 K3
 generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3
 generate_forbid_free_mul_theorems 2 3 1 0 K3
--- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
 generate_forbid_free_flag_density_theorems 2 1 3 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
@@ -78,7 +77,7 @@ noncomputable def v : FlagAlgebraVec σ 2 := ![
 over the 3-vertex K3-free flags, rewriting the expansion theorem onto the
 generated set `flagSetHfree_3_0_0_K3`. Under the hypothesis the flags
 containing K3 have density zero, so they never enter the sum. -/
-lemma mantel_flagAlgebra_expand_under_forbid
+lemma Mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
   flag_expand_hfree 3 K3
@@ -88,7 +87,7 @@ Every graph with no K₃ subgraph has edge density at most 1/2.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'
 Bound: '1/2'. -/
-theorem mantel_flagAlgebra
+theorem Mantel_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 3)] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 3)]
@@ -98,7 +97,7 @@ theorem mantel_flagAlgebra
     exact forbidLEWith_refl _ FlagAlgebra_2_0_0_1
   apply forbidLEWith_trans quadraticForm_trans
   apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 3)))
-  rw [forbidLEWith_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right Mantel_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul

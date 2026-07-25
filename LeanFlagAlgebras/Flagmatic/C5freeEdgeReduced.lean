@@ -1,8 +1,8 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 5:1223344551').
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
---     LeanFlagAlgebras/Flagmatic/Certificates/C5turan_reduced_cert.json \
---     LeanFlagAlgebras/Flagmatic/C5turanReduce.lean --namespace C5turanReduce --native-decide --force
+--     LeanFlagAlgebras/Flagmatic/Certificates/C5freeEdge_reduced_cert.json \
+--     LeanFlagAlgebras/Flagmatic/C5freeEdgeReduced.lean --namespace C5freeEdgeReduced --native-decide --force
 
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
@@ -20,7 +20,7 @@ open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
-namespace C5turanReduce
+namespace C5freeEdgeReduced
 
 -- The forbidden graph, as the 5-vertex `Sym2Graph` term `ForbidGraph`. It is forbidden
 -- as a subgraph, not necessarily an induced one, so a copy of `ForbidGraph` may carry extra
@@ -47,7 +47,6 @@ generate_forbid_free_flags 3 1 0 ForbidGraph
 generate_forbid_free_flags 5 1 0 ForbidGraph
 generate_forbid_free_flag_pair_density_theorems 3 5 1 0 ForbidGraph
 generate_forbid_free_mul_theorems 3 5 1 0 ForbidGraph
--- `flagDensity₁` evaluation table for the objective expansion (the `auto_flagDensity1_*` `@[simp]` lemmas).
 generate_forbid_free_flag_density_theorems 2 1 5 ForbidGraph
 
 /-- SDP certificate matrix for block 1 (rational, 6×6),
@@ -94,7 +93,7 @@ noncomputable def v : FlagAlgebraVec σ 6 := ![
 over the 5-vertex ForbidGraph-free flags, rewriting the expansion theorem onto the
 generated set `flagSetHfree_5_0_0_ForbidGraph`. Under the hypothesis the flags
 containing ForbidGraph have density zero, so they never enter the sum. -/
-lemma C5turan_reduced_flagAlgebra_expand_under_forbid
+lemma C5freeEdge_reduced_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[ForbidGraph.toLabeledGraph.graph] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27
   := by
   flag_expand_hfree 5 ForbidGraph
@@ -104,7 +103,7 @@ Every graph with no C₅ subgraph has edge density at most 1/2.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:1223344551'
 Bound: '1/2'. -/
-theorem C5turan_reduced_flagAlgebra
+theorem C5freeEdge_reduced_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[ForbidGraph.toLabeledGraph.graph] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[ForbidGraph.toLabeledGraph.graph]
@@ -114,7 +113,7 @@ theorem C5turan_reduced_flagAlgebra
     exact forbidLEWith_refl _ FlagAlgebra_2_0_0_1
   apply forbidLEWith_trans quadraticForm_trans
   apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_subgraph ForbidGraph 5)))
-  rw [forbidLEWith_rw_left_add_right C5turan_reduced_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right C5freeEdge_reduced_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_six, add_assoc]
   reduce_downward_flagmul
@@ -127,4 +126,4 @@ theorem C5turan_reduced_flagAlgebra
   apply forbidLEWith_of_le
   flag_nonneg
 
-end C5turanReduce
+end C5freeEdgeReduced

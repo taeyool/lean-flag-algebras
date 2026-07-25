@@ -94,11 +94,11 @@ USAGE EXAMPLES (PowerShell; use `\\` on bash):
   #    gen-skeleton emit? (`inspect` resolves every string, so it also
   #    validates the cert; it raises on the first string that fails to resolve.)
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect `
-      LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
+      LeanFlagAlgebras/Flagmatic/Certificates/Mantel_cert.json
 
   # 2. Generate a complete starter Lean file with auto-proved main theorem.
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton `
-      LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json `
+      LeanFlagAlgebras/Flagmatic/Certificates/Mantel_cert.json `
       LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 
   # 3. Or, append-mode helpers when you have an existing file:
@@ -118,10 +118,13 @@ VERIFIED SCENARIOS (see Certificates/ for inputs, *.lean for outputs):
 
   cert                 forbid  N  n_obj  branch  blocks  bound
   -------------------  ------  -  -----  ------  ------  -----
-  mantel_cert          K3      3    2      B        1     1/2
-  K3forbidC4_cert      K3      4    4      A        2     3/8
-  K4turan_cert         K4      4    2      B        2     2/3
+  Mantel_cert          K3      3    2      B        1     1/2
+  K3freeP3_cert        K3      3    3      A        1     3/4
+  K3freeC4_cert        K3      4    4      A        2     3/8
+  K4freeEdge_cert      K4      4    2      B        2     2/3
   ErdosPentagon_cert   K3      5    5      A        3   24/625
+  K5freeEdge_cert      K5      5    2      B        4     3/4
+  C5freeEdge_cert      C5      5    2      B        4     1/2
 
 What's covered:
   * Branch A (n_obj == N) and Branch B (n_obj < N)
@@ -1227,8 +1230,6 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
     flag_density_lines: list[str] = []
     if obj_idx is not None and n_obj < N:
         flag_density_lines = [
-            f"-- `flagDensity₁` evaluation table for the objective expansion "
-            f"(the `auto_flagDensity1_*` `@[simp]` lemmas).",
             f"generate_forbid_free_flag_density_theorems {n_obj} {obj_idx} {N} {tag}",
         ]
 
@@ -1415,7 +1416,7 @@ def _derive_theorem_name(cert_path: Path) -> str:
     """Suggest a theorem name from the certificate filename.
 
     Strips common flagmatic export suffixes (`_sparse_cert`, `_cert`, ...) and
-    appends `_flagAlgebra` (e.g. `mantel_cert.json` -> `mantel_flagAlgebra`).
+    appends `_flagAlgebra` (e.g. `Mantel_cert.json` -> `Mantel_flagAlgebra`).
     """
     stem = cert_path.stem
     for suffix in ("_sparse_cert", "_dense_cert", "_cert", "_sdp_output", "_sdp"):
@@ -1615,7 +1616,7 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help=(
             "name of the main theorem. Default: derived from the certificate "
-            "filename, e.g. `mantel_cert.json` -> `mantel_flagAlgebra`."
+            "filename, e.g. `Mantel_cert.json` -> `Mantel_flagAlgebra`."
         ),
     )
     p_skel.add_argument("--force", action="store_true",
