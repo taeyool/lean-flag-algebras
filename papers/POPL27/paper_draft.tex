@@ -4527,18 +4527,22 @@ There is also an intrinsic description:
     \(\mathcal K\)}
   \right\}.
 \end{equation}
-The role of heredity is to justify the quotient presentation above.  Every
-\(\sigma\)-flag $F$ appearing in the product of a \(\sigma\)-flag $F'$ outside
-\(\mathcal K\) with another \(\sigma\)-flag $F''$ contains $F'$ as an induced
-subflag.  It therefore also lies outside \(\mathcal K\), since otherwise
-heredity would imply that the underlying graph of $F'$ also lies in
-\(\mathcal K\).  Hence multiplying a \(\sigma\)-flag outside \(\mathcal K\) by
-any other \(\sigma\)-flag produces a linear combination of \(\sigma\)-flags
-outside \(\mathcal K\), so
-their span is precisely the ideal killed by \(q_\sigma\).  Once this
-presentation is established, a homomorphism vanishing on every \(\sigma\)-flag
-outside~\(\mathcal K\) vanishes on the whole ideal and therefore factors through
-\(q_\sigma\) by the universal property of the quotient.
+The inclusion from left to right is immediate.  If
+\(\chi=\psi\circ q_\sigma\) belongs to \(Q_\sigma\), then
+\(q_\sigma([F])=0\) for every \(\sigma\)-flag \(F\) outside \(\mathcal K\),
+and hence \(\chi([F])=0\).
+
+For the reverse inclusion, suppose that \(\chi\in X_\sigma\) vanishes on
+every \(\sigma\)-flag outside \(\mathcal K\).  Here heredity ensures that the
+span of these flags is an ideal.  Every \(\sigma\)-flag \(F\) appearing in
+the product of a \(\sigma\)-flag \(F'\) outside \(\mathcal K\) with another
+\(\sigma\)-flag \(F''\) contains \(F'\) as an induced subflag.  The flag \(F\)
+must therefore also lie outside \(\mathcal K\), since otherwise heredity would
+imply that the underlying graph of \(F'\) lies in \(\mathcal K\).  Thus, the
+span of the flags outside \(\mathcal K\) is precisely the ideal killed by
+\(q_\sigma\).  The homomorphism \(\chi\) vanishes on this ideal and therefore
+factors through \(q_\sigma\) as a positive homomorphism on the constrained
+algebra.  Hence \(\chi\in Q_\sigma\), proving the reverse inclusion.
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
