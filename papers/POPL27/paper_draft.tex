@@ -4165,8 +4165,8 @@ The packaging provides a common home, not an identification: when their size
 tags differ, $\langle m,F\rangle$ and $\langle n,G\rangle$ remain distinct
 elements of \lean{FinFlag}~$\sigma$ and index distinct basis vectors.
 Identifying them is the quotient's job, and it needs no further argument:
-the difference between the two sides of the expansion identity is one of the
-generators of the zero space, so the identity holds
+the difference between the two sides of the expansion identity~\eqref{eq:expansion-identity} 
+is one of the generators of the zero space, so the identity holds
 in the flag algebra by definition.  Later cross-size comparisons, including
 the independence of the
 product formula from its auxiliary size, reason modulo this relation.
@@ -4181,7 +4181,7 @@ instance is the symmetry
 \),
 which is what makes flag-algebra multiplication commutative, since the
 product formula~\eqref{eq:mul} expands a product of two flags into a sum
-weighted by exactly these pair densities.  On paper the invariance is proved
+weighted by exactly these pair densities.  On paper, the invariance is proved
 once, in full generality: for any number of pattern flags, reordering the
 tuple does not change its density in a host.  The two-flag symmetry is then
 read off by taking the permutation that swaps the two positions, and this
@@ -4191,8 +4191,8 @@ with no counterpart on paper.
 
 Recall from \Cref{sec:formal-subflag-densities} that a tuple of pattern
 flags is a dependent function: an element of
-\lean{FlagList}~$\sigma$~\lean{t Vl} assigns to each index \lean{i : Fin t}
-a $\sigma$-flag on the vertex type \lean{Vl i}, and \lean{flagListDensity}
+\lean{FlagList}~$\sigma$~\lean{t Vl} assigns 
+a $\sigma$-flag on the vertex type \lean{Vl i} to each index \lean{i : Fin t}, and \lean{flagListDensity}
 computes the multi-flag density of such a tuple in a host flag.  Both the
 entries and their types vary with the index, and the vertex-type family
 \lean{Vl} is itself an argument of the tuple's type.  Reordering is defined
@@ -4204,7 +4204,7 @@ def listTypePermute {t : (*@$\mathbb{N}$@*)} (Vl : Fin t (*@$\to$@*) Type) ((*@$
     : Fin t (*@$\to$@*) Type :=
   fun i => Vl ((*@$\pi$@*) i)
 
-def FlagList.permute {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
+def FlagList.permute {T : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
     (Fl : FlagList (*@$\sigma$@*) t Vl) ((*@$\pi$@*) : Perm t)
     : FlagList (*@$\sigma$@*) t (listTypePermute Vl (*@$\pi$@*)) :=
   fun i => Fl ((*@$\pi$@*) i)
@@ -4218,17 +4218,17 @@ along with the entries: the vertex-type family of the result is
 invariance is then proved once, for every length \lean{t} and every
 permutation; the symmetry to be derived from it is the pair case:
 \begin{lstlisting}
-theorem flagDensity_permute
+theorem flagDensity_permute {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
     (Fl : FlagList (*@$\sigma$@*) t Vl) (G : Flag (*@$\sigma$@*) W) ((*@$\pi$@*) : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute (*@$\pi$@*)) G := ...
 
-theorem flagPairDensity_comm
+theorem flagPairDensity_comm {T U(*@$_0$@*) U(*@$_1$@*) W : Type} {(*@$\sigma$@*) : FlagType T} 
     (F(*@$_0$@*) : Flag (*@$\sigma$@*) U(*@$_0$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G = flagDensity(*@$_2$@*) F(*@$_1$@*) F(*@$_0$@*) G := ...
 \end{lstlisting}
 Here \lean{flagDensity}$_2$ is the pair specialization of
-\lean{flagListDensity}, so the second statement renders the symmetry from
-the beginning of this subsection.
+\lean{flagListDensity}, so the second theorem states precisely the two-flag
+symmetry introduced at the beginning of this subsection.
 
 To derive the second statement from the first, suppose the $\sigma$-flags
 $F_0$ and $F_1$ have vertex types $U_0$ and $U_1$, and let \lean{Vl} be the
