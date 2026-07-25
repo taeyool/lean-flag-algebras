@@ -5524,8 +5524,8 @@ measurement covers the complete source file: flag enumeration, pair-density and
 multiplication lemma generation, PSD certificate checking, the objective
 expansion, and the main theorem.  The generated files differ only in how their
 bridging lemmas are discharged.  Under \lean{decide +kernel} (the
-\lean{flagGen.kernelDecide} option) the file introduces no compiled-evaluation
-axiom; under \lean{native\_decide} it is faster but additionally depends on the
+\lean{flagGen.kernelDecide} option), the file introduces no compiled-evaluation
+axiom; under \lean{native\_decide}, it is faster but additionally depends on the
 \lean{Lean.ofReduceBool} and \lean{Lean.trustCompiler} axioms.  We report both
 modes for the five examples where kernel evaluation is tractable; for the two
 largest, the $K_5$- and $C_5$-free edge-density examples, only
