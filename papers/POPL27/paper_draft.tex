@@ -4408,8 +4408,8 @@ uses that identity without referring to the chosen instances.
 \label{sec:proof-style}
 
 Explicit bijections became an unexpectedly prevalent proof pattern in the
-specification layer, especially for establishing counting identities, from
-subflag densities to the coefficients of the downward operator.  We did not set out to make bijective arguments the default: we
+specification layer.  We did not set out to make bijective arguments the
+default: we
 expected many of these equalities to follow from existing counting lemmas or
 symbolic simplification, with explicit equivalences needed only occasionally.
 In practice, however, unfolding and simplifying the definitions repeatedly
@@ -4428,37 +4428,16 @@ definitions, the proof came down to a bijection between the finite sets of
 choices made by the two procedures.  This bijection yielded equality of the
 corresponding counts and hence the chain rule.
 
-The same proof pattern recurs across several formally different obligations.
-In \lean{flagDensity\allowbreak\_permute}, the bijection is between the
-tuples of pairwise-disjoint induced copies realizing a flag tuple and the
-tuples realizing its reordering.  For
-\lean{flagDensity\allowbreak\_insert\allowbreak\_empty}, which states that
-appending the empty flag to a tuple does not change its density in a host,
-the two sets are the realizations of the two tuples, matched by inserting
-or deleting the unique extra component.  The adequacy proof for \lean{Sym2InducedLabeledSubgraph} matches
-the induced subgraphs of a host in the concrete representation used for
-computation with those in the abstract \lean{LabeledSubgraph}
-representation used in the specification.  Although these statements serve different purposes, each
-proof identifies the two finite sets being counted and gives an explicit
-correspondence between their elements.
-
-Carrying out this pattern in Lean uses the instance discipline of
-\Cref{sec:fintype}, whose listing is exactly the skeleton of such a proof.
-The instance bookkeeping adds no mathematical obligation: the bijection is
-already the mathematical proof.
-
-In our development, explicit bijections provide a common interface between
-combinatorial reasoning and Lean's handling of finite cardinalities.  The
-bijection isolates the mathematical step of exhibiting a one-to-one
-correspondence between the objects counted on the two sides, while the
-subsequent code handles \lean{Fintype} instances and rewrites the resulting
-counts.  We do not claim that explicit bijections are the only possible
-approach.  What surprised us is that the same pattern worked across chain
-rules, permutation invariance, empty-flag insertion, the downward-operator
-counts, and adequacy, and
-therefore became our default for finite counting identities.  The
-methodological observation is the unexpected prevalence of this proof
-pattern, rather than a claim that no alternative exists.
+The same method proves permutation invariance, invariance under inserting an
+empty flag, the downward-operator counting identities, and the adequacy of
+the computational subgraph representation.  Although these obligations arise
+in different parts of the formalization, each reduces to an explicit
+correspondence between two finite sets.  The bijection contains the
+mathematical argument, while the instance discipline of
+\Cref{sec:fintype} handles the resulting cardinalities.  We do not claim
+that bijections are the only possible approach, but their effectiveness
+across these different obligations made them our default method for finite
+counting identities.
 
 
 
