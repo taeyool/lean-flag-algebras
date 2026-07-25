@@ -4351,36 +4351,37 @@ binding rather than a fresh search:
 let hS0 : Fintype S0 := Fintype.ofFinite S0
 let hS1 : Fintype S1 := Fintype.ofFinite S1
 -- h_iso_S0_S1 is a bijection between the two sets.
-have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr h_iso_S0_S1
+-- The @ notation exposes the Fintype arguments that Lean normally inserts.
+have card_eq : @Fintype.card S0 hS0 = @Fintype.card S1 hS1 :=
+  @Fintype.card_congr S0 S1 hS0 hS1 h_iso_S0_S1
 -- Rewrite the toFinset counts in the goal to Fintype cardinalities.
 have count_eq : S0.toFinset.card = S1.toFinset.card := by
+  -- These two toFinset terms also use hS0 and hS1, respectively.
   rw [Set.toFinset_card, Set.toFinset_card]
   exact card_eq
 \end{lstlisting}
-This pattern appears throughout the development.  One example is
-\lean{flagDensity\allowbreak\_permute} from
-\Cref{sec:reordered-flag-tuples}.  There, unfolding the two densities reduces the theorem to an equality of
-counts: the tuples of
-pairwise-disjoint induced copies realizing the entries of \lean{Fl} in a
-host must be as numerous as those realizing the entries of
-\lean{Fl.permute $\pi$}.  These two sets are the \lean{S0} and \lean{S1} of
-the listing, the mathematical step is the reindexing bijection
-\lean{h\_iso\_S0\_S1} between them, and \lean{Fintype.card\_congr} converts
-it into the cardinality equality \lean{card\_eq}.  The \lean{Fintype}
-bookkeeping enters through the counts themselves.  In the goal they have
-the form \lean{S0.toFinset.card}, and constructing a \lean{toFinset}
-depends on a \lean{Fintype} instance, as does each side of
-\lean{Fintype.card\_congr}.  Lean fills these hidden arguments
-automatically, and that is exactly what could not be relied on: the
-instance synthesized at one occurrence need not be the instance synthesized
-at another, and \lean{card\_eq} then fails to rewrite the counts in the
-goal.  Binding \lean{hS0} and \lean{hS1} the moment the two sets are named
-is what makes the proof go through; every later \lean{toFinset} and the
-equality produced by \lean{Fintype.card\_congr} mention exactly these
-instances, and the rewrite through \lean{Set.toFinset\_card}
-(\lean{count\_eq}) closes the theorem.  The
-flag-operator proofs use a similar explicit \lean{Fintype.ofFinite}
-construction for the isomorphism set with a fixed underlying graph.
+The displayed \lean{@} notation makes explicit where the two named instances
+enter the proof: \lean{hS0} supplies the enumeration used by
+\lean{Fintype.card S0}, and \lean{hS1} supplies the one used by
+\lean{Fintype.card S1}; both are also arguments of
+\lean{Fintype.card\_congr}.  The subsequent \lean{S0.toFinset} and
+\lean{S1.toFinset} expressions use the same instances implicitly, as do the
+two applications of \lean{Set.toFinset\_card}.  Thus,
+\lean{Set.toFinset\_card} rewrites the two concrete counts to exactly the
+cardinality terms appearing in \lean{card\_eq}.  Without the local bindings,
+Lean could synthesize those hidden arguments independently at the different
+occurrences, producing terms that are propositionally equal but do not match
+for rewriting.
+
+This pattern appears in \lean{flagDensity\allowbreak\_permute} from
+\Cref{sec:reordered-flag-tuples}.  There, \lean{S0} and \lean{S1} are the
+sets of tuples of pairwise-disjoint induced copies that realize \lean{Fl} and
+\lean{Fl.permute $\pi$}, respectively.  The mathematical step is the
+reindexing bijection \lean{h\_iso\_S0\_S1}; the named \lean{Fintype}
+instances ensure that the cardinality equality obtained from this bijection
+rewrites the counts occurring in the density definition.  The flag-operator
+proofs use the same pattern for the isomorphism set associated with a fixed
+underlying graph.
 
 The second response repairs mismatches that do occur.  Once the
 mathematical steps of such a proof are done, what remains is a goal of a
@@ -4392,9 +4393,11 @@ because any two \lean{Fintype} instances of the same type are provably
 equal (\lean{Fintype T} is a subsingleton).  The bridging lemma
 \lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq} of
 \Cref{sec:reordered-flag-tuples} is finished exactly this way: it carries
-enumeration hypotheses for both vertex-type families, and once the families
-and the tuples have been identified, the two sides of the goal differ only
-in those hypotheses, which \lean{congr!} resolves.
+a \lean{FintypeList} instance for each vertex-type family, supplying a
+\lean{Fintype} instance for every component type.  Once the families and the
+tuples have been identified, the two sides of the goal differ only in the
+\lean{Fintype} instances supplied for the component types; \lean{congr!}
+resolves these remaining differences.
 
 The bookkeeping above is not eliminated, but its location is made explicit.
 When a new finite construction is introduced, the formalization chooses the
