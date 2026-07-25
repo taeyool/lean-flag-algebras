@@ -4981,8 +4981,8 @@ the optimized enumeration of \Cref{sec:reflection-generation}, size-inductive,
 deduplicated, and pruned under the forbidden graph, keeps the required
 families of finite identities manageable.  For the Erd\H{o}s pentagon
 certificate, whose calculations expand over five-vertex graphs, the three
-flag types require 1,800; 672; and 360 pair-density theorems, respectively.
-Lean checks all 2,832 identities by \lean{decide +kernel} and then uses the
+flag types require 1800, 672, and 360 pair-density theorems, respectively.
+Lean checks all 2832 identities by \lean{decide +kernel} and then uses the
 resulting theorems in the complete certificate proof.  This confirms that
 certificates at the five-vertex scale do go through the current reflection
 and automation layers, though only just: the Erd\H{o}s pentagon is the
@@ -5002,7 +5002,8 @@ representations and counting algorithms in the reflection layer, as well as
 improvements to theorem generation and algebraic normalization.  This
 ceiling is not unique to formal verification: certificate generation itself
 faces the same combinatorial growth, and Flagmatic is in practice limited to
-hosts of about seven or eight vertices.  The formal pipeline reaches its
+expanding its calculations in the basis of graphs on about seven or eight
+vertices.  The formal pipeline reaches its
 limit earlier, and we have not yet determined which of its costs dominates
 or how much of the gap such optimizations can close.
 
