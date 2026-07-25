@@ -4889,12 +4889,15 @@ sufficient condition for root-plantability.
 \section{Open Design Questions}
 \label{sec:unsure}
 
-The development discharges the proof obligations needed by our case studies,
-but it does not determine which architecture would work best for a larger
-library.  The remaining uncertainties concern semantic design, portability,
-and scale rather than gaps in the checked case-study theorems.  We record four
-questions and state what the present development does and does not show
-about each one.
+The formalization and end-to-end certificate proofs presented above are fully
+checked in Lean.  This section instead concerns design questions whose broader
+consequences cannot be settled by the present implementation alone: when
+forbidden-graph constraints should enter the theory, which engineering costs
+are specific to Lean, whether specification and computation should use
+separate representations, and how far the current computational layer can
+scale.  For each question, we distinguish what the present development
+demonstrates from what would require alternative implementations or larger
+computations to determine.
 
 \paragraph{When should a forbidden-graph constraint enter the formalization?}
 The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
