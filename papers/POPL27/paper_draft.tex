@@ -528,7 +528,7 @@ compiler examples.
 This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and establishes the notation used
 later in the paper.  No background in flag algebras or extremal combinatorics
-is assumed.  For a nonnegative integer $n$, we write $[n]$ for the set of
+is assumed.  For a non-negative integer $n$, we write $[n]$ for the set of
 positive integers at most $n$.  We consider only undirected, finite, and simple
 graphs; for a graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$,
 respectively.
@@ -1145,7 +1145,7 @@ the typed unit therefore gives
 \paragraph{Random homomorphisms.}
 A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ records the limiting
 densities of unlabeled graphs along a convergent sequence of finite graphs.
-For a non-empty flag type $\sigma$, its random extension can be understood
+For a nonempty flag type $\sigma$, its random extension can be understood
 through any such sequence realizing $\phi_0$: in each finite graph, choose
 uniformly at random an embedding of $\sigma$ and use the embedded vertices as
 labels.  Razborov's random-extension theorem describes the limiting
@@ -1202,7 +1202,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
 
 A flag algebra proof of $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ typically proceeds as follows:
 first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_{\mathcal{H},\sigma} f$ for some
-non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
+nonempty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 \Cref{thm:downward-nonneg} to obtain $0 \leq_{\mathcal{H}} \llbracket f \rrbracket_\sigma$;
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
@@ -1952,7 +1952,7 @@ Here the candidate limit \(a\) is a real-valued function on finite
 underlying sizes of the \(\sigma\)-flags \(s(0),s(1),\ldots\) strictly increase.  The
 second conjunct uses Lean's filter notation for convergence:
 \lean{atTop} is the limit \(n\to\infty\) on \(\mathbb{N}\), and
-\(\mathcal{N} a\) is the neighbourhood filter of the function~\(a\).  The term
+\(\mathcal{N} a\) is the neighborhood filter of the function~\(a\).  The term
 \lean{flagDensitySeq s} is the sequence of density functions associated to
 \(s\); its \(n\)-th value sends a finite \(\sigma\)-flag \(F\) to
 \(\den{F}{s(n)}\).  Thus, the \lean{Tendsto} line is the Lean statement that,
@@ -3538,7 +3538,7 @@ stores rational matrices $Q'_t$ and $R_t$ with
 $M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a smaller
 symmetric matrix. Flagmatic's user guide~\cite{vaughan2012flagmaticguide}
 explains the format: $Q'_t$ is
-chosen to be positive definite, which implies the positive semi-definiteness of $M_t$.
+chosen to be positive definite, which implies the positive semidefiniteness of $M_t$.
 
 Our verification takes these data through a different, equally elementary
 witness.  We state one Lean lemma for every PSD obligation, based on an exact
@@ -4573,7 +4573,7 @@ Define
                         \phi_0(\langle\sigma\rangle_0)>0}}
     \operatorname{supp}\bigl(\Ext_\sigma(\phi_0)\bigr)
   }
-  \subseteq X_\sigma,
+  \subseteq X_\sigma.
 \end{equation}
 Thus, to form \(S_\sigma\), we first collect the supports of
 \(\Ext_\sigma(\phi_0)\) over all \(\phi_0\in Q_0\) for which \(\sigma\) has
@@ -4891,7 +4891,7 @@ pinning obstruction: every admissible random-extension measure forces the
 density of a particular \(\sigma\)-flag to one value almost surely, while the
 constrained quotient contains a positive homomorphism assigning it a
 different value.  Third, it will develop relative ensemble semantics for
-arbitrary sets of admissible unlabelled positive homomorphisms, allowing
+arbitrary sets of admissible unlabeled positive homomorphisms, allowing
 non-hereditary limit constraints such as fixing the edge density.
 
 
