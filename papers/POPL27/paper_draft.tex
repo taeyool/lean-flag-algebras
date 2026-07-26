@@ -34,6 +34,10 @@
 \usepackage{authblk}
 \usepackage{aliascnt}
 \usepackage{tikz}
+\usepackage{needspace}
+
+% Gap between an above-float caption and the table body (article default: 0pt).
+\setlength{\belowcaptionskip}{6pt}
 
 % ---- Theorem environments -----------------------------------------------
 \newtheorem{theorem}{Theorem}[section]
@@ -2313,6 +2317,7 @@ The order used for this a posteriori condition is the
 \(H\); a forbidden family would impose the zero-density condition below for
 every member.
 
+\Needspace*{12\baselineskip}
 \begin{definition}[Ensemble semantic order]\label{def:ensemble-semantic-order}
 Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
 \(f,g\in\mathcal{A}^\sigma\) in the ambient flag algebra.  We write
@@ -3046,6 +3051,7 @@ the forbid-free variants described below.
   \end{tabular}
 \end{table}
 
+\Needspace*{4\baselineskip}
 The important point is what each command contributes to subsequent proofs.  The
 first four commands create the named two- and three-vertex flags
 used in the examples of \Cref{sec:reflection-adequacy}, and each of the four
@@ -3086,6 +3092,7 @@ the \(p\)-vertex empty-typed flag indexed by \(i\) and \(p<h\): the table
 provides the coefficients needed to express its density in terms of the
 \(H\)-free \(h\)-vertex flags.
 
+\Needspace*{4\baselineskip}
 \medskip
 \noindent\textbf{Optimizations.}
 The pipeline employs the following optimizations to reduce the computational
