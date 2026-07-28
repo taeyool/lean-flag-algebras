@@ -36,6 +36,8 @@ import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Differential.Eval
 import LeanFlagAlgebras.Differential.DeleteVertex
 import LeanFlagAlgebras.Differential.DeleteEdge
+import LeanFlagAlgebras.Differential.SubsetCount
+import LeanFlagAlgebras.Differential.Ensemble
 import LeanFlagAlgebras.Differential.Grad
 
 -- API
