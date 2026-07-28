@@ -21,6 +21,7 @@ lean_lib «LeanFlagAlgebras» where
   globs := #[
     .one `LeanFlagAlgebras,
     .submodules `LeanFlagAlgebras.Automation,
+    .submodules `LeanFlagAlgebras.Differential,
     .submodules `LeanFlagAlgebras.ErdosPentagon,
     .submodules `LeanFlagAlgebras.FlagAlgebra,
     .submodules `LeanFlagAlgebras.Flagmatic,
