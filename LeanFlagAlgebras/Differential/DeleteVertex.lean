@@ -957,6 +957,292 @@ theorem downwardFlagVector_muVec (M : FinFlag ∅ₜ) (hM : 1 ≤ M.1)
     norm_num
   rw [this, one_smul]
 
+theorem unrootFlag_respect_eqv {L : ℕ} {G G' : LabeledGraph vertexType (Fin (L + 1))}
+    (h : G ∼f G')
+    : unrootFlag G = unrootFlag G'
+  :=
+  getCanonicalFlag_eq_of_iso (unrootIso h.some) _ _
+
+theorem unlabeledGraph_rootedAt {V : Type} (X : LabeledGraph ∅ₜ V) (r : V)
+    : unlabeledGraph (rootedAt X r) = X
+  :=
+  emptyType_labeledGraph_ext rfl
+
+theorem unroot_rootedAt {V : Type} (X : LabeledGraph ∅ₜ V) (r : V)
+    : unroot (rootedAt X r) = deleteVertex X r
+  :=
+  congrArg (fun A => deleteVertex A r) (unlabeledGraph_rootedAt X r)
+
+/-- A `1`-flag whose graph equals `X`'s graph is `X` rooted at its label. -/
+theorem eq_rootedAt_of_graph_eq {V : Type} (X : LabeledGraph ∅ₜ V)
+    (H' : LabeledGraph vertexType V) (h : X.graph = H'.graph)
+    : H' = rootedAt X (H'.type_embed 0)
+  := by
+  obtain ⟨g', e'⟩ := H'
+  simp only at h
+  subst h
+  dsimp only [rootedAt]
+  congr 1
+  ext x
+  have hx : x = 0 := Subsingleton.elim x 0
+  subst hx
+  rfl
+
+/-- The induced subgraph of `X` on the complement of a vertex is `X − r`. -/
+noncomputable def deleteVertex_induce_compl_iso {V : Type} (X : LabeledGraph ∅ₜ V) (r : V)
+    : (LabeledSubgraph.inducedLabeledSubgraph X {u : V | u ≠ r}
+        (emptyType_type_verts_subset _ _)).coe
+      ≃f deleteVertex X r where
+  graph_iso := {
+    toFun := fun a => ⟨a.val, a.property⟩
+    invFun := fun b => ⟨b.val, b.property⟩
+    left_inv := fun a => rfl
+    right_inv := fun b => rfl
+    map_rel_iff' := by
+      intro a b
+      constructor
+      · intro h
+        exact ⟨a.property, b.property, h⟩
+      · rintro ⟨_, _, h⟩
+        exact h
+  }
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+/-- The unlabelling weight of a `1`-flag on `ℓ + 1` vertices is its number of
+realising root placements divided by `ℓ + 1`. -/
+theorem downwardNormalizingFactor_vertexType {ℓ : ℕ} (F : FlagWithSize vertexType (ℓ + 1))
+    : downwardNormalizingFactor F = (isomorphismCount F.out : ℚ) / ((ℓ : ℚ) + 1)
+  := by
+  conv_lhs => rw [← Quotient.out_eq F]
+  show downwardNormalizingFactor_labeledGraph F.out = _
+  dsimp only [downwardNormalizingFactor_labeledGraph]
+  have hfac : (ℓ + 1).factorial / (ℓ + 1 - 1).factorial = ℓ + 1 := by
+    simp only [Nat.add_sub_cancel, Nat.factorial_succ]
+    exact Nat.mul_div_cancel _ (Nat.factorial_pos ℓ)
+  rw [hfac]
+  push_cast
+  ring
+
+/-- The number of root placements on the graph of `X` realising a fixed
+`1`-flag `F` (with at least one realising root) is `F`'s isomorphism count. -/
+theorem isomorphismCount_eq_card_roots {ℓ : ℕ} (X : LabeledGraph ∅ₜ (Fin (ℓ + 1)))
+    (F : FlagWithSize vertexType (ℓ + 1)) (r₀ : Fin (ℓ + 1))
+    (h : (⟦rootedAt X r₀⟧ : FlagWithSize vertexType (ℓ + 1)) = F)
+    : isomorphismCount F.out
+      = (Finset.univ.filter (fun r : Fin (ℓ + 1) =>
+          (⟦rootedAt X r⟧ : FlagWithSize vertexType (ℓ + 1)) = F)).card
+  := by
+  rw [isomorphismCount_respect_eqv (flagEqv.symm (Quotient.mk_eq_iff_out.mp h))]
+  dsimp only [isomorphismCount]
+  apply Finset.card_bij
+    (fun (H' : LabeledGraph vertexType (Fin (ℓ + 1))) (_ : H' ∈ _) => H'.type_embed 0)
+  · intro H' hH'
+    simp only [Set.mem_toFinset, isoLabeledGraphSetWithSameGraph, Set.mem_setOf_eq] at hH'
+    obtain ⟨hgraph, hiso⟩ := hH'
+    rw [Finset.mem_filter]
+    refine ⟨Finset.mem_univ _, ?_⟩
+    have h1 : H' = rootedAt X (H'.type_embed 0) := eq_rootedAt_of_graph_eq X H' hgraph
+    calc (⟦rootedAt X (H'.type_embed 0)⟧ : FlagWithSize vertexType (ℓ + 1))
+        = ⟦H'⟧ := by rw [← h1]
+      _ = ⟦rootedAt X r₀⟧ := Quotient.sound (flagEqv.symm hiso)
+      _ = F := h
+  · intro H₁ h₁ H₂ h₂ heq
+    simp only [Set.mem_toFinset, isoLabeledGraphSetWithSameGraph, Set.mem_setOf_eq] at h₁ h₂
+    rw [eq_rootedAt_of_graph_eq X H₁ h₁.1, eq_rootedAt_of_graph_eq X H₂ h₂.1, heq]
+  · intro r hr
+    rw [Finset.mem_filter] at hr
+    refine ⟨rootedAt X r, ?_, rfl⟩
+    simp only [Set.mem_toFinset, isoLabeledGraphSetWithSameGraph, Set.mem_setOf_eq]
+    exact ⟨rfl, Quotient.exact (h.trans hr.2.symm)⟩
+
+/-- The per-graph grouping identity behind Lemma 4.2 c): for a fixed
+unlabelled flag `H` on `ℓ + 1` vertices, the unlabelling weights of the root
+extensions of `M` with underlying flag `H` sum to `p(M, H)` — a realising
+root placement of `H` is the same thing as a vertex `r` with `H − r ≅ M`. -/
+theorem sum_downwardNormalizingFactor_rootExtensions {ℓ : ℕ} (M : FlagWithSize ∅ₜ ℓ)
+    (H : FlagWithSize ∅ₜ (ℓ + 1))
+    : ∑ F ∈ (rootExtensions M).filter (fun F => unlabel F = H), downwardNormalizingFactor F
+      = flagDensity₁ M H
+  := by
+  set T : Finset (Fin (ℓ + 1)) :=
+    Finset.univ.filter (fun r => unrootFlag (rootedAt H.out r) = M) with hT
+  -- the map `r ↦ ⟦(H, r)⟧` sends `T` onto the filtered root extensions
+  have hmaps : ∀ r ∈ T,
+      (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1))
+        ∈ (rootExtensions M).filter (fun F => unlabel F = H) := by
+    intro r hr
+    rw [hT, Finset.mem_filter] at hr
+    rw [Finset.mem_filter]
+    constructor
+    · show (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) ∈ rootExtensions M
+      rw [rootExtensions_eq_filter, Finset.mem_filter]
+      refine ⟨Finset.mem_univ _, ?_⟩
+      have h1 : (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)).out
+          ∼f rootedAt H.out r := by
+        show (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)).out ≈ rootedAt H.out r
+        exact Quotient.eq_mk_iff_out.mp rfl
+      rw [unrootFlag_respect_eqv h1]
+      exact hr.2
+    · show unlabel (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = H
+      show (⟦unlabeledGraph (rootedAt H.out r)⟧ : FlagWithSize ∅ₜ (ℓ + 1)) = H
+      rw [unlabeledGraph_rootedAt]
+      exact Quotient.out_eq H
+  -- fibre sizes are the isomorphism counts
+  have hfiber : ∀ F ∈ (rootExtensions M).filter (fun F => unlabel F = H),
+      (T.filter (fun r => (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = F)).card
+        = isomorphismCount F.out := by
+    intro F hF
+    rw [Finset.mem_filter] at hF
+    obtain ⟨hFroot, hFH⟩ := hF
+    -- a realising root exists since `unlabel F = H`
+    have hex : ∃ r₀ : Fin (ℓ + 1),
+        (⟦rootedAt H.out r₀⟧ : FlagWithSize vertexType (ℓ + 1)) = F := by
+      have h2 : (⟦unlabeledGraph F.out⟧ : FlagWithSize ∅ₜ (ℓ + 1)) = H := by
+        rw [← unlabel_out F, hFH]
+      have hψ : unlabeledGraph F.out ∼f H.out := Quotient.mk_eq_iff_out.mp h2
+      obtain ⟨ψ⟩ := hψ
+      refine ⟨ψ.graph_iso (F.out.type_embed 0), ?_⟩
+      have hiso : F.out ∼f rootedAt H.out (ψ.graph_iso (F.out.type_embed 0)) := by
+        refine ⟨{ graph_iso := ψ.graph_iso, type_preserve := ?_ }⟩
+        funext x
+        have hx : x = 0 := Subsingleton.elim x 0
+        subst hx
+        rfl
+      calc (⟦rootedAt H.out (ψ.graph_iso (F.out.type_embed 0))⟧
+            : FlagWithSize vertexType (ℓ + 1))
+          = ⟦F.out⟧ := Quotient.sound (flagEqv.symm hiso)
+        _ = F := Quotient.out_eq F
+    obtain ⟨r₀, hr₀⟩ := hex
+    rw [isomorphismCount_eq_card_roots H.out F r₀ hr₀]
+    congr 1
+    -- the `T`-condition is implied by landing in the fibre of `F`
+    ext r
+    simp only [Finset.mem_filter, hT, Finset.mem_univ, true_and]
+    constructor
+    · rintro ⟨-, h⟩
+      exact h
+    · intro h
+      refine ⟨?_, h⟩
+      have h1 : rootedAt H.out r ∼f F.out :=
+        Quotient.mk_eq_iff_out.mp h
+      rw [unrootFlag_respect_eqv h1]
+      rw [rootExtensions_eq_filter, Finset.mem_filter] at hFroot
+      exact hFroot.2
+  -- `T` counts the subsets inducing `M` (complement bijection)
+  have hTcard : T.card = labeledGraphCount M.out H.out := by
+    rw [labeledGraphCount_eq_card_inducingSubsets]
+    apply Finset.card_bij (fun (r : Fin (ℓ + 1)) (_ : r ∈ T) => ({u | u ≠ r} : Set (Fin (ℓ + 1))))
+    · intro r hr
+      rw [hT, Finset.mem_filter] at hr
+      rw [Set.mem_toFinset]
+      refine ⟨emptyType_type_verts_subset _ _, ?_⟩
+      have h1 : Nonempty (M.out ≃f unroot (rootedAt H.out r)) := by
+        dsimp only [unrootFlag] at hr
+        exact (getCanonicalFlag_eq_iff _ _ M).mp hr.2
+      have h2 : unroot (rootedAt H.out r) = deleteVertex H.out r := unroot_rootedAt H.out r
+      rw [h2] at h1
+      exact ⟨(deleteVertex_induce_compl_iso H.out r).trans h1.some.symm⟩
+    · intro r₁ h₁ r₂ h₂ heq
+      by_contra hne
+      have : r₂ ∈ ({u | u ≠ r₁} : Set (Fin (ℓ + 1))) := fun hc => hne hc.symm
+      rw [heq] at this
+      exact this rfl
+    · intro S hS
+      rw [Set.mem_toFinset] at hS
+      obtain ⟨h₀, ⟨ψ₀⟩⟩ := hS
+      -- `S` has `ℓ` elements, so its complement is a single vertex `r`
+      have hcardS : S.toFinset.card = ℓ := by
+        have hsz := labeledGraphIso_size_eq _ _ ψ₀
+        simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+        rw [Set.toFinset_card]
+        exact hsz
+      have hcompl : S.toFinsetᶜ.card = 1 := by
+        rw [Finset.card_compl, hcardS, Fintype.card_fin, Nat.add_sub_cancel_left]
+      obtain ⟨r, hr⟩ := Finset.card_eq_one.mp hcompl
+      have hSr : S = ({u | u ≠ r} : Set (Fin (ℓ + 1))) := by
+        ext u
+        have h3 : u ∈ S.toFinset ↔ u ∉ S.toFinsetᶜ := by
+          simp only [Finset.mem_compl, not_not]
+        constructor
+        · intro hu
+          intro huv
+          have h4 : u ∉ S.toFinsetᶜ := h3.mp (Set.mem_toFinset.mpr hu)
+          rw [hr, Finset.mem_singleton] at h4
+          exact h4 huv
+        · intro hu
+          by_contra hc
+          have h5 : u ∈ S.toFinsetᶜ := by
+            rw [Finset.mem_compl, Set.mem_toFinset]
+            exact hc
+          rw [hr, Finset.mem_singleton] at h5
+          exact hu h5
+      refine ⟨r, ?_, hSr.symm⟩
+      rw [hT, Finset.mem_filter]
+      refine ⟨Finset.mem_univ _, ?_⟩
+      dsimp only [unrootFlag]
+      rw [getCanonicalFlag_eq_iff]
+      have h2 : unroot (rootedAt H.out r) = deleteVertex H.out r := unroot_rootedAt H.out r
+      rw [h2]
+      have hψ : (LabeledSubgraph.inducedLabeledSubgraph H.out {u | u ≠ r}
+          (emptyType_type_verts_subset _ _)).coe ≃f M.out := by
+        have hsets : (LabeledSubgraph.inducedLabeledSubgraph H.out S h₀)
+            = (LabeledSubgraph.inducedLabeledSubgraph H.out {u | u ≠ r}
+              (emptyType_type_verts_subset _ _)) := by
+          apply labeledSubgraph_eq_from_subgraph_eq
+          dsimp only [LabeledSubgraph.inducedLabeledSubgraph]
+          rw [← hSr]
+        exact (LabeledGraphIso.labeledSubgraphIso_eq hsets).symm.trans ψ₀
+      exact ⟨((deleteVertex_induce_compl_iso H.out r).symm.trans hψ).symm⟩
+  -- `T` is partitioned by the flag classes of its rooted graphs
+  have hpart : T = ((rootExtensions M).filter (fun F => unlabel F = H)).biUnion
+      (fun F => T.filter (fun r =>
+        (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = F)) := by
+    ext r
+    simp only [Finset.mem_biUnion, Finset.mem_filter]
+    constructor
+    · intro hr
+      refine ⟨⟦rootedAt H.out r⟧, ?_, ⟨hr, rfl⟩⟩
+      have h1 := hmaps r hr
+      rw [Finset.mem_filter] at h1
+      exact h1
+    · rintro ⟨F, -, hrT, -⟩
+      exact hrT
+  have hdisj : ∀ F₁ ∈ (rootExtensions M).filter (fun F => unlabel F = H),
+      ∀ F₂ ∈ (rootExtensions M).filter (fun F => unlabel F = H), F₁ ≠ F₂ →
+      Disjoint (T.filter (fun r =>
+          (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = F₁))
+        (T.filter (fun r =>
+          (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = F₂)) := by
+    intro F₁ _ F₂ _ hne
+    rw [Finset.disjoint_left]
+    intro r hr₁ hr₂
+    rw [Finset.mem_filter] at hr₁ hr₂
+    exact hne (hr₁.2.symm.trans hr₂.2)
+  have hcards : T.card = ∑ F ∈ (rootExtensions M).filter (fun F => unlabel F = H),
+      (T.filter (fun r =>
+        (⟦rootedAt H.out r⟧ : FlagWithSize vertexType (ℓ + 1)) = F)).card := by
+    conv_lhs => rw [hpart]
+    exact Finset.card_biUnion hdisj
+  -- assemble
+  have hsum : ∑ F ∈ (rootExtensions M).filter (fun F => unlabel F = H),
+      downwardNormalizingFactor F = (T.card : ℚ) / ((ℓ : ℚ) + 1) := by
+    rw [hcards]
+    push_cast
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro F hF
+    rw [downwardNormalizingFactor_vertexType]
+    congr 1
+    rw [Nat.cast_inj]
+    exact (hfiber F hF).symm
+  rw [hsum, hTcard]
+  rw [flagDensity₁_out, labeledGraphDensity_eq_card_div, labeledGraphCount_eq_card_inducingSubsets]
+  simp only [Fintype.card_fin, Nat.sub_zero, Nat.choose_succ_self_right]
+  push_cast
+  ring
+
 /-- The downward image of `π¹(M)` is flag-equal to `M`: grouping the root
 extensions of `M` by their underlying unlabelled graph `H`, the unlabelling
 weights of the extensions with a fixed `H` sum to exactly `p(M, H)` (a root
@@ -965,7 +1251,36 @@ placement of `H` realising an extension of `M` is the same thing as a vertex
 theorem downwardFlagVector_piVertexVec (M : FinFlag ∅ₜ) (hM : 1 ≤ M.1)
     : downwardFlagVector (piVertexVec M) ∼v basisVector M
   := by
-  sorry
+  have heq : downwardFlagVector (piVertexVec M) = flagExpansion M (M.1 + 1) := by
+    dsimp only [piVertexVec]
+    rw [downwardFlagVector_sum]
+    calc ∑ F ∈ rootExtensions M.2, downwardFlagVector (basisVector ⟨M.1 + 1, F⟩)
+        = ∑ F ∈ rootExtensions M.2,
+            downwardNormalizingFactor F • basisVector ⟨M.1 + 1, unlabel F⟩ := by
+          apply Finset.sum_congr rfl
+          intro F _
+          rw [downwardFlagVector_basisVector]
+          rfl
+      _ = ∑ H : FlagWithSize ∅ₜ (M.1 + 1),
+            ∑ F ∈ (rootExtensions M.2).filter (fun F => unlabel F = H),
+              downwardNormalizingFactor F • basisVector ⟨M.1 + 1, unlabel F⟩ := by
+          rw [Finset.sum_fiberwise_of_maps_to (fun F _ => Finset.mem_univ (unlabel F))]
+      _ = ∑ H : FlagWithSize ∅ₜ (M.1 + 1),
+            (flagDensity₁ M.2 H) • basisVector ⟨M.1 + 1, H⟩ := by
+          apply Finset.sum_congr rfl
+          intro H _
+          have hs : ∀ F ∈ (rootExtensions M.2).filter (fun F => unlabel F = H),
+              downwardNormalizingFactor F • basisVector ⟨M.1 + 1, unlabel F⟩
+                = downwardNormalizingFactor F • (basisVector ⟨M.1 + 1, H⟩ : FlagVector ∅ₜ) := by
+            intro F hF
+            rw [Finset.mem_filter] at hF
+            rw [hF.2]
+          rw [Finset.sum_congr rfl hs]
+          simp_rw [rat_smul_eq_real_smul]
+          rw [← sum_smul, ← Rat.cast_sum, sum_downwardNormalizingFactor_rootExtensions M.2 H]
+      _ = flagExpansion M (M.1 + 1) := rfl
+  exact (flagVector_eq_eqv heq).trans
+    (basisVector_eqv_flagExpansion M (M.1 + 1) (Nat.le_succ M.1)).symm
 
 theorem downward_partialVertexVec_basis (M : FinFlag ∅ₜ)
     : downwardFlagVectorQuot (partialVertexVec (basisVector M)) = 0
