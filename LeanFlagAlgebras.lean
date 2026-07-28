@@ -32,6 +32,12 @@ import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 
+-- Differential methods (Razborov §4.3)
+import LeanFlagAlgebras.Differential.Eval
+import LeanFlagAlgebras.Differential.DeleteVertex
+import LeanFlagAlgebras.Differential.DeleteEdge
+import LeanFlagAlgebras.Differential.Grad
+
 -- API
 import LeanFlagAlgebras.Automation.Basic
 import LeanFlagAlgebras.Automation.ExprHelpers
