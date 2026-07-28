@@ -260,6 +260,187 @@ theorem densityEval_fillVec_muVec (M : FinFlag ∅ₜ) (R : FinFlag edgeType)
   intro F _
   rw [linearExtension_basisVector, densityEval_basisVector]
 
+/-! ## Glue lemmas for the counting identity -/
+
+theorem edgeRootedAt_type_verts_subset {V : Type} (G : LabeledGraph ∅ₜ V) {v₁ v₂ : V}
+    (h : G.graph.Adj v₁ v₂) {S : Set V} (h₁ : v₁ ∈ S) (h₂ : v₂ ∈ S)
+    : (edgeRootedAt G v₁ v₂ h).type_verts ⊆ S
+  := by
+  intro u hu
+  rw [LabeledGraph.mem_type_verts] at hu
+  obtain ⟨t, rfl⟩ := hu
+  rcases fin_two_eq_zero_or_one t with rfl | rfl
+  · exact h₁
+  · exact h₂
+
+theorem mem_of_edgeRootedAt_subset₁ {V : Type} {G : LabeledGraph ∅ₜ V} {v₁ v₂ : V}
+    {h : G.graph.Adj v₁ v₂} {S : Set V}
+    (hsub : (edgeRootedAt G v₁ v₂ h).type_verts ⊆ S)
+    : v₁ ∈ S
+  :=
+  hsub ((edgeRootedAt G v₁ v₂ h).type_verts_contain 0)
+
+theorem mem_of_edgeRootedAt_subset₂ {V : Type} {G : LabeledGraph ∅ₜ V} {v₁ v₂ : V}
+    {h : G.graph.Adj v₁ v₂} {S : Set V}
+    (hsub : (edgeRootedAt G v₁ v₂ h).type_verts ⊆ S)
+    : v₂ ∈ S
+  :=
+  hsub ((edgeRootedAt G v₁ v₂ h).type_verts_contain 1)
+
+theorem unlabeledGraph_induced_edgeRootedAt {V : Type} (G : LabeledGraph ∅ₜ V) {v₁ v₂ : V}
+    (h : G.graph.Adj v₁ v₂) (S : Set V)
+    (hsub : (edgeRootedAt G v₁ v₂ h).type_verts ⊆ S)
+    : unlabeledGraph ((LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h) S hsub).coe)
+      = (LabeledSubgraph.inducedLabeledSubgraph G S (emptyType_type_verts_subset G S)).coe
+  :=
+  emptyType_labeledGraph_ext rfl
+
+/-- Induced subgraphs of `G` and of `G − (v₁,v₂)` on a vertex set missing one
+of `v₁, v₂` coincide. -/
+noncomputable def deleteEdge_induce_iso_of_not_both {L : ℕ} (G : LabeledGraph ∅ₜ (Fin L))
+    (v₁ v₂ : Fin L) (S : Set (Fin L)) (h : ¬(v₁ ∈ S ∧ v₂ ∈ S))
+    : (LabeledSubgraph.inducedLabeledSubgraph G S (emptyType_type_verts_subset _ _)).coe
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph (deleteEdge G s(v₁, v₂)) S
+          (emptyType_type_verts_subset _ _)).coe where
+  graph_iso := {
+    toEquiv := Equiv.refl _
+    map_rel_iff' := by
+      intro a b
+      constructor
+      · rintro ⟨ha, hb, hadj⟩
+        exact ⟨a.property, b.property, ((deleteEdge_adj G _ _ _).mp hadj).1⟩
+      · rintro ⟨ha, hb, hadj⟩
+        refine ⟨a.property, b.property, (deleteEdge_adj G _ _ _).mpr ⟨hadj, ?_⟩⟩
+        intro heq
+        rcases Sym2.eq_iff.mp heq with ⟨h1, h2⟩ | ⟨h1, h2⟩
+        · exact h ⟨h1 ▸ a.property, h2 ▸ b.property⟩
+        · exact h ⟨h2 ▸ b.property, h1 ▸ a.property⟩
+  }
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+/-- The `Ē`-flag `(X, v₁, v₂)` for a *non*-edge `(v₁, v₂)` of `X`. -/
+def nonEdgeRootedAt {V : Type} (X : LabeledGraph ∅ₜ V) (v₁ v₂ : V)
+    (hne : v₁ ≠ v₂) (h_nadj : ¬X.graph.Adj v₁ v₂) : LabeledGraph nonEdgeType V where
+  graph := X.graph
+  type_embed := {
+    toFun := ![v₁, v₂]
+    inj' := by
+      intro a b hab
+      by_contra hcon
+      rcases fin_two_ne_iff.mp hcon with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · have h12 : v₁ = v₂ := by simpa using hab
+        exact hne h12
+      · have h21 : v₂ = v₁ := by simpa using hab
+        exact hne h21.symm
+    map_rel_iff' := by
+      intro a b
+      rw [SimpleGraph.bot_adj]
+      constructor
+      · intro h
+        rcases fin_two_eq_zero_or_one a with rfl | rfl <;>
+          rcases fin_two_eq_zero_or_one b with rfl | rfl
+        · have h' : X.graph.Adj v₁ v₁ := by simpa using h
+          exact X.graph.irrefl h'
+        · have h' : X.graph.Adj v₁ v₂ := by simpa using h
+          exact h_nadj h'
+        · have h' : X.graph.Adj v₂ v₁ := by simpa using h
+          exact h_nadj h'.symm
+        · have h' : X.graph.Adj v₂ v₂ := by simpa using h
+          exact X.graph.irrefl h'
+      · intro h
+        exact h.elim
+  }
+
+theorem deleteEdge_not_adj {V : Type} (G : LabeledGraph ∅ₜ V) (v₁ v₂ : V)
+    : ¬(deleteEdge G s(v₁, v₂)).graph.Adj v₁ v₂
+  :=
+  fun hc => ((deleteEdge_adj G _ _ _).mp hc).2 rfl
+
+theorem nonEdgeRootedAt_type_verts_subset {V : Type} (X : LabeledGraph ∅ₜ V) {v₁ v₂ : V}
+    (hne : v₁ ≠ v₂) (h_nadj : ¬X.graph.Adj v₁ v₂) {S : Set V} (h₁ : v₁ ∈ S) (h₂ : v₂ ∈ S)
+    : (nonEdgeRootedAt X v₁ v₂ hne h_nadj).type_verts ⊆ S
+  := by
+  intro u hu
+  rw [LabeledGraph.mem_type_verts] at hu
+  obtain ⟨t, rfl⟩ := hu
+  rcases fin_two_eq_zero_or_one t with rfl | rfl
+  · exact h₁
+  · exact h₂
+
+theorem unlabeledGraph_induced_nonEdgeRootedAt {V : Type} (X : LabeledGraph ∅ₜ V) {v₁ v₂ : V}
+    (hne : v₁ ≠ v₂) (h_nadj : ¬X.graph.Adj v₁ v₂) (S : Set V)
+    (hsub : (nonEdgeRootedAt X v₁ v₂ hne h_nadj).type_verts ⊆ S)
+    : unlabeledGraph
+        ((LabeledSubgraph.inducedLabeledSubgraph (nonEdgeRootedAt X v₁ v₂ hne h_nadj) S hsub).coe)
+      = (LabeledSubgraph.inducedLabeledSubgraph X S (emptyType_type_verts_subset X S)).coe
+  :=
+  emptyType_labeledGraph_ext rfl
+
+/-- Filling the `Ē`-rooted induced subgraph of `G − (v₁,v₂)` on `S ⊇ {v₁,v₂}`
+recovers the `E`-rooted induced subgraph of `G`: the only edge removed inside
+`S` is the rooted one, which `Fill` restores. -/
+noncomputable def fill_induced_deleteEdge_iso {L : ℕ} (G : LabeledGraph ∅ₜ (Fin L))
+    {v₁ v₂ : Fin L} (h_adj : G.graph.Adj v₁ v₂) (S : Set (Fin L)) (h₁ : v₁ ∈ S) (h₂ : v₂ ∈ S)
+    : fillGraph ((LabeledSubgraph.inducedLabeledSubgraph
+        (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne (deleteEdge_not_adj G v₁ v₂))
+        S (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).coe)
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h_adj) S
+          (edgeRootedAt_type_verts_subset G h_adj h₁ h₂)).coe where
+  graph_iso := {
+    toEquiv := Equiv.refl _
+    map_rel_iff' := by
+      intro a b
+      have hval0 : (((LabeledSubgraph.inducedLabeledSubgraph
+          (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne (deleteEdge_not_adj G v₁ v₂))
+          S (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).coe.type_embed 0) : Fin L) = v₁ :=
+        (LabeledSubgraph.inducedLabeledSubgraph
+          (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne (deleteEdge_not_adj G v₁ v₂))
+          S (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).embed_eq 0
+      have hval1 : (((LabeledSubgraph.inducedLabeledSubgraph
+          (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne (deleteEdge_not_adj G v₁ v₂))
+          S (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).coe.type_embed 1) : Fin L) = v₂ :=
+        (LabeledSubgraph.inducedLabeledSubgraph
+          (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne (deleteEdge_not_adj G v₁ v₂))
+          S (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).embed_eq 1
+      constructor
+      · -- an edge of `G[S]` is an edge of `(G−e)[S]` or the restored root edge
+        rintro ⟨ha, hb, hadj⟩
+        by_cases heq : s(a.val, b.val) = s(v₁, v₂)
+        · right
+          rw [SimpleGraph.fromEdgeSet_adj, Set.mem_singleton_iff]
+          refine ⟨?_, ?_⟩
+          · apply Sym2.map.injective Subtype.val_injective
+            rw [Sym2.map_pair_eq, Sym2.map_pair_eq, hval0, hval1]
+            exact heq
+          · intro hab
+            exact G.graph.irrefl (hab ▸ hadj)
+        · left
+          exact ⟨a.property, b.property, (deleteEdge_adj G _ _ _).mpr ⟨hadj, heq⟩⟩
+      · rintro (⟨ha, hb, hadj⟩ | hroot)
+        · exact ⟨a.property, b.property, ((deleteEdge_adj G _ _ _).mp hadj).1⟩
+        · rw [SimpleGraph.fromEdgeSet_adj, Set.mem_singleton_iff] at hroot
+          obtain ⟨heq, -⟩ := hroot
+          have hvals : s(a.val, b.val) = s(v₁, v₂) := by
+            have h3 := congrArg (Sym2.map Subtype.val) heq
+            rw [Sym2.map_pair_eq, Sym2.map_pair_eq, hval0, hval1] at h3
+            exact h3
+          refine ⟨a.property, b.property, ?_⟩
+          rcases Sym2.eq_iff.mp hvals with ⟨ha1, hb1⟩ | ⟨ha1, hb1⟩
+          · show G.graph.Adj a.val b.val
+            rw [ha1, hb1]
+            exact h_adj
+          · show G.graph.Adj a.val b.val
+            rw [ha1, hb1]
+            exact h_adj.symm
+  }
+  type_preserve := by
+    ext t
+    rcases fin_two_eq_zero_or_one t with rfl | rfl
+    · rfl
+    · rfl
+
 /-! ## The counting identity behind Lemma 4.4 a) -/
 
 /-- The combined total-probability computation of Razborov's Lemma 4.4 a):
