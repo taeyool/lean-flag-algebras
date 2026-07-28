@@ -1,4 +1,6 @@
 import «LeanFlagAlgebras».Differential.Eval
+import «LeanFlagAlgebras».Differential.SubsetCount
+import Mathlib.Tactic.LinearCombination
 
 /-! # The vertex-deletion operator `∂₁` (Razborov §4.3, Lemma 4.2)
 
@@ -190,6 +192,92 @@ theorem densityEval_piVertexVec (M : FinFlag ∅ₜ) (R : FinFlag vertexType)
   intro F _
   rw [densityEval_basisVector]
 
+/-! ## Glue lemmas for the counting identities -/
+
+theorem emptyType_type_verts {W : Type} (X : LabeledGraph ∅ₜ W)
+    : X.type_verts = ∅
+  := by
+  dsimp only [LabeledGraph.type_verts]
+  simp only [Set.image_univ, Matrix.range_empty]
+
+theorem emptyType_type_verts_subset {W : Type} (X : LabeledGraph ∅ₜ W) (S : Set W)
+    : X.type_verts ⊆ S
+  := by
+  rw [emptyType_type_verts]
+  exact Set.empty_subset S
+
+theorem rootedAt_type_verts_subset {V : Type} (N : LabeledGraph ∅ₜ V) (v : V)
+    {S : Set V} (hv : v ∈ S)
+    : (rootedAt N v).type_verts ⊆ S
+  := by
+  intro u hu
+  rw [LabeledGraph.mem_type_verts] at hu
+  obtain ⟨t, rfl⟩ := hu
+  exact hv
+
+theorem mem_of_rootedAt_type_verts_subset {V : Type} (N : LabeledGraph ∅ₜ V) (v : V)
+    {S : Set V} (h : (rootedAt N v).type_verts ⊆ S)
+    : v ∈ S
+  :=
+  h ((rootedAt N v).type_verts_contain 0)
+
+theorem unlabel_out (F : Flag vertexType V)
+    : unlabel F = ⟦unlabeledGraph F.out⟧
+  := by
+  conv_lhs => rw [← Quotient.out_eq F]
+  rfl
+
+/-- Transport a labelled-graph isomorphism through unlabelling (the concrete
+isomorphism, not just its existence). -/
+def unlabeledGraphIso {V W : Type} {G : LabeledGraph vertexType V}
+    {G' : LabeledGraph vertexType W} (φ : G ≃f G')
+    : unlabeledGraph G ≃f unlabeledGraph G' where
+  graph_iso := φ.graph_iso
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+/-- Unlabelling an induced subgraph of a rooted flag gives the corresponding
+induced subgraph of the underlying unlabelled graph. -/
+theorem unlabeledGraph_induced_rootedAt {V : Type} (N : LabeledGraph ∅ₜ V) (v : V)
+    (S : Set V) (hsub : (rootedAt N v).type_verts ⊆ S)
+    : unlabeledGraph ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).coe)
+      = (LabeledSubgraph.inducedLabeledSubgraph N S (emptyType_type_verts_subset N S)).coe
+  :=
+  emptyType_labeledGraph_ext rfl
+
+/-- The canonical isomorphism between an induced subgraph of `N − v` and the
+corresponding induced subgraph of `N` (on the image vertex set). -/
+noncomputable def deleteVertex_induce_iso {V : Type} (N : LabeledGraph ∅ₜ V) (v : V)
+    (S' : Set {u : V // u ≠ v})
+    : (LabeledSubgraph.inducedLabeledSubgraph (deleteVertex N v) S'
+        (emptyType_type_verts_subset _ S')).coe
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph N (Subtype.val '' S')
+        (emptyType_type_verts_subset N _)).coe where
+  graph_iso := {
+    toEquiv := Equiv.Set.image Subtype.val S' Subtype.val_injective
+    map_rel_iff' := by
+      intro a b
+      simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj,
+        SimpleGraph.Subgraph.induce_adj, SimpleGraph.Subgraph.top_adj]
+      constructor
+      · rintro ⟨_, _, h⟩
+        exact ⟨a.property, b.property, h⟩
+      · rintro ⟨_, _, h⟩
+        refine ⟨?_, ?_, h⟩
+        · simp only [Set.mem_image, Subtype.exists, Subtype.coe_eta]
+          exact ⟨a.val.val, a.val.property, a.property, rfl⟩
+        · simp only [Set.mem_image, Subtype.exists, Subtype.coe_eta]
+          exact ⟨b.val.val, b.val.property, b.property, rfl⟩
+  }
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+theorem labelExtensions_eq_filter {ℓ : ℕ} (M : FlagWithSize ∅ₜ ℓ) (σ' : FlagType (Fin n₀))
+    : labelExtensions M σ' = Finset.univ.filter (fun F => unlabel F = M)
+  := rfl
+
 /-! ## The two counting identities behind Lemma 4.2 a) -/
 
 /-- `p^{(N,v)}(π¹ M) = p(M, N − v)` (Razborov, proof of Lemma 4.2 a)): the
@@ -216,7 +304,171 @@ theorem total_probability_vertex {ℓ L : ℕ} (M : FlagWithSize ∅ₜ ℓ) (hL
           * (∑ F ∈ labelExtensions M vertexType, flagDensity₁ F ⟦rootedAt N v⟧)
         + (((L + 1 - ℓ : ℕ) : ℚ) / ((L : ℚ) + 1)) * flagDensity₁ M (deleteVertexFlag N v)
   := by
-  sorry
+  rcases Nat.eq_zero_or_pos ℓ with rfl | hℓpos
+  · -- `ℓ = 0`: the empty model has density `1` everywhere and no label extensions.
+    have hM : M = emptyFlag ∅ₜ := Subsingleton.elim _ _
+    rw [hM, flagDensity_empty, flagDensity_empty]
+    have hsum : (∑ F ∈ labelExtensions (emptyFlag ∅ₜ) vertexType,
+        flagDensity₁ F ⟦rootedAt N v⟧) = 0 := by
+      apply Finset.sum_eq_zero
+      intro F _
+      exact (F.out.type_embed 0).elim0
+    rw [hsum]
+    have hL1 : ((L : ℚ) + 1) ≠ 0 := by positivity
+    simp only [Nat.cast_zero, zero_div, zero_mul, zero_add, Nat.sub_zero, mul_one]
+    rw [eq_comm, div_eq_one_iff_eq hL1]
+    push_cast
+    ring
+  -- Main case: write `ℓ = k + 1`.
+  obtain ⟨k, rfl⟩ : ∃ k, ℓ = k + 1 := ⟨ℓ - 1, by omega⟩
+  set cAll : Finset (Set (Fin (L + 1))) := (inducingSubsets M.out N).toFinset with hcAll
+  set cIn : Finset (Set (Fin (L + 1))) := cAll.filter (fun S => v ∈ S) with hcIn
+  set cOut : Finset (Set (Fin (L + 1))) := cAll.filter (fun S => v ∉ S) with hcOut
+  have hsplit : cIn.card + cOut.card = cAll.card :=
+    Finset.filter_card_add_filter_neg_card_eq_card _
+  -- The density of `M` in `N` counts `cAll`.
+  have hpN : (flagDensity₁ M ⟦N⟧ : ℚ) = (cAll.card : ℚ) / ((L + 1).choose (k + 1)) := by
+    conv_lhs => rw [← Quotient.out_eq M]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div, hcAll]
+    simp only [Fintype.card_fin, Nat.sub_zero]
+  -- The `μ`-evaluation counts `cIn`.
+  have hSμ : (∑ F ∈ labelExtensions M vertexType, flagDensity₁ F ⟦rootedAt N v⟧ : ℚ)
+      = (cIn.card : ℚ) / (L.choose k) := by
+    have hterm : ∀ F ∈ labelExtensions M vertexType,
+        (flagDensity₁ F ⟦rootedAt N v⟧ : ℚ)
+          = ((inducingSubsets F.out (rootedAt N v)).toFinset.card : ℚ) / (L.choose k) := by
+      intro F _
+      conv_lhs => rw [← Quotient.out_eq F]
+      rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+      simp only [Fintype.card_fin, Nat.add_sub_cancel]
+    rw [Finset.sum_congr rfl hterm, ← Finset.sum_div]
+    congr 1
+    rw [← Nat.cast_sum]
+    congr 1
+    have hcnt : ∀ F ∈ labelExtensions M vertexType,
+        (inducingSubsets F.out (rootedAt N v)).toFinset.card
+          = labeledGraphCount F.out (rootedAt N v) := by
+      intro F _
+      rw [labeledGraphCount_eq_card_inducingSubsets]
+    rw [Finset.sum_congr rfl hcnt, labelExtensions_eq_filter,
+      sum_labeledGraphCount_filter (fun F => unlabel F = M) (rootedAt N v)]
+    congr 1
+    -- The union of the label-extension subset families is exactly `cIn`.
+    ext S
+    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and,
+      Set.mem_toFinset, hcIn, hcAll]
+    constructor
+    · rintro ⟨F, hF, hS⟩
+      obtain ⟨hsub, ⟨ψ⟩⟩ := hS
+      have hv : v ∈ S := mem_of_rootedAt_type_verts_subset N v hsub
+      refine ⟨?_, hv⟩
+      refine ⟨emptyType_type_verts_subset N S, ?_⟩
+      have hFM : Nonempty (unlabeledGraph F.out ≃f M.out) := by
+        have h2 : (⟦unlabeledGraph F.out⟧ : Flag ∅ₜ (Fin (k + 1))) = M := by
+          rw [← unlabel_out F, hF]
+        exact ⟨(Quotient.mk_eq_iff_out.mp h2).some⟩
+      have ψu : (LabeledSubgraph.inducedLabeledSubgraph N S
+          (emptyType_type_verts_subset N S)).coe ≃f unlabeledGraph F.out :=
+        (unlabeledGraph_induced_rootedAt N v S hsub) ▸ (unlabeledGraphIso ψ)
+      exact ⟨ψu.trans hFM.some⟩
+    · rintro ⟨hSAll, hv⟩
+      obtain ⟨h₀, ⟨ψ₀⟩⟩ := hSAll
+      have hsub : (rootedAt N v).type_verts ⊆ S := rootedAt_type_verts_subset N v hv
+      have hcard : Fintype.card
+          ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).subgraph.verts)
+          = k + 1 := by
+        have hsz := labeledGraphIso_size_eq _ _ ψ₀
+        simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+        exact hsz
+      refine ⟨getCanonicalFlag
+        ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).coe) hcard, ?_, ?_⟩
+      · -- its unlabelling is `M`
+        rw [unlabel_out]
+        have hiso : unlabeledGraph
+            (getCanonicalFlag
+              ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).coe) hcard).out
+            ≃f (LabeledSubgraph.inducedLabeledSubgraph N S
+              (emptyType_type_verts_subset N S)).coe :=
+          (unlabeledGraph_induced_rootedAt N v S hsub) ▸
+            (unlabeledGraphIso (getCanonicalFlag_iso _ hcard))
+        calc (⟦unlabeledGraph
+            (getCanonicalFlag
+              ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).coe) hcard).out⟧
+              : Flag ∅ₜ (Fin (k + 1)))
+            = ⟦M.out⟧ := Quotient.sound ⟨hiso.trans ψ₀⟩
+          _ = M := Quotient.out_eq M
+      · exact ⟨hsub, ⟨(getCanonicalFlag_iso _ hcard).symm⟩⟩
+  -- The density of `M` in `N − v` counts `cOut`.
+  have hpDel : (flagDensity₁ M (deleteVertexFlag N v) : ℚ)
+      = (cOut.card : ℚ) / (L.choose (k + 1)) := by
+    have h1 : flagDensity₁ M (deleteVertexFlag N v)
+        = labeledGraphDensity M.out (deleteVertex N v) := by
+      rw [flagDensity₁_out]
+      exact labeledGraphDensity_respect_eqv
+        (getCanonicalFlag_iso (deleteVertex N v) (card_ne_vertex v)) LabeledGraphIso.refl
+    rw [h1, labeledGraphDensity_eq_card_div]
+    rw [card_ne_vertex v]
+    simp only [Fintype.card_fin, Nat.sub_zero]
+    congr 1
+    rw [Nat.cast_inj]
+    -- Bijection `S' ↦ val '' S'` between subsets of `N − v` and `v`-avoiding subsets of `N`.
+    apply Finset.card_bij (fun (S' : Set {u : Fin (L + 1) // u ≠ v}) (_ : S' ∈ _) =>
+      Subtype.val '' S')
+    · intro S' hS'
+      rw [Set.mem_toFinset] at hS'
+      obtain ⟨_, ⟨ψ⟩⟩ := hS'
+      rw [hcOut, Finset.mem_filter]
+      constructor
+      · rw [hcAll, Set.mem_toFinset]
+        exact ⟨emptyType_type_verts_subset N _,
+          ⟨((deleteVertex_induce_iso N v S').symm.trans ψ)⟩⟩
+      · rintro ⟨u, _, huv⟩
+        exact u.property huv
+    · intro a _ b _ hab
+      exact Set.image_injective.mpr Subtype.val_injective hab
+    · intro S hS
+      rw [hcOut, Finset.mem_filter, hcAll, Set.mem_toFinset] at hS
+      obtain ⟨⟨h₀, ⟨ψ₀⟩⟩, hv⟩ := hS
+      have himg : Subtype.val '' (Subtype.val ⁻¹' S : Set {u : Fin (L + 1) // u ≠ v}) = S := by
+        ext u
+        constructor
+        · rintro ⟨⟨w, hw⟩, hmem, rfl⟩
+          exact hmem
+        · intro hu
+          exact ⟨⟨u, fun huv => hv (huv ▸ hu)⟩, hu, rfl⟩
+      refine ⟨Subtype.val ⁻¹' S, ?_, himg⟩
+      rw [Set.mem_toFinset]
+      refine ⟨emptyType_type_verts_subset _ _, ?_⟩
+      exact ⟨(deleteVertex_induce_iso N v _).trans (himg.symm ▸ ψ₀)⟩
+  -- Assemble via the binomial identities.
+  rw [hpN, hSμ, hpDel, ← hsplit]
+  have hL1 : ((L : ℚ) + 1) ≠ 0 := by positivity
+  have hℓL1 : k + 1 ≤ L + 1 := le_trans hL (Nat.le_succ L)
+  have hd1 : (((L + 1).choose (k + 1) : ℕ) : ℚ) ≠ 0 :=
+    (Nat.cast_pos.mpr (Nat.choose_pos hℓL1)).ne'
+  have hd2 : ((L.choose (k + 1) : ℕ) : ℚ) ≠ 0 :=
+    (Nat.cast_pos.mpr (Nat.choose_pos hL)).ne'
+  have hd3 : ((L.choose k : ℕ) : ℚ) ≠ 0 :=
+    (Nat.cast_pos.mpr (Nat.choose_pos (le_trans (Nat.le_succ k) hL))).ne'
+  have hb1 : ((L : ℚ) + 1) * (L.choose k) = ((L + 1).choose (k + 1)) * (k + 1) := by
+    exact_mod_cast Nat.add_one_mul_choose_eq L k
+  have hpascal : (((L + 1).choose (k + 1) : ℕ) : ℚ) = L.choose k + L.choose (k + 1) := by
+    exact_mod_cast Nat.choose_succ_succ L k
+  have hcast : ((L + 1 - (k + 1) : ℕ) : ℚ) = (L : ℚ) + 1 - ((k : ℚ) + 1) := by
+    rw [Nat.cast_sub hℓL1]
+    push_cast
+    ring
+  rw [hcast]
+  push_cast
+  have e1 : ((k : ℚ) + 1) / ((L : ℚ) + 1) * ((cIn.card : ℚ) / (L.choose k))
+      = (cIn.card : ℚ) / ((L + 1).choose (k + 1)) := by
+    rw [div_mul_div_comm, div_eq_div_iff (mul_ne_zero hL1 hd3) hd1]
+    linear_combination (-(cIn.card : ℚ)) * hb1
+  have e2 : ((L : ℚ) + 1 - ((k : ℚ) + 1)) / ((L : ℚ) + 1) * ((cOut.card : ℚ) / (L.choose (k + 1)))
+      = (cOut.card : ℚ) / ((L + 1).choose (k + 1)) := by
+    rw [div_mul_div_comm, div_eq_div_iff (mul_ne_zero hL1 hd2) hd1]
+    linear_combination (cOut.card : ℚ) * hb1 + (cOut.card : ℚ) * ((L : ℚ) + 1) * hpascal
+  rw [e1, e2, div_add_div_same]
 
 /-! ## Lemma 4.2 a) -/
 
