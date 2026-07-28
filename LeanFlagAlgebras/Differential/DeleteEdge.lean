@@ -441,6 +441,90 @@ noncomputable def fill_induced_deleteEdge_iso {L : ℕ} (G : LabeledGraph ∅ₜ
     · rfl
     · rfl
 
+/-- The two labelled vertices of an `Ē`-flag are *not* adjacent. -/
+theorem nonEdgeFlag_roots_not_adj {V : Type} (B : LabeledGraph nonEdgeType V)
+    : ¬B.graph.Adj (B.type_embed 0) (B.type_embed 1)
+  := by
+  intro h
+  have h2 : (⊥ : SimpleGraph (Fin 2)).Adj 0 1 := (type_embed_Adj_iff B 0 1).mpr h
+  rw [SimpleGraph.bot_adj] at h2
+  exact h2
+
+/-- `Fill` is faithful: an isomorphism of filled flags restricts to an
+isomorphism of the underlying `Ē`-flags (the added edge is the unique rooted
+pair, which is a non-edge on both sides). -/
+noncomputable def unfillIso {V W : Type} {A : LabeledGraph nonEdgeType V}
+    {B : LabeledGraph nonEdgeType W} (χ : fillGraph A ≃f fillGraph B)
+    : A ≃f B where
+  graph_iso := {
+    toEquiv := χ.graph_iso.toEquiv
+    map_rel_iff' := by
+      intro x y
+      have h0 : χ.graph_iso (A.type_embed 0) = B.type_embed 0 := congrFun χ.type_preserve 0
+      have h1 : χ.graph_iso (A.type_embed 1) = B.type_embed 1 := congrFun χ.type_preserve 1
+      have hpair : s(χ.graph_iso x, χ.graph_iso y) = s(B.type_embed 0, B.type_embed 1)
+          ↔ s(x, y) = s(A.type_embed 0, A.type_embed 1) := by
+        rw [← h0, ← h1, ← Sym2.map_pair_eq, ← Sym2.map_pair_eq]
+        exact ⟨fun h => Sym2.map.injective χ.graph_iso.injective h, fun h => congrArg _ h⟩
+      have hAroots : ¬A.graph.Adj (A.type_embed 0) (A.type_embed 1) :=
+        nonEdgeFlag_roots_not_adj A
+      have hBroots : ¬B.graph.Adj (B.type_embed 0) (B.type_embed 1) :=
+        nonEdgeFlag_roots_not_adj B
+      simp only [RelIso.coe_fn_toEquiv]
+      constructor
+      · intro h
+        have h2 : (fillGraph A).graph.Adj x y := by
+          apply χ.graph_iso.map_adj_iff.mp
+          show (fillGraph B).graph.Adj _ _
+          dsimp only [fillGraph]
+          rw [SimpleGraph.sup_adj]
+          exact Or.inl h
+        dsimp only [fillGraph] at h2
+        rw [SimpleGraph.sup_adj, SimpleGraph.fromEdgeSet_adj, Set.mem_singleton_iff] at h2
+        rcases h2 with h3 | ⟨h3, -⟩
+        · exact h3
+        · exfalso
+          apply hBroots
+          have h4 : s(χ.graph_iso x, χ.graph_iso y) = s(B.type_embed 0, B.type_embed 1) :=
+            hpair.mpr h3
+          rcases Sym2.eq_iff.mp h4 with ⟨hx, hy⟩ | ⟨hx, hy⟩
+          · rw [← hx, ← hy]
+            exact h
+          · rw [← hx, ← hy]
+            exact h.symm
+      · intro h
+        have h2 : (fillGraph B).graph.Adj (χ.graph_iso x) (χ.graph_iso y) := by
+          apply χ.graph_iso.map_adj_iff.mpr
+          show (fillGraph A).graph.Adj x y
+          dsimp only [fillGraph]
+          rw [SimpleGraph.sup_adj]
+          exact Or.inl h
+        dsimp only [fillGraph] at h2
+        rw [SimpleGraph.sup_adj, SimpleGraph.fromEdgeSet_adj, Set.mem_singleton_iff] at h2
+        rcases h2 with h3 | ⟨h3, -⟩
+        · exact h3
+        · exfalso
+          apply hAroots
+          have h4 : s(x, y) = s(A.type_embed 0, A.type_embed 1) := hpair.mp h3
+          rcases Sym2.eq_iff.mp h4 with ⟨hx, hy⟩ | ⟨hx, hy⟩
+          · rw [← hx, ← hy]
+            exact h
+          · rw [← hx, ← hy]
+            exact h.symm
+  }
+  type_preserve := by
+    ext t
+    exact congrFun χ.type_preserve t
+
+/-- Transport unlabelling along an isomorphism of `Ē`-flags. -/
+noncomputable def unlabeledGraphIsoNonEdge {V W : Type} {G : LabeledGraph nonEdgeType V}
+    {G' : LabeledGraph nonEdgeType W} (φ : G ≃f G')
+    : unlabeledGraph G ≃f unlabeledGraph G' where
+  graph_iso := φ.graph_iso
+  type_preserve := by
+    ext x
+    exact x.elim0
+
 /-! ## The counting identity behind Lemma 4.4 a) -/
 
 /-- The combined total-probability computation of Razborov's Lemma 4.4 a):
@@ -455,6 +539,22 @@ Here `P[G|_V ≅ H ∣ {v₁,v₂} ⊆ V] = p^{(G,v₁,v₂)}(μ_ℓ^E(H))` and
 `P[(G−e)|_V ≅ H ∣ {v₁,v₂} ⊆ V] = p^{(G,v₁,v₂)}(Fill(μ_ℓ^Ē(H)))` (removing the
 rooted edge turns an induced `E`-rooted copy into an `Ē`-rooted one), while
 `G|_V = (G−e)|_V` whenever `V` misses one of `v₁, v₂`. -/
+theorem unlabel_out' {n₀ : ℕ} {σ : FlagType (Fin n₀)} {V : Type} (F : Flag σ V)
+    : unlabel F = ⟦unlabeledGraph F.out⟧
+  := by
+  conv_lhs => rw [← Quotient.out_eq F]
+  rfl
+
+/-- Transport unlabelling along an isomorphism of σ-flags (any σ). -/
+noncomputable def unlabeledGraphIsoGen {n₀ : ℕ} {σ : FlagType (Fin n₀)} {V W : Type}
+    {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (φ : G ≃f G')
+    : unlabeledGraph G ≃f unlabeledGraph G' where
+  graph_iso := φ.graph_iso
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+set_option maxHeartbeats 3200000 in
 theorem edge_deletion_counting {ℓ L : ℕ} (H : FlagWithSize ∅ₜ ℓ) (hL : ℓ ≤ L)
     (G : LabeledGraph ∅ₜ (Fin L)) (v₁ v₂ : Fin L) (h_adj : G.graph.Adj v₁ v₂)
     : (flagDensity₁ H ⟦deleteEdge G s(v₁, v₂)⟧ : ℚ) - flagDensity₁ H ⟦G⟧
@@ -464,7 +564,258 @@ theorem edge_deletion_counting {ℓ L : ℕ} (H : FlagWithSize ∅ₜ ℓ) (hL :
              - ∑ F ∈ labelExtensions H edgeType,
                 flagDensity₁ F ⟦edgeRootedAt G v₁ v₂ h_adj⟧)
   := by
-  sorry
+  have hL2 : 2 ≤ L := by
+    have h1 := v₁.isLt
+    have h2 := v₂.isLt
+    have h3 : (v₁ : ℕ) ≠ (v₂ : ℕ) := fun hc => h_adj.ne (Fin.ext hc)
+    omega
+  rcases Nat.lt_or_ge ℓ 2 with hsmall | hbig
+  · -- `ℓ ≤ 1`: both sides vanish
+    have hcase : ℓ = 0 ∨ ℓ = 1 := by omega
+    have hzero : ((ℓ : ℚ) * ((ℓ : ℚ) - 1)) = 0 := by
+      rcases hcase with rfl | rfl <;> norm_num
+    rw [hzero, zero_div, zero_mul]
+    rcases hcase with rfl | rfl
+    · rw [Subsingleton.elim H (emptyFlag ∅ₜ), flagDensity_empty, flagDensity_empty, sub_self]
+    · rw [flagDensity_singleVertex H _ (by omega), flagDensity_singleVertex H _ (by omega),
+        sub_self]
+  -- main case `ℓ = k + 2`
+  obtain ⟨k, rfl⟩ : ∃ k, ℓ = k + 2 := ⟨ℓ - 2, by omega⟩
+  obtain ⟨m, rfl⟩ : ∃ m, L = m + 2 := ⟨L - 2, by omega⟩
+  set cG : Finset (Set (Fin (m + 2))) := (inducingSubsets H.out G).toFinset with hcG
+  set cD : Finset (Set (Fin (m + 2))) :=
+    (inducingSubsets H.out (deleteEdge G s(v₁, v₂))).toFinset with hcD
+  have hsplitG : (cG.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S)).card
+      + (cG.filter (fun S => ¬(v₁ ∈ S ∧ v₂ ∈ S))).card = cG.card :=
+    Finset.filter_card_add_filter_neg_card_eq_card _
+  have hsplitD : (cD.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S)).card
+      + (cD.filter (fun S => ¬(v₁ ∈ S ∧ v₂ ∈ S))).card = cD.card :=
+    Finset.filter_card_add_filter_neg_card_eq_card _
+  -- off the rooted edge the two hosts have the same induced subgraphs
+  have hnb : cG.filter (fun S => ¬(v₁ ∈ S ∧ v₂ ∈ S))
+      = cD.filter (fun S => ¬(v₁ ∈ S ∧ v₂ ∈ S)) := by
+    ext S
+    simp only [Finset.mem_filter, hcG, hcD, Set.mem_toFinset]
+    constructor
+    · rintro ⟨⟨h₀, ⟨ψ⟩⟩, hnb⟩
+      exact ⟨⟨emptyType_type_verts_subset _ _,
+        ⟨(deleteEdge_induce_iso_of_not_both G v₁ v₂ S hnb).symm.trans ψ⟩⟩, hnb⟩
+    · rintro ⟨⟨h₀, ⟨ψ⟩⟩, hnb⟩
+      exact ⟨⟨emptyType_type_verts_subset _ _,
+        ⟨(deleteEdge_induce_iso_of_not_both G v₁ v₂ S hnb).trans ψ⟩⟩, hnb⟩
+  -- densities as subset counts
+  have hdG : (flagDensity₁ H ⟦G⟧ : ℚ) = (cG.card : ℚ) / ((m + 2).choose (k + 2)) := by
+    conv_lhs => rw [← Quotient.out_eq H]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div, hcG]
+    simp only [Fintype.card_fin, Nat.sub_zero]
+  have hdD : (flagDensity₁ H ⟦deleteEdge G s(v₁, v₂)⟧ : ℚ)
+      = (cD.card : ℚ) / ((m + 2).choose (k + 2)) := by
+    conv_lhs => rw [← Quotient.out_eq H]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div, hcD]
+    simp only [Fintype.card_fin, Nat.sub_zero]
+  -- the `E`-side evaluation counts the `P`-part of `cG`
+  have hSE : (∑ F ∈ labelExtensions H edgeType,
+        flagDensity₁ F ⟦edgeRootedAt G v₁ v₂ h_adj⟧ : ℚ)
+      = ((cG.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S)).card : ℚ) / (m.choose k) := by
+    have hterm : ∀ F ∈ labelExtensions H edgeType,
+        (flagDensity₁ F ⟦edgeRootedAt G v₁ v₂ h_adj⟧ : ℚ)
+          = ((inducingSubsets F.out (edgeRootedAt G v₁ v₂ h_adj)).toFinset.card : ℚ)
+            / (m.choose k) := by
+      intro F _
+      conv_lhs => rw [← Quotient.out_eq F]
+      rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+      simp only [Fintype.card_fin, Nat.add_sub_cancel]
+    rw [Finset.sum_congr rfl hterm, ← Finset.sum_div]
+    congr 1
+    rw [← Nat.cast_sum]
+    congr 1
+    have hcnt : ∀ F ∈ labelExtensions H edgeType,
+        (inducingSubsets F.out (edgeRootedAt G v₁ v₂ h_adj)).toFinset.card
+          = labeledGraphCount F.out (edgeRootedAt G v₁ v₂ h_adj) := by
+      intro F _
+      rw [labeledGraphCount_eq_card_inducingSubsets]
+    rw [Finset.sum_congr rfl hcnt, labelExtensions_eq_filter,
+      sum_labeledGraphCount_filter (fun F => unlabel F = H) (edgeRootedAt G v₁ v₂ h_adj)]
+    congr 1
+    ext S
+    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and,
+      Set.mem_toFinset, hcG]
+    constructor
+    · rintro ⟨F, hF, hS⟩
+      obtain ⟨hsub, ⟨ψ⟩⟩ := hS
+      have h₁ : v₁ ∈ S := mem_of_edgeRootedAt_subset₁ hsub
+      have h₂ : v₂ ∈ S := mem_of_edgeRootedAt_subset₂ hsub
+      refine ⟨⟨emptyType_type_verts_subset _ _, ?_⟩, h₁, h₂⟩
+      have hFM : Nonempty (unlabeledGraph F.out ≃f H.out) := by
+        have h2 : (⟦unlabeledGraph F.out⟧ : Flag ∅ₜ (Fin (k + 2))) = H := by
+          rw [← unlabel_out' F, hF]
+        exact ⟨(Quotient.mk_eq_iff_out.mp h2).some⟩
+      have ψu : (LabeledSubgraph.inducedLabeledSubgraph G S
+          (emptyType_type_verts_subset G S)).coe ≃f unlabeledGraph F.out :=
+        (unlabeledGraph_induced_edgeRootedAt G h_adj S hsub) ▸ (unlabeledGraphIsoGen ψ)
+      exact ⟨ψu.trans hFM.some⟩
+    · rintro ⟨⟨h₀, ⟨ψ₀⟩⟩, h₁, h₂⟩
+      have hsub : (edgeRootedAt G v₁ v₂ h_adj).type_verts ⊆ S :=
+        edgeRootedAt_type_verts_subset G h_adj h₁ h₂
+      have hcard : Fintype.card
+          ((LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h_adj) S
+            hsub).subgraph.verts) = k + 2 := by
+        have hsz := labeledGraphIso_size_eq _ _ ψ₀
+        simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+        exact hsz
+      refine ⟨getCanonicalFlag
+        ((LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h_adj) S hsub).coe)
+          hcard, ?_, ?_⟩
+      · rw [unlabel_out']
+        have hiso : unlabeledGraph
+            (getCanonicalFlag
+              ((LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h_adj) S
+                hsub).coe) hcard).out
+            ≃f (LabeledSubgraph.inducedLabeledSubgraph G S
+              (emptyType_type_verts_subset G S)).coe :=
+          (unlabeledGraph_induced_edgeRootedAt G h_adj S hsub) ▸
+            (unlabeledGraphIsoGen (getCanonicalFlag_iso _ hcard))
+        calc (⟦unlabeledGraph
+            (getCanonicalFlag
+              ((LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt G v₁ v₂ h_adj) S
+                hsub).coe) hcard).out⟧ : Flag ∅ₜ (Fin (k + 2)))
+            = ⟦H.out⟧ := Quotient.sound ⟨hiso.trans ψ₀⟩
+          _ = H := Quotient.out_eq H
+      · exact ⟨hsub, ⟨(getCanonicalFlag_iso _ hcard).symm⟩⟩
+  -- the `Ē`-side evaluation counts the `P`-part of `cD`
+  have hSĒ : (∑ F ∈ labelExtensions H nonEdgeType,
+        flagDensity₁ (fillFlag F) ⟦edgeRootedAt G v₁ v₂ h_adj⟧ : ℚ)
+      = ((cD.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S)).card : ℚ) / (m.choose k) := by
+    have hterm : ∀ F ∈ labelExtensions H nonEdgeType,
+        (flagDensity₁ (fillFlag F) ⟦edgeRootedAt G v₁ v₂ h_adj⟧ : ℚ)
+          = ((inducingSubsets (fillGraph F.out)
+              (edgeRootedAt G v₁ v₂ h_adj)).toFinset.card : ℚ) / (m.choose k) := by
+      intro F _
+      conv_lhs => rw [← Quotient.out_eq F]
+      rw [fillFlag_mk, flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+      simp only [Fintype.card_fin, Nat.add_sub_cancel]
+    rw [Finset.sum_congr rfl hterm, ← Finset.sum_div]
+    congr 1
+    rw [← Nat.cast_sum]
+    congr 1
+    have hdisj : ∀ F₁ ∈ labelExtensions H nonEdgeType, ∀ F₂ ∈ labelExtensions H nonEdgeType,
+        F₁ ≠ F₂ →
+        Disjoint ((inducingSubsets (fillGraph F₁.out) (edgeRootedAt G v₁ v₂ h_adj)).toFinset)
+          ((inducingSubsets (fillGraph F₂.out) (edgeRootedAt G v₁ v₂ h_adj)).toFinset) := by
+      intro F₁ _ F₂ _ hne
+      rw [Finset.disjoint_left]
+      intro S hS₁ hS₂
+      rw [Set.mem_toFinset] at hS₁ hS₂
+      obtain ⟨ha, ⟨ψ₁⟩⟩ := hS₁
+      obtain ⟨hb, ⟨ψ₂⟩⟩ := hS₂
+      apply hne
+      have χ : fillGraph F₁.out ≃f fillGraph F₂.out := ψ₁.symm.trans ψ₂
+      calc F₁ = ⟦F₁.out⟧ := (Quotient.out_eq _).symm
+        _ = ⟦F₂.out⟧ := Quotient.sound ⟨unfillIso χ⟩
+        _ = F₂ := Quotient.out_eq _
+    have hpart : (labelExtensions H nonEdgeType).biUnion
+        (fun F => (inducingSubsets (fillGraph F.out) (edgeRootedAt G v₁ v₂ h_adj)).toFinset)
+        = cD.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S) := by
+      ext S
+      simp only [Finset.mem_biUnion, Finset.mem_filter, Set.mem_toFinset, hcD]
+      constructor
+      · rintro ⟨F, hF, hS⟩
+        obtain ⟨hsub, ⟨ψ⟩⟩ := hS
+        have h₁ : v₁ ∈ S := mem_of_edgeRootedAt_subset₁ hsub
+        have h₂ : v₂ ∈ S := mem_of_edgeRootedAt_subset₂ hsub
+        refine ⟨⟨emptyType_type_verts_subset _ _, ?_⟩, h₁, h₂⟩
+        have χ : fillGraph ((LabeledSubgraph.inducedLabeledSubgraph
+            (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+              (deleteEdge_not_adj G v₁ v₂)) S
+            (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)).coe)
+            ≃f fillGraph F.out :=
+          (fill_induced_deleteEdge_iso G h_adj S h₁ h₂).trans ψ
+        have υ := unfillIso χ
+        have hFH : (⟦unlabeledGraph F.out⟧ : Flag ∅ₜ (Fin (k + 2))) = H := by
+          rw [← unlabel_out' F]
+          rw [labelExtensions_eq_filter, Finset.mem_filter] at hF
+          exact hF.2
+        have hFM : Nonempty (unlabeledGraph F.out ≃f H.out) :=
+          ⟨(Quotient.mk_eq_iff_out.mp hFH).some⟩
+        have ψu : (LabeledSubgraph.inducedLabeledSubgraph (deleteEdge G s(v₁, v₂)) S
+            (emptyType_type_verts_subset _ S)).coe ≃f unlabeledGraph F.out :=
+          (unlabeledGraph_induced_nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) h_adj.ne
+            (deleteEdge_not_adj G v₁ v₂) S
+            (nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂)) ▸ (unlabeledGraphIsoGen υ)
+        exact ⟨ψu.trans hFM.some⟩
+      · rintro ⟨⟨h₀, ⟨ψ₀⟩⟩, h₁, h₂⟩
+        have hsub : (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+            (deleteEdge_not_adj G v₁ v₂)).type_verts ⊆ S :=
+          nonEdgeRootedAt_type_verts_subset _ _ _ h₁ h₂
+        have hcard : Fintype.card
+            ((LabeledSubgraph.inducedLabeledSubgraph
+              (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+                (deleteEdge_not_adj G v₁ v₂)) S hsub).subgraph.verts) = k + 2 := by
+          have hsz := labeledGraphIso_size_eq _ _ ψ₀
+          simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+          exact hsz
+        refine ⟨getCanonicalFlag
+          ((LabeledSubgraph.inducedLabeledSubgraph
+            (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+              (deleteEdge_not_adj G v₁ v₂)) S hsub).coe) hcard, ?_, ?_⟩
+        · rw [labelExtensions_eq_filter, Finset.mem_filter]
+          refine ⟨Finset.mem_univ _, ?_⟩
+          rw [unlabel_out']
+          have hiso : unlabeledGraph
+              (getCanonicalFlag
+                ((LabeledSubgraph.inducedLabeledSubgraph
+                  (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+                    (deleteEdge_not_adj G v₁ v₂)) S hsub).coe) hcard).out
+              ≃f (LabeledSubgraph.inducedLabeledSubgraph (deleteEdge G s(v₁, v₂)) S
+                (emptyType_type_verts_subset _ S)).coe :=
+            (unlabeledGraph_induced_nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) h_adj.ne
+              (deleteEdge_not_adj G v₁ v₂) S hsub) ▸
+              (unlabeledGraphIsoGen (getCanonicalFlag_iso _ hcard))
+          calc (⟦unlabeledGraph
+              (getCanonicalFlag
+                ((LabeledSubgraph.inducedLabeledSubgraph
+                  (nonEdgeRootedAt (deleteEdge G s(v₁, v₂)) v₁ v₂ h_adj.ne
+                    (deleteEdge_not_adj G v₁ v₂)) S hsub).coe) hcard).out⟧
+                : Flag ∅ₜ (Fin (k + 2)))
+              = ⟦H.out⟧ := Quotient.sound ⟨hiso.trans ψ₀⟩
+            _ = H := Quotient.out_eq H
+        · refine ⟨edgeRootedAt_type_verts_subset G h_adj h₁ h₂, ?_⟩
+          exact ⟨((fill_induced_deleteEdge_iso G h_adj S h₁ h₂).symm.trans
+            ((fillGraph_iso (getCanonicalFlag_iso _ hcard)).symm))⟩
+    calc ∑ F ∈ labelExtensions H nonEdgeType,
+          (inducingSubsets (fillGraph F.out) (edgeRootedAt G v₁ v₂ h_adj)).toFinset.card
+        = ((labelExtensions H nonEdgeType).biUnion
+            (fun F => (inducingSubsets (fillGraph F.out)
+              (edgeRootedAt G v₁ v₂ h_adj)).toFinset)).card :=
+          (Finset.card_biUnion hdisj).symm
+      _ = (cD.filter (fun S => v₁ ∈ S ∧ v₂ ∈ S)).card := by rw [hpart]
+  -- assemble via the double binomial identity
+  rw [hdD, hdG, hSE, hSĒ, ← hsplitG, ← hsplitD, hnb]
+  have hkm : k ≤ m := by omega
+  have hd1 : (((m + 2).choose (k + 2) : ℕ) : ℚ) ≠ 0 :=
+    (Nat.cast_pos.mpr (Nat.choose_pos (by omega))).ne'
+  have hd2 : ((m.choose k : ℕ) : ℚ) ≠ 0 :=
+    (Nat.cast_pos.mpr (Nat.choose_pos hkm)).ne'
+  have hbin : ((k : ℚ) + 2) * ((k : ℚ) + 1) * ((m + 2).choose (k + 2))
+      = ((m : ℚ) + 2) * ((m : ℚ) + 1) * (m.choose k) := by
+    have h1 : (m + 2) * (m + 1).choose (k + 1) = (m + 2).choose (k + 2) * (k + 2) :=
+      Nat.add_one_mul_choose_eq (m + 1) (k + 1)
+    have h2 : (m + 1) * m.choose k = (m + 1).choose (k + 1) * (k + 1) :=
+      Nat.add_one_mul_choose_eq m k
+    have h3 : (m + 2) * ((m + 1) * m.choose k) = (m + 2).choose (k + 2) * (k + 2) * (k + 1) := by
+      rw [h2, ← Nat.mul_assoc, h1]
+    have h4 := congrArg (Nat.cast : ℕ → ℚ) h3
+    push_cast at h4
+    linarith [h4]
+  have hm1 : ((m : ℚ) + 2 - 1) ≠ 0 := by
+    have h5 : ((m : ℚ) + 2 - 1) = (m : ℚ) + 1 := by ring
+    rw [h5]
+    positivity
+  have hm2 : ((m : ℚ) + 2) ≠ 0 := by positivity
+  push_cast
+  field_simp
+  linear_combination ((#({S ∈ cG | v₁ ∈ S ∧ v₂ ∈ S}) : ℚ)
+    - (#({S ∈ cD | v₁ ∈ S ∧ v₂ ∈ S}) : ℚ)) * hbin
 
 /-! ## Lemma 4.4 a) -/
 
