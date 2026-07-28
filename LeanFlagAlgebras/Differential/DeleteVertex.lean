@@ -278,8 +278,71 @@ theorem labelExtensions_eq_filter {ℓ : ℕ} (M : FlagWithSize ∅ₜ ℓ) (σ'
     : labelExtensions M σ' = Finset.univ.filter (fun F => unlabel F = M)
   := rfl
 
+theorem rootExtensions_eq_filter {ℓ : ℕ} (M : FlagWithSize ∅ₜ ℓ)
+    : rootExtensions M = Finset.univ.filter (fun F => unrootFlag F.out = M)
+  := rfl
+
+/-- Transport `deleteVertex` along a labelled-graph isomorphism. -/
+noncomputable def deleteVertexIso {V W : Type} {A : LabeledGraph ∅ₜ V} {B : LabeledGraph ∅ₜ W}
+    (φ : A ≃f B) (v : V) (w : W) (hw : φ.graph_iso v = w)
+    : deleteVertex A v ≃f deleteVertex B w where
+  graph_iso := {
+    toEquiv := Equiv.subtypeEquiv φ.graph_iso.toEquiv (fun u => by
+      subst hw
+      simp only [RelIso.coe_fn_toEquiv, ne_eq, not_iff_not]
+      exact (Equiv.apply_eq_iff_eq φ.graph_iso.toEquiv).symm)
+    map_rel_iff' := by
+      intro a b
+      simp only [RelIso.coe_fn_toEquiv, Equiv.subtypeEquiv_apply]
+      exact φ.graph_iso.map_adj_iff
+  }
+  type_preserve := by
+    ext x
+    exact x.elim0
+
+/-- Transport `unroot` along a labelled-graph isomorphism of `1`-flags. -/
+noncomputable def unrootIso {V W : Type} {G : LabeledGraph vertexType V}
+    {G' : LabeledGraph vertexType W} (φ : G ≃f G')
+    : unroot G ≃f unroot G'
+  :=
+  deleteVertexIso (unlabeledGraphIso φ) (G.type_embed 0) (G'.type_embed 0)
+    (congrFun φ.type_preserve 0)
+
+/-- Unrooting the induced subgraph of `(N, v)` on `S ∋ v` gives the induced
+subgraph of `N − v` on `S − v` (as a preimage). This is the key glue between
+the root extensions of a model and the vertex-deleted host. -/
+noncomputable def unroot_induced_rootedAt_iso {L : ℕ} (N : LabeledGraph ∅ₜ (Fin (L + 1)))
+    (v : Fin (L + 1)) (S : Set (Fin (L + 1))) (hsub : (rootedAt N v).type_verts ⊆ S)
+    : unroot ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).coe)
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph (deleteVertex N v)
+          (Subtype.val ⁻¹' S) (emptyType_type_verts_subset _ _)).coe where
+  graph_iso := {
+    toFun := fun a =>
+      ⟨⟨a.val.val, fun hav => a.property (Subtype.ext (by
+          rw [hav]
+          exact ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v) S hsub).embed_eq 0).symm))⟩,
+        a.val.property⟩
+    invFun := fun b =>
+      ⟨⟨b.val.val, b.property⟩, fun hb => b.val.property (by
+          have := congrArg (fun x => (Subtype.val x : Fin (L + 1))) hb
+          simpa using this)⟩
+    left_inv := fun a => rfl
+    right_inv := fun b => rfl
+    map_rel_iff' := by
+      intro a b
+      constructor
+      · rintro ⟨_, _, h⟩
+        exact ⟨a.val.property, b.val.property, h⟩
+      · rintro ⟨_, _, h⟩
+        exact ⟨a.val.property, b.val.property, h⟩
+  }
+  type_preserve := by
+    ext x
+    exact x.elim0
+
 /-! ## The two counting identities behind Lemma 4.2 a) -/
 
+set_option maxHeartbeats 1600000 in
 /-- `p^{(N,v)}(π¹ M) = p(M, N − v)` (Razborov, proof of Lemma 4.2 a)): the
 total density in `(N, v)` of all root extensions of `M` equals the density of
 `M` in `N − v`. Indeed, an induced copy of a root extension of `M` in `(N, v)`
@@ -290,7 +353,147 @@ theorem sum_rootExtensions_density {ℓ L : ℕ} (M : FlagWithSize ∅ₜ ℓ) (
     : ∑ F ∈ rootExtensions M, flagDensity₁ F ⟦rootedAt N v⟧
       = flagDensity₁ M (deleteVertexFlag N v)
   := by
-  sorry
+  -- Both densities have the same normalising factor `C(L, ℓ)`.
+  have hterm : ∀ F ∈ rootExtensions M,
+      (flagDensity₁ F ⟦rootedAt N v⟧ : ℚ)
+        = ((inducingSubsets F.out (rootedAt N v)).toFinset.card : ℚ) / (L.choose ℓ) := by
+    intro F _
+    conv_lhs => rw [← Quotient.out_eq F]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+    simp only [Fintype.card_fin, Nat.add_sub_cancel]
+  have hdel : (flagDensity₁ M (deleteVertexFlag N v) : ℚ)
+      = ((inducingSubsets M.out (deleteVertex N v)).toFinset.card : ℚ) / (L.choose ℓ) := by
+    have h1 : flagDensity₁ M (deleteVertexFlag N v)
+        = labeledGraphDensity M.out (deleteVertex N v) := by
+      rw [flagDensity₁_out]
+      exact labeledGraphDensity_respect_eqv
+        (getCanonicalFlag_iso (deleteVertex N v) (card_ne_vertex v)) LabeledGraphIso.refl
+    rw [h1, labeledGraphDensity_eq_card_div, card_ne_vertex v]
+    simp only [Fintype.card_fin, Nat.sub_zero]
+  rw [Finset.sum_congr rfl hterm, ← Finset.sum_div, hdel]
+  congr 1
+  rw [← Nat.cast_sum]
+  congr 1
+  -- Count comparison via the bijection `S ↦ S ∩ (V − v)`.
+  have hcnt : ∀ F ∈ rootExtensions M,
+      (inducingSubsets F.out (rootedAt N v)).toFinset.card
+        = labeledGraphCount F.out (rootedAt N v) := by
+    intro F _
+    rw [labeledGraphCount_eq_card_inducingSubsets]
+  rw [Finset.sum_congr rfl hcnt, rootExtensions_eq_filter,
+    sum_labeledGraphCount_filter (fun F => unrootFlag F.out = M) (rootedAt N v)]
+  apply Finset.card_bij (fun (S : Set (Fin (L + 1))) (_ : S ∈ _) =>
+    (Subtype.val ⁻¹' S : Set {u : Fin (L + 1) // u ≠ v}))
+  · -- membership
+    intro S hS
+    rw [Finset.mem_biUnion] at hS
+    obtain ⟨F, hF, hSF⟩ := hS
+    rw [Finset.mem_filter] at hF
+    obtain ⟨-, hFM⟩ := hF
+    rw [Set.mem_toFinset] at hSF
+    obtain ⟨hsub, ⟨ψ⟩⟩ := hSF
+    rw [Set.mem_toFinset]
+    refine ⟨emptyType_type_verts_subset _ _, ?_⟩
+    dsimp only [unrootFlag] at hFM
+    have hMun : Nonempty (M.out ≃f unroot F.out) := (getCanonicalFlag_eq_iff _ _ M).mp hFM
+    exact ⟨(((unroot_induced_rootedAt_iso N v S hsub).symm.trans (unrootIso ψ)).trans
+      hMun.some.symm)⟩
+  · -- injectivity: members of the union all contain `v`
+    intro S₁ h₁ S₂ h₂ heq
+    have hmem : ∀ S, S ∈ (Finset.univ.filter
+        (fun F : FlagWithSize vertexType (ℓ + 1) => unrootFlag F.out = M)).biUnion
+        (fun F => (inducingSubsets F.out (rootedAt N v)).toFinset) → v ∈ S := by
+      intro S hS
+      rw [Finset.mem_biUnion] at hS
+      obtain ⟨F, -, hSF⟩ := hS
+      rw [Set.mem_toFinset] at hSF
+      obtain ⟨hsub, -⟩ := hSF
+      exact mem_of_rootedAt_type_verts_subset N v hsub
+    have hv₁ : v ∈ S₁ := hmem S₁ h₁
+    have hv₂ : v ∈ S₂ := hmem S₂ h₂
+    ext u
+    by_cases huv : u = v
+    · subst huv
+      simp only [hv₁, hv₂]
+    · constructor
+      · intro hu
+        have h3 : (⟨u, huv⟩ : {x : Fin (L + 1) // x ≠ v}) ∈
+            (Subtype.val ⁻¹' S₁ : Set {x : Fin (L + 1) // x ≠ v}) := hu
+        rw [heq] at h3
+        exact h3
+      · intro hu
+        have h3 : (⟨u, huv⟩ : {x : Fin (L + 1) // x ≠ v}) ∈
+            (Subtype.val ⁻¹' S₂ : Set {x : Fin (L + 1) // x ≠ v}) := hu
+        rw [← heq] at h3
+        exact h3
+  · -- surjectivity
+    intro S' hS'
+    rw [Set.mem_toFinset] at hS'
+    obtain ⟨h₀, ⟨ψ₀⟩⟩ := hS'
+    have h1 : v ∉ (Subtype.val '' S' : Set (Fin (L + 1))) := by
+      rintro ⟨w, -, hwv⟩
+      exact w.property hwv
+    have hvS : v ∈ insert v (Subtype.val '' S' : Set (Fin (L + 1))) := Set.mem_insert v _
+    have hsub : (rootedAt N v).type_verts ⊆ insert v (Subtype.val '' S') :=
+      rootedAt_type_verts_subset N v hvS
+    have hpre : (Subtype.val ⁻¹' (insert v (Subtype.val '' S'))
+        : Set {u : Fin (L + 1) // u ≠ v}) = S' := by
+      ext w
+      simp only [Set.mem_preimage, Set.mem_insert_iff]
+      constructor
+      · rintro (hw | hw)
+        · exact absurd hw w.property
+        · obtain ⟨x, hx, hxw⟩ := hw
+          have hxw' : x = w := Subtype.val_injective hxw
+          exact hxw' ▸ hx
+      · intro hw
+        exact Or.inr ⟨w, hw, rfl⟩
+    have hcardS' : Fintype.card S' = ℓ := by
+      have hsz := labeledGraphIso_size_eq _ _ ψ₀
+      simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+      exact hsz
+    have hcardImg : Fintype.card (Subtype.val '' S' : Set (Fin (L + 1))) = ℓ := by
+      rw [← Fintype.card_congr (Equiv.Set.image Subtype.val S' Subtype.val_injective)]
+      exact hcardS'
+    have hcard : Fintype.card
+        ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+          (insert v (Subtype.val '' S')) hsub).subgraph.verts) = ℓ + 1 := by
+      have h2 : (LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+          (insert v (Subtype.val '' S')) hsub).size = ℓ + 1 := by
+        rw [LabeledSubgraph.inducedLabeledSubgraph_size, Set.card_insert _ h1, hcardImg]
+      exact h2
+    refine ⟨insert v (Subtype.val '' S'), ?_, hpre⟩
+    rw [Finset.mem_biUnion]
+    refine ⟨getCanonicalFlag
+      ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+        (insert v (Subtype.val '' S')) hsub).coe) hcard, ?_, ?_⟩
+    · rw [Finset.mem_filter]
+      refine ⟨Finset.mem_univ _, ?_⟩
+      dsimp only [unrootFlag]
+      rw [getCanonicalFlag_eq_iff]
+      have i1 : unroot ((getCanonicalFlag
+          ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+            (insert v (Subtype.val '' S')) hsub).coe) hcard).out)
+          ≃f unroot ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+            (insert v (Subtype.val '' S')) hsub).coe) :=
+        unrootIso (getCanonicalFlag_iso _ hcard)
+      have hsets : (LabeledSubgraph.inducedLabeledSubgraph (deleteVertex N v)
+          (Subtype.val ⁻¹' (insert v (Subtype.val '' S')))
+          (emptyType_type_verts_subset _ _))
+          = (LabeledSubgraph.inducedLabeledSubgraph (deleteVertex N v) S'
+            (emptyType_type_verts_subset _ _)) := by
+        apply labeledSubgraph_eq_from_subgraph_eq
+        dsimp only [LabeledSubgraph.inducedLabeledSubgraph]
+        rw [hpre]
+      have i2 : unroot ((LabeledSubgraph.inducedLabeledSubgraph (rootedAt N v)
+          (insert v (Subtype.val '' S')) hsub).coe)
+          ≃f (LabeledSubgraph.inducedLabeledSubgraph (deleteVertex N v) S'
+            (emptyType_type_verts_subset _ _)).coe :=
+        (unroot_induced_rootedAt_iso N v (insert v (Subtype.val '' S')) hsub).trans
+          (LabeledGraphIso.labeledSubgraphIso_eq hsets)
+      exact ⟨((i1.trans i2).trans ψ₀).symm⟩
+    · rw [Set.mem_toFinset]
+      exact ⟨hsub, ⟨(getCanonicalFlag_iso _ hcard).symm⟩⟩
 
 /-- Total probability (Razborov, proof of Lemma 4.2 a)): condition the
 uniformly random `ℓ`-subset `V ⊆ V(N)` defining `p(M, N)` on whether `v ∈ V`:
