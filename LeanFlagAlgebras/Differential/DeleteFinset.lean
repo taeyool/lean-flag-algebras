@@ -149,7 +149,7 @@ noncomputable def deleteFinsetEmptyIso {V : Type} (N : LabeledGraph ∅ₜ V)
     exact x.elim0
 
 /-- Deleting `insert w W` is deleting `W` and then `w`. -/
-noncomputable def deleteFinsetInsertIso {V : Type} (N : LabeledGraph ∅ₜ V)
+noncomputable def deleteFinsetInsertIso {V : Type} [DecidableEq V] (N : LabeledGraph ∅ₜ V)
     (W : Finset V) (w : V) (hw : w ∉ W)
     : deleteVertex (deleteFinset N W) ⟨w, hw⟩ ≃f deleteFinset N (insert w W) where
   graph_iso := {
