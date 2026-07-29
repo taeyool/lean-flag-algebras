@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».Differential.DeleteEdge
 import «LeanFlagAlgebras».Differential.Ensemble
 import «LeanFlagAlgebras».Differential.Telescope
+import «LeanFlagAlgebras».Differential.EdgeRound
 import «LeanFlagAlgebras».FlagAlgebra.RandomHom
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 
@@ -645,6 +646,7 @@ theorem bad_vertex_negPart_tendsto_zero (Mv : Fin h → FinFlag ∅ₜ) (f : (Fi
   have hεδ : 0 < ε₀ * δ := mul_pos hε₀ hδpos
   linarith [hmin2, habs, hdir, hnormb, hsmall.le, hsmall.ge, hεδ]
 
+set_option maxHeartbeats 3200000 in
 /-- **The finite core of Theorem 4.5**: the edge analogue of
 `bad_vertex_negPart_tendsto_zero`, with bad edges deleted inside a random
 vertex subset of size `⌊δ^{1/2} ℓₙ⌋` (Razborov, p. 40) and each deletion step
@@ -661,7 +663,425 @@ theorem bad_edge_negPart_tendsto_zero (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin 
         (partialEdgeVec (gradVec Mv f (densityPoint Mv φ₀))) a)
         ∂((s n).toMeasure (hs_den n))) atTop (𝓝 0)
   := by
-  sorry
+  classical
+  set a₀ : Fin h → ℝ := densityPoint Mv φ₀ with ha₀
+  set gv : FlagVector ∅ₜ := gradVec Mv f a₀ with hgv
+  set D : FlagVector edgeType := partialEdgeVec gv with hDdef
+  set B : ℝ := ∑ F ∈ D.support, |D F| with hBdef
+  have hBnn : 0 ≤ B := Finset.sum_nonneg fun F _ => abs_nonneg _
+  clear_value B
+  set B' : ℝ := B + 1 with hB'def
+  have hB'pos : 0 < B' := by rw [hB'def]; linarith
+  have hBb : B ≤ B' := by rw [hB'def]; linarith
+  clear_value B'
+  obtain ⟨K, hK⟩ : ∃ K : ℕ, ∀ F ∈ D.support, F.1 ≤ K + 2 :=
+    ⟨D.support.sup (fun F => F.1),
+      fun F hF => le_trans (Finset.le_sup (f := fun F : FinFlag edgeType => F.1) hF)
+        (by omega)⟩
+  obtain ⟨Kg, hKg⟩ : ∃ Kg : ℕ, ∀ M ∈ gv.support, M.1 ≤ Kg :=
+    ⟨gv.support.sup (fun M => M.1), fun M hM => Finset.le_sup hM⟩
+  set KM : ℕ := (Finset.univ : Finset (Fin h)).sup (fun i => (Mv i).1) with hKMdef
+  set C : Fin h → ℝ := fun i =>
+    ∑ F ∈ (partialEdgeVec (basisVector (Mv i))).support,
+      |partialEdgeVec (basisVector (Mv i)) F| with hCdef
+  have hCnn : ∀ i, 0 ≤ C i := fun i => Finset.sum_nonneg fun F _ => abs_nonneg _
+  set Cstar : ℝ := (∑ i, C i) + 1 with hCstardef
+  have hCstar : 0 < Cstar := by
+    have h1 : 0 ≤ ∑ i, C i := Finset.sum_nonneg fun i _ => hCnn i
+    linarith
+  have hCle : ∀ i, C i ≤ Cstar := by
+    intro i
+    have h1 : C i ≤ ∑ i, C i :=
+      Finset.single_le_sum (fun i _ => hCnn i) (Finset.mem_univ i)
+    linarith
+  clear_value Cstar
+  -- the limiting edge density is positive
+  set ρF : FinFlag ∅ₜ := ⟨2, edgeType.toEmptyTypeFlag⟩ with hρFdef
+  have hρpos : 0 < φ₀.coe ρF := hρ
+  set ρlim : ℝ := φ₀.coe ρF with hρposdef
+  have hρpos2 : 0 < ρlim := hρpos
+  have hρlim : Tendsto (fun n => (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ))
+      atTop (𝓝 ρlim) := (flagSeq_convergesTo_iff.mp hs_conv).2 ρF
+  clear_value ρlim
+  -- suppose the empirical averages do not vanish
+  have hInn : ∀ n, 0 ≤ ∫ a, negPart (densityEvalFun D a)
+      ∂((s n).toMeasure (hs_den n)) :=
+    fun n => integral_nonneg fun a => negPart_nonneg _
+  by_contra hcon
+  rw [Metric.tendsto_atTop] at hcon
+  push_neg at hcon
+  obtain ⟨ε₀, hε₀, hfreq⟩ := hcon
+  have hfreq' : ∀ N, ∃ n ≥ N, ε₀ ≤ ∫ a, negPart (densityEvalFun D a)
+      ∂((s n).toMeasure (hs_den n)) := by
+    intro N
+    obtain ⟨n, hn, hd⟩ := hfreq N
+    refine ⟨n, hn, ?_⟩
+    rwa [Real.dist_eq, sub_zero, abs_of_nonneg (hInn n)] at hd
+  obtain ⟨φ₁, hφ₁mono, hφ₁⟩ := Filter.extraction_of_frequently_atTop
+    (Filter.frequently_atTop.mpr hfreq')
+  -- neighbourhood and C¹ Taylor data at the minimiser
+  obtain ⟨rU, hrU, hballU⟩ := Metric.mem_nhds_iff.mp hU
+  have hct : ContDiffAt ℝ 1 f a₀ := hf.contDiffAt hU
+  have hdiff : DifferentiableAt ℝ f a₀ := hct.differentiableAt one_ne_zero
+  have hFD : HasFDerivAt f (fderiv ℝ f a₀) a₀ := hdiff.hasFDerivAt
+  have hlo := hFD.isLittleO
+  have hcT : (0:ℝ) < ε₀^2 * ρlim / (4096 * B' * Cstar) := by positivity
+  have hev := hlo.def hcT
+  obtain ⟨rT, hrT, hTay⟩ := Metric.eventually_nhds_iff.mp hev
+  -- the deletion-fraction parameter σ
+  set CB : ℝ := B' * (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) + 1 with hCBdef
+  have hCBpos : 0 < CB := by
+    have h1 : (0:ℝ) ≤ B' * (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) := by positivity
+    linarith
+  obtain ⟨σ, hσpos, hσhalf, hσcorr, hσrad⟩ :
+      ∃ σ : ℝ, 0 < σ ∧ σ ≤ 1/2 ∧
+        B' * (2 * ((K:ℝ) + 2) * σ + 4 * ((K:ℝ) + 2)^2 * σ^2) ≤ ε₀/4 ∧
+        4 * σ^2 * Cstar < min rU rT := by
+    have hmin2 : (0:ℝ) < min rU rT := lt_min hrU hrT
+    refine ⟨min (min (1/2) (ε₀ / (4 * CB))) (min rU rT / (4 * Cstar + 1)),
+      ?_, ?_, ?_, ?_⟩
+    · positivity
+    · exact le_trans (min_le_left _ _) (min_le_left _ _)
+    · set σ' := min (min (1/2) (ε₀ / (4 * CB))) (min rU rT / (4 * Cstar + 1)) with hσ'
+      have hσ'pos : 0 < σ' := by rw [hσ']; positivity
+      have h1 : σ' ≤ 1/2 := le_trans (min_le_left _ _) (min_le_left _ _)
+      have h2 : σ' ≤ ε₀ / (4 * CB) := le_trans (min_le_left _ _) (min_le_right _ _)
+      have h3 : σ'^2 ≤ σ' := by nlinarith
+      have h4 : B' * (2 * ((K:ℝ) + 2) * σ' + 4 * ((K:ℝ) + 2)^2 * σ'^2)
+          ≤ B' * (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) * σ' := by
+        have h5 : 2 * ((K:ℝ) + 2) * σ' + 4 * ((K:ℝ) + 2)^2 * σ'^2
+            ≤ (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) * σ' := by
+          have h6 : 4 * ((K:ℝ) + 2)^2 * σ'^2 ≤ 4 * ((K:ℝ) + 2)^2 * σ' :=
+            mul_le_mul_of_nonneg_left h3 (by positivity)
+          nlinarith
+        calc B' * (2 * ((K:ℝ) + 2) * σ' + 4 * ((K:ℝ) + 2)^2 * σ'^2)
+            ≤ B' * ((2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) * σ') :=
+              mul_le_mul_of_nonneg_left h5 hB'pos.le
+          _ = B' * (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) * σ' := by ring
+      have h7 : B' * (2 * ((K:ℝ) + 2) + 4 * ((K:ℝ) + 2)^2) * σ' ≤ CB * σ' := by
+        apply mul_le_mul_of_nonneg_right ?_ hσ'pos.le
+        rw [hCBdef]
+        linarith
+      have h8 : CB * σ' ≤ CB * (ε₀ / (4 * CB)) :=
+        mul_le_mul_of_nonneg_left h2 hCBpos.le
+      have h9 : CB * (ε₀ / (4 * CB)) = ε₀ / 4 := by
+        field_simp
+      linarith
+    · set σ' := min (min (1/2) (ε₀ / (4 * CB))) (min rU rT / (4 * Cstar + 1)) with hσ'
+      have hσ'pos : 0 < σ' := by rw [hσ']; positivity
+      have h1 : σ' ≤ 1/2 := le_trans (min_le_left _ _) (min_le_left _ _)
+      have h2 : σ' ≤ min rU rT / (4 * Cstar + 1) := min_le_right _ _
+      have h3 : σ'^2 ≤ σ' := by nlinarith
+      calc 4 * σ'^2 * Cstar ≤ 4 * σ' * Cstar := by nlinarith
+        _ ≤ 4 * (min rU rT / (4 * Cstar + 1)) * Cstar := by
+            apply mul_le_mul_of_nonneg_right ?_ hCstar.le
+            nlinarith
+        _ < min rU rT := by
+            rw [show (4:ℝ) * (min rU rT / (4 * Cstar + 1)) * Cstar
+              = min rU rT * (4 * Cstar) / (4 * Cstar + 1) from by ring]
+            rw [div_lt_iff₀ (by positivity)]
+            nlinarith [hmin2, hCstar, mul_pos hmin2 hCstar]
+  -- the drop constant
+  set Δc : ℝ := ε₀^2 * (ρlim/2) * σ^2 / (128 * B') with hΔcdef
+  have hΔcpos : 0 < Δc := by
+    rw [hΔcdef]
+    positivity
+  -- the largeness threshold
+  obtain ⟨Nσ, hNσ⟩ : ∃ Nσ : ℕ, 4 ≤ σ * (Nσ:ℝ) := by
+    obtain ⟨Nσ, hNσ⟩ := exists_nat_ge (4 / σ)
+    refine ⟨Nσ, ?_⟩
+    rw [div_le_iff₀ hσpos] at hNσ
+    linarith
+  -- the edge density is eventually at least ρlim/2
+  obtain ⟨Nρ, hNρ⟩ : ∃ Nρ : ℕ, ∀ n ≥ Nρ,
+      ρlim/2 ≤ (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ) := by
+    have h1 : ∀ᶠ n in atTop, (fun n =>
+        (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ)) n ∈ Metric.ball ρlim (ρlim/2) :=
+      hρlim (Metric.ball_mem_nhds ρlim (by linarith : (0:ℝ) < ρlim/2))
+    obtain ⟨Nρ, hNρ⟩ := Filter.eventually_atTop.mp h1
+    refine ⟨Nρ, fun n hn => ?_⟩
+    have h2 := hNρ n hn
+    rw [Metric.mem_ball, Real.dist_eq] at h2
+    have h3 := abs_lt.mp h2
+    linarith [h3.1]
+  set J₀ : ℕ := max (max (K + 2) (max Kg KM)) (max 4 (max Nσ Nρ)) with hJ₀def
+  -- the per-index deleted hosts
+  have hkey : ∀ j : ℕ, ∃ Q : FinFlag ∅ₜ,
+      J₀ ≤ j →
+      ((Q.1 = (s (φ₁ j)).1) ∧
+       (densityEval gv Q ≤ densityEval gv (s (φ₁ j)) - Δc) ∧
+       (∀ i : Fin h, |(flagDensity₁ (Mv i).2 Q.2 : ℝ)
+          - (flagDensity₁ (Mv i).2 (s (φ₁ j)).2 : ℝ)| ≤ 4 * σ^2 * Cstar)) := by
+    intro j
+    by_cases hj : J₀ ≤ j
+    swap
+    · exact ⟨⟨0, default⟩, fun hj' => absurd hj' hj⟩
+    set n := φ₁ j with hn
+    set L := (s n).1 with hLdef
+    have hLj : j ≤ L := le_trans hφ₁mono.le_apply (hs_conv.1.id_le n)
+    have hJL : J₀ ≤ L := le_trans hj hLj
+    have hLK : K + 2 ≤ L :=
+      le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hJL
+    have hLg : Kg ≤ L := le_trans (le_trans (le_trans (le_max_left _ _)
+      (le_max_right _ _)) (le_max_left _ _)) hJL
+    have hLM : KM ≤ L := le_trans (le_trans (le_trans (le_max_right _ _)
+      (le_max_right _ _)) (le_max_left _ _)) hJL
+    have hL4 : 4 ≤ L :=
+      le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hJL
+    have hLNσ : Nσ ≤ L := le_trans (le_trans (le_trans (le_max_left _ _)
+      (le_max_right _ _)) (le_max_right _ _)) hJL
+    have hσL : 4 ≤ σ * (L : ℝ) := by
+      refine le_trans hNσ ?_
+      apply mul_le_mul_of_nonneg_left ?_ hσpos.le
+      exact_mod_cast hLNσ
+    have hnNρ : Nρ ≤ n := by
+      have h1 : Nρ ≤ j := le_trans (le_trans (le_trans (le_max_right _ _)
+        (le_max_right _ _)) (le_max_right _ _)) hj
+      exact le_trans h1 hφ₁mono.le_apply
+    have h2L : 2 ≤ (s n).1 := by omega
+    set N : LabeledGraph ∅ₜ (Fin L) := (s n).2.out with hNdef
+    -- the empirical average is a pair average
+    have h2 : ε₀ ≤ ∫ a, negPart (densityEvalFun D a)
+        ∂((s (φ₁ j)).toMeasure (hs_den (φ₁ j))) := hφ₁ j
+    rw [← hn] at h2
+    have h3 := integral_toMeasure_eq_pair_average' (s n) h2L (hs_den n) D negPart
+      continuous_negPart.measurable
+      (fun a => le_trans (abs_negPart_le _) (abs_densityEvalFun_le D a))
+    rw [h3] at h2
+    -- the ordered edge count is bounded below via the density
+    have hpairs : (ρlim/2) * (L:ℝ) * ((L:ℝ) - 1) ≤ ((adjPairs N).card : ℝ) := by
+      have h4 := card_adjPairs_eq' (s n) h2L
+      have h5 : ((adjPairs ((s n).2.out)).card : ℝ)
+          = (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ)
+            * (((s n).1 : ℝ) * (((s n).1 : ℝ) - 1)) := by
+        exact_mod_cast congrArg (fun x : ℚ => (x : ℝ)) h4
+      have h6 : ρlim/2 ≤ (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ) :=
+        hNρ n hnNρ
+      have h7 : (0:ℝ) ≤ (L:ℝ) * ((L:ℝ) - 1) := by
+        have h8 : (4:ℝ) ≤ (L:ℝ) := by exact_mod_cast hL4
+        nlinarith
+      calc (ρlim/2) * (L:ℝ) * ((L:ℝ) - 1)
+          = (ρlim/2) * ((L:ℝ) * ((L:ℝ) - 1)) := by ring
+        _ ≤ (flagDensity₁ edgeType.toEmptyTypeFlag (s n).2 : ℝ)
+            * ((L:ℝ) * ((L:ℝ) - 1)) := mul_le_mul_of_nonneg_right h6 h7
+        _ = ((adjPairs N).card : ℝ) := by
+            rw [hNdef]
+            rw [h5]
+    -- run the deletion round
+    obtain ⟨Dd, hDadj, hDuniq, hDub, hDdrop⟩ := exists_deleted_host_edge N gv
+      hε₀ hσpos hσhalf hB'pos
+      (by show ∑ F ∈ D.support, |D F| ≤ B'
+          rw [← hBdef]
+          linarith)
+      hK (fun M hM => le_trans (hKg M hM) hLg)
+      hσcorr hLK hσL (by positivity) hpairs h2
+    refine ⟨⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩, fun _ => ⟨rfl, ?_, ?_⟩⟩
+    · -- the density of the gradient combination drops
+      have hQN : (⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩ : FinFlag ∅ₜ) = s n := by
+        rw [hNdef, Quotient.out_eq]
+        rfl
+      show densityEval gv ⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩
+        ≤ densityEval gv (s n) - Δc
+      rw [← hQN]
+      exact hDdrop
+    · -- every model density moves by at most 4σ²C★
+      intro i
+      show |(flagDensity₁ (Mv i).2 (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L) : ℝ)
+          - (flagDensity₁ (Mv i).2 (s n).2 : ℝ)| ≤ 4 * σ^2 * Cstar
+      have e1 : (flagDensity₁ (Mv i).2 (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L) : ℝ)
+          = densityEval (basisVector (Mv i))
+              ⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩ :=
+        (densityEval_basisVector (Mv i)
+          ⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩).symm
+      have e2 : densityEval (basisVector (Mv i)) ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩
+          = (flagDensity₁ (Mv i).2 (s n).2 : ℝ) := by
+        rw [densityEval_basisVector, hNdef, Quotient.out_eq]
+      have hstab := edge_stability (basisVector (Mv i)) N ?hsuppi (by omega)
+        Dd hDadj hDuniq
+      case hsuppi =>
+        intro M hM
+        rw [basisVector_support, Finset.mem_singleton] at hM
+        subst hM
+        have h6 : (Mv i).1 ≤ KM :=
+          Finset.le_sup (f := fun i => (Mv i).1) (Finset.mem_univ i)
+        omega
+      have hb : |densityEval (basisVector (Mv i))
+            ⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩
+          - densityEval (basisVector (Mv i)) ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩|
+          ≤ (Dd.card : ℝ) * C i * 2 / ((L:ℝ) * ((L:ℝ) - 1)) := hstab
+      have hL4r : (4:ℝ) ≤ (L:ℝ) := by exact_mod_cast hL4
+      have hLL1 : (0:ℝ) < (L:ℝ) * ((L:ℝ) - 1) := by nlinarith
+      have hbound : (Dd.card : ℝ) * C i * 2 / ((L:ℝ) * ((L:ℝ) - 1))
+          ≤ 4 * σ^2 * Cstar := by
+        rw [div_le_iff₀ hLL1]
+        have h7 : (L:ℝ)^2 ≤ 2 * ((L:ℝ) * ((L:ℝ) - 1)) := by nlinarith
+        calc (Dd.card : ℝ) * C i * 2
+            ≤ (σ^2 * (L:ℝ)^2) * C i * 2 := by
+              apply mul_le_mul_of_nonneg_right ?_ (by norm_num)
+              exact mul_le_mul_of_nonneg_right hDub (hCnn i)
+          _ ≤ (σ^2 * (2 * ((L:ℝ) * ((L:ℝ) - 1)))) * Cstar * 2 := by
+              apply mul_le_mul_of_nonneg_right ?_ (by norm_num)
+              apply mul_le_mul ?_ (hCle i) (hCnn i) (by positivity)
+              exact mul_le_mul_of_nonneg_left h7 (sq_nonneg σ)
+          _ = 4 * σ^2 * Cstar * ((L:ℝ) * ((L:ℝ) - 1)) := by ring
+      calc |(flagDensity₁ (Mv i).2 (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L) : ℝ)
+            - (flagDensity₁ (Mv i).2 (s n).2 : ℝ)|
+          = |densityEval (basisVector (Mv i))
+              ⟨L, (⟦deleteEdgeSet N Dd⟧ : FlagWithSize ∅ₜ L)⟩
+            - densityEval (basisVector (Mv i)) ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩| := by
+            rw [e1, ← e2]
+        _ ≤ (Dd.card : ℝ) * C i * 2 / ((L:ℝ) * ((L:ℝ) - 1)) := hb
+        _ ≤ 4 * σ^2 * Cstar := hbound
+  -- assemble the deleted flag sequence
+  choose Qf hQf using hkey
+  set QSeq : FlagSeq ∅ₜ := fun j => Qf (J₀ + j) with hQSeqdef
+  have hq1 : ∀ j, (QSeq j).1 = (s (φ₁ (J₀ + j))).1 :=
+    fun j => ((hQf (J₀ + j)) (by omega)).1
+  have hq2 : ∀ j, densityEval gv (QSeq j)
+      ≤ densityEval gv (s (φ₁ (J₀ + j))) - Δc :=
+    fun j => ((hQf (J₀ + j)) (by omega)).2.1
+  have hq3 : ∀ j i, |(flagDensity₁ (Mv i).2 (QSeq j).2 : ℝ)
+      - (flagDensity₁ (Mv i).2 (s (φ₁ (J₀ + j))).2 : ℝ)| ≤ 4 * σ^2 * Cstar :=
+    fun j i => ((hQf (J₀ + j)) (by omega)).2.2 i
+  have hIncQ : Increases QSeq := by
+    intro j k hjk
+    show (QSeq j).1 < (QSeq k).1
+    rw [hq1 j, hq1 k]
+    exact hs_conv.1 (hφ₁mono (by omega))
+  obtain ⟨aQ, χ, hχmono, hconvQ⟩ :=
+    increasing_flagSeq_contain_convergent_subseq QSeq hIncQ
+  obtain ⟨ψlim, hψcoe⟩ := flagSeq_limit_mem_positiveHom _ hconvQ
+  set ndx : ℕ → ℕ := fun k => φ₁ (J₀ + χ k) with hndxdef
+  have hndxmono : StrictMono ndx := by
+    intro k1 k2 hk
+    apply hφ₁mono
+    have h1 := hχmono hk
+    show J₀ + χ k1 < J₀ + χ k2
+    omega
+  -- coordinatewise limits
+  have hQlim := (flagSeq_convergesTo_iff.mp hconvQ).2
+  have hslim := (flagSeq_convergesTo_iff.mp hs_conv).2
+  have hL1 : ∀ F : FinFlag ∅ₜ, Tendsto
+      (fun k => (flagDensity₁ F.2 (QSeq (χ k)).2 : ℝ)) atTop (𝓝 (aQ F)) :=
+    fun F => hQlim F
+  have hL2 : ∀ F : FinFlag ∅ₜ, Tendsto
+      (fun k => (flagDensity₁ F.2 (s (ndx k)).2 : ℝ)) atTop (𝓝 (φ₀.coe F)) :=
+    fun F => (hslim F).comp hndxmono.tendsto_atTop
+  -- the limit density point stays 4σ²C★-close to a₀
+  have hy : ∀ i : Fin h, |aQ (Mv i) - φ₀.coe (Mv i)| ≤ 4 * σ^2 * Cstar := by
+    intro i
+    have h1 : Tendsto (fun k => |(flagDensity₁ (Mv i).2 (QSeq (χ k)).2 : ℝ)
+        - (flagDensity₁ (Mv i).2 (s (ndx k)).2 : ℝ)|) atTop
+        (𝓝 |aQ (Mv i) - φ₀.coe (Mv i)|) :=
+      ((hL1 (Mv i)).sub (hL2 (Mv i))).abs
+    apply le_of_tendsto h1
+    exact Filter.Eventually.of_forall (fun k => hq3 (χ k) i)
+  -- the gradient combination strictly drops in the limit
+  have hgrad_le : ψlim ⟦gv⟧ ≤ φ₀ ⟦gv⟧ - Δc := by
+    have h1 : Tendsto (fun k => densityEval gv (QSeq (χ k))) atTop
+        (𝓝 (densityEvalFun gv aQ)) :=
+      tendsto_finset_sum gv.support
+        (fun M (_ : M ∈ gv.support) => (hL1 M).const_mul (gv M))
+    have h4 : Tendsto (fun k => densityEval gv (s (ndx k))) atTop
+        (𝓝 (densityEvalFun gv φ₀.coe)) :=
+      tendsto_finset_sum gv.support
+        (fun M (_ : M ∈ gv.support) => (hL2 M).const_mul (gv M))
+    have h5 : densityEvalFun gv aQ ≤ densityEvalFun gv φ₀.coe - Δc := by
+      apply le_of_tendsto_of_tendsto' h1 (h4.sub_const _)
+      intro k
+      exact hq2 (χ k)
+    rw [densityEvalFun_hom gv φ₀] at h5
+    have h7 : densityEvalFun gv aQ = ψlim ⟦gv⟧ := by
+      rw [← hψcoe]
+      exact densityEvalFun_hom gv ψlim
+    rw [h7] at h5
+    exact h5
+  -- density points
+  set y : Fin h → ℝ := densityPoint Mv ψlim with hydef
+  have hyi : ∀ i, y i = aQ (Mv i) := by
+    intro i
+    show ψlim ⟦basisVector (Mv i)⟧ = aQ (Mv i)
+    rw [← PositiveHom.coe_flag, hψcoe]
+  have ha₀i : ∀ i, a₀ i = φ₀.coe (Mv i) := by
+    intro i
+    show φ₀ ⟦basisVector (Mv i)⟧ = φ₀.coe (Mv i)
+    rw [← PositiveHom.coe_flag]
+  have hdist : ∀ i, |y i - a₀ i| ≤ 4 * σ^2 * Cstar := by
+    intro i
+    rw [hyi i, ha₀i i]
+    exact hy i
+  have hnorm : ‖y - a₀‖ ≤ 4 * σ^2 * Cstar := by
+    rw [pi_norm_le_iff_of_nonneg (by positivity)]
+    intro i
+    rw [Pi.sub_apply, Real.norm_eq_abs]
+    exact hdist i
+  have hyU : y ∈ U := by
+    apply hballU
+    rw [Metric.mem_ball, dist_eq_norm]
+    calc ‖y - a₀‖ ≤ 4 * σ^2 * Cstar := hnorm
+      _ < min rU rT := hσrad
+      _ ≤ rU := min_le_left _ _
+  have hmin2 : f a₀ ≤ f y := hmin ψlim hyU
+  -- the C¹ expansion at radius ‖y − a₀‖
+  have hyT : dist y a₀ < rT := by
+    rw [dist_eq_norm]
+    calc ‖y - a₀‖ ≤ 4 * σ^2 * Cstar := hnorm
+      _ < min rU rT := hσrad
+      _ ≤ rT := min_le_right _ _
+  have hTay' := hTay hyT
+  have hx : y - a₀ = ∑ i, ((y - a₀) i) • Pi.single i (1 : ℝ) := by
+    conv_lhs => rw [← Finset.univ_sum_single (y - a₀)]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [← Pi.single_smul, smul_eq_mul, mul_one]
+  have hfd : (fderiv ℝ f a₀) (y - a₀)
+      = ∑ i, ((y - a₀) i) * (fderiv ℝ f a₀ (Pi.single i 1)) := by
+    conv_lhs => rw [hx]
+    rw [map_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [map_smul, smul_eq_mul]
+  have hgv_eval : ∀ φ : PositiveHom ∅ₜ, φ ⟦gv⟧
+      = ∑ i, (fderiv ℝ f a₀ (Pi.single i 1)) * densityPoint Mv φ i := by
+    intro φ
+    rw [hgv]
+    show φ ⟦∑ i, (fderiv ℝ f a₀ (Pi.single i 1)) • basisVector (Mv i)⟧ = _
+    rw [sum_quot, PositiveHom.map_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [smul_quot, PositiveHom.map_smul]
+    rfl
+  have hdir : (fderiv ℝ f a₀) (y - a₀) ≤ -Δc := by
+    have h8 : ψlim ⟦gv⟧ - φ₀ ⟦gv⟧ ≤ -Δc := by linarith [hgrad_le]
+    have h9 : (fderiv ℝ f a₀) (y - a₀) = ψlim ⟦gv⟧ - φ₀ ⟦gv⟧ := by
+      rw [hfd, hgv_eval ψlim, hgv_eval φ₀, ← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      have h10 : (y - a₀) i = densityPoint Mv ψlim i - densityPoint Mv φ₀ i := by
+        rw [Pi.sub_apply]
+      rw [h10]
+      ring
+    linarith [h9.le, h9.ge, h8]
+  have hTb : ‖f y - f a₀ - (fderiv ℝ f a₀) (y - a₀)‖
+      ≤ ε₀^2 * ρlim / (4096 * B' * Cstar) * ‖y - a₀‖ := hTay'
+  rw [Real.norm_eq_abs] at hTb
+  have habs := (abs_le.mp hTb).2
+  have hnormb : ε₀^2 * ρlim / (4096 * B' * Cstar) * ‖y - a₀‖
+      ≤ ε₀^2 * ρlim / (4096 * B' * Cstar) * (4 * σ^2 * Cstar) :=
+    mul_le_mul_of_nonneg_left hnorm (by positivity)
+  have hsmall : ε₀^2 * ρlim / (4096 * B' * Cstar) * (4 * σ^2 * Cstar) ≤ Δc / 2 := by
+    have h1 : ε₀^2 * ρlim / (4096 * B' * Cstar) * (4 * σ^2 * Cstar)
+        = ε₀^2 * ρlim * σ^2 / (1024 * B') := by
+      field_simp
+      ring
+    have h2 : Δc / 2 = ε₀^2 * ρlim * σ^2 / (512 * B') := by
+      rw [hΔcdef]
+      field_simp
+      ring
+    rw [h1, h2]
+    rw [div_le_div_iff₀ (by positivity) (by positivity)]
+    nlinarith [mul_nonneg (mul_nonneg (sq_nonneg ε₀) hρpos2.le) (sq_nonneg σ), hB'pos]
+  linarith [hmin2, habs, hdir, hnormb, hsmall, hΔcpos]
 
 /-! ## Theorem 4.3: the vertex variational principle -/
 

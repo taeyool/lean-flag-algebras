@@ -1239,6 +1239,18 @@ theorem card_adjPairs_eq {ℓ : ℕ} (M : FlagWithSize ∅ₜ (ℓ + 2))
   rw [h1]
   field_simp
 
+/-- Sigma-generic wrapper of the pair count. -/
+theorem card_adjPairs_eq' (G : FinFlag ∅ₜ) (h2 : 2 ≤ G.1)
+    : ((adjPairs G.2.out).card : ℚ)
+      = flagDensity₁ edgeType.toEmptyTypeFlag G.2 * ((G.1 : ℚ) * ((G.1 : ℚ) - 1))
+  := by
+  obtain ⟨L, M⟩ := G
+  dsimp only at h2 ⊢
+  obtain ⟨ℓ, rfl⟩ : ∃ ℓ, L = ℓ + 2 := ⟨L - 2, by omega⟩
+  rw [card_adjPairs_eq M]
+  push_cast
+  ring
+
 /-! ## Markov over an arbitrary index set, and orientation dedup -/
 
 /-- Markov inequality over an arbitrary finite index set. -/

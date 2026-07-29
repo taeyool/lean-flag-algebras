@@ -41,6 +41,7 @@ import LeanFlagAlgebras.Differential.Ensemble
 import LeanFlagAlgebras.Differential.DeleteFinset
 import LeanFlagAlgebras.Differential.Hitting
 import LeanFlagAlgebras.Differential.Telescope
+import LeanFlagAlgebras.Differential.EdgeRound
 import LeanFlagAlgebras.Differential.Grad
 
 -- API
