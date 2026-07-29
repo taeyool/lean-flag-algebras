@@ -1549,5 +1549,283 @@ theorem edge_descent {L : ℕ} (g : FlagVector ∅ₜ) (N : LabeledGraph ∅ₜ 
           field_simp
           ring
 
+/-! ## One full edge-deletion round -/
+
+set_option maxHeartbeats 1600000 in
+/-- **One deletion round, edge case**: if the average of
+`max(−eval_{∂_E g}, 0)` over the ordered adjacent pairs is at least `ε₀`, and
+the ordered edge density is at least `ρ₀`, then deleting the bad edges inside
+a well-chosen `⌊σL⌋`-vertex subset drops the density of `g` by
+`ε₀²ρ₀σ²/(128B')`, deleting at most `σ²L²` edges, orientation-uniquely. -/
+theorem exists_deleted_host_edge {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (gv : FlagVector ∅ₜ) {ε₀ σ B' ρ₀ : ℝ} {K : ℕ}
+    (hε₀ : 0 < ε₀) (hσpos : 0 < σ) (hσ1 : σ ≤ 1/2)
+    (hB'pos : 0 < B')
+    (hBb : ∑ F ∈ (partialEdgeVec gv).support, |partialEdgeVec gv F| ≤ B')
+    (hK : ∀ F ∈ (partialEdgeVec gv).support, F.1 ≤ K + 2)
+    (hsupp : ∀ M ∈ gv.support, M.1 ≤ L)
+    (hσcorr : B' * (2 * ((K:ℝ) + 2) * σ + 4 * ((K:ℝ) + 2)^2 * σ^2) ≤ ε₀ / 4)
+    (hKL : K + 2 ≤ L) (hσL : 4 ≤ σ * L)
+    (hρ₀nn : 0 ≤ ρ₀)
+    (hpairs : ρ₀ * (L:ℝ) * ((L:ℝ) - 1) ≤ ((adjPairs N).card : ℝ))
+    (havg : ε₀ ≤ (1 / ((adjPairs N).card : ℝ))
+        * ∑ q ∈ (adjPairs N).attach,
+            max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0)
+    : ∃ D : Finset (Fin L × Fin L),
+        (∀ p ∈ D, N.graph.Adj p.1 p.2) ∧
+        (∀ p ∈ D, ∀ q ∈ D, s(p.1, p.2) = s(q.1, q.2) → p = q) ∧
+        ((D.card : ℝ) ≤ σ^2 * (L:ℝ)^2) ∧
+        densityEval gv ⟨L, (⟦deleteEdgeSet N D⟧ : FlagWithSize ∅ₜ L)⟩
+          ≤ densityEval gv ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩
+            - ε₀^2 * ρ₀ * σ^2 / (128 * B')
+  := by
+  -- basic size facts
+  have hL8 : (8:ℝ) ≤ (L:ℝ) := by nlinarith
+  have hL8n : 8 ≤ L := by exact_mod_cast hL8
+  have hLpos : (0:ℝ) < (L:ℝ) := by linarith
+  have hd1 : (0:ℝ) < (L:ℝ) - 1 := by linarith
+  have hd2 : (0:ℝ) < (L:ℝ) - 2 := by linarith
+  have hd3 : (0:ℝ) < (L:ℝ) - 3 := by linarith
+  set B : ℝ := ∑ F ∈ (partialEdgeVec gv).support, |partialEdgeVec gv F| with hB
+  have hBnn : 0 ≤ B := Finset.sum_nonneg fun F _ => abs_nonneg _
+  -- Markov: many bad ordered pairs
+  have hxb : ∀ q ∈ (adjPairs N).attach,
+      max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0 ≤ B' := by
+    intro q _
+    calc max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0
+        ≤ |densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩| :=
+          max_le (neg_le_abs _) (abs_nonneg _)
+      _ ≤ B := abs_densityEval_le _ _
+      _ ≤ B' := hBb
+  have havg' : ε₀ ≤ (1 / (((adjPairs N).attach.card : ℝ)))
+      * ∑ q ∈ (adjPairs N).attach,
+          max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0 := by
+    rw [Finset.card_attach]
+    exact havg
+  have hmark := card_bad_ge_of_average_ge_finset (adjPairs N).attach
+    (fun q => max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0)
+    hB'pos hxb (fun q _ => le_max_right _ _) havg'
+  rw [Finset.card_attach] at hmark
+  set BadQ := (adjPairs N).attach.filter (fun q =>
+      ε₀ / 2 ≤ max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0)
+    with hBadQ
+  set BadP := BadQ.image (fun q => q.val) with hBadP
+  have hBadPcard : BadP.card = BadQ.card := by
+    rw [hBadP]
+    exact Finset.card_image_of_injective _ Subtype.val_injective
+  have hBadPadj : ∀ p ∈ BadP, N.graph.Adj p.1 p.2 := by
+    intro p hp
+    rw [hBadP, Finset.mem_image] at hp
+    obtain ⟨q, -, rfl⟩ := hp
+    exact adjPairs_adj q.2
+  have hBadPbad : ∀ p ∈ BadP, ∀ (hadj : N.graph.Adj p.1 p.2),
+      densityEval (partialEdgeVec gv)
+        ⟨L, (⟦edgeRootedAt N p.1 p.2 hadj⟧ : FlagWithSize edgeType L)⟩ ≤ -(ε₀ / 2) := by
+    intro p hp hadj
+    rw [hBadP, Finset.mem_image] at hp
+    obtain ⟨q, hq, rfl⟩ := hp
+    rw [hBadQ, Finset.mem_filter] at hq
+    have h9 := hq.2
+    by_contra hc
+    push_neg at hc
+    have h10 : max (-(densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩)) 0 < ε₀ / 2 := by
+      apply max_lt ?_ (by linarith)
+      have h11 : densityEval (partialEdgeVec gv) ⟨L, pairFlag N q⟩
+          = densityEval (partialEdgeVec gv)
+            ⟨L, (⟦edgeRootedAt N q.val.1 q.val.2 hadj⟧ : FlagWithSize edgeType L)⟩ := rfl
+      rw [h11]
+      linarith
+    linarith
+  have hBadPne : ∀ p ∈ BadP, p.1 ≠ p.2 := fun p hp => (hBadPadj p hp).ne
+  -- dedup orientations
+  obtain ⟨D₀, hD₀sub, hD₀uniq, hD₀card⟩ := exists_orientation_unique_subset BadP hBadPne
+  -- the dense vertex subset
+  set sz : ℕ := ⌊σ * (L:ℝ)⌋₊ with hsz
+  have hsz4 : 4 ≤ sz := by
+    have h9 : (4:ℝ) ≤ σ * L := hσL
+    have h10 := Nat.le_floor (by exact_mod_cast h9 : ((4:ℕ):ℝ) ≤ σ * (L:ℝ))
+    exact_mod_cast h10
+  have hszL : sz ≤ L := by
+    have h9 : (sz : ℝ) ≤ σ * L := Nat.floor_le (by positivity)
+    have h10 : σ * (L:ℝ) ≤ (L:ℝ) := by nlinarith
+    exact_mod_cast le_trans h9 h10
+  have hszr : (sz : ℝ) ≤ σ * L := Nat.floor_le (by positivity)
+  have hszlb : σ * (L:ℝ) / 2 ≤ (sz : ℝ) := by
+    have h9 := Nat.lt_floor_add_one (σ * (L:ℝ))
+    have h10 : σ * (L:ℝ) - 1 ≤ (sz : ℝ) := by
+      push_cast at h9 ⊢
+      linarith
+    nlinarith
+  obtain ⟨S, hSmem, hSdense⟩ := exists_dense_subset D₀
+    (fun p hp => hBadPne p (hD₀sub hp)) sz (by omega) hszL
+  have hScard : S.card = sz := (Finset.mem_powersetCard.mp hSmem).2
+  set D := D₀.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S) with hD
+  have hDadj : ∀ p ∈ D, N.graph.Adj p.1 p.2 :=
+    fun p hp => hBadPadj p (hD₀sub (Finset.mem_of_mem_filter p hp))
+  have hDuniq : ∀ p ∈ D, ∀ q ∈ D, s(p.1, p.2) = s(q.1, q.2) → p = q :=
+    fun p hp q hq => hD₀uniq p (Finset.mem_of_mem_filter p hp)
+      q (Finset.mem_of_mem_filter q hq)
+  have hDS : ∀ p ∈ D, p.1 ∈ S ∧ p.2 ∈ S :=
+    fun p hp => (Finset.mem_filter.mp hp).2
+  -- |D| is at most σ²L²
+  have hDcard_ub : (D.card : ℝ) ≤ σ^2 * (L:ℝ)^2 := by
+    have h9 : D ⊆ S ×ˢ S := by
+      intro p hp
+      rw [Finset.mem_product]
+      exact hDS p hp
+    have h10 : D.card ≤ sz * sz := by
+      calc D.card ≤ (S ×ˢ S).card := Finset.card_le_card h9
+        _ = sz * sz := by rw [Finset.card_product, hScard]
+    calc (D.card : ℝ) ≤ (sz : ℝ) * sz := by exact_mod_cast h10
+      _ ≤ (σ * L) * (σ * L) := by nlinarith [Nat.cast_nonneg (α := ℝ) sz]
+      _ = σ^2 * (L:ℝ)^2 := by ring
+  -- |D| is at least the average share of the bad pairs (ℕ, cross-multiplied)
+  have hDcard_lb : D₀.card * (sz * (sz - 1)) ≤ D.card * (L * (L - 1)) := by
+    have hid : sz * (sz - 1) * L.choose sz = L * (L - 1) * (L - 2).choose (sz - 2) := by
+      have e1 : sz - 1 = (sz - 2) + 1 := by omega
+      have e2 : sz = (sz - 1) + 1 := by omega
+      have h10 := Nat.add_one_mul_choose_eq (L - 1) (sz - 1)
+      have h11 := Nat.add_one_mul_choose_eq (L - 2) (sz - 2)
+      have h12 : L - 1 + 1 = L := by omega
+      have h13 : L - 2 + 1 = L - 1 := by omega
+      rw [h12] at h10
+      rw [h13] at h11
+      have h14 : L * (L - 1).choose (sz - 1) = L.choose sz * sz := by
+        rw [← e2] at h10
+        exact h10
+      have h15 : (L - 1) * (L - 2).choose (sz - 2)
+          = (L - 1).choose (sz - 1) * (sz - 1) := by
+        rw [← e1] at h11
+        exact h11
+      calc sz * (sz - 1) * L.choose sz
+          = (sz - 1) * (L.choose sz * sz) := by ring
+        _ = (sz - 1) * (L * (L - 1).choose (sz - 1)) := by rw [← h14]
+        _ = L * ((L - 1).choose (sz - 1) * (sz - 1)) := by ring
+        _ = L * ((L - 1) * (L - 2).choose (sz - 2)) := by rw [← h15]
+        _ = L * (L - 1) * (L - 2).choose (sz - 2) := by ring
+    have h16 : D₀.card * (L - 2).choose (sz - 2) ≤ D.card * L.choose sz := hSdense
+    have hchoosepos : 0 < (L - 2).choose (sz - 2) := Nat.choose_pos (by omega)
+    apply Nat.le_of_mul_le_mul_right ?_ hchoosepos
+    calc D₀.card * (sz * (sz - 1)) * (L - 2).choose (sz - 2)
+        = (sz * (sz - 1)) * (D₀.card * (L - 2).choose (sz - 2)) := by ring
+      _ ≤ (sz * (sz - 1)) * (D.card * L.choose sz) := Nat.mul_le_mul_left _ h16
+      _ = D.card * (sz * (sz - 1) * L.choose sz) := by ring
+      _ = D.card * (L * (L - 1) * (L - 2).choose (sz - 2)) := by rw [hid]
+      _ = D.card * (L * (L - 1)) * (L - 2).choose (sz - 2) := by ring
+  -- badness in the dependent form needed by the descent
+  have hDbad : ∀ p (hp : p ∈ D), densityEval (partialEdgeVec gv)
+      ⟨L, (⟦edgeRootedAt N p.1 p.2 (hDadj p hp)⟧ : FlagWithSize edgeType L)⟩
+      ≤ -(ε₀ / 2) :=
+    fun p hp => hBadPbad p (hD₀sub (Finset.mem_of_mem_filter p hp)) (hDadj p hp)
+  -- discard the definitional bodies to keep the arithmetic light
+  clear_value sz BadQ BadP D
+  clear hsz hBadQ hBadP hD hxb havg havg' hBadPadj hBadPbad hBadPne hD₀sub
+    hD₀uniq hSdense hSmem
+  -- the correction budget
+  have hcorr : B * (((K:ℝ) + 2) * S.card / ((L:ℝ) - 2)
+      + ((K:ℝ) + 2) * ((K:ℝ) + 2) * D.card / (((L:ℝ) - 2) * ((L:ℝ) - 3)))
+      ≤ ε₀ / 4 := by
+    have h20 : ((K:ℝ) + 2) * S.card / ((L:ℝ) - 2) ≤ 2 * ((K:ℝ) + 2) * σ := by
+      rw [hScard, div_le_iff₀ hd2]
+      have h21 : (L:ℝ) ≤ 2 * ((L:ℝ) - 2) := by linarith
+      calc ((K:ℝ) + 2) * (sz:ℝ)
+          ≤ ((K:ℝ) + 2) * (σ * L) :=
+            mul_le_mul_of_nonneg_left hszr (by positivity)
+        _ ≤ ((K:ℝ) + 2) * (σ * (2 * ((L:ℝ) - 2))) := by
+            apply mul_le_mul_of_nonneg_left ?_ (by positivity)
+            exact mul_le_mul_of_nonneg_left h21 hσpos.le
+        _ = 2 * ((K:ℝ) + 2) * σ * ((L:ℝ) - 2) := by ring
+    have h22 : ((K:ℝ) + 2) * ((K:ℝ) + 2) * D.card / (((L:ℝ) - 2) * ((L:ℝ) - 3))
+        ≤ 4 * ((K:ℝ) + 2)^2 * σ^2 := by
+      rw [div_le_iff₀ (mul_pos hd2 hd3)]
+      have h23 : (L:ℝ)^2 ≤ 4 * (((L:ℝ) - 2) * ((L:ℝ) - 3)) := by nlinarith [hL8]
+      calc ((K:ℝ) + 2) * ((K:ℝ) + 2) * (D.card:ℝ)
+          ≤ ((K:ℝ) + 2) * ((K:ℝ) + 2) * (σ^2 * (L:ℝ)^2) :=
+            mul_le_mul_of_nonneg_left hDcard_ub (by positivity)
+        _ ≤ ((K:ℝ) + 2) * ((K:ℝ) + 2) * (σ^2 * (4 * (((L:ℝ) - 2) * ((L:ℝ) - 3)))) := by
+            apply mul_le_mul_of_nonneg_left ?_ (by positivity)
+            exact mul_le_mul_of_nonneg_left h23 (sq_nonneg σ)
+        _ = 4 * ((K:ℝ) + 2)^2 * σ^2 * (((L:ℝ) - 2) * ((L:ℝ) - 3)) := by ring
+    have h24 : (0:ℝ) ≤ ((K:ℝ) + 2) * S.card / ((L:ℝ) - 2)
+        + ((K:ℝ) + 2) * ((K:ℝ) + 2) * D.card / (((L:ℝ) - 2) * ((L:ℝ) - 3)) := by
+      positivity
+    calc B * (((K:ℝ) + 2) * S.card / ((L:ℝ) - 2)
+          + ((K:ℝ) + 2) * ((K:ℝ) + 2) * D.card / (((L:ℝ) - 2) * ((L:ℝ) - 3)))
+        ≤ B' * (2 * ((K:ℝ) + 2) * σ + 4 * ((K:ℝ) + 2)^2 * σ^2) := by
+          apply mul_le_mul hBb (add_le_add h20 h22) h24 hB'pos.le
+      _ ≤ ε₀ / 4 := hσcorr
+  -- run the descent
+  have hdesc := edge_descent gv N (ε := ε₀/2) (corr := ε₀/4) S hK hsupp
+    (by linarith) (by omega) hKL D hDadj hDS hDuniq hDbad hcorr
+  refine ⟨D, hDadj, hDuniq, hDcard_ub, ?_⟩
+  refine le_trans hdesc ?_
+  have hLL1 : (0:ℝ) < (L:ℝ) * ((L:ℝ) - 1) := by nlinarith
+  -- the drop dominates ε₀²ρ₀σ²/(128B')
+  have hdrop : ε₀^2 * ρ₀ * σ^2 / (128 * B')
+      ≤ (D.card : ℝ) * (ε₀/2 - ε₀/4) * 2 / ((L:ℝ) * ((L:ℝ) - 1)) := by
+    have c1 : (D₀.card : ℝ) * ((sz:ℝ) * ((sz:ℝ) - 1))
+        ≤ (D.card : ℝ) * ((L:ℝ) * ((L:ℝ) - 1)) := by
+      have h9 : ((D₀.card * (sz * (sz - 1)) : ℕ) : ℝ)
+          ≤ ((D.card * (L * (L - 1)) : ℕ) : ℝ) := by exact_mod_cast hDcard_lb
+      push_cast [Nat.cast_sub (by omega : 1 ≤ sz), Nat.cast_sub (by omega : 1 ≤ L)] at h9
+      linarith
+    have c2 : (BadP.card : ℝ) ≤ 2 * (D₀.card : ℝ) := by exact_mod_cast hD₀card
+    have c3 : ε₀ / (2 * B') * ((adjPairs N).card : ℝ) ≤ (BadP.card : ℝ) := by
+      rw [hBadPcard]
+      exact hmark
+    have d0lb : ε₀ / (4 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1)) ≤ (D₀.card : ℝ) := by
+      have h9 : ε₀ / (2 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1))
+          ≤ ε₀ / (2 * B') * ((adjPairs N).card : ℝ) :=
+        mul_le_mul_of_nonneg_left hpairs (by positivity)
+      have h10 : ε₀ / (4 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1))
+          = (ε₀ / (2 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1))) / 2 := by
+        ring
+      linarith
+    have hsz4r : (4:ℝ) ≤ (sz:ℝ) := by exact_mod_cast hsz4
+    have c5 : σ^2 * (L:ℝ)^2 / 8 ≤ (sz:ℝ) * ((sz:ℝ) - 1) := by
+      have h9 : σ * (L:ℝ) / 4 ≤ (sz:ℝ) - 1 := by linarith
+      calc σ^2 * (L:ℝ)^2 / 8 = (σ * (L:ℝ) / 2) * (σ * (L:ℝ) / 4) := by ring
+        _ ≤ (sz:ℝ) * ((sz:ℝ) - 1) :=
+            mul_le_mul hszlb h9 (by positivity) (Nat.cast_nonneg _)
+    have Dlb : ε₀ / (4 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1)) * (σ^2 * (L:ℝ)^2 / 8)
+        ≤ (D.card : ℝ) * ((L:ℝ) * ((L:ℝ) - 1)) := by
+      calc ε₀ / (4 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1)) * (σ^2 * (L:ℝ)^2 / 8)
+          ≤ (D₀.card : ℝ) * (σ^2 * (L:ℝ)^2 / 8) :=
+            mul_le_mul_of_nonneg_right d0lb (by positivity)
+        _ ≤ (D₀.card : ℝ) * ((sz:ℝ) * ((sz:ℝ) - 1)) :=
+            mul_le_mul_of_nonneg_left c5 (Nat.cast_nonneg _)
+        _ ≤ (D.card : ℝ) * ((L:ℝ) * ((L:ℝ) - 1)) := c1
+    have DlbX : ε₀ * ρ₀ * σ^2 * (L:ℝ)^2 / (32 * B') ≤ (D.card : ℝ) := by
+      have h30 : (ε₀ * ρ₀ * σ^2 * (L:ℝ)^2 / (32 * B')) * ((L:ℝ) * ((L:ℝ) - 1))
+          = ε₀ / (4 * B') * (ρ₀ * (L:ℝ) * ((L:ℝ) - 1)) * (σ^2 * (L:ℝ)^2 / 8) := by
+        field_simp
+        ring
+      have h31 : (ε₀ * ρ₀ * σ^2 * (L:ℝ)^2 / (32 * B')) * ((L:ℝ) * ((L:ℝ) - 1))
+          ≤ (D.card : ℝ) * ((L:ℝ) * ((L:ℝ) - 1)) := by
+        rw [h30]
+        exact Dlb
+      exact le_of_mul_le_mul_right h31 hLL1
+    rw [div_le_div_iff₀ (by positivity : (0:ℝ) < 128 * B') hLL1]
+    have h32 := mul_le_mul_of_nonneg_left DlbX
+      (by positivity : (0:ℝ) ≤ 64 * B' * ε₀)
+    have hL2L : (L:ℝ) * ((L:ℝ) - 1) ≤ (L:ℝ)^2 := by nlinarith
+    have h33 : 64 * B' * ε₀ * (ε₀ * ρ₀ * σ^2 * (L:ℝ)^2 / (32 * B'))
+        = 2 * ε₀^2 * ρ₀ * σ^2 * (L:ℝ)^2 := by
+      field_simp
+      ring
+    rw [h33] at h32
+    have h34 : ε₀^2 * ρ₀ * σ^2 * ((L:ℝ) * ((L:ℝ) - 1))
+        ≤ 2 * ε₀^2 * ρ₀ * σ^2 * (L:ℝ)^2 := by
+      have h35 : (0:ℝ) ≤ ε₀^2 * ρ₀ * σ^2 := by positivity
+      have h36 : (L:ℝ) * ((L:ℝ) - 1) ≤ 2 * (L:ℝ)^2 := by nlinarith
+      calc ε₀^2 * ρ₀ * σ^2 * ((L:ℝ) * ((L:ℝ) - 1))
+          ≤ ε₀^2 * ρ₀ * σ^2 * (2 * (L:ℝ)^2) := mul_le_mul_of_nonneg_left h36 h35
+        _ = 2 * ε₀^2 * ρ₀ * σ^2 * (L:ℝ)^2 := by ring
+    calc ε₀^2 * ρ₀ * σ^2 * ((L:ℝ) * ((L:ℝ) - 1))
+        ≤ 2 * ε₀^2 * ρ₀ * σ^2 * (L:ℝ)^2 := h34
+      _ ≤ 64 * B' * ε₀ * (D.card : ℝ) := h32
+      _ = (D.card : ℝ) * (ε₀/2 - ε₀/4) * 2 * (128 * B') := by ring
+  exact sub_le_sub_left hdrop _
+
 end Differential
 end FlagAlgebras
