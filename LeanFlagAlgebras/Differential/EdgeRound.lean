@@ -926,5 +926,55 @@ theorem pair_hitting_density {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
     push_cast
     ring
 
+/-- Vector version of the pair-hitting estimate. -/
+theorem pair_hitting_eval {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (D : Finset (Fin L × Fin L)) (S : Finset (Fin L)) (v₁ v₂ : Fin L)
+    (h₁ : N.graph.Adj v₁ v₂) (h₂ : (deleteEdgeSet N D).graph.Adj v₁ v₂)
+    (g : FlagVector edgeType) {K : ℕ}
+    (hK : ∀ F ∈ g.support, F.1 ≤ K + 2)
+    (hL : 4 ≤ L) (hKL : K + 2 ≤ L)
+    (hDadj : ∀ p ∈ D, N.graph.Adj p.1 p.2)
+    (hDS : ∀ p ∈ D, p.1 ∈ S ∧ p.2 ∈ S)
+    : |densityEval g ⟨L, (⟦edgeRootedAt N v₁ v₂ h₁⟧ : FlagWithSize edgeType L)⟩
+        - densityEval g ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : FlagWithSize edgeType L)⟩|
+      ≤ (∑ F ∈ g.support, |g F|)
+          * (((K : ℝ) + 2) * S.card / ((L : ℝ) - 2)
+            + ((K : ℝ) + 2) * ((K : ℝ) + 2) * D.card
+                / (((L : ℝ) - 2) * ((L : ℝ) - 3)))
+  := by
+  have hLr : (4 : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL
+  have hd2 : (0:ℝ) < (L : ℝ) - 2 := by linarith
+  have hd3 : (0:ℝ) < (L : ℝ) - 3 := by linarith
+  dsimp only [densityEval, linearExtension]
+  rw [← Finset.sum_sub_distrib]
+  have hterm : ∀ F ∈ g.support,
+      |g F • ((flagDensity₁ F.2 (⟦edgeRootedAt N v₁ v₂ h₁⟧
+          : FlagWithSize edgeType L) : ℝ))
+        - g F • ((flagDensity₁ F.2 (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : FlagWithSize edgeType L) : ℝ))|
+      ≤ |g F| * (((K : ℝ) + 2) * S.card / ((L : ℝ) - 2)
+          + ((K : ℝ) + 2) * ((K : ℝ) + 2) * D.card
+              / (((L : ℝ) - 2) * ((L : ℝ) - 3))) := by
+    intro F hF
+    rw [smul_eq_mul, smul_eq_mul, ← mul_sub, abs_mul]
+    apply mul_le_mul_of_nonneg_left ?_ (abs_nonneg _)
+    have hkF : 2 ≤ F.1 := finFlag_size_ge_n₀ F
+    have hkL : F.1 ≤ L := le_trans (hK F hF) hKL
+    have h3 := pair_hitting_density N D S v₁ v₂ h₁ h₂ F.2 hkF hL hkL hDadj hDS
+    refine le_trans h3 ?_
+    have hKr : (F.1 : ℝ) ≤ (K : ℝ) + 2 := by exact_mod_cast hK F hF
+    have hKnn : (0:ℝ) ≤ (K : ℝ) + 2 := by positivity
+    apply add_le_add
+    · apply div_le_div_of_nonneg_right ?_ hd2.le
+      apply mul_le_mul_of_nonneg_right hKr (Nat.cast_nonneg _)
+    · apply div_le_div_of_nonneg_right ?_ (le_of_lt (mul_pos hd2 hd3))
+      apply mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg _)
+      apply mul_le_mul hKr hKr ?_ hKnn
+      exact_mod_cast Nat.zero_le F.1
+  refine le_trans (Finset.abs_sum_le_sum_abs _ _)
+    (le_trans (Finset.sum_le_sum hterm) (le_of_eq ?_))
+  rw [← Finset.sum_mul]
+
 end Differential
 end FlagAlgebras
