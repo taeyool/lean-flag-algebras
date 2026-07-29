@@ -1099,5 +1099,210 @@ theorem exists_dense_subset {L : ℕ} (BadP : Finset (Fin L × Fin L))
   obtain ⟨S, hS, hSle⟩ := Finset.exists_le_of_sum_le hnonempty hsum_le
   exact ⟨S, hS, hSle⟩
 
+/-! ## The edge telescopes -/
+
+/-- A deleted pair not covered by the rest of `D` survives in the partially
+deleted host. -/
+theorem deleteEdgeSet_adj_of_unique {L : ℕ} {N : LabeledGraph ∅ₜ (Fin L)}
+    {D : Finset (Fin L × Fin L)} {p : Fin L × Fin L}
+    (hadj : N.graph.Adj p.1 p.2)
+    (huniq : ∀ q ∈ D, s(q.1, q.2) = s(p.1, p.2) → q = p) (hp : p ∉ D)
+    : (deleteEdgeSet N D).graph.Adj p.1 p.2 := by
+  rw [deleteEdgeSet_adj]
+  refine ⟨hadj, ?_⟩
+  intro q hq hc
+  exact hp ((huniq q hq hc) ▸ hq)
+
+/-- **(S-edge)** Deleting `|D|` edges moves any model combination's density by
+at most `|D| · ‖∂_E g‖₁ · 2/(L(L−1))`. -/
+theorem edge_stability {L : ℕ} (g : FlagVector ∅ₜ) (N : LabeledGraph ∅ₜ (Fin L))
+    (hsupp : ∀ M ∈ g.support, M.1 ≤ L) (hL2 : 2 ≤ L)
+    : ∀ D : Finset (Fin L × Fin L),
+      (∀ p ∈ D, N.graph.Adj p.1 p.2) →
+      (∀ p ∈ D, ∀ q ∈ D, s(p.1, p.2) = s(q.1, q.2) → p = q) →
+      |densityEval g ⟨L, (⟦deleteEdgeSet N D⟧ : FlagWithSize ∅ₜ L)⟩
+        - densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩|
+      ≤ (D.card : ℝ) * (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+          * 2 / ((L : ℝ) * ((L : ℝ) - 1))
+  := by
+  intro D
+  induction D using Finset.induction_on with
+  | empty =>
+    intro _ _
+    rw [deleteEdgeSet_empty, sub_self, abs_zero]
+    simp only [Finset.card_empty, Nat.cast_zero, zero_mul, zero_div, le_refl]
+  | insert p D' hp ih =>
+    intro hDadj huniq
+    have hDadj' : ∀ q ∈ D', N.graph.Adj q.1 q.2 :=
+      fun q hq => hDadj q (Finset.mem_insert_of_mem hq)
+    have huniq' : ∀ q ∈ D', ∀ r ∈ D', s(q.1, q.2) = s(r.1, r.2) → q = r :=
+      fun q hq r hr => huniq q (Finset.mem_insert_of_mem hq) r (Finset.mem_insert_of_mem hr)
+    have hih := ih hDadj' huniq'
+    have hadj' : (deleteEdgeSet N D').graph.Adj p.1 p.2 := by
+      apply deleteEdgeSet_adj_of_unique (hDadj p (Finset.mem_insert_self p D')) ?_ hp
+      intro q hq hc
+      exact huniq q (Finset.mem_insert_of_mem hq) p (Finset.mem_insert_self p D') hc
+    have hstep := edge_deletion_density_vec g hsupp hL2 (deleteEdgeSet N D') p.1 p.2 hadj'
+    rw [← deleteEdgeSet_insert] at hstep
+    have hLr : (2 : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL2
+    have hLpos : (0:ℝ) < (L : ℝ) * ((L : ℝ) - 1) := by nlinarith
+    have habs : |densityEval (partialEdgeVec g)
+        ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧ : FlagWithSize edgeType L)⟩|
+        ≤ ∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F| :=
+      abs_densityEval_le _ _
+    have hcardins : (insert p D').card = D'.card + 1 := Finset.card_insert_of_notMem hp
+    have hBnn : 0 ≤ ∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F| :=
+      Finset.sum_nonneg fun F _ => abs_nonneg _
+    calc |densityEval g ⟨L, (⟦deleteEdgeSet N (insert p D')⟧ : FlagWithSize ∅ₜ L)⟩
+          - densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩|
+        = |(densityEval g ⟨L, (⟦deleteEdgeSet N D'⟧ : FlagWithSize ∅ₜ L)⟩
+            - densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩)
+          + (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+            * densityEval (partialEdgeVec g)
+              ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+                : FlagWithSize edgeType L)⟩| := by
+          rw [hstep]
+          ring_nf
+      _ ≤ |densityEval g ⟨L, (⟦deleteEdgeSet N D'⟧ : FlagWithSize ∅ₜ L)⟩
+            - densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩|
+          + |(2 / ((L : ℝ) * ((L : ℝ) - 1)))
+            * densityEval (partialEdgeVec g)
+              ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+                : FlagWithSize edgeType L)⟩| := abs_add_le _ _
+      _ ≤ (D'.card : ℝ) * (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+            * 2 / ((L : ℝ) * ((L : ℝ) - 1))
+          + (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+            * (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|) := by
+          apply add_le_add hih
+          rw [abs_mul]
+          have h9 : |2 / ((L : ℝ) * ((L : ℝ) - 1))| = 2 / ((L : ℝ) * ((L : ℝ) - 1)) :=
+            abs_of_pos (by positivity)
+          rw [h9]
+          exact mul_le_mul_of_nonneg_left habs (by positivity)
+      _ = ((insert p D').card : ℝ)
+            * (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+            * 2 / ((L : ℝ) * ((L : ℝ) - 1)) := by
+          rw [hcardins]
+          push_cast
+          field_simp
+
+/-- **(T-edge)** Deleting `|D|` pairs that are all `ε`-bad *in the original
+host* and lie inside `S` drives the density of `g` down by
+`|D|·(ε−corr)·2/(L(L−1))`. -/
+theorem edge_descent {L : ℕ} (g : FlagVector ∅ₜ) (N : LabeledGraph ∅ₜ (Fin L))
+    {ε corr : ℝ} {K : ℕ} (S : Finset (Fin L))
+    (hK : ∀ F ∈ (partialEdgeVec g).support, F.1 ≤ K + 2)
+    (hsupp : ∀ M ∈ g.support, M.1 ≤ L)
+    (hεcorr : 0 ≤ ε - corr) (hL : 4 ≤ L) (hKL : K + 2 ≤ L)
+    : ∀ D : Finset (Fin L × Fin L),
+      ∀ (hDadj : ∀ p ∈ D, N.graph.Adj p.1 p.2),
+      (∀ p ∈ D, p.1 ∈ S ∧ p.2 ∈ S) →
+      (∀ p ∈ D, ∀ q ∈ D, s(p.1, p.2) = s(q.1, q.2) → p = q) →
+      (∀ p (hp : p ∈ D), densityEval (partialEdgeVec g)
+        ⟨L, (⟦edgeRootedAt N p.1 p.2 (hDadj p hp)⟧ : FlagWithSize edgeType L)⟩ ≤ -ε) →
+      ((∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+        * (((K : ℝ) + 2) * S.card / ((L : ℝ) - 2)
+          + ((K : ℝ) + 2) * ((K : ℝ) + 2) * D.card
+              / (((L : ℝ) - 2) * ((L : ℝ) - 3))) ≤ corr) →
+      densityEval g ⟨L, (⟦deleteEdgeSet N D⟧ : FlagWithSize ∅ₜ L)⟩
+        ≤ densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩
+          - (D.card : ℝ) * (ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1))
+  := by
+  intro D
+  induction D using Finset.induction_on with
+  | empty =>
+    intro _ _ _ _ _
+    rw [deleteEdgeSet_empty]
+    simp only [Finset.card_empty, Nat.cast_zero, zero_mul, zero_div, sub_zero, le_refl]
+  | insert p D' hp ih =>
+    intro hDadj hDS huniq hbad hcorr
+    have hLr : (4 : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL
+    have hd2 : (0:ℝ) < (L : ℝ) - 2 := by linarith
+    have hd3 : (0:ℝ) < (L : ℝ) - 3 := by linarith
+    have hLpos : (0:ℝ) < (L : ℝ) * ((L : ℝ) - 1) := by nlinarith
+    have hBnn : 0 ≤ ∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F| :=
+      Finset.sum_nonneg fun F _ => abs_nonneg _
+    have hcardins : (insert p D').card = D'.card + 1 := Finset.card_insert_of_notMem hp
+    have hDadj' : ∀ q ∈ D', N.graph.Adj q.1 q.2 :=
+      fun q hq => hDadj q (Finset.mem_insert_of_mem hq)
+    have hDS' : ∀ q ∈ D', q.1 ∈ S ∧ q.2 ∈ S :=
+      fun q hq => hDS q (Finset.mem_insert_of_mem hq)
+    have huniq' : ∀ q ∈ D', ∀ r ∈ D', s(q.1, q.2) = s(r.1, r.2) → q = r :=
+      fun q hq r hr => huniq q (Finset.mem_insert_of_mem hq) r (Finset.mem_insert_of_mem hr)
+    have hbad' : ∀ q (hq : q ∈ D'), densityEval (partialEdgeVec g)
+        ⟨L, (⟦edgeRootedAt N q.1 q.2 (hDadj' q hq)⟧ : FlagWithSize edgeType L)⟩ ≤ -ε :=
+      fun q hq => hbad q (Finset.mem_insert_of_mem hq)
+    have hcorr' : (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+        * (((K : ℝ) + 2) * S.card / ((L : ℝ) - 2)
+          + ((K : ℝ) + 2) * ((K : ℝ) + 2) * D'.card
+              / (((L : ℝ) - 2) * ((L : ℝ) - 3))) ≤ corr := by
+      refine le_trans ?_ hcorr
+      apply mul_le_mul_of_nonneg_left ?_ hBnn
+      apply add_le_add le_rfl
+      apply div_le_div_of_nonneg_right ?_ (le_of_lt (mul_pos hd2 hd3))
+      apply mul_le_mul_of_nonneg_left ?_ (by positivity)
+      rw [hcardins]
+      push_cast
+      linarith
+    have hih := ih hDadj' hDS' huniq' hbad' hcorr'
+    -- the inserted pair survives in the partially deleted host
+    have hadj' : (deleteEdgeSet N D').graph.Adj p.1 p.2 := by
+      apply deleteEdgeSet_adj_of_unique (hDadj p (Finset.mem_insert_self p D')) ?_ hp
+      intro q hq hc
+      exact huniq q (Finset.mem_insert_of_mem hq) p (Finset.mem_insert_self p D') hc
+    -- badness survives up to the hitting correction
+    have hpe : densityEval (partialEdgeVec g)
+        ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+          : FlagWithSize edgeType L)⟩ ≤ -(ε - corr) := by
+      have hhit := pair_hitting_eval N D' S p.1 p.2
+        (hDadj p (Finset.mem_insert_self p D')) hadj' (partialEdgeVec g)
+        hK hL hKL hDadj' hDS'
+      have h1 := hbad p (Finset.mem_insert_self p D')
+      have h2 := abs_le.mp hhit
+      have h3 : (∑ F ∈ (partialEdgeVec g).support, |partialEdgeVec g F|)
+          * (((K : ℝ) + 2) * S.card / ((L : ℝ) - 2)
+            + ((K : ℝ) + 2) * ((K : ℝ) + 2) * D'.card
+                / (((L : ℝ) - 2) * ((L : ℝ) - 3))) ≤ corr := hcorr'
+      linarith [h2.1]
+    -- one more deletion step
+    have hstep := edge_deletion_density_vec g hsupp (by omega) (deleteEdgeSet N D')
+      p.1 p.2 hadj'
+    rw [← deleteEdgeSet_insert] at hstep
+    have hdrop : (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+        * densityEval (partialEdgeVec g)
+          ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+            : FlagWithSize edgeType L)⟩
+        ≤ -((ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1))) := by
+      have h9 : (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+          * densityEval (partialEdgeVec g)
+            ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+              : FlagWithSize edgeType L)⟩
+          ≤ (2 / ((L : ℝ) * ((L : ℝ) - 1))) * (-(ε - corr)) :=
+        mul_le_mul_of_nonneg_left hpe (by positivity)
+      calc (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+            * densityEval (partialEdgeVec g)
+              ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+                : FlagWithSize edgeType L)⟩
+          ≤ (2 / ((L : ℝ) * ((L : ℝ) - 1))) * (-(ε - corr)) := h9
+        _ = -((ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1))) := by
+            field_simp
+    calc densityEval g ⟨L, (⟦deleteEdgeSet N (insert p D')⟧ : FlagWithSize ∅ₜ L)⟩
+        = densityEval g ⟨L, (⟦deleteEdgeSet N D'⟧ : FlagWithSize ∅ₜ L)⟩
+          + (2 / ((L : ℝ) * ((L : ℝ) - 1)))
+            * densityEval (partialEdgeVec g)
+              ⟨L, (⟦edgeRootedAt (deleteEdgeSet N D') p.1 p.2 hadj'⟧
+                : FlagWithSize edgeType L)⟩ := hstep
+      _ ≤ (densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩
+            - (D'.card : ℝ) * (ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1)))
+          - (ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1)) := by
+          have h9 := hdrop
+          linarith
+      _ = densityEval g ⟨L, (⟦N⟧ : FlagWithSize ∅ₜ L)⟩
+          - ((insert p D').card : ℝ) * (ε - corr) * 2 / ((L : ℝ) * ((L : ℝ) - 1)) := by
+          rw [hcardins]
+          push_cast
+          field_simp
+          ring
+
 end Differential
 end FlagAlgebras
