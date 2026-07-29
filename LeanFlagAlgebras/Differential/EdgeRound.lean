@@ -511,5 +511,420 @@ theorem mem_inducingSubsets_deleteEdgeSet_iff {L : ℕ}
     exact ⟨hsub₁, ⟨(deleteEdgeSet_induce_iso_of_avoiding N D v₁ v₂ h₁ h₂ S'
       havoid hsub₁ hsub).trans ψ⟩⟩
 
+/-- **The pair-hitting estimate**: deleting a set `D` of pairs lying inside a
+vertex set `S` moves any `E`-rooted `kF`-flag density at a surviving edge by
+at most `kF·|S|/(L−2) + kF²·|D|/((L−2)(L−3))`. -/
+theorem pair_hitting_density {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (D : Finset (Fin L × Fin L)) (S : Finset (Fin L)) (v₁ v₂ : Fin L)
+    (h₁ : N.graph.Adj v₁ v₂) (h₂ : (deleteEdgeSet N D).graph.Adj v₁ v₂)
+    {kF : ℕ} (F : FlagWithSize edgeType kF) (hkF : 2 ≤ kF)
+    (hL : 4 ≤ L) (hkL : kF ≤ L)
+    (hDadj : ∀ p ∈ D, N.graph.Adj p.1 p.2)
+    (hDS : ∀ p ∈ D, p.1 ∈ S ∧ p.2 ∈ S)
+    : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℝ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℝ)|
+      ≤ (kF : ℝ) * S.card / ((L : ℝ) - 2)
+        + (kF : ℝ) * (kF : ℝ) * D.card / (((L : ℝ) - 2) * ((L : ℝ) - 3))
+  := by
+  have hLr : (4 : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL
+  have hd2 : (0:ℝ) < (L : ℝ) - 2 := by linarith
+  have hd3 : (0:ℝ) < (L : ℝ) - 3 := by linarith
+  -- the trivial two-vertex case
+  rcases Nat.lt_or_ge kF 3 with hk2 | hk3
+  · have hkF2 : kF = 2 := by omega
+    subst hkF2
+    have hF : F = emptyFlag edgeType := Subsingleton.elim _ _
+    rw [hF, flagDensity_empty, flagDensity_empty]
+    have h9 : (0:ℝ) ≤ (2 : ℕ) * (S.card : ℝ) / ((L : ℝ) - 2)
+        + (2 : ℕ) * (2 : ℕ) * (D.card : ℝ) / (((L : ℝ) - 2) * ((L : ℝ) - 3)) := by
+      positivity
+    simpa using h9
+  -- densities as counts over the same denominator
+  have hden : (0 : ℚ) < (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by
+    have h9 : 0 < (L - 2).choose (kF - 2) := Nat.choose_pos (by omega)
+    exact_mod_cast h9
+  have hp : (flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℚ)
+      = ((inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset.card : ℚ)
+        / (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by
+    conv_lhs => rw [← Quotient.out_eq F]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+    simp only [Fintype.card_fin]
+  have hp' : (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+        : Flag edgeType (Fin L)) : ℚ)
+      = ((inducingSubsets F.out
+            (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset.card : ℚ)
+        / (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by
+    conv_lhs => rw [← Quotient.out_eq F]
+    rw [flagDensity₁_mk, labeledGraphDensity_eq_card_div]
+    simp only [Fintype.card_fin]
+  set avoidP : Set (Fin L) → Prop := fun S' => ∀ p ∈ D, ¬(p.1 ∈ S' ∧ p.2 ∈ S')
+    with havoidP
+  have hAA' : (inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset.filter avoidP
+      = (inducingSubsets F.out
+          (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset.filter avoidP := by
+    apply Finset.ext
+    intro S'
+    rw [Finset.mem_filter, Finset.mem_filter, Set.mem_toFinset, Set.mem_toFinset]
+    constructor
+    · rintro ⟨hmem, hav⟩
+      exact ⟨(mem_inducingSubsets_deleteEdgeSet_iff N D v₁ v₂ h₁ h₂ F S' hav).mp hmem, hav⟩
+    · rintro ⟨hmem, hav⟩
+      exact ⟨(mem_inducingSubsets_deleteEdgeSet_iff N D v₁ v₂ h₁ h₂ F S' hav).mpr hmem, hav⟩
+  set HitOne : Finset (Set (Fin L)) := (S \ {v₁, v₂}).biUnion (fun x =>
+      ({S' : Set (Fin L) | S'.toFinset.card = kF
+        ∧ ∀ y ∈ insert v₁ (insert v₂ ({x} : Finset (Fin L))), y ∈ S'}).toFinset)
+    with hHitOne
+  set HitTwo : Finset (Set (Fin L)) := (D.filter (fun p =>
+      ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L)))).biUnion
+      (fun p => ({S' : Set (Fin L) | S'.toFinset.card = kF
+        ∧ ∀ y ∈ insert v₁ (insert v₂ (insert p.1 ({p.2} : Finset (Fin L)))), y ∈ S'}).toFinset)
+    with hHitTwo
+  -- every non-avoiding inducing subset of either host is a hitting subset
+  have hhit : ∀ {X : LabeledGraph ∅ₜ (Fin L)} (hX : X.graph.Adj v₁ v₂)
+      (S' : Set (Fin L)), S' ∈ inducingSubsets F.out (edgeRootedAt X v₁ v₂ hX) →
+      ¬avoidP S' → S' ∈ HitOne ∪ HitTwo := by
+    intro X hX S' hmem hnav
+    obtain ⟨hv₁S, hv₂S, hcard⟩ := inducingSubsets_edgeRooted_mem X v₁ v₂ hX F S' hmem
+    rw [havoidP, not_forall] at hnav
+    obtain ⟨p, hnp⟩ := hnav
+    rw [Classical.not_imp, not_not] at hnp
+    obtain ⟨hpD, hp1, hp2⟩ := hnp
+    have hpair : s(p.1, p.2) ≠ s(v₁, v₂) := ((deleteEdgeSet_adj N D v₁ v₂).mp h₂).2 p hpD
+    have hpne : p.1 ≠ p.2 := (hDadj p hpD).ne
+    rw [Finset.mem_union]
+    by_cases htouch : p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∨ p.2 ∈ ({v₁, v₂} : Finset (Fin L))
+    · left
+      rw [hHitOne, Finset.mem_biUnion]
+      rcases htouch with ht | ht
+      · rw [Finset.mem_insert, Finset.mem_singleton] at ht
+        refine ⟨p.2, ?_, ?_⟩
+        · rw [Finset.mem_sdiff]
+          refine ⟨(hDS p hpD).2, ?_⟩
+          intro hc
+          rw [Finset.mem_insert, Finset.mem_singleton] at hc
+          apply hpair
+          rcases ht with ht' | ht' <;> rcases hc with hc' | hc'
+          · exact absurd (ht'.trans hc'.symm) hpne
+          · rw [ht', hc']
+          · rw [ht', hc']
+            exact Sym2.eq_swap
+          · exact absurd (ht'.trans hc'.symm) hpne
+        · rw [Set.mem_toFinset, Set.mem_setOf_eq]
+          refine ⟨hcard, ?_⟩
+          intro y hy
+          simp only [Finset.mem_insert, Finset.mem_singleton] at hy
+          rcases hy with rfl | rfl | rfl
+          · exact hv₁S
+          · exact hv₂S
+          · exact hp2
+      · rw [Finset.mem_insert, Finset.mem_singleton] at ht
+        refine ⟨p.1, ?_, ?_⟩
+        · rw [Finset.mem_sdiff]
+          refine ⟨(hDS p hpD).1, ?_⟩
+          intro hc
+          rw [Finset.mem_insert, Finset.mem_singleton] at hc
+          apply hpair
+          rcases hc with hc' | hc' <;> rcases ht with ht' | ht'
+          · exact absurd (hc'.trans ht'.symm) hpne
+          · rw [hc', ht']
+          · rw [hc', ht']
+            exact Sym2.eq_swap
+          · exact absurd (hc'.trans ht'.symm) hpne
+        · rw [Set.mem_toFinset, Set.mem_setOf_eq]
+          refine ⟨hcard, ?_⟩
+          intro y hy
+          simp only [Finset.mem_insert, Finset.mem_singleton] at hy
+          rcases hy with rfl | rfl | rfl
+          · exact hv₁S
+          · exact hv₂S
+          · exact hp1
+    · right
+      push_neg at htouch
+      rw [hHitTwo, Finset.mem_biUnion]
+      refine ⟨p, ?_, ?_⟩
+      · rw [Finset.mem_filter]
+        exact ⟨hpD, htouch.1, htouch.2⟩
+      · rw [Set.mem_toFinset, Set.mem_setOf_eq]
+        refine ⟨hcard, ?_⟩
+        intro y hy
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hy
+        rcases hy with rfl | rfl | rfl | rfl
+        · exact hv₁S
+        · exact hv₂S
+        · exact hp1
+        · exact hp2
+  -- the sharing part of the hitting collection
+  have hone : HitOne.card ≤ S.card * (L - 3).choose (kF - 3) := by
+    rw [hHitOne]
+    refine le_trans Finset.card_biUnion_le ?_
+    have h9 : ∀ x ∈ S \ ({v₁, v₂} : Finset (Fin L)),
+        ({S' : Set (Fin L) | S'.toFinset.card = kF
+          ∧ ∀ y ∈ insert v₁ (insert v₂ ({x} : Finset (Fin L))), y ∈ S'}).toFinset.card
+        = (L - 3).choose (kF - 3) := by
+      intro x hx
+      rw [Finset.mem_sdiff, Finset.mem_insert, Finset.mem_singleton] at hx
+      push_neg at hx
+      have hc3 : (insert v₁ (insert v₂ ({x} : Finset (Fin L)))).card = 3 := by
+        rw [Finset.card_insert_of_notMem, Finset.card_insert_of_notMem,
+          Finset.card_singleton]
+        · rw [Finset.mem_singleton]
+          exact fun hc => hx.2.2 hc.symm
+        · rw [Finset.mem_insert, Finset.mem_singleton]
+          push_neg
+          exact ⟨h₁.ne, fun hc => hx.2.1 hc.symm⟩
+      rw [card_supersets _ (by omega : (insert v₁ (insert v₂
+        ({x} : Finset (Fin L)))).card ≤ kF), hc3]
+    calc ∑ x ∈ S \ ({v₁, v₂} : Finset (Fin L)),
+          ({S' : Set (Fin L) | S'.toFinset.card = kF
+            ∧ ∀ y ∈ insert v₁ (insert v₂ ({x} : Finset (Fin L))), y ∈ S'}).toFinset.card
+        = ∑ _x ∈ S \ ({v₁, v₂} : Finset (Fin L)), (L - 3).choose (kF - 3) :=
+          Finset.sum_congr rfl h9
+      _ = (S \ ({v₁, v₂} : Finset (Fin L))).card * (L - 3).choose (kF - 3) := by
+          rw [Finset.sum_const, smul_eq_mul]
+      _ ≤ S.card * (L - 3).choose (kF - 3) := by
+          apply Nat.mul_le_mul_right
+          exact Finset.card_le_card Finset.sdiff_subset
+  -- the four-vertex sets of the disjoint part
+  have hc4 : ∀ p ∈ D.filter (fun p =>
+      ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L))),
+      (insert v₁ (insert v₂ (insert p.1 ({p.2} : Finset (Fin L))))).card = 4 := by
+    intro p hp
+    rw [Finset.mem_filter] at hp
+    obtain ⟨hpD, hp1, hp2⟩ := hp
+    rw [Finset.mem_insert, Finset.mem_singleton] at hp1 hp2
+    push_neg at hp1 hp2
+    have hpne : p.1 ≠ p.2 := (hDadj p hpD).ne
+    rw [Finset.card_insert_of_notMem, Finset.card_insert_of_notMem,
+      Finset.card_insert_of_notMem, Finset.card_singleton]
+    · rw [Finset.mem_singleton]
+      exact hpne
+    · rw [Finset.mem_insert, Finset.mem_singleton]
+      push_neg
+      exact ⟨fun hc => hp1.2 hc.symm, fun hc => hp2.2 hc.symm⟩
+    · rw [Finset.mem_insert, Finset.mem_insert, Finset.mem_singleton]
+      push_neg
+      exact ⟨h₁.ne, fun hc => hp1.1 hc.symm, fun hc => hp2.1 hc.symm⟩
+  -- count difference is at most the hitting count
+  set A : ℕ := (inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset.card with hA
+  set A' : ℕ := (inducingSubsets F.out
+      (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset.card with hA'
+  have hdiff : |(A : ℚ) - (A' : ℚ)| ≤ ((HitOne ∪ HitTwo).card : ℚ) := by
+    have hsplit₁ := Finset.card_filter_add_card_filter_not
+      (s := (inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset) avoidP
+    have hsplit₂ := Finset.card_filter_add_card_filter_not
+      (s := (inducingSubsets F.out
+        (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset) avoidP
+    have hb₁ : ((inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset.filter
+        (fun S' => ¬avoidP S')).card ≤ (HitOne ∪ HitTwo).card := by
+      apply Finset.card_le_card
+      intro S' hS'
+      rw [Finset.mem_filter, Set.mem_toFinset] at hS'
+      exact hhit h₁ S' hS'.1 hS'.2
+    have hb₂ : ((inducingSubsets F.out
+        (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset.filter
+        (fun S' => ¬avoidP S')).card ≤ (HitOne ∪ HitTwo).card := by
+      apply Finset.card_le_card
+      intro S' hS'
+      rw [Finset.mem_filter, Set.mem_toFinset] at hS'
+      exact hhit h₂ S' hS'.1 hS'.2
+    have h9 : ((inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)).toFinset.filter
+        avoidP).card = ((inducingSubsets F.out
+          (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)).toFinset.filter avoidP).card := by
+      rw [hAA']
+    rw [abs_le]
+    constructor
+    · exact_mod_cast (by omega : -(((HitOne ∪ HitTwo).card : ℕ) : ℤ) ≤ (A : ℤ) - A')
+    · exact_mod_cast (by omega : (A : ℤ) - (A' : ℤ) ≤ ((HitOne ∪ HitTwo).card : ℕ))
+  -- assemble, splitting on the flag size
+  rcases Nat.lt_or_ge kF 4 with hk3' | hk4
+  · -- `kF = 3`: no subset contains a root-disjoint deleted pair
+    have hkF3 : kF = 3 := by omega
+    subst hkF3
+    have htwo0 : HitTwo.card = 0 := by
+      rw [hHitTwo]
+      apply Nat.le_zero.mp
+      refine le_trans Finset.card_biUnion_le (le_of_eq ?_)
+      apply Finset.sum_eq_zero
+      intro p hp
+      apply card_supersets_zero
+      rw [hc4 p hp]
+      omega
+    have hone' : ((HitOne ∪ HitTwo).card : ℚ) ≤ (S.card : ℚ) := by
+      have h9 := Finset.card_union_le HitOne HitTwo
+      have h10 : (L - 3).choose (3 - 3) = 1 := by
+        norm_num
+      rw [h10, mul_one] at hone
+      exact_mod_cast (by omega : (HitOne ∪ HitTwo).card ≤ S.card)
+    have hC2 : (((L - 2).choose (3 - 2) : ℕ) : ℚ) = (L : ℚ) - 2 := by
+      have h9 : (3:ℕ) - 2 = 1 := by norm_num
+      rw [h9, Nat.choose_one_right, Nat.cast_sub (by omega : 2 ≤ L)]
+      norm_num
+    have hQ : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℚ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℚ)|
+        ≤ (S.card : ℚ) / ((L : ℚ) - 2) := by
+      rw [hp, hp', div_sub_div_same, abs_div, abs_of_pos hden]
+      rw [← hC2] at *
+      apply div_le_div_of_nonneg_right ?_ (le_of_lt hden)
+      exact le_trans hdiff hone'
+    have hRcast : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℝ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℝ)|
+        ≤ (((S.card : ℚ) / ((L : ℚ) - 2) : ℚ) : ℝ) := by
+      rw [← Rat.cast_sub, ← Rat.cast_abs]
+      exact_mod_cast hQ
+    refine le_trans hRcast ?_
+    push_cast
+    have h10 : (S.card : ℝ) / ((L : ℝ) - 2) ≤ 3 * (S.card : ℝ) / ((L : ℝ) - 2) := by
+      apply div_le_div_of_nonneg_right ?_ hd2.le
+      nlinarith [Nat.cast_nonneg (α := ℝ) S.card]
+    have h11 : (0:ℝ) ≤ 3 * 3 * (D.card : ℝ) / (((L : ℝ) - 2) * ((L : ℝ) - 3)) := by
+      positivity
+    linarith
+  · -- `kF ≥ 4`: both binomial identities are exact
+    have htwo : HitTwo.card ≤ D.card * (L - 4).choose (kF - 4) := by
+      rw [hHitTwo]
+      refine le_trans Finset.card_biUnion_le ?_
+      have h9 : ∀ p ∈ D.filter (fun p =>
+          ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L))),
+          ({S' : Set (Fin L) | S'.toFinset.card = kF
+            ∧ ∀ y ∈ insert v₁ (insert v₂ (insert p.1 ({p.2} : Finset (Fin L)))),
+              y ∈ S'}).toFinset.card = (L - 4).choose (kF - 4) := by
+        intro p hp
+        rw [card_supersets _ (by rw [hc4 p hp]; omega), hc4 p hp]
+      calc ∑ p ∈ D.filter (fun p =>
+            ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L))),
+            ({S' : Set (Fin L) | S'.toFinset.card = kF
+              ∧ ∀ y ∈ insert v₁ (insert v₂ (insert p.1 ({p.2} : Finset (Fin L)))),
+                y ∈ S'}).toFinset.card
+          = ∑ _p ∈ D.filter (fun p =>
+              ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L))),
+              (L - 4).choose (kF - 4) := Finset.sum_congr rfl h9
+        _ = (D.filter (fun p =>
+            ¬p.1 ∈ ({v₁, v₂} : Finset (Fin L)) ∧ ¬p.2 ∈ ({v₁, v₂} : Finset (Fin L)))).card
+              * (L - 4).choose (kF - 4) := by
+            rw [Finset.sum_const, smul_eq_mul]
+        _ ≤ D.card * (L - 4).choose (kF - 4) := by
+            apply Nat.mul_le_mul_right
+            exact Finset.card_filter_le _ _
+    -- the ℚ-level bound with both terms
+    have hQ : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℚ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℚ)|
+        ≤ ((S.card : ℚ) * ((L - 3).choose (kF - 3) : ℕ)
+            + (D.card : ℚ) * ((L - 4).choose (kF - 4) : ℕ))
+          / (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by
+      rw [hp, hp', div_sub_div_same, abs_div, abs_of_pos hden]
+      apply div_le_div_of_nonneg_right ?_ (le_of_lt hden)
+      refine le_trans hdiff ?_
+      have h9 : ((HitOne ∪ HitTwo).card : ℚ)
+          ≤ ((S.card * (L - 3).choose (kF - 3)
+              + D.card * (L - 4).choose (kF - 4) : ℕ) : ℚ) := by
+        have h10 := Finset.card_union_le HitOne HitTwo
+        exact_mod_cast (by omega : (HitOne ∪ HitTwo).card
+          ≤ S.card * (L - 3).choose (kF - 3) + D.card * (L - 4).choose (kF - 4))
+      refine le_trans h9 (le_of_eq ?_)
+      push_cast
+      ring
+    -- binomial identities
+    have e2 : kF - 2 = (kF - 3) + 1 := by omega
+    have e3 : kF - 3 = (kF - 4) + 1 := by omega
+    have hidn₁ : (L - 2) * (L - 3).choose (kF - 3)
+        = (L - 2).choose (kF - 2) * (kF - 2) := by
+      have h9 : L - 3 + 1 = L - 2 := by omega
+      have h10 := Nat.add_one_mul_choose_eq (L - 3) (kF - 3)
+      rw [h9] at h10
+      rw [e2]
+      exact h10
+    have hidn₂ : (L - 3) * (L - 4).choose (kF - 4)
+        = (L - 3).choose (kF - 3) * (kF - 3) := by
+      have h9 : L - 4 + 1 = L - 3 := by omega
+      have h10 := Nat.add_one_mul_choose_eq (L - 4) (kF - 4)
+      rw [h9] at h10
+      rw [e3]
+      exact h10
+    have hcast2 : ((L - 2 : ℕ) : ℚ) = (L : ℚ) - 2 := by
+      rw [Nat.cast_sub (by omega : 2 ≤ L)]
+      norm_num
+    have hcast3 : ((L - 3 : ℕ) : ℚ) = (L : ℚ) - 3 := by
+      rw [Nat.cast_sub (by omega : 3 ≤ L)]
+      norm_num
+    have hd2q : (0:ℚ) < (L : ℚ) - 2 := by
+      have h9 : (4:ℚ) ≤ (L : ℚ) := by exact_mod_cast hL
+      linarith
+    have hd3q : (0:ℚ) < (L : ℚ) - 3 := by
+      have h9 : (4:ℚ) ≤ (L : ℚ) := by exact_mod_cast hL
+      linarith
+    have hkF2q : ((kF - 2 : ℕ) : ℚ) ≤ (kF : ℚ) := by
+      exact_mod_cast Nat.sub_le kF 2
+    have hkF3q : ((kF - 3 : ℕ) : ℚ) ≤ (kF : ℚ) := by
+      exact_mod_cast Nat.sub_le kF 3
+    have hq₁ : ((L : ℚ) - 2) * ((L - 3).choose (kF - 3) : ℕ)
+        = (((L - 2).choose (kF - 2) : ℕ) : ℚ) * ((kF - 2 : ℕ) : ℚ) := by
+      rw [← hcast2]
+      exact_mod_cast hidn₁
+    have hq₂ : ((L : ℚ) - 3) * ((L - 4).choose (kF - 4) : ℕ)
+        = (((L - 3).choose (kF - 3) : ℕ) : ℚ) * ((kF - 3 : ℕ) : ℚ) := by
+      rw [← hcast3]
+      exact_mod_cast hidn₂
+    -- the two ratio bounds
+    have ht1 : (S.card : ℚ) * ((L - 3).choose (kF - 3) : ℕ)
+        / (((L - 2).choose (kF - 2) : ℕ) : ℚ)
+        ≤ (kF : ℚ) * S.card / ((L : ℚ) - 2) := by
+      rw [div_le_div_iff₀ hden hd2q]
+      calc (S.card : ℚ) * ((L - 3).choose (kF - 3) : ℕ) * ((L : ℚ) - 2)
+          = (S.card : ℚ) * (((L : ℚ) - 2) * ((L - 3).choose (kF - 3) : ℕ)) := by ring
+        _ = (S.card : ℚ) * ((((L - 2).choose (kF - 2) : ℕ) : ℚ) * ((kF - 2 : ℕ) : ℚ)) := by
+            rw [hq₁]
+        _ ≤ (S.card : ℚ) * ((((L - 2).choose (kF - 2) : ℕ) : ℚ) * (kF : ℚ)) := by
+            apply mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _)
+            exact mul_le_mul_of_nonneg_left hkF2q (Nat.cast_nonneg _)
+        _ = (kF : ℚ) * S.card * (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by ring
+    have ht2 : (D.card : ℚ) * ((L - 4).choose (kF - 4) : ℕ)
+        / (((L - 2).choose (kF - 2) : ℕ) : ℚ)
+        ≤ (kF : ℚ) * (kF : ℚ) * D.card / (((L : ℚ) - 2) * ((L : ℚ) - 3)) := by
+      rw [div_le_div_iff₀ hden (mul_pos hd2q hd3q)]
+      calc (D.card : ℚ) * ((L - 4).choose (kF - 4) : ℕ)
+            * (((L : ℚ) - 2) * ((L : ℚ) - 3))
+          = (D.card : ℚ) * (((L : ℚ) - 2)
+              * (((L : ℚ) - 3) * ((L - 4).choose (kF - 4) : ℕ))) := by ring
+        _ = (D.card : ℚ) * (((L : ℚ) - 2)
+              * ((((L - 3).choose (kF - 3) : ℕ) : ℚ) * ((kF - 3 : ℕ) : ℚ))) := by
+            rw [hq₂]
+        _ = (D.card : ℚ) * ((kF - 3 : ℕ) : ℚ)
+              * (((L : ℚ) - 2) * (((L - 3).choose (kF - 3) : ℕ) : ℚ)) := by ring
+        _ = (D.card : ℚ) * ((kF - 3 : ℕ) : ℚ)
+              * ((((L - 2).choose (kF - 2) : ℕ) : ℚ) * ((kF - 2 : ℕ) : ℚ)) := by
+            rw [hq₁]
+        _ ≤ (D.card : ℚ) * (kF : ℚ)
+              * ((((L - 2).choose (kF - 2) : ℕ) : ℚ) * (kF : ℚ)) := by
+            apply mul_le_mul
+            · exact mul_le_mul_of_nonneg_left hkF3q (Nat.cast_nonneg _)
+            · exact mul_le_mul_of_nonneg_left hkF2q (Nat.cast_nonneg _)
+            · positivity
+            · positivity
+        _ = (kF : ℚ) * (kF : ℚ) * D.card * (((L - 2).choose (kF - 2) : ℕ) : ℚ) := by
+            ring
+    -- combine and cast
+    have hQ2 : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℚ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℚ)|
+        ≤ (kF : ℚ) * S.card / ((L : ℚ) - 2)
+          + (kF : ℚ) * (kF : ℚ) * D.card / (((L : ℚ) - 2) * ((L : ℚ) - 3)) := by
+      refine le_trans hQ ?_
+      rw [add_div]
+      exact add_le_add ht1 ht2
+    have hRcast : |(flagDensity₁ F (⟦edgeRootedAt N v₁ v₂ h₁⟧ : Flag edgeType (Fin L)) : ℝ)
+        - (flagDensity₁ F (⟦edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂⟧
+            : Flag edgeType (Fin L)) : ℝ)|
+        ≤ (((kF : ℚ) * S.card / ((L : ℚ) - 2)
+            + (kF : ℚ) * (kF : ℚ) * D.card / (((L : ℚ) - 2) * ((L : ℚ) - 3)) : ℚ) : ℝ) := by
+      rw [← Rat.cast_sub, ← Rat.cast_abs]
+      exact_mod_cast hQ2
+    refine le_trans hRcast (le_of_eq ?_)
+    push_cast
+    ring
+
 end Differential
 end FlagAlgebras
