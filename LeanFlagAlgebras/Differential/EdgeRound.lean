@@ -1099,6 +1099,146 @@ theorem exists_dense_subset {L : ℕ} (BadP : Finset (Fin L × Fin L))
   obtain ⟨S, hS, hSle⟩ := Finset.exists_le_of_sum_le hnonempty hsum_le
   exact ⟨S, hS, hSle⟩
 
+/-! ## The pair count equals the edge density -/
+
+/-- The isomorphism counts of the label extensions sum to the ordered edge
+count (extracted from the fibre partition). -/
+theorem sum_isomorphismCount_eq_card_adjPairs {L : ℕ} (M : FlagWithSize ∅ₜ L)
+    : ∑ F' ∈ labelExtensions M edgeType, isomorphismCount F'.out
+      = (adjPairs M.out).card
+  := by
+  have hdisj : ∀ F₁ ∈ labelExtensions M edgeType,
+      ∀ F₂ ∈ labelExtensions M edgeType, F₁ ≠ F₂ →
+      Disjoint ((adjPairs M.out).attach.filter (fun q => pairFlag M.out q = F₁))
+        ((adjPairs M.out).attach.filter (fun q => pairFlag M.out q = F₂)) := by
+    intro F₁ _ F₂ _ hne
+    rw [Finset.disjoint_left]
+    intro q h₁ h₂
+    rw [Finset.mem_filter] at h₁ h₂
+    exact hne (h₁.2 ▸ h₂.2)
+  have hpart : (adjPairs M.out).attach
+      = (labelExtensions M edgeType).biUnion (fun F' =>
+          (adjPairs M.out).attach.filter (fun q => pairFlag M.out q = F')) := by
+    apply Finset.ext
+    intro q
+    constructor
+    · intro _
+      rw [Finset.mem_biUnion]
+      refine ⟨pairFlag M.out q, pairFlag_mem_labelExtensions M q, ?_⟩
+      rw [Finset.mem_filter]
+      exact ⟨Finset.mem_attach _ _, rfl⟩
+    · intro _
+      exact Finset.mem_attach _ _
+  calc ∑ F' ∈ labelExtensions M edgeType, isomorphismCount F'.out
+      = ∑ F' ∈ labelExtensions M edgeType,
+          ((adjPairs M.out).attach.filter (fun q => pairFlag M.out q = F')).card := by
+        apply Finset.sum_congr rfl
+        intro F' hF'
+        obtain ⟨q₀, hq₀⟩ := exists_realising_pair M F' hF'
+        exact isomorphismCount_eq_card_pairs M.out F' q₀ hq₀
+    _ = ((labelExtensions M edgeType).biUnion (fun F' =>
+          (adjPairs M.out).attach.filter (fun q => pairFlag M.out q = F'))).card :=
+        (Finset.card_biUnion hdisj).symm
+    _ = (adjPairs M.out).attach.card := by rw [← hpart]
+    _ = (adjPairs M.out).card := Finset.card_attach
+
+/-- The unlabelling weight of the minimal `E`-flag is `1`. -/
+theorem downwardNormalizingFactor_emptyFlag_edgeType
+    : downwardNormalizingFactor (emptyFlag edgeType) = 1
+  := by
+  have h9 := downwardNormalizingFactor_edgeType (ℓ := 0) (emptyFlag edgeType)
+  rw [h9]
+  -- the isomorphism count of the two-vertex edge flag is `2`
+  set X : LabeledGraph ∅ₜ (Fin 2) := unlabeledGraph ((emptyFlag edgeType).out) with hX
+  have hadj : X.graph.Adj ((emptyFlag edgeType).out.type_embed 0)
+      ((emptyFlag edgeType).out.type_embed 1) := edgeFlag_roots_adj _
+  set e0 := (emptyFlag edgeType).out.type_embed 0 with he0
+  set e1 := (emptyFlag edgeType).out.type_embed 1 with he1
+  have hne : e0 ≠ e1 := hadj.ne
+  have hall : ∀ x : Fin 2, x = e0 ∨ x = e1 := by
+    intro x
+    rcases fin_two_eq_zero_or_one x with rfl | rfl <;>
+      rcases fin_two_eq_zero_or_one e0 with h0 | h0 <;>
+        rcases fin_two_eq_zero_or_one e1 with h1 | h1 <;>
+          rw [h0, h1] <;>
+          first
+            | exact Or.inl rfl
+            | exact Or.inr rfl
+            | (exfalso; exact hne (h0.trans h1.symm))
+  have hpairs : adjPairs X = {(e0, e1), (e1, e0)} := by
+    apply Finset.ext
+    intro p
+    constructor
+    · intro hp
+      have hpa := adjPairs_adj hp
+      have hpne := hpa.ne
+      rw [Finset.mem_insert, Finset.mem_singleton]
+      rcases hall p.1 with h1 | h1 <;> rcases hall p.2 with h2 | h2
+      · exact absurd (h1.trans h2.symm) hpne
+      · left
+        exact Prod.ext h1 h2
+      · right
+        exact Prod.ext h1 h2
+      · exact absurd (h1.trans h2.symm) hpne
+    · intro hp
+      rw [Finset.mem_insert, Finset.mem_singleton] at hp
+      rcases hp with rfl | rfl
+      · exact mem_adjPairs hadj
+      · exact mem_adjPairs hadj.symm
+  have hcard2 : (adjPairs X).card = 2 := by
+    rw [hpairs]
+    rw [Finset.card_insert_of_notMem, Finset.card_singleton]
+    rw [Finset.mem_singleton]
+    intro hc
+    exact hne (congrArg Prod.fst hc)
+  have hq₀ : pairFlag X ⟨(e0, e1), mem_adjPairs hadj⟩ = emptyFlag edgeType :=
+    Subsingleton.elim _ _
+  have h10 := isomorphismCount_eq_card_pairs X (emptyFlag edgeType)
+    ⟨(e0, e1), mem_adjPairs hadj⟩ hq₀
+  have h11 : ((adjPairs X).attach.filter
+      (fun q => pairFlag X q = emptyFlag edgeType)) = (adjPairs X).attach := by
+    apply Finset.filter_true_of_mem
+    intro q _
+    exact Subsingleton.elim _ _
+  rw [h11, Finset.card_attach, hcard2] at h10
+  rw [h10]
+  norm_num
+
+/-- **The ordered edge count is the edge density times `L(L−1)`.** -/
+theorem card_adjPairs_eq {ℓ : ℕ} (M : FlagWithSize ∅ₜ (ℓ + 2))
+    : ((adjPairs M.out).card : ℚ)
+      = flagDensity₁ edgeType.toEmptyTypeFlag M * (((ℓ : ℚ) + 2) * ((ℓ : ℚ) + 1))
+  := by
+  have h1 := flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
+    (emptyFlag edgeType) M (by omega : 2 ≤ ℓ + 2)
+  rw [downwardNormalizingFactor_emptyFlag_edgeType, mul_one] at h1
+  have h2 : ∑ G ∈ labelExtensions M edgeType,
+      flagDensity₁ (emptyFlag edgeType) G * downwardNormalizingFactor G
+      = ∑ G ∈ labelExtensions M edgeType, downwardNormalizingFactor G := by
+    apply Finset.sum_congr rfl
+    intro G _
+    rw [flagDensity_empty, one_mul]
+  rw [h2] at h1
+  have h3 : ∑ G ∈ labelExtensions M edgeType, downwardNormalizingFactor G
+      = ((adjPairs M.out).card : ℚ) / (((ℓ : ℚ) + 2) * ((ℓ : ℚ) + 1)) := by
+    have h4 : ∑ G ∈ labelExtensions M edgeType, downwardNormalizingFactor G
+        = ∑ G ∈ labelExtensions M edgeType,
+            (isomorphismCount G.out : ℚ) / (((ℓ : ℚ) + 2) * ((ℓ : ℚ) + 1)) := by
+      apply Finset.sum_congr rfl
+      intro G _
+      exact downwardNormalizingFactor_edgeType G
+    rw [h4, ← Finset.sum_div]
+    congr 1
+    exact_mod_cast sum_isomorphismCount_eq_card_adjPairs M
+  rw [h3] at h1
+  have hD : (0 : ℚ) < ((ℓ : ℚ) + 2) * ((ℓ : ℚ) + 1) := by positivity
+  have h5 : flagDensity₁ (unlabel (emptyFlag edgeType)) M
+      = flagDensity₁ edgeType.toEmptyTypeFlag M := by
+    rw [flagType_asEmptyTypeFlag_eq]
+  rw [h5] at h1
+  rw [h1]
+  field_simp
+
 /-! ## Markov over an arbitrary index set, and orientation dedup -/
 
 /-- Markov inequality over an arbitrary finite index set. -/
