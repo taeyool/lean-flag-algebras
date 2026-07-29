@@ -976,5 +976,128 @@ theorem pair_hitting_eval {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
     (le_trans (Finset.sum_le_sum hterm) (le_of_eq ?_))
   rw [← Finset.sum_mul]
 
+/-! ## Choosing a dense vertex subset -/
+
+/-- Finset version of the superset count. -/
+theorem card_powersetCard_supersets {L : ℕ} (T : Finset (Fin L)) {s : ℕ}
+    (hT : T.card ≤ s)
+    : (((Finset.univ : Finset (Fin L)).powersetCard s).filter
+        (fun S => ∀ x ∈ T, x ∈ S)).card
+      = (L - T.card).choose (s - T.card)
+  := by
+  have hcard : ((Finset.univ : Finset (Fin L)) \ T).card = L - T.card := by
+    rw [Finset.card_sdiff, Finset.inter_eq_left.mpr (Finset.subset_univ T),
+      Finset.card_univ, Fintype.card_fin]
+  rw [← hcard, ← Finset.card_powersetCard]
+  apply Finset.card_bij (fun (S : Finset (Fin L)) (_ : S ∈ _) => S \ T)
+  · intro S hS
+    rw [Finset.mem_filter, Finset.mem_powersetCard] at hS
+    obtain ⟨⟨-, hSc⟩, hTS⟩ := hS
+    rw [Finset.mem_powersetCard]
+    constructor
+    · intro x hx
+      rw [Finset.mem_sdiff] at hx
+      rw [Finset.mem_sdiff]
+      exact ⟨Finset.mem_univ x, hx.2⟩
+    · rw [Finset.card_sdiff, Finset.inter_eq_left.mpr (fun x hx => hTS x hx), hSc]
+  · intro S₁ h₁ S₂ h₂ heq
+    rw [Finset.mem_filter] at h₁ h₂
+    calc S₁ = (S₁ \ T) ∪ T := by
+          rw [Finset.sdiff_union_of_subset (fun x hx => h₁.2 x hx)]
+      _ = (S₂ \ T) ∪ T := by rw [heq]
+      _ = S₂ := Finset.sdiff_union_of_subset (fun x hx => h₂.2 x hx)
+  · intro U hU
+    rw [Finset.mem_powersetCard] at hU
+    obtain ⟨hUsub, hUcard⟩ := hU
+    have hdisj : Disjoint U T := by
+      rw [Finset.disjoint_left]
+      intro x hx hxT
+      have h9 := hUsub hx
+      rw [Finset.mem_sdiff] at h9
+      exact h9.2 hxT
+    refine ⟨U ∪ T, ?_, ?_⟩
+    · rw [Finset.mem_filter, Finset.mem_powersetCard]
+      refine ⟨⟨Finset.subset_univ _, ?_⟩, ?_⟩
+      · rw [Finset.card_union_of_disjoint hdisj, hUcard]
+        omega
+      · intro x hx
+        exact Finset.mem_union_right U hx
+    · rw [Finset.union_sdiff_right, Finset.sdiff_eq_self_of_disjoint hdisj]
+
+/-- **The dense-subset selection**: some `s`-element vertex subset contains at
+least the average number of bad pairs. -/
+theorem exists_dense_subset {L : ℕ} (BadP : Finset (Fin L × Fin L))
+    (hne : ∀ p ∈ BadP, p.1 ≠ p.2) (s : ℕ) (h2s : 2 ≤ s) (hsL : s ≤ L)
+    : ∃ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+        BadP.card * (L - 2).choose (s - 2)
+          ≤ (BadP.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S)).card * L.choose s
+  := by
+  -- the double count
+  have hdc : ∑ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+      (BadP.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S)).card
+      = BadP.card * (L - 2).choose (s - 2) := by
+    have h1 : ∀ S : Finset (Fin L), (BadP.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S)).card
+        = ∑ p ∈ BadP, if p.1 ∈ S ∧ p.2 ∈ S then 1 else 0 :=
+      fun S => Finset.card_filter _ _
+    calc ∑ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+          (BadP.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S)).card
+        = ∑ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+            ∑ p ∈ BadP, if p.1 ∈ S ∧ p.2 ∈ S then 1 else 0 :=
+          Finset.sum_congr rfl (fun S _ => h1 S)
+      _ = ∑ p ∈ BadP, ∑ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+            if p.1 ∈ S ∧ p.2 ∈ S then 1 else 0 := Finset.sum_comm
+      _ = ∑ _p ∈ BadP, (L - 2).choose (s - 2) := by
+          apply Finset.sum_congr rfl
+          intro p hp
+          rw [← Finset.card_filter]
+          have hpc : ({p.1, p.2} : Finset (Fin L)).card = 2 := by
+            rw [Finset.card_insert_of_notMem, Finset.card_singleton]
+            rw [Finset.mem_singleton]
+            exact hne p hp
+          have h3 := card_powersetCard_supersets ({p.1, p.2} : Finset (Fin L))
+            (by omega : ({p.1, p.2} : Finset (Fin L)).card ≤ s)
+          rw [hpc] at h3
+          rw [← h3]
+          apply Finset.card_nbij id
+          · intro S hS
+            rw [Finset.mem_coe, Finset.mem_filter] at hS
+            rw [Finset.mem_coe, Finset.mem_filter]
+            refine ⟨hS.1, ?_⟩
+            intro x hx
+            rw [Finset.mem_insert, Finset.mem_singleton] at hx
+            rcases hx with rfl | rfl
+            · exact hS.2.1
+            · exact hS.2.2
+          · intro S₁ h₁ S₂ h₂ heq
+            exact heq
+          · intro S hS
+            rw [Finset.mem_coe, Finset.mem_filter] at hS
+            refine ⟨S, ?_, rfl⟩
+            rw [Finset.mem_coe, Finset.mem_filter]
+            refine ⟨hS.1, hS.2 p.1 ?_, hS.2 p.2 ?_⟩
+            · rw [Finset.mem_insert]
+              exact Or.inl rfl
+            · rw [Finset.mem_insert, Finset.mem_singleton]
+              exact Or.inr rfl
+      _ = BadP.card * (L - 2).choose (s - 2) := by
+          rw [Finset.sum_const, smul_eq_mul]
+  -- extract an above-average subset
+  have hnonempty : ((Finset.univ : Finset (Fin L)).powersetCard s).Nonempty := by
+    apply Finset.powersetCard_nonempty.mpr
+    rw [Finset.card_univ, Fintype.card_fin]
+    exact hsL
+  have hsum_le : ∑ _S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+      BadP.card * (L - 2).choose (s - 2)
+      ≤ ∑ S ∈ (Finset.univ : Finset (Fin L)).powersetCard s,
+          (BadP.filter (fun p => p.1 ∈ S ∧ p.2 ∈ S)).card * L.choose s := by
+    rw [Finset.sum_const, smul_eq_mul, ← Finset.sum_mul, hdc]
+    have h9 : ((Finset.univ : Finset (Fin L)).powersetCard s).card = L.choose s := by
+      rw [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+    rw [h9]
+    ring_nf
+    exact le_refl _
+  obtain ⟨S, hS, hSle⟩ := Finset.exists_le_of_sum_le hnonempty hsum_le
+  exact ⟨S, hS, hSle⟩
+
 end Differential
 end FlagAlgebras
