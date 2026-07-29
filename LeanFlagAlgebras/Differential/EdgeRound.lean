@@ -312,5 +312,204 @@ theorem integral_toMeasure_eq_pair_average' (G : FinFlag ∅ₜ) (h2 : 2 ≤ G.1
   obtain ⟨ℓ, rfl⟩ : ∃ ℓ, L = ℓ + 2 := ⟨L - 2, by omega⟩
   exact integral_toMeasure_eq_pair_average M hG g Ψ hΨm hΨb
 
+/-! ## Deleting a set of edges -/
+
+/-- The host with the (unordered images of the) pairs in `D` removed. -/
+noncomputable def deleteEdgeSet {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (D : Finset (Fin L × Fin L)) : LabeledGraph ∅ₜ (Fin L) where
+  graph := N.graph.deleteEdges ↑(D.image (fun p => s(p.1, p.2)))
+  type_embed := RelEmbedding.ofIsEmpty _ _
+
+theorem deleteEdgeSet_adj {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (D : Finset (Fin L × Fin L)) (u w : Fin L)
+    : (deleteEdgeSet N D).graph.Adj u w
+      ↔ N.graph.Adj u w ∧ ∀ p ∈ D, s(p.1, p.2) ≠ s(u, w)
+  := by
+  dsimp only [deleteEdgeSet]
+  rw [SimpleGraph.deleteEdges_adj]
+  constructor
+  · rintro ⟨h1, h2⟩
+    refine ⟨h1, ?_⟩
+    intro p hp hc
+    apply h2
+    rw [Finset.mem_coe, Finset.mem_image]
+    exact ⟨p, hp, hc⟩
+  · rintro ⟨h1, h2⟩
+    refine ⟨h1, ?_⟩
+    intro hc
+    rw [Finset.mem_coe, Finset.mem_image] at hc
+    obtain ⟨p, hp, hpc⟩ := hc
+    exact h2 p hp hpc
+
+theorem deleteEdgeSet_empty {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    : deleteEdgeSet N ∅ = N := by
+  apply emptyType_labeledGraph_ext
+  ext u w
+  rw [deleteEdgeSet_adj]
+  simp only [Finset.notMem_empty, ne_eq, false_implies, implies_true, and_true]
+
+theorem deleteEdgeSet_insert {L : ℕ} (N : LabeledGraph ∅ₜ (Fin L))
+    (D : Finset (Fin L × Fin L)) (p : Fin L × Fin L)
+    : deleteEdgeSet N (insert p D) = deleteEdge (deleteEdgeSet N D) s(p.1, p.2)
+  := by
+  apply emptyType_labeledGraph_ext
+  ext u w
+  rw [deleteEdgeSet_adj, deleteEdge_adj, deleteEdgeSet_adj]
+  constructor
+  · rintro ⟨h1, h2⟩
+    exact ⟨⟨h1, fun q hq => h2 q (Finset.mem_insert_of_mem hq)⟩,
+      fun hc => h2 p (Finset.mem_insert_self p D) hc.symm⟩
+  · rintro ⟨⟨h1, h2⟩, h3⟩
+    refine ⟨h1, ?_⟩
+    intro q hq
+    rcases Finset.mem_insert.mp hq with rfl | hq'
+    · exact fun hc => h3 hc.symm
+    · exact h2 q hq'
+
+theorem deleteEdgeSet_adj_of_adj {L : ℕ} {N : LabeledGraph ∅ₜ (Fin L)}
+    {D : Finset (Fin L × Fin L)} {u w : Fin L}
+    (h : (deleteEdgeSet N D).graph.Adj u w) : N.graph.Adj u w :=
+  ((deleteEdgeSet_adj N D u w).mp h).1
+
+/-! ## Counting supersets -/
+
+/-- The number of `k`-element subsets containing a fixed `T`. -/
+theorem card_supersets {L : ℕ} (T : Finset (Fin L)) {k : ℕ} (hT : T.card ≤ k)
+    : ({S' : Set (Fin L) | S'.toFinset.card = k ∧ ∀ x ∈ T, x ∈ S'}).toFinset.card
+      = (L - T.card).choose (k - T.card)
+  := by
+  have hcard : ((Finset.univ : Finset (Fin L)) \ T).card = L - T.card := by
+    rw [Finset.card_sdiff, Finset.inter_eq_left.mpr (Finset.subset_univ T),
+      Finset.card_univ, Fintype.card_fin]
+  rw [← hcard, ← Finset.card_powersetCard]
+  apply Finset.card_bij (fun (S' : Set (Fin L)) (_ : S' ∈ _) => S'.toFinset \ T)
+  · intro S' hS'
+    rw [Set.mem_toFinset, Set.mem_setOf_eq] at hS'
+    obtain ⟨hSc, hTS⟩ := hS'
+    rw [Finset.mem_powersetCard]
+    constructor
+    · intro x hx
+      rw [Finset.mem_sdiff] at hx
+      rw [Finset.mem_sdiff]
+      exact ⟨Finset.mem_univ x, hx.2⟩
+    · rw [Finset.card_sdiff, Finset.inter_eq_left.mpr ?_, hSc]
+      intro x hx
+      rw [Set.mem_toFinset]
+      exact hTS x hx
+  · intro S₁ h₁ S₂ h₂ heq
+    rw [Set.mem_toFinset, Set.mem_setOf_eq] at h₁ h₂
+    have hT₁ : T ⊆ S₁.toFinset := fun x hx => Set.mem_toFinset.mpr (h₁.2 x hx)
+    have hT₂ : T ⊆ S₂.toFinset := fun x hx => Set.mem_toFinset.mpr (h₂.2 x hx)
+    have hfin : S₁.toFinset = S₂.toFinset := by
+      calc S₁.toFinset = (S₁.toFinset \ T) ∪ T := by
+            rw [Finset.sdiff_union_of_subset hT₁]
+        _ = (S₂.toFinset \ T) ∪ T := by rw [heq]
+        _ = S₂.toFinset := Finset.sdiff_union_of_subset hT₂
+    have h9 := congrArg (fun s : Finset (Fin L) => (↑s : Set (Fin L))) hfin
+    simpa using h9
+  · intro U hU
+    rw [Finset.mem_powersetCard] at hU
+    obtain ⟨hUsub, hUcard⟩ := hU
+    have hdisj : Disjoint U T := by
+      rw [Finset.disjoint_left]
+      intro x hx hxT
+      have h9 := hUsub hx
+      rw [Finset.mem_sdiff] at h9
+      exact h9.2 hxT
+    refine ⟨(↑(U ∪ T) : Set (Fin L)), ?_, ?_⟩
+    · rw [Set.mem_toFinset, Set.mem_setOf_eq]
+      constructor
+      · rw [Finset.toFinset_coe, Finset.card_union_of_disjoint hdisj, hUcard]
+        omega
+      · intro x hx
+        rw [Finset.mem_coe]
+        exact Finset.mem_union_right U hx
+    · rw [Finset.toFinset_coe, Finset.union_sdiff_right,
+        Finset.sdiff_eq_self_of_disjoint hdisj]
+
+/-- No `k`-element subset contains a larger `T`. -/
+theorem card_supersets_zero {L : ℕ} (T : Finset (Fin L)) {k : ℕ} (hT : k < T.card)
+    : ({S' : Set (Fin L) | S'.toFinset.card = k ∧ ∀ x ∈ T, x ∈ S'}).toFinset.card = 0
+  := by
+  rw [Finset.card_eq_zero, Finset.eq_empty_iff_forall_notMem]
+  intro S' hS'
+  rw [Set.mem_toFinset, Set.mem_setOf_eq] at hS'
+  obtain ⟨hSc, hTS⟩ := hS'
+  have h1 : T ⊆ S'.toFinset := fun x hx => Set.mem_toFinset.mpr (hTS x hx)
+  have h2 := Finset.card_le_card h1
+  omega
+
+/-! ## The pair-hitting estimate -/
+
+/-- Every inducing subset of an edge-rooted host contains both roots and has
+the right size. -/
+theorem inducingSubsets_edgeRooted_mem {L : ℕ} (X : LabeledGraph ∅ₜ (Fin L))
+    (v₁ v₂ : Fin L) (h : X.graph.Adj v₁ v₂) {kF : ℕ} (F : FlagWithSize edgeType kF)
+    (S' : Set (Fin L)) (hS' : S' ∈ inducingSubsets F.out (edgeRootedAt X v₁ v₂ h))
+    : v₁ ∈ S' ∧ v₂ ∈ S' ∧ S'.toFinset.card = kF
+  := by
+  obtain ⟨hsub, ⟨ψ⟩⟩ := hS'
+  refine ⟨hsub ((edgeRootedAt X v₁ v₂ h).type_verts_contain 0),
+    hsub ((edgeRootedAt X v₁ v₂ h).type_verts_contain 1), ?_⟩
+  have hsz := labeledGraphIso_size_eq _ _ ψ
+  simp only [LabeledGraph.size, Fintype.card_fin] at hsz
+  rw [Set.toFinset_card]
+  exact hsz
+
+/-- The induced rooted subgraphs of the original and edge-deleted hosts agree
+on subsets containing no deleted pair. -/
+noncomputable def deleteEdgeSet_induce_iso_of_avoiding {L : ℕ}
+    (N : LabeledGraph ∅ₜ (Fin L)) (D : Finset (Fin L × Fin L)) (v₁ v₂ : Fin L)
+    (h₁ : N.graph.Adj v₁ v₂) (h₂ : (deleteEdgeSet N D).graph.Adj v₁ v₂)
+    (S' : Set (Fin L)) (havoid : ∀ p ∈ D, ¬(p.1 ∈ S' ∧ p.2 ∈ S'))
+    (hsub₁ : (edgeRootedAt N v₁ v₂ h₁).type_verts ⊆ S')
+    (hsub₂ : (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂).type_verts ⊆ S')
+    : (LabeledSubgraph.inducedLabeledSubgraph (edgeRootedAt N v₁ v₂ h₁) S' hsub₁).coe
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph
+          (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂) S' hsub₂).coe where
+  graph_iso := {
+    toEquiv := Equiv.refl _
+    map_rel_iff' := by
+      intro a b
+      constructor
+      · rintro ⟨ha, hb, hadj⟩
+        exact ⟨a.property, b.property, ((deleteEdgeSet_adj N D _ _).mp hadj).1⟩
+      · rintro ⟨ha, hb, hadj⟩
+        refine ⟨a.property, b.property, (deleteEdgeSet_adj N D _ _).mpr ⟨hadj, ?_⟩⟩
+        intro p hp heq
+        rcases Sym2.eq_iff.mp heq with ⟨h1, h2⟩ | ⟨h1, h2⟩
+        · exact havoid p hp ⟨h1 ▸ a.property, h2 ▸ b.property⟩
+        · exact havoid p hp ⟨h1 ▸ b.property, h2 ▸ a.property⟩
+  }
+  type_preserve := by
+    funext t
+    rfl
+
+/-- Membership in the inducing subsets is unchanged by deleting edges the
+subset avoids. -/
+theorem mem_inducingSubsets_deleteEdgeSet_iff {L : ℕ}
+    (N : LabeledGraph ∅ₜ (Fin L)) (D : Finset (Fin L × Fin L)) (v₁ v₂ : Fin L)
+    (h₁ : N.graph.Adj v₁ v₂) (h₂ : (deleteEdgeSet N D).graph.Adj v₁ v₂)
+    {kF : ℕ} (F : FlagWithSize edgeType kF)
+    (S' : Set (Fin L)) (havoid : ∀ p ∈ D, ¬(p.1 ∈ S' ∧ p.2 ∈ S'))
+    : S' ∈ inducingSubsets F.out (edgeRootedAt N v₁ v₂ h₁)
+      ↔ S' ∈ inducingSubsets F.out (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂)
+  := by
+  constructor
+  · rintro ⟨hsub, ⟨ψ⟩⟩
+    have hsub₂ : (edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂).type_verts ⊆ S' :=
+      edgeRootedAt_type_verts_subset _ h₂
+        (hsub ((edgeRootedAt N v₁ v₂ h₁).type_verts_contain 0))
+        (hsub ((edgeRootedAt N v₁ v₂ h₁).type_verts_contain 1))
+    exact ⟨hsub₂, ⟨((deleteEdgeSet_induce_iso_of_avoiding N D v₁ v₂ h₁ h₂ S'
+      havoid hsub hsub₂).symm).trans ψ⟩⟩
+  · rintro ⟨hsub, ⟨ψ⟩⟩
+    have hsub₁ : (edgeRootedAt N v₁ v₂ h₁).type_verts ⊆ S' :=
+      edgeRootedAt_type_verts_subset _ h₁
+        (hsub ((edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂).type_verts_contain 0))
+        (hsub ((edgeRootedAt (deleteEdgeSet N D) v₁ v₂ h₂).type_verts_contain 1))
+    exact ⟨hsub₁, ⟨(deleteEdgeSet_induce_iso_of_avoiding N D v₁ v₂ h₁ h₂ S'
+      havoid hsub₁ hsub).trans ψ⟩⟩
+
 end Differential
 end FlagAlgebras
