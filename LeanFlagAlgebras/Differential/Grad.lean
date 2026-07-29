@@ -30,9 +30,9 @@ constructed in `FlagAlgebra.RandomHom` (Razborov's Definition 10 /
 Theorem 3.5), whose defining property is
 `∫ φ, φ(x) ∂ℙ[φ₀] = φ₀(⟦x⟧_σ) / φ₀(⟦1⟧_σ)`.
 
-**Status.** Corollary 4.6 is derived in full from Theorems 4.3/4.5 and the
-defining property of `ℙ[φ₀]`. Theorems 4.3/4.5 themselves are **proved**
-here, by the following route replacing Razborov's Theorems 3.9/3.12:
+**Status: everything in this file is proved, with no `sorry` anywhere in the
+development.** Theorems 4.3/4.5 are obtained by the following route replacing
+Razborov's Theorems 3.9/3.12:
 
 * `Ensemble.lean` provides the Stone–Weierstrass moment machinery: along
   *any* flag sequence realising `φ₀`, empirical integrals of coordinate
@@ -41,15 +41,18 @@ here, by the following route replacing Razborov's Theorems 3.9/3.12:
   of `negPart(p^{(N,v)}(D))` tends to `0` along one such sequence" into
   "`φ(D) ≥ 0` `ℙ[φ₀]`-a.s.", by sandwiching the negative part between
   coordinate polynomials; combined with the vanishing mean (Lemma 4.2 c) for
-  the vertex case) this gives the almost-sure statements.
-
-The *only* remaining gap is the purely finite-combinatorial core, stated as
-`bad_vertex_negPart_tendsto_zero` / `bad_edge_negPart_tendsto_zero`
-(Razborov's estimates (29)–(33)): under local minimality no `ε`-bad set of
-roots of positive density can persist, because deleting `⌊δℓₙ⌋` bad
-vertices/edges — each step controlled by the fully proved Lemmas 4.2 a) /
-4.4 a) — would drive `f` strictly below its local minimum via the `C¹`
-expansion. These two lemmas mention no measures beyond finite averages.
+  the vertex case) this gives the almost-sure statements;
+* the purely finite-combinatorial cores `bad_vertex_negPart_tendsto_zero`
+  and `bad_edge_negPart_tendsto_zero` (Razborov's estimates (29)–(33)) are
+  proved at the end of this file: under local minimality no `ε`-bad set of
+  roots/edges of positive density can persist, because deleting the bad
+  ones — each step controlled by Lemmas 4.2 a) / 4.4 a), with the hitting
+  estimates of `Hitting.lean` / `EdgeRound.lean` preserving badness — would
+  drive `f` strictly below its local minimum via the `C¹` expansion.  The
+  finite deletion machinery lives in `Telescope.lean` (vertex case) and
+  `EdgeRound.lean` (edge case);
+* Corollary 4.6 is then derived in full from Theorems 4.3/4.5 and the
+  defining property of `ℙ[φ₀]`.
 -/
 
 open MeasureTheory Filter
@@ -260,7 +263,7 @@ theorem ae_nonneg_of_empirical_negPart {n₀ : ℕ} {σ : FlagType (Fin n₀)} (
   have h9 : 0 ≤ densityEvalFun D φ.val := negPart_eq_zero_iff.mp h8
   rwa [densityEvalFun_toPosHom] at h9
 
-/-! ## The finite estimates: the remaining combinatorial core -/
+/-! ## The finite estimates: the combinatorial core -/
 
 /-- **The finite core of Theorem 4.3** (Razborov's estimates (29)–(33)).
 Under the extremality hypotheses, along any flag sequence realising `φ₀` the
