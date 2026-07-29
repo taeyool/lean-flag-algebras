@@ -1099,6 +1099,111 @@ theorem exists_dense_subset {L : ℕ} (BadP : Finset (Fin L × Fin L))
   obtain ⟨S, hS, hSle⟩ := Finset.exists_le_of_sum_le hnonempty hsum_le
   exact ⟨S, hS, hSle⟩
 
+/-! ## Markov over an arbitrary index set, and orientation dedup -/
+
+/-- Markov inequality over an arbitrary finite index set. -/
+theorem card_bad_ge_of_average_ge_finset {α : Type*} (t : Finset α) (x : α → ℝ)
+    {ε B : ℝ} (hB : 0 < B) (hb : ∀ r ∈ t, x r ≤ B) (hnn : ∀ r ∈ t, 0 ≤ x r)
+    (havg : ε ≤ (1 / (t.card : ℝ)) * ∑ r ∈ t, x r)
+    : ε / (2 * B) * t.card ≤ ((t.filter (fun r => ε / 2 ≤ x r)).card : ℝ)
+  := by
+  by_cases hε : ε ≤ 0
+  · have h1 : ε / (2 * B) * t.card ≤ 0 := by
+      apply mul_nonpos_of_nonpos_of_nonneg
+      · exact div_nonpos_of_nonpos_of_nonneg hε (by linarith)
+      · positivity
+    exact le_trans h1 (Nat.cast_nonneg _)
+  push_neg at hε
+  rcases Finset.eq_empty_or_nonempty t with rfl | hne
+  · exfalso
+    simp only [Finset.card_empty, Nat.cast_zero, div_zero, Finset.sum_empty,
+      zero_mul, mul_zero] at havg
+    linarith
+  have hn : 0 < t.card := Finset.card_pos.mpr hne
+  have hncast : (0 : ℝ) < (t.card : ℝ) := by exact_mod_cast hn
+  have hsum_ub : ∑ r ∈ t, x r
+      ≤ ((t.filter (fun r => ε / 2 ≤ x r)).card : ℝ) * B + (t.card : ℝ) * (ε / 2) := by
+    rw [← Finset.sum_filter_add_sum_filter_not t (fun r => ε / 2 ≤ x r)]
+    apply add_le_add
+    · calc ∑ r ∈ t.filter (fun r => ε / 2 ≤ x r), x r
+          ≤ ∑ r ∈ t.filter (fun r => ε / 2 ≤ x r), B :=
+            Finset.sum_le_sum (fun r hr => hb r (Finset.mem_of_mem_filter r hr))
+        _ = ((t.filter (fun r => ε / 2 ≤ x r)).card : ℝ) * B := by
+            rw [Finset.sum_const, nsmul_eq_mul]
+    · calc ∑ r ∈ t.filter (fun r => ¬ε / 2 ≤ x r), x r
+          ≤ ∑ r ∈ t.filter (fun r => ¬ε / 2 ≤ x r), (ε / 2) :=
+            Finset.sum_le_sum (fun r hr =>
+              le_of_lt (not_le.mp (Finset.mem_filter.mp hr).2))
+        _ = ((t.filter (fun r => ¬ε / 2 ≤ x r)).card : ℝ) * (ε / 2) := by
+            rw [Finset.sum_const, nsmul_eq_mul]
+        _ ≤ (t.card : ℝ) * (ε / 2) := by
+            apply mul_le_mul_of_nonneg_right ?_ (by linarith)
+            exact_mod_cast Finset.card_filter_le t _
+  have hsum_lb : ε * t.card ≤ ∑ r ∈ t, x r := by
+    have h2 := mul_le_mul_of_nonneg_right havg (le_of_lt hncast)
+    calc ε * t.card ≤ (1 / (t.card : ℝ)) * (∑ r ∈ t, x r) * t.card := h2
+      _ = ∑ r ∈ t, x r := by field_simp
+  rw [div_mul_eq_mul_div, div_le_iff₀ (by linarith : (0 : ℝ) < 2 * B)]
+  nlinarith [hsum_ub, hsum_lb]
+
+/-- Every set of non-diagonal pairs has an orientation-unique subset of at
+least half its size. -/
+theorem exists_orientation_unique_subset {L : ℕ} (P : Finset (Fin L × Fin L))
+    (hne : ∀ p ∈ P, p.1 ≠ p.2)
+    : ∃ D ⊆ P, (∀ p ∈ D, ∀ q ∈ D, s(p.1, p.2) = s(q.1, q.2) → p = q)
+        ∧ P.card ≤ 2 * D.card
+  := by
+  refine ⟨P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P), Finset.filter_subset _ _, ?_, ?_⟩
+  · intro p hp q hq hs
+    rw [Finset.mem_filter] at hp hq
+    rcases Sym2.eq_iff.mp hs with ⟨h1, h2⟩ | ⟨h1, h2⟩
+    · exact Prod.ext h1 h2
+    -- q = swap p
+    exfalso
+    have hqp : q = (p.2, p.1) := by
+      apply Prod.ext
+      · exact h2.symm
+      · exact h1.symm
+    have hpne : p.1 ≠ p.2 := hne p hp.1
+    rcases hp.2 with hlt | hnot
+    · -- p.1 < p.2, so q = (p.2,p.1) has ¬q.1 < q.2 and (q.2,q.1) = p ∈ P
+      rcases hq.2 with hlt' | hnot'
+      · rw [hqp] at hlt'
+        exact absurd hlt' (asymm hlt)
+      · rw [hqp] at hnot'
+        exact hnot' hp.1
+    · -- (p.2,p.1) ∉ P but q = (p.2,p.1) ∈ P
+      rw [← hqp] at hnot
+      exact hnot hq.1
+  · -- P is covered by D and its swap
+    have hcov : P ⊆ (P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P))
+        ∪ (P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)).image
+            (fun p => (p.2, p.1)) := by
+      intro p hp
+      rw [Finset.mem_union]
+      by_cases hD : p ∈ P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)
+      · exact Or.inl hD
+      · right
+        rw [Finset.mem_filter] at hD
+        push_neg at hD
+        obtain ⟨hnlt, hswap⟩ := hD hp
+        have hlt : p.2 < p.1 := lt_of_le_of_ne hnlt (hne p hp).symm
+        rw [Finset.mem_image]
+        refine ⟨(p.2, p.1), ?_, rfl⟩
+        rw [Finset.mem_filter]
+        exact ⟨hswap, Or.inl hlt⟩
+    calc P.card ≤ ((P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P))
+          ∪ (P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)).image
+              (fun p => (p.2, p.1))).card := Finset.card_le_card hcov
+      _ ≤ (P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)).card
+          + ((P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)).image
+              (fun p => (p.2, p.1))).card := Finset.card_union_le _ _
+      _ ≤ 2 * (P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P)).card := by
+          have h9 := Finset.card_image_le
+            (s := P.filter (fun p => p.1 < p.2 ∨ (p.2, p.1) ∉ P))
+            (f := fun p : Fin L × Fin L => (p.2, p.1))
+          omega
+
 /-! ## The edge telescopes -/
 
 /-- A deleted pair not covered by the rest of `D` survives in the partially
