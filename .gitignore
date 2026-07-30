@@ -22,6 +22,7 @@ HANDOFF.md
 *.bbl
 *.bcf
 *.blg
+*.cut
 *.fdb_latexmk
 *.fls
 *.lof
