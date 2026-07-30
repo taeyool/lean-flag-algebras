@@ -52,7 +52,9 @@ Razborov's Theorems 3.9/3.12:
   finite deletion machinery lives in `Telescope.lean` (vertex case) and
   `EdgeRound.lean` (edge case);
 * Corollary 4.6 is then derived in full from Theorems 4.3/4.5 and the
-  defining property of `ℙ[φ₀]`.
+  defining property of `ℙ[φ₀]`; part b) needs no edge-density hypothesis,
+  since at `φ₀(ρ) = 0` all downward evaluations from the `E`-algebra vanish
+  (`downward_zero_at_hom`).
 -/
 
 open MeasureTheory Filter
@@ -1234,16 +1236,12 @@ theorem downward_grad_vertex_eq_zero (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin h
   rw [eq_comm, div_eq_iff (ne_of_gt h1), zero_mul] at hspec
   exact hspec
 
-/-- **Razborov, Corollary 4.6 b)** (graphs): under the extremality hypotheses
-of Theorem 4.3, for every `g ∈ C_sem(A^E)` (in particular for every
-`E`-flag),
-
-`φ₀(⟦(∂_E Grad_{M⃗,a}(f)) · g⟧_E) ≥ 0`
-
-provided `φ₀(ρ) > 0`. Derived from Theorem 4.5 and the defining property of
-`ℙ[φ₀]`: the integrand `φ ↦ φ(∂_E Grad) · φ(g)` is a.s. a product of
-nonnegatives. -/
-theorem downward_grad_edge_nonneg (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin h → ℝ) → ℝ)
+/-- The positive-edge-density case of Corollary 4.6 b), matching the
+hypothesis of Theorem 4.5, from which it is derived via the defining property
+of `ℙ[φ₀]`: the integrand `φ ↦ φ(∂_E Grad) · φ(g)` is a.s. a product of
+nonnegatives. The full corollary `downward_grad_edge_nonneg` below removes
+the density hypothesis. -/
+theorem downward_grad_edge_nonneg_of_pos (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin h → ℝ) → ℝ)
     (φ₀ : PositiveHom ∅ₜ) {U : Set (Fin h → ℝ)} (hU : U ∈ nhds (densityPoint Mv φ₀))
     (hf : ContDiffOn ℝ 1 f U)
     (hmin : ∀ φ : PositiveHom ∅ₜ, densityPoint Mv φ ∈ U →
@@ -1276,6 +1274,29 @@ theorem downward_grad_edge_nonneg (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin h �
   have h1 : φ₀ ⟦(1 : FlagAlgebra edgeType)⟧₀ > 0 := positiveHom_one_downward_pos hρ
   have := mul_nonneg hnonneg (le_of_lt h1)
   rwa [div_mul_cancel₀ _ (ne_of_gt h1)] at this
+
+/-- **Razborov, Corollary 4.6 b)** (graphs): under the extremality hypotheses
+of Theorem 4.3, for every `g ∈ C_sem(A^E)` (in particular for every
+`E`-flag),
+
+`φ₀(⟦(∂_E Grad_{M⃗,a}(f)) · g⟧_E) ≥ 0`.
+
+Unlike Theorem 4.5, no positivity of the edge density is assumed: when
+`φ₀(ρ) = 0` every downward evaluation from the `E`-algebra vanishes at `φ₀`
+(`downward_zero_at_hom`), and when `φ₀(ρ) > 0` this is
+`downward_grad_edge_nonneg_of_pos`, derived from Theorem 4.5. -/
+theorem downward_grad_edge_nonneg (Mv : Fin h → FinFlag ∅ₜ) (f : (Fin h → ℝ) → ℝ)
+    (φ₀ : PositiveHom ∅ₜ) {U : Set (Fin h → ℝ)} (hU : U ∈ nhds (densityPoint Mv φ₀))
+    (hf : ContDiffOn ℝ 1 f U)
+    (hmin : ∀ φ : PositiveHom ∅ₜ, densityPoint Mv φ ∈ U →
+      f (densityPoint Mv φ₀) ≤ f (densityPoint Mv φ))
+    {g : FlagAlgebra edgeType} (hg : g ∈ semanticCone edgeType)
+    : 0 ≤ φ₀ ⟦(partialEdge (grad Mv f (densityPoint Mv φ₀))) * g⟧₀
+  := by
+  have hnn : φ₀ ⟨edgeType⟩₀ ≥ 0 := positiveHom_basisVector_ge_zero φ₀ _
+  rcases eq_or_lt_of_le hnn with hzero | hpos
+  · exact le_of_eq (downward_zero_at_hom φ₀ hzero.symm _).symm
+  · exact downward_grad_edge_nonneg_of_pos Mv f φ₀ hU hf hmin hpos hg
 
 end Differential
 end FlagAlgebras
