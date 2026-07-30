@@ -1,0 +1,8 @@
+We would like to thank Jineon Baek, Taeyoung Kim, Hyunwoo Lee, Joonkyung Lee, Christoph Spiegel,
+and Jan Volec for helpful discussions on Razborov's flag algebras and their Lean formalization.
+We are also grateful to
+Ross Kang and Sidharth Hariharan for encouraging us to work harder to remove
+\lean{native\_decide} in our Lean formalization.
+This work was supported by the National Research Foundation of Korea (NRF)
+grant funded by the Korean Government (MSIT) (No.~RS-2023-00279680) and by the
+Institute for Basic Science (IBS-R029-C1).
