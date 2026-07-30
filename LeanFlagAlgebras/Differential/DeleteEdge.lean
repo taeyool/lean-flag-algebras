@@ -11,8 +11,11 @@ defines:
 * `edgeRootedAt G v₁ v₂ h` — the `E`-flag `(G, v₁, v₂)` for an edge
   `(v₁, v₂) ∈ E(G)`;
 * `deleteEdge G e` — the graph `G` with the edge `e` removed;
-* `fillGraph`/`fillFlag`/`fillVec` — the natural isomorphism
-  `Fill : A^Ē → A^E` adding an edge between the two labelled vertices;
+* `fillGraph`/`fillFlag`/`fillVec` — Razborov's `Fill` operation (adding an
+  edge between the two labelled vertices), realised on labelled graphs, on
+  flags, and linearly on formal flag vectors; the induced map of the
+  quotient algebras `A^Ē → A^E` is *not* formalised, since only the
+  vector level enters `∂_E`;
 * `partialEdgeVec` — Razborov's edge-deletion operator
   `∂_E G = (ℓ(ℓ−1)/2) (Fill(μ_ℓ^Ē(G)) − μ_ℓ^E(G))`, extended linearly;
 * `partialEdge` — the induced linear map `A⁰ → A^E` (Lemma 4.4 b)).
@@ -144,7 +147,7 @@ theorem deleteEdge_adj {V : Type} (G : LabeledGraph ∅ₜ V) (e : Sym2 V) (u w 
   · rintro ⟨h1, h2⟩
     exact ⟨h1, fun hmem => h2 hmem.1⟩
 
-/-! ## The `Fill` isomorphism `A^Ē → A^E` -/
+/-! ## The `Fill` operation (on graphs, flags, and flag vectors) -/
 
 /-- Add an edge between the two labelled vertices of an `Ē`-flag, making it an
 `E`-flag on the same vertex set. -/
@@ -206,8 +209,8 @@ def fillGraph_iso {V W : Type} {G : LabeledGraph nonEdgeType V}
     ext t
     exact congrFun φ.type_preserve t
 
-/-- `Fill` on flags: the natural isomorphism `ℱ^Ē → ℱ^E` (adding the edge
-between the labelled vertices), lifted through the quotient. -/
+/-- `Fill` on flags: adding the edge between the two labelled vertices,
+lifted through the quotient. -/
 noncomputable def fillFlag {V : Type} : Flag nonEdgeType V → Flag edgeType V :=
   Quotient.map fillGraph (fun _ _ h => Nonempty.intro (fillGraph_iso h.some))
 
@@ -450,9 +453,9 @@ theorem nonEdgeFlag_roots_not_adj {V : Type} (B : LabeledGraph nonEdgeType V)
   rw [SimpleGraph.bot_adj] at h2
   exact h2
 
-/-- `Fill` is faithful: an isomorphism of filled flags restricts to an
-isomorphism of the underlying `Ē`-flags (the added edge is the unique rooted
-pair, which is a non-edge on both sides). -/
+/-- `Fill` is faithful: an isomorphism of filled labelled graphs restricts
+to an isomorphism of the underlying `Ē`-labelled graphs (the added edge is
+the unique rooted pair, which is a non-edge on both sides). -/
 noncomputable def unfillIso {V W : Type} {A : LabeledGraph nonEdgeType V}
     {B : LabeledGraph nonEdgeType W} (χ : fillGraph A ≃f fillGraph B)
     : A ≃f B where
