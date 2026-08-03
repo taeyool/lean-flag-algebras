@@ -3,18 +3,11 @@
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
 --     LeanFlagAlgebras/Flagmatic/Certificates/K5freeEdge_clean_cert.json \
 --     LeanFlagAlgebras/Flagmatic/K5freeEdgeClean.lean --namespace K5freeEdgeClean --native-decide --force
+-- The main theorem is proved by `flag_certificate`, which reads the
+-- certificate file at elaboration time; pass --materialize to emit the
+-- fully expanded proof instead (no build-time certificate dependence).
 
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Automation.FlagExpand
-import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
-import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.Automation.FlagCertificate
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -55,184 +48,46 @@ generate_forbid_free_flag_pair_density_theorems 4 5 3 3 K5
 generate_forbid_free_mul_theorems 4 5 3 3 K5
 generate_forbid_free_flag_density_theorems 2 1 5 K5
 
-/-- SDP certificate matrix for block 1 (rational, 8×8),
-paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
-def M₁ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(3 / 4 : ℚ), 0, 0, 0, 0, 0, 0, (-1 / 4 : ℚ);
-    0, (17 / 24 : ℚ), (-1 / 24 : ℚ), 0, 0, 0, 0, 0;
-    0, (-1 / 24 : ℚ), (17 / 24 : ℚ), 0, 0, 0, 0, 0;
-    0, 0, 0, (2 / 3 : ℚ), 0, 0, 0, 0;
-    0, 0, 0, 0, (17 / 24 : ℚ), (-1 / 24 : ℚ), 0, 0;
-    0, 0, 0, 0, (-1 / 24 : ℚ), (17 / 24 : ℚ), 0, 0;
-    0, 0, 0, 0, 0, 0, (2 / 3 : ℚ), 0;
-    (-1 / 4 : ℚ), 0, 0, 0, 0, 0, 0, (1 / 12 : ℚ)]
-noncomputable def M₁_real : Matrix (Fin 8) (Fin 8) ℝ :=
-  ratMatrixToReal M₁
--- Candidate exact-rational LDLᵀ witness for `M₁`: `M₁ = LM₁ * diag dM₁ * LM₁ᵀ`
--- with `LM₁` unit lower triangular. Computed by the translator and re-checked below by
--- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₁` inside Lean; an
--- incorrect witness is rejected rather than trusted.
-def dM₁ : Fin 8 → ℚ :=
-  ![(3 / 4 : ℚ), (17 / 24 : ℚ), (12 / 17 : ℚ), (2 / 3 : ℚ), (17 / 24 : ℚ), (12 / 17 : ℚ), (2 / 3 : ℚ), 0]
-def LM₁ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(1 : ℚ), 0, 0, 0, 0, 0, 0, 0;
-    0, (1 : ℚ), 0, 0, 0, 0, 0, 0;
-    0, (-1 / 17 : ℚ), (1 : ℚ), 0, 0, 0, 0, 0;
-    0, 0, 0, (1 : ℚ), 0, 0, 0, 0;
-    0, 0, 0, 0, (1 : ℚ), 0, 0, 0;
-    0, 0, 0, 0, (-1 / 17 : ℚ), (1 : ℚ), 0, 0;
-    0, 0, 0, 0, 0, 0, (1 : ℚ), 0;
-    (-1 / 3 : ℚ), 0, 0, 0, 0, 0, 0, (1 : ℚ)]
-/-- `M₁_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
-theorem M₁_real_posSemidef : M₁_real.PosSemidef := by
-  psd_real_ldlt M₁ LM₁ dM₁
-
-/-- SDP certificate matrix for block 2 (rational, 8×8),
-paired with `v₂`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
-def M₂ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(1 / 2 : ℚ), 0, 0, 0, 0, 0, 0, 0;
-    0, (9 / 4 : ℚ), (1 / 5 : ℚ), (1 / 5 : ℚ), 0, 0, (3 / 16 : ℚ), (-39 / 32 : ℚ);
-    0, (1 / 5 : ℚ), (3 / 8 : ℚ), (1 / 8 : ℚ), 0, 0, 0, (-1 / 10 : ℚ);
-    0, (1 / 5 : ℚ), (1 / 8 : ℚ), (3 / 8 : ℚ), 0, 0, 0, (-1 / 10 : ℚ);
-    0, 0, 0, 0, (7 / 8 : ℚ), (-3 / 8 : ℚ), 0, 0;
-    0, 0, 0, 0, (-3 / 8 : ℚ), (7 / 8 : ℚ), 0, 0;
-    0, (3 / 16 : ℚ), 0, 0, 0, 0, (25 / 24 : ℚ), (-59 / 96 : ℚ);
-    0, (-39 / 32 : ℚ), (-1 / 10 : ℚ), (-1 / 10 : ℚ), 0, 0, (-59 / 96 : ℚ), (11 / 12 : ℚ)]
-noncomputable def M₂_real : Matrix (Fin 8) (Fin 8) ℝ :=
-  ratMatrixToReal M₂
--- Candidate exact-rational LDLᵀ witness for `M₂`: `M₂ = LM₂ * diag dM₂ * LM₂ᵀ`
--- with `LM₂` unit lower triangular. Computed by the translator and re-checked below by
--- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₂` inside Lean; an
--- incorrect witness is rejected rather than trusted.
-def dM₂ : Fin 8 → ℚ :=
-  ![(1 / 2 : ℚ), (9 / 4 : ℚ), (643 / 1800 : ℚ), (209 / 643 : ℚ), (7 / 8 : ℚ), (5 / 7 : ℚ), (41125 / 40128 : ℚ), 0]
-def LM₂ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(1 : ℚ), 0, 0, 0, 0, 0, 0, 0;
-    0, (1 : ℚ), 0, 0, 0, 0, 0, 0;
-    0, (4 / 45 : ℚ), (1 : ℚ), 0, 0, 0, 0, 0;
-    0, (4 / 45 : ℚ), (193 / 643 : ℚ), (1 : ℚ), 0, 0, 0, 0;
-    0, 0, 0, 0, (1 : ℚ), 0, 0, 0;
-    0, 0, 0, 0, (-3 / 7 : ℚ), (1 : ℚ), 0, 0;
-    0, (1 / 12 : ℚ), (-30 / 643 : ℚ), (-15 / 418 : ℚ), 0, 0, (1 : ℚ), 0;
-    0, (-13 / 24 : ℚ), (15 / 643 : ℚ), (15 / 836 : ℚ), 0, 0, (-1 / 2 : ℚ), (1 : ℚ)]
-/-- `M₂_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
-theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
-  psd_real_ldlt M₂ LM₂ dM₂
-
-/-- SDP certificate matrix for block 3 (rational, 8×8),
-paired with `v₃`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
-def M₃ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(1 / 2 : ℚ), 0, 0, 0, (5 / 24 : ℚ), (5 / 24 : ℚ), (5 / 24 : ℚ), (-5 / 8 : ℚ);
-    0, (7 / 12 : ℚ), (1 / 12 : ℚ), 0, (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (-1 / 3 : ℚ);
-    0, (1 / 12 : ℚ), (7 / 12 : ℚ), 0, (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (-1 / 3 : ℚ);
-    0, 0, 0, (2 / 3 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (-1 / 3 : ℚ);
-    (5 / 24 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (815 / 864 : ℚ), (-49 / 864 : ℚ), (-35 / 432 : ℚ), (-29 / 36 : ℚ);
-    (5 / 24 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (-49 / 864 : ℚ), (815 / 864 : ℚ), (-35 / 432 : ℚ), (-29 / 36 : ℚ);
-    (5 / 24 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (1 / 9 : ℚ), (-35 / 432 : ℚ), (-35 / 432 : ℚ), (209 / 216 : ℚ), (-29 / 36 : ℚ);
-    (-5 / 8 : ℚ), (-1 / 3 : ℚ), (-1 / 3 : ℚ), (-1 / 3 : ℚ), (-29 / 36 : ℚ), (-29 / 36 : ℚ), (-29 / 36 : ℚ), (29 / 12 : ℚ)]
-noncomputable def M₃_real : Matrix (Fin 8) (Fin 8) ℝ :=
-  ratMatrixToReal M₃
--- Candidate exact-rational LDLᵀ witness for `M₃`: `M₃ = LM₃ * diag dM₃ * LM₃ᵀ`
--- with `LM₃` unit lower triangular. Computed by the translator and re-checked below by
--- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM₃` inside Lean; an
--- incorrect witness is rejected rather than trusted.
-def dM₃ : Fin 8 → ℚ :=
-  ![(1 / 2 : ℚ), (7 / 12 : ℚ), (4 / 7 : ℚ), (2 / 3 : ℚ), (173 / 216 : ℚ), (130 / 173 : ℚ), (16459 / 24960 : ℚ), 0]
-def LM₃ : Matrix (Fin 8) (Fin 8) ℚ :=
-  !![(1 : ℚ), 0, 0, 0, 0, 0, 0, 0;
-    0, (1 : ℚ), 0, 0, 0, 0, 0, 0;
-    0, (1 / 7 : ℚ), (1 : ℚ), 0, 0, 0, 0, 0;
-    0, 0, 0, (1 : ℚ), 0, 0, 0, 0;
-    (5 / 12 : ℚ), (4 / 21 : ℚ), (1 / 6 : ℚ), (1 / 6 : ℚ), (1 : ℚ), 0, 0, 0;
-    (5 / 12 : ℚ), (4 / 21 : ℚ), (1 / 6 : ℚ), (1 / 6 : ℚ), (-43 / 173 : ℚ), (1 : ℚ), 0, 0;
-    (5 / 12 : ℚ), (4 / 21 : ℚ), (1 / 6 : ℚ), (1 / 6 : ℚ), (-193 / 692 : ℚ), (-193 / 520 : ℚ), (1 : ℚ), 0;
-    (-5 / 4 : ℚ), (-4 / 7 : ℚ), (-1 / 2 : ℚ), (-1 / 2 : ℚ), (-327 / 692 : ℚ), (-327 / 520 : ℚ), (-1 : ℚ), (1 : ℚ)]
-/-- `M₃_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
-theorem M₃_real_posSemidef : M₃_real.PosSemidef := by
-  psd_real_ldlt M₃ LM₃ dM₃
-
-/-- Label type for block 1 (flagmatic type '3:'). -/
-def σ₁ : FlagType (Fin 3) := FlagType_3_0
-/-- Flag vector for block 1: the 8 σ-type 4-vertex flags paired with M₁. -/
-noncomputable def v₁ : FlagAlgebraVec σ₁ 8 := ![
-  FlagAlgebra_4_3_0_0,
-  FlagAlgebra_4_3_0_1,
-  FlagAlgebra_4_3_0_2,
-  FlagAlgebra_4_3_0_3,
-  FlagAlgebra_4_3_0_4,
-  FlagAlgebra_4_3_0_5,
-  FlagAlgebra_4_3_0_6,
-  FlagAlgebra_4_3_0_7
-]
-
-/-- Label type for block 2 (flagmatic type '3:1213'). -/
-def σ₂ : FlagType (Fin 3) := FlagType_3_2
-/-- Flag vector for block 2: the 8 σ-type 4-vertex flags paired with M₂. -/
-noncomputable def v₂ : FlagAlgebraVec σ₂ 8 := ![
-  FlagAlgebra_4_3_2_0,
-  FlagAlgebra_4_3_2_1,
-  FlagAlgebra_4_3_2_2,
-  FlagAlgebra_4_3_2_3,
-  FlagAlgebra_4_3_2_4,
-  FlagAlgebra_4_3_2_5,
-  FlagAlgebra_4_3_2_6,
-  FlagAlgebra_4_3_2_7
-]
-
-/-- Label type for block 3 (flagmatic type '3:121323'). -/
-def σ₃ : FlagType (Fin 3) := FlagType_3_3
-/-- Flag vector for block 3: the 8 σ-type 4-vertex flags paired with M₃. -/
-noncomputable def v₃ : FlagAlgebraVec σ₃ 8 := ![
-  FlagAlgebra_4_3_3_0,
-  FlagAlgebra_4_3_3_1,
-  FlagAlgebra_4_3_3_2,
-  FlagAlgebra_4_3_3_3,
-  FlagAlgebra_4_3_3_4,
-  FlagAlgebra_4_3_3_5,
-  FlagAlgebra_4_3_3_6,
-  FlagAlgebra_4_3_3_7
-]
-
-/-- Objective expansion. `flag_expand_hfree 5 K5` expands `FlagAlgebra_2_0_0_1`
-over the 5-vertex K5-free flags, rewriting the expansion theorem onto the
-generated set `flagSetHfree_5_0_0_K5`. Under the hypothesis the flags
-containing K5 have density zero, so they never enter the sum. -/
-lemma K5freeEdge_clean_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
-  := by
-  flag_expand_hfree 5 K5
-
 /-- **Main theorem (auto-generated).**
 Every graph with no K₅ subgraph has edge density at most 3/4.
+
+Proved directly from the certificate file by `flag_certificate`: the
+matrices, exact-rational `LDLᵀ` PSD checks, objective expansion, and the
+closing normalization are synthesized at elaboration time; the certificate
+is candidate data only.  Replace the call with `flag_certificate?` for a
+one-click `Try this:` materialization of the explicit tactic script.
 
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545'
 Bound: '3/4'. -/
 theorem K5freeEdge_clean_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)]
-            FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀ + ⟦flagQuadraticForm M₃_real v₃⟧₀
-    := by
-    apply forbidLEWith_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
-    apply forbidLEWith_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply forbidLEWith_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLEWith_refl _ FlagAlgebra_2_0_0_1
-  apply forbidLEWith_trans quadraticForm_trans
-  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 5) 5)))
-  simp only [add_assoc]
-  rw [forbidLEWith_rw_left_add_right K5freeEdge_clean_flagAlgebra_expand_under_forbid]
+  flag_certificate "LeanFlagAlgebras/Flagmatic/Certificates/K5freeEdge_clean_cert.json" K5
 
-  simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
-  simp [v₂, M₂_real, ratMatrixToReal, M₂]
-  simp [v₃, M₃_real, ratMatrixToReal, M₃]
-  reduce_downward_flagmul
+/-- The certificate's target graph as a `Sym2Graph` term, in the canonical
+labeling: the same edge list as the generated `Sym2Graph_2_0_0_1`,
+so the two are equal by `decide`. -/
+def TargetGraph : Sym2Graph 2 where
+  edges := {s(0, 1)}
+  edges_valid := by decide
 
-  expand_one_hfree_at 5 K5
+/-- **Turán-density form (auto-generated).**
+Every graph with no K₅ subgraph has edge density at most 3/4.
 
-  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
-  flagsum_ac_sort_rhs_pipeline
-
-  apply forbidLEWith_of_le
-  flag_nonneg
+Restates `K5freeEdge_clean_flagAlgebra` through the spec-level bridge
+`generalizedTuranDensity_le_of_forbidLE`: the asymptotic density of induced
+copies of `TargetGraph` among K5-free graphs is at most '3/4'.
+Unlike the flag-algebra statement, this one mentions no generated constant:
+the target is the explicit edge list above, decoded by `toLabeledGraph.graph`. -/
+theorem K5freeEdge_clean_turanDensity
+    : generalizedTuranDensity (completeGraph (Fin 5)) TargetGraph.toLabeledGraph.graph ≤ (3 / 4 : ℝ)
+  := by
+  apply generalizedTuranDensity_le_of_forbidLE (by norm_num)
+  have htarget : TargetGraph = Sym2Graph_2_0_0_1 := by decide
+  have hobj : TargetGraph.toLabeledGraph.graph.toFlagAlgebra
+      = FlagAlgebra_2_0_0_1 := by
+    rw [htarget]; rfl
+  rw [hobj]
+  exact K5freeEdge_clean_flagAlgebra
 
 end K5freeEdgeClean

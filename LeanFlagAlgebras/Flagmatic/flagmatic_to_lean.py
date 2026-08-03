@@ -16,9 +16,21 @@
 #     the skeleton no longer spells those theorems out), preceded by the
 #     `set_option` block (`flagGen.kernelDecide` -- on by default, use
 #     `--native-decide` to opt out -- plus `maxHeartbeats 0` / `maxRecDepth`);
-#   * M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the σ_t / v_t flag vectors, the forbid-free
-#     objective expansion (branch B, closed by `flag_expand_hfree`), and the
-#     auto-proved main theorem (`≤[completeGraph (Fin r)]`, ordinary forbid).
+#   * the main theorem, proved by default by a single
+#     `flag_certificate "<cert>.json" K{r}` call (the Lean tactic reads the
+#     certificate at elaboration time and synthesizes the matrices, exact LDLᵀ PSD
+#     checks, objective expansion, and closing normalization; switch the call to
+#     `flag_certificate?` for a one-click `Try this:` materialization of the
+#     explicit script).  With `--materialize`, the legacy fully expanded form
+#     instead: M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the
+#     σ_t / v_t flag vectors, the forbid-free objective expansion (branch B,
+#     closed by `flag_expand_hfree`), and the explicit tactic proof — with no
+#     build-time dependence on the certificate file;
+#   * the Turán-density restatement (`render_turan_transfer`): `def TargetGraph`
+#     (the objective as an explicit `Sym2Graph` edge list) and
+#     `<base>_turanDensity : generalizedTuranDensity <H> TargetGraph.toLabeledGraph.graph ≤ <bound>`,
+#     proved from the main theorem via `generalizedTuranDensity_le_of_forbidLE` —
+#     a spec-level statement mentioning no generated constants.
 #
 # NO JSON ON DISK is required: the canonical graph/flag enumeration (which fixes
 # the `FlagAlgebra_…` identifier indices, in lockstep with the Lean generators'
@@ -1044,11 +1056,14 @@ def render_proof_body(
     return proof, helper_lemma
 
 
-def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | None = None) -> str:
+def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | None = None,
+                             extra_doc: str | None = None) -> str:
     """Render the main `theorem` declaration with `sorry` for the proof body.
 
     Falls back to placeholders (`/- TODO: ... -/`) when description parsing
     is incomplete; never raises so a partial skeleton can still be generated.
+    `extra_doc` is an additional docstring paragraph inserted before the
+    certificate-description line.
     """
     desc = cert.get("description", "")
     try:
@@ -1083,16 +1098,97 @@ def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | No
 
     prose = _theorem_prose(desc, str(bound))
     prose_block = f"{prose}\n\n" if prose else ""
+    extra_block = f"{extra_doc}\n\n" if extra_doc else ""
 
     return (
         f"/-- **Main theorem ({note}).**\n"
         f"{prose_block}"
+        f"{extra_block}"
         f"Certificate description: {desc!r}\n"
         f"Bound: {bound!r}. -/\n"
         f"theorem {theorem_name}\n"
         f"    : {obj_repr} ≤[{forbid_expr}] {bound_lit} • (1 : FlagAlgebra ∅ₜ)\n"
         f"  := by\n"
         f"{tactic_block}\n"
+    )
+
+
+def render_turan_transfer(cert: dict, theorem_name: str) -> str | None:
+    """Render the Turán-density restatement emitted after the main theorem.
+
+    Emits (a) `TargetGraph`, the certificate's objective as an explicit `Sym2Graph`
+    term in the *canonical* labeling (the same edge list as the generated
+    `Sym2Graph_{n}_0_0_{i}`, so the two are `decide`-equal), and (b) the theorem
+
+        <base>_turanDensity :
+          generalizedTuranDensity <H> TargetGraph.toLabeledGraph.graph ≤ <bound>
+
+    proved from the main flag-algebra theorem via the spec-level bridge
+    `generalizedTuranDensity_le_of_forbidLE` (`Forbid/TuranDensity.lean`).  The
+    statement mentions no generated constant except through `TargetGraph`'s visible
+    edge list, so it can be audited against the spec-level definitions alone.
+
+    Returns None when the description cannot be parsed (the skeleton then simply
+    omits the restatement, as for the sorry-stub fallback).
+    """
+    desc = cert.get("description", "")
+    try:
+        _obj_ident, n_obj, obj_idx = _objective_from_description(desc)
+    except (ValueError, LookupError):
+        return None
+    forbid_n, _forbid_edges, tag = _forbid_graph_from_description(desc)
+    if forbid_n is None:
+        return None
+    forbid_graph_expr = (f"completeGraph (Fin {forbid_n})" if tag is not None
+                         else "ForbidGraph.toLabeledGraph.graph")
+    forbid_display = tag if tag is not None else "ForbidGraph"
+    try:
+        bound_lit = _lean_real_literal(cert.get("bound", "0"))
+    except (TypeError, ValueError):
+        return None
+
+    target_edges = load_graphs(n_obj)[obj_idx]
+    if target_edges:
+        edge_terms = ", ".join(f"s({u}, {v})" for (u, v) in sorted(target_edges))
+        edges_field = f"{{{edge_terms}}}"
+    else:
+        edges_field = "∅"
+
+    base = theorem_name
+    for suffix in ("_flagAlgebra",):
+        if base.endswith(suffix):
+            base = base[: -len(suffix)]
+            break
+    transfer_name = f"{base}_turanDensity"
+
+    prose = _theorem_prose(desc, str(cert.get("bound", "")))
+    prose_block = f"{prose}\n\n" if prose else ""
+
+    return (
+        f"/-- The certificate's target graph as a `Sym2Graph` term, in the canonical\n"
+        f"labeling: the same edge list as the generated `Sym2Graph_{n_obj}_0_0_{obj_idx}`,\n"
+        f"so the two are equal by `decide`. -/\n"
+        f"def TargetGraph : Sym2Graph {n_obj} where\n"
+        f"  edges := {edges_field}\n"
+        f"  edges_valid := by decide\n"
+        f"\n"
+        f"/-- **Turán-density form (auto-generated).**\n"
+        f"{prose_block}"
+        f"Restates `{theorem_name}` through the spec-level bridge\n"
+        f"`generalizedTuranDensity_le_of_forbidLE`: the asymptotic density of induced\n"
+        f"copies of `TargetGraph` among {forbid_display}-free graphs is at most {cert.get('bound', '?')!r}.\n"
+        f"Unlike the flag-algebra statement, this one mentions no generated constant:\n"
+        f"the target is the explicit edge list above, decoded by `toLabeledGraph.graph`. -/\n"
+        f"theorem {transfer_name}\n"
+        f"    : generalizedTuranDensity ({forbid_graph_expr}) TargetGraph.toLabeledGraph.graph ≤ {bound_lit}\n"
+        f"  := by\n"
+        f"  apply generalizedTuranDensity_le_of_forbidLE (by norm_num)\n"
+        f"  have htarget : TargetGraph = Sym2Graph_{n_obj}_0_0_{obj_idx} := by decide\n"
+        f"  have hobj : TargetGraph.toLabeledGraph.graph.toFlagAlgebra\n"
+        f"      = FlagAlgebra_{n_obj}_0_0_{obj_idx} := by\n"
+        f"    rw [htarget]; rfl\n"
+        f"  rw [hobj]\n"
+        f"  exact {theorem_name}\n"
     )
 
 
@@ -1325,12 +1421,25 @@ def render_skeleton(
     theorem_name: str = "main",
     kernel_decide: bool = True,
     regen_cmd: str | None = None,
+    materialize: bool = False,
+    cert_path: str | None = None,
 ) -> str:
-    """Render a complete starter Lean API file for the edge-based pruned pipeline:
-    imports, opens, namespace, `def K{r}` + the `set_option` block +
-    `generate_forbid_free_*` commands (including the branch-B flag-density table), the
+    """Render a complete starter Lean API file for the edge-based pruned pipeline.
+
+    Default (`materialize=False`, requires `cert_path`): the *certificate-tactic*
+    form — imports, opens, namespace, `def K{r}` + the `set_option` block +
+    `generate_forbid_free_*` commands, the main theorem proved by a single
+    `flag_certificate "<cert>" <F>` call (the matrices, PSD checks, objective
+    expansion, and closing normalization are synthesized at elaboration time from
+    the certificate file), and the Turán-density restatement.  The explicit script
+    is recoverable at any time by switching the call to `flag_certificate?`
+    (a one-click `Try this:` materialization).
+
+    `materialize=True`: the fully expanded legacy form — additionally the
     matrix/PSD defs, σ_t / v_t definitions, the forbid-free objective expansion
-    (branch B), and the auto-proved main theorem.
+    lemma (branch B), and the explicit tactic proof, with no elaboration-time
+    dependence on the certificate file.  Also the fallback when the certificate
+    description cannot be parsed (sorry-stub skeleton).
 
     When `kernel_decide` is True (the default), `set_option flagGen.kernelDecide
     true` is emitted before the generate commands so all bridging lemmas use
@@ -1339,6 +1448,67 @@ def render_skeleton(
     """
     opens = "\n".join(LEAN_OPENS)
     commands = render_pruned_commands(cert, kernel_decide=kernel_decide)
+
+    # The certificate-tactic form needs a parseable objective and forbid clause
+    # (they fix the statement); otherwise fall back to the materialized skeleton,
+    # whose placeholder/sorry machinery handles partial descriptions.
+    desc = cert.get("description", "")
+    desc_ok = True
+    try:
+        _objective_from_description(desc)
+    except (ValueError, LookupError):
+        desc_ok = False
+    forbid_n, _forbid_edges, forbid_tag = _forbid_graph_from_description(desc)
+    if forbid_n is None:
+        desc_ok = False
+
+    if not materialize and desc_ok and cert_path is not None:
+        tag = forbid_tag if forbid_tag is not None else "ForbidGraph"
+        proof_body = f'  flag_certificate "{cert_path}" {tag}'
+        extra_doc = (
+            "Proved directly from the certificate file by `flag_certificate`: the\n"
+            "matrices, exact-rational `LDLᵀ` PSD checks, objective expansion, and the\n"
+            "closing normalization are synthesized at elaboration time; the certificate\n"
+            "is candidate data only.  Replace the call with `flag_certificate?` for a\n"
+            "one-click `Try this:` materialization of the explicit tactic script."
+        )
+        theorem_block = render_theorem_statement(cert, theorem_name, proof_body,
+                                                 extra_doc=extra_doc)
+        transfer = render_turan_transfer(cert, theorem_name)
+        transfer_block = f"\n{transfer}" if transfer is not None else ""
+
+        if regen_cmd:
+            regen_lines = "".join(f"--   {line}\n" for line in regen_cmd.splitlines())
+        else:
+            regen_lines = (
+                "--   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton "
+                "<cert>.json <target>.lean\n"
+            )
+        header = (
+            f"-- Auto-generated from Flagmatic certificate "
+            f"(description: {desc!r}).\n"
+            f"-- Do not edit by hand; regenerate with\n"
+            f"{regen_lines}"
+            f"-- The main theorem is proved by `flag_certificate`, which reads the\n"
+            f"-- certificate file at elaboration time; pass --materialize to emit the\n"
+            f"-- fully expanded proof instead (no build-time certificate dependence).\n"
+        )
+
+        return (
+            f"{header}\n"
+            f"import LeanFlagAlgebras.Automation.FlagCertificate\n"
+            f"\n"
+            f"{opens}\n"
+            f"\n"
+            f"namespace {namespace}\n"
+            f"\n"
+            f"{commands}\n"
+            f"\n"
+            f"{theorem_block}"
+            f"{transfer_block}"
+            f"\n"
+            f"end {namespace}\n"
+        )
     matrices_body = render_matrices(cert)
     vectors_body = render_flag_vectors(cert)
     # render_flag_vectors prepends a 2-line auto-gen header; strip it so the
@@ -1393,6 +1563,11 @@ def render_skeleton(
         f"{render_theorem_statement(cert, theorem_name, proof_body)}"
     )
 
+    # Turán-density restatement (only when the main proof was auto-generated:
+    # a sorry-stub skeleton should stay minimal).
+    transfer = render_turan_transfer(cert, theorem_name) if proof_body is not None else None
+    transfer_block = f"\n{transfer}" if transfer is not None else ""
+
     return (
         f"{header}\n"
         f"{imports}\n"
@@ -1407,6 +1582,7 @@ def render_skeleton(
         f"{vectors_body}\n"
         f"\n"
         f"{theorem_block}"
+        f"{transfer_block}"
         f"\n"
         f"end {namespace}\n"
     )
@@ -1478,14 +1654,18 @@ def _cmd_gen_skeleton(args: argparse.Namespace) -> int:
         f"python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \\\n"
         f"  {args.certificate.as_posix()} \\\n"
         f"  {args.target.as_posix()} --namespace {namespace}"
-        f"{'' if args.kernel_decide else ' --native-decide'} --force"
+        f"{'' if args.kernel_decide else ' --native-decide'}"
+        f"{' --materialize' if args.materialize else ''} --force"
     )
     text = render_skeleton(cert, namespace, theorem_name,
-                           kernel_decide=args.kernel_decide, regen_cmd=regen_cmd)
+                           kernel_decide=args.kernel_decide, regen_cmd=regen_cmd,
+                           materialize=args.materialize,
+                           cert_path=args.certificate.as_posix())
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(text, encoding="utf-8")
     kd_note = " [kernel-decide mode]" if args.kernel_decide else " [native-decide mode]"
-    print(f"wrote {len(text)} chars to {args.target} (namespace {namespace}){kd_note}")
+    mode_note = " [materialized proof]" if args.materialize else " [flag_certificate proof]"
+    print(f"wrote {len(text)} chars to {args.target} (namespace {namespace}){kd_note}{mode_note}")
     return 0
 
 
@@ -1643,6 +1823,17 @@ def main(argv: list[str] | None = None) -> None:
             "Use `native_decide` for bridging lemmas instead. Faster (recommended "
             "while iterating on host size N = 5), but the file then depends on the "
             "compiled-evaluation axioms (`Lean.ofReduceBool`)."
+        ),
+    )
+    p_skel.add_argument(
+        "--materialize",
+        action="store_true",
+        help=(
+            "Emit the fully expanded proof (matrix/PSD defs, flag vectors, expansion "
+            "lemma, and the explicit tactic script) instead of a `flag_certificate` "
+            "call. The file is then self-contained: it does not read the certificate "
+            "at build time. Default: the compact `flag_certificate` form (switch the "
+            "call to `flag_certificate?` for a one-click materialization)."
         ),
     )
     p_skel.set_defaults(func=_cmd_gen_skeleton)

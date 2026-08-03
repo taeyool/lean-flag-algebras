@@ -3,16 +3,11 @@
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
 --     LeanFlagAlgebras/Flagmatic/Certificates/K3freeP3_cert.json \
 --     LeanFlagAlgebras/Flagmatic/K3freeP3.lean --namespace K3freeP3 --force
+-- The main theorem is proved by `flag_certificate`, which reads the
+-- certificate file at elaboration time; pass --materialize to emit the
+-- fully expanded proof instead (no build-time certificate dependence).
 
-import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.ForbidFreeGenerator
-import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
-import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.Automation.Basic
-import LeanFlagAlgebras.Automation.FlagMulReduce
-import LeanFlagAlgebras.Automation.FlagSumSort
-import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.Automation.FlagCertificate
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -42,59 +37,46 @@ generate_forbid_free_flags 3 1 0 K3
 generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3
 generate_forbid_free_mul_theorems 2 3 1 0 K3
 
-/-- SDP certificate matrix for block 1 (rational, 2×2),
-paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
-def M : Matrix (Fin 2) (Fin 2) ℚ :=
-  !![(3 / 4 : ℚ), (-3 / 4 : ℚ);
-    (-3 / 4 : ℚ), (3 / 4 : ℚ)]
-noncomputable def M_real : Matrix (Fin 2) (Fin 2) ℝ :=
-  ratMatrixToReal M
--- Candidate exact-rational LDLᵀ witness for `M`: `M = LM * diag dM * LMᵀ`
--- with `LM` unit lower triangular. Computed by the translator and re-checked below by
--- `psd_real_ldlt`, which proves the factorization and `0 ≤ dM` inside Lean; an
--- incorrect witness is rejected rather than trusted.
-def dM : Fin 2 → ℚ :=
-  ![(3 / 4 : ℚ), 0]
-def LM : Matrix (Fin 2) (Fin 2) ℚ :=
-  !![(1 : ℚ), 0;
-    (-1 : ℚ), (1 : ℚ)]
-/-- `M_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
-theorem M_real_posSemidef : M_real.PosSemidef := by
-  psd_real_ldlt M LM dM
-
-/-- Label type for block 1 (flagmatic type '1:'). -/
-def σ : FlagType (Fin 1) := FlagType_1_0
-/-- Flag vector for block 1: the 2 σ-type 2-vertex flags paired with M. -/
-noncomputable def v : FlagAlgebraVec σ 2 := ![
-  FlagAlgebra_2_1_0_0,
-  FlagAlgebra_2_1_0_1
-]
-
 /-- **Main theorem (auto-generated).**
 Every graph with no K₃ subgraph has P₃ density at most 3/4.
+
+Proved directly from the certificate file by `flag_certificate`: the
+matrices, exact-rational `LDLᵀ` PSD checks, objective expansion, and the
+closing normalization are synthesized at elaboration time; the certificate
+is candidate data only.  Replace the call with `flag_certificate?` for a
+one-click `Try this:` materialization of the explicit tactic script.
 
 Certificate description: '2-graph; maximize 3:1213 density; forbid 3:121323'
 Bound: '3/4'. -/
 theorem K3freeP3_flagAlgebra
     : FlagAlgebra_3_0_0_2 ≤[completeGraph (Fin 3)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_3_0_0_2 ≤[completeGraph (Fin 3)]
-            FlagAlgebra_3_0_0_2 + ⟦flagQuadraticForm M_real v⟧₀
-    := by
-    apply forbidLEWith_add_QuadraticForm M_real M_real_posSemidef v
-    exact forbidLEWith_refl _ FlagAlgebra_3_0_0_2
-  apply forbidLEWith_trans quadraticForm_trans
-  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 3)))
+  flag_certificate "LeanFlagAlgebras/Flagmatic/Certificates/K3freeP3_cert.json" K3
 
-  simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
-  reduce_downward_flagmul
+/-- The certificate's target graph as a `Sym2Graph` term, in the canonical
+labeling: the same edge list as the generated `Sym2Graph_3_0_0_2`,
+so the two are equal by `decide`. -/
+def TargetGraph : Sym2Graph 3 where
+  edges := {s(0, 1), s(0, 2)}
+  edges_valid := by decide
 
-  expand_one_hfree_at 3 K3
+/-- **Turán-density form (auto-generated).**
+Every graph with no K₃ subgraph has P₃ density at most 3/4.
 
-  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]
-  flagsum_ac_sort_rhs_pipeline
-
-  apply forbidLEWith_of_le
-  flag_nonneg
+Restates `K3freeP3_flagAlgebra` through the spec-level bridge
+`generalizedTuranDensity_le_of_forbidLE`: the asymptotic density of induced
+copies of `TargetGraph` among K3-free graphs is at most '3/4'.
+Unlike the flag-algebra statement, this one mentions no generated constant:
+the target is the explicit edge list above, decoded by `toLabeledGraph.graph`. -/
+theorem K3freeP3_turanDensity
+    : generalizedTuranDensity (completeGraph (Fin 3)) TargetGraph.toLabeledGraph.graph ≤ (3 / 4 : ℝ)
+  := by
+  apply generalizedTuranDensity_le_of_forbidLE (by norm_num)
+  have htarget : TargetGraph = Sym2Graph_3_0_0_2 := by decide
+  have hobj : TargetGraph.toLabeledGraph.graph.toFlagAlgebra
+      = FlagAlgebra_3_0_0_2 := by
+    rw [htarget]; rfl
+  rw [hobj]
+  exact K3freeP3_flagAlgebra
 
 end K3freeP3

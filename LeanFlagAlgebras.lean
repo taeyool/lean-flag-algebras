@@ -41,6 +41,7 @@ import LeanFlagAlgebras.Automation.FlagSumSort
 import LeanFlagAlgebras.Automation.K4freeP4
 import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
 import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.FlagCertificate
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef
@@ -71,7 +72,9 @@ import LeanFlagAlgebras.Logic.Defs
 import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Logic.MantelTheorem
 
--- Flagmatic (the seven paper case studies, in the order of the paper's Section 5.4 table)
+-- Flagmatic (the seven paper case studies, in the order of the paper's Section 5.4 table).
+-- Each is proved by `flag_certificate`, which reads the committed certificate JSON at
+-- elaboration time; `flag_certificate?` materializes the explicit script on demand.
 import LeanFlagAlgebras.Flagmatic.Mantel
 import LeanFlagAlgebras.Flagmatic.K3freeP3
 import LeanFlagAlgebras.Flagmatic.K3freeC4
