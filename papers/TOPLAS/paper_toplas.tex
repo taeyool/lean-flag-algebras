@@ -9,6 +9,20 @@
 % that cleveref keeps reporting the right environment names (e.g., Lemma
 % rather than Theorem) while all environments share one counter.
 
+% Fresh-build workaround: latexmk seeds a first run with a dummy .aux that
+% claims the previous run had one page (\gdef\@abspage@last{1}).  The kernel
+% then fires its shipout/lastpage hook already on page 1, where hyperxmp
+% (loaded by acmart) re-executes the author list to collect XMP metadata;
+% acmart's affiliation city/country check misfires in that harvesting
+% context and aborts with "No country present for an affiliation".
+% Restoring the kernel default ("last page unknown") makes such a run behave
+% like an ordinary first run; real page data from a genuine previous run is
+% left untouched.
+\makeatletter
+\AtBeginDocument{\ifdefined\@abspage@last
+  \ifnum\@abspage@last=1 \gdef\@abspage@last{2147483647}\fi\fi}
+\makeatother
+
 %% ---- ACM metadata (placeholders until acceptance) -----------------------
 \setcopyright{none} % TODO(final): CC license under ACM Open Access
 \acmJournal{TOPLAS}
