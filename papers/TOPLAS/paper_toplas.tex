@@ -313,47 +313,42 @@ Razborov's flag algebra method proves asymptotic inequalities of extremal
 graph theory: statements about all sufficiently large graphs that avoid
 given patterns.  The method reduces such an inequality to finitely many
 algebraic conditions, and a semidefinite-programming (SDP) solver searches
-for a certificate that witnesses them: lists of flags, exact rational
-density facts, and positive-semidefinite matrices.  Certificates behind
-notable theorems contain thousands of exact values and are produced by
+for a certificate that witnesses them.  Certificates behind notable
+theorems contain thousands of exact rational values and are produced by
 large, numerical, unverified toolchains, so they can be neither audited by
-hand nor sensibly trusted.  This article presents a Lean~4 formalization of
-the method for finite simple graphs, together with a certificate-to-proof
-compiler that turns such untrusted certificate data into complete,
-machine-checked proofs.
+hand nor sensibly trusted.  This article presents a certificate-to-proof
+compiler for the method: a Lean~4 development that formalizes flag
+algebras for finite simple graphs and compiles such untrusted certificates
+into complete, machine-checked proofs.
 
-The development has three layers.  A specification layer formalizes the
-mathematics of the method: partially labeled graphs, their densities in
-large graphs, the quotient algebra of density expressions, and its
-graph-limit semantics through positive homomorphisms.  A reflection layer
-supplies executable graph representations, adequacy theorems relating their
-computations to the specification, and elaboration-time commands that
-generate the thousands of verified density and multiplication identities a
-certificate requires.  An automation layer contains the certificate-to-proof
-compiler itself.  The compiler treats the SDP output as candidate data only:
-Lean recomputes every claimed fact against the mathematical definitions,
-verifies positive semidefiniteness exactly over the rationals by $LDL^\top$
-factorization, and assembles the target bound.  We evaluate the compiler on
-seven Tur\'an-type upper bounds, including those of Mantel's theorem and the
-Erd\H{o}s pentagon theorem, and report a trust profile that states, for each
-class of proof obligation, the mechanism by which it is discharged.
+The development has three layers: a specification layer that formalizes
+the mathematics of the method, a reflection layer that makes the
+specification computable and generates the thousands of verified
+identities a certificate requires, and an automation layer that drives the
+compilation.  Compilation happens at elaboration time, inside Lean: the
+theorem statement is fixed in the source file, the certificate enters only
+as untrusted hint data, and Lean recomputes every claimed fact against the
+mathematical definitions.  We evaluate the compiler on seven Tur\'an-type
+upper bounds, including that of Mantel's theorem, and report a trust
+profile that states, for each class of proof obligation, the mechanism by
+which it is discharged.  Combined with matching extremal constructions
+proved directly in the formalization, the compiled bounds give, to our
+knowledge, the first machine-checked proof of the Erd\H{o}s pentagon
+theorem, whose known proofs all use flag algebras.
 
-The compiled bounds all concern graphs that avoid a forbidden subgraph,
-such as a triangle, so the formalization must choose where this constraint
-enters the design.  Razborov's original development builds the constraint
-into the algebra from the start; we call this the built-in semantics.  Our
-implementation instead formalizes the algebra of unconstrained graphs once
-and imposes each constraint only where an inequality is interpreted; we
-call this the ensemble semantics.  This keeps the constraint out of the
-algebra's definitions and lemmas, so one formalization serves every
-forbidden family.  The choice raises a soundness question: do the two
-semantics validate the same inequalities?
+The compiled bounds all concern graphs that avoid a forbidden subgraph, so
+the formalization must decide where this constraint enters.  Razborov's
+development builds the constraint into the algebra from the start; we call
+this the built-in semantics.  Ours instead formalizes the algebra of
+unconstrained graphs once and imposes each constraint only where an
+inequality is interpreted; we call this the ensemble semantics.  This
+keeps the constraint out of the algebra's definitions and lemmas, so one
+formalization serves every forbidden family.  The choice raises a
+soundness question: do the two semantics validate the same inequalities?
 We prove that every inequality valid in the built-in semantics remains
 valid in the ensemble semantics, characterize the flag types at which the
 two agree by a criterion we call root-plantability, and give a $C_4$-free
-counterexample where they differ.  A
-forthcoming companion paper develops the complete mathematical and formal
-account of this meta-theory.
+counterexample where they differ.
 \end{abstract}
 
 \begin{CCSXML}
