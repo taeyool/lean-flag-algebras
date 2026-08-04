@@ -533,24 +533,21 @@ heredity alone does not.
 
 \paragraph{Contributions.}
 \begin{itemize}
-\item \emph{A certificate-to-proof compiler} for Tur\'an-type bounds,
-  built as the three layers described above and invoked as an
-  elaboration-time tactic; it comes with an explicit per-obligation
-  trust model, a one-click materialization of the synthesized proof
-  script, and generated theorem families whose names carry metadata for
-  later automation (\Cref{sec:abstract,sec:reflection,sec:flagmatic}).
+\item \emph{A Lean~4 formalization of the flag algebra method} for
+  finite simple graphs, and \emph{a certificate-to-proof compiler} built
+  on it and invoked as an elaboration-time tactic, turning externally
+  generated, untrusted certificates into complete, machine-checked
+  proofs of Tur\'an-type bounds
+  (\Cref{sec:abstract,sec:reflection,sec:flagmatic}).
 \item \emph{A meta-theory of ensemble semantics}, formalized in a
-  separate, automatically generated Lean development that extends the
-  manually written library (\Cref{sec:metatheory}).
-\item \emph{An evaluation and experience report}: seven compiled
-  upper-bound certificates, including the bounds of Mantel's theorem and the
-  Erd\H{o}s pentagon theorem and a $C_4$-density bound for triangle-free
-  graphs; direct uses of the library without the compiler, namely a separate
-  proof of Mantel's bound, the matching lower-bound constructions completing
-  both exact Tur\'an-density results, and two inequalities of Goodman
-  (\Cref{sec:lowerbounds}); compilation-time and memory measurements
-  (\Cref{sec:compile-times}); and an analysis of the engineering obstacles
-  the development had to overcome (\Cref{sec:obstacles}).
+  separate, automatically generated Lean library that extends the
+  development above (\Cref{sec:metatheory}).
+\item \emph{Machine-checked theorems}: seven compiled Tur\'an-type upper
+  bounds, including those of Mantel's theorem and the Erd\H{o}s pentagon
+  theorem; combined with matching lower-bound constructions proved
+  directly in the library, these yield, to our knowledge, the first
+  machine-checked proof of the pentagon theorem, whose known proofs all
+  use flag algebras (\Cref{sec:results,sec:lowerbounds}).
 \end{itemize}
 The complete Lean development, including the certificate-to-proof compiler
 and the autoformalized meta-theory, is publicly available at
