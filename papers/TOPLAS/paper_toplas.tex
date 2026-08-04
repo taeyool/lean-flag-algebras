@@ -471,41 +471,35 @@ a large, numerical, unverified toolchain.  A formal proof should neither
 trust this data nor require thousands of individually written proofs.
 
 \paragraph{A certificate-to-proof compiler.}
-This article presents a Lean~4~\cite{moura2021lean} formalization of the
-flag algebra method for finite simple graphs, structured so that certificate
-data never needs to be trusted.  The development has three layers.
+This article presents a certificate-to-proof compiler for the flag
+algebra method: a Lean~4~\cite{moura2021lean} development that
+formalizes the method for finite simple graphs and compiles candidate
+certificates into complete, machine-checked proofs, structured so that
+certificate data never needs to be trusted.  The development has three
+layers.
 
 The \emph{specification layer} (\Cref{sec:abstract}) formalizes the
-mathematics of the method: partially labeled graphs and their densities in
-large graphs, an algebra of density expressions modulo the identities that
-relate different graph sizes, positive homomorphisms representing graph
-limits, and the downward operator that averages labels away.  Its
-definitions follow the standard mathematics closely: flags are isomorphism
-classes, and densities are sampling probabilities.  Flag-algebra arguments
-can therefore be stated in Lean much as they appear on paper.
+mathematics of the method: partially labeled graphs and their densities
+in large graphs, the quotient algebra of density expressions, and its
+semantics through positive homomorphisms representing graph limits.  It
+follows the standard development closely, so flag-algebra arguments can
+be stated in Lean much as they appear on paper.
 
-The \emph{reflection layer} (\Cref{sec:reflection}) makes the specification
-computable.  It supplies executable graph representations together with
-adequacy theorems proving that the computations they support agree with the
-specification, and elaboration-time generation commands that specialize
-these theorems into the verified density, downward, and multiplication
-identities that a given certificate requires; a single case study
-routinely needs thousands of such lemmas.
+The \emph{reflection layer} (\Cref{sec:reflection}) makes the
+specification computable.  It supplies executable graph
+representations, adequacy theorems proving that their computations
+agree with the specification, and elaboration-time commands that
+generate the verified identities a given certificate requires.
 
-The \emph{automation layer} (\Cref{sec:flagmatic}) is the
-certificate-to-proof compiler.  It treats the output of the external SDP
-search as candidate data only: Lean recomputes the required density and
-multiplication facts and checks them against the mathematical definitions,
-verifies positive semidefiniteness exactly over $\mathbb{Q}$ through
-$LDL^\top$ factorizations, expands the target when necessary, and uses the
-reflected identities together with custom tactics to normalize the
-certificate calculation under the forbidden-graph assumption and assemble
-the final bound.  The compiler is packaged as a tactic: the theorem statement
-is fixed in the source file, and \lean{flag\_certificate} reads the
-certificate file during elaboration and synthesizes a proof of exactly that
-statement, so the certificate functions as untrusted hint data.  A companion
-\lean{flag\_certificate?} materializes the synthesized proof script in the
-source file with one editor click, for auditing or archiving.
+The \emph{automation layer} (\Cref{sec:flagmatic}) drives the
+compilation.  It treats the output of the external SDP search as
+candidate data only: Lean recomputes every claimed fact against the
+mathematical definitions, verifies positive semidefiniteness exactly
+over $\mathbb{Q}$ through $LDL^\top$ factorizations, and assembles the
+final bound using the reflected identities and custom tactics.  The
+compilation happens at elaboration time, inside Lean: the theorem
+statement is fixed in the source file, and the certificate enters only
+as untrusted hint data from which the proof is synthesized.
 
 \paragraph{Trust.}
 The proofs produced by the compiler are ordinary Lean theorems, so in the
@@ -5185,23 +5179,24 @@ lightweight metadata channel for proof automation.
 \paragraph{Lesson 4 (External computation is a candidate generator, not a
 proof).}
 The rational certificate produced by the SDP workflow, and the Python
-compiler script that turns it into Lean source, are both unverified.  Neither is
-trusted for the logical validity of a theorem accepted by Lean.  The
-script emits flags, matrices, factorizations, and a target inequality;
-Lean then checks the resulting PSD obligations, density and multiplication
-identities, algebraic calculation, and final statement.  Candidate data that
-do not support that statement cause proof construction to fail.
+scaffolding script that turns it into a Lean source file, are both
+unverified.  Neither is trusted for the logical validity of a theorem
+accepted by Lean.  The certificate supplies flags, matrices,
+factorizations, and a target inequality; Lean recomputes and checks the
+resulting PSD obligations, density and multiplication identities, algebraic
+calculation, and final statement.  Candidate data that do not support that
+statement cause proof construction to fail.
 
 The PSD data is checked separately: the rational matrix and its claimed
 $LDL^\top$ factorization are written explicitly, and Lean verifies both the
 non-negativity of the diagonal and the matrix identity before using the
-quadratic form.  There remains a separate fidelity boundary: Lean does not
-prove that the generated declarations faithfully transcribe the source
-certificate, so a translation error could produce a valid theorem different
-from the intended one.  The lesson is to separate these questions.  External
-tools can propose witnesses and proof structure without becoming authorities
-for logical validity, while fidelity to their source data must be audited or
-verified separately (\Cref{sec:flagmatic-trust}).
+quadratic form.  The residual audit obligation is anchored at the statement
+rather than at the certificate: Lean proves exactly the theorem written in
+the source file, so mistranslated certificate data can make a proof fail
+but cannot change what was proved (\Cref{sec:flagmatic-trust}).  The lesson
+is to separate these questions: external tools can propose witnesses and
+proof structure without becoming authorities for logical validity, provided
+the stated goal remains a small, human-readable object of audit.
 
 \paragraph{Lesson 5 (Moving a constraint can change intermediate semantics).}
 Razborov's presentation fixes a universal theory of forbidden graphs before
