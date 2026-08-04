@@ -386,32 +386,38 @@ account of this meta-theory.
 \section{Introduction}
 \label{sec:intro}
 
-Some of the best-known results of modern combinatorics were established by
-proofs that lean on large external computations.  The four-color theorem was
-settled by extensive machine case analysis and later replayed inside a proof
+Some of the best-known results of modern discrete mathematics were
+established by proofs that lean on large external computations.  The
+four-color theorem was settled by extensive machine case analysis, later
+re-implemented and checked inside a proof
 assistant~\cite{gonthier2008fourcolour}; the Kepler conjecture was resolved
-by optimization-heavy computation whose formal verification took a decade of
-further work~\cite{hales2017kepler}; the empty-hexagon number was determined
-by a SAT solver and verified against the solver's clausal
-proof~\cite{subercaseaux2024hexagon}.  These results share a shape: a search
-tool produces a witness, such as a case analysis, an optimization bound, or
-an unsatisfiability proof, and the theorem is only as trustworthy as
-whatever checks that witness.
+by optimization-heavy computation, and a complete formal proof required
+more than a decade of further work~\cite{hales2017kepler}; the
+empty-hexagon number was determined with a SAT solver, and the result was
+later verified by formalizing the geometric reduction in Lean and checking
+the solver's clausal proof with a formally verified
+checker~\cite{heule2024hexagon,subercaseaux2024hexagon}.  These results
+share a shape: a search tool produces candidate evidence, such as a case
+analysis, an optimization certificate, or an unsatisfiability proof, and
+the theorem is only as trustworthy as the checks applied to that evidence
+and the reduction that connects it to the mathematical statement.
 
 For consuming such untrusted computation, the programming-languages and
 verification communities have an established playbook.  Untrusted SAT
-solvers emit certificates that are validated by formally verified
-checkers~\cite{lammich2020unsat,tan2023cakelpr}; SMT proof witnesses are
-reconstructed as proof terms inside a proof
-assistant~\cite{armand2011modular}; numerical sums-of-squares certificates
-for polynomial inequalities are rounded to rational form and reverified
+solvers emit unsatisfiability certificates that are validated by formally
+verified checkers~\cite{lammich2020unsat,tan2023cakelpr}; SMT proof
+witnesses are reconstructed inside a proof assistant, step by step or
+through a verified checker~\cite{bohme2010z3,armand2011modular}; numerical
+sums-of-squares certificates for polynomial inequalities are rounded to
+rational form and reverified
 exactly~\cite{harrison2007verifying,besson2006fast,morrison2026sos}; and
-when a tool is too complex to verify, each of its runs can be validated
-after the fact, as in translation
-validation~\cite{pnueli1998translation}.  This article applies that playbook
-to a proof method of extremal graph theory whose computer-generated
-certificates have so far lived entirely outside proof assistants:
-Razborov's flag algebra method~\cite{razborov2007flag}.
+when verifying the tool itself is impractical, each of its runs can be
+validated after the fact, as in translation
+validation~\cite{pnueli1998translation}.  This article applies that
+playbook to a proof method of extremal graph theory whose
+computer-generated certificates are, in established practice, produced and
+checked entirely outside proof assistants: Razborov's flag algebra
+method~\cite{razborov2007flag}.
 
 \paragraph{Flag algebras and their certificates.}
 Many central questions of extremal combinatorics ask how often one finite
@@ -430,14 +436,17 @@ records the asymptotic proportion of $|V(F)|$-vertex subsets that induce a
 copy of $F$.  (Whenever $\mathcal{H}=\{H\}$ is a singleton, we write $H$ in
 place of $\mathcal{H}$.)  Mantel's theorem~\cite{mantel}, in this language,
 states that $\tdensity{K_2}{K_3}=1/2$: in a sufficiently large
-triangle-free graph, at most half of all vertex pairs are edges.  Such
-statements are hard to prove because they quantify over \emph{all}
-sufficiently large $\mathcal{H}$-free graphs: no finite collection of
+triangle-free graph, at most half of all vertex pairs are edges.  Such an
+equality combines two bounds of very different character.  The lower bound
+is witnessed by explicit constructions; for Mantel's theorem, the balanced
+complete bipartite graphs achieve edge density $1/2$ without containing a
+triangle.  The upper bound is the hard half: it quantifies over \emph{all}
+sufficiently large $\mathcal{H}$-free graphs, so no finite collection of
 examples suffices, and the extremal graphs may change unpredictably as $n$
 grows.
 
 Razborov's flag algebra method~\cite{razborov2007flag} reduces proving such
-a bound to checking finitely many algebraic conditions.  A
+an upper bound to checking finitely many algebraic conditions.  A
 semidefinite-programming (SDP) solver searches for a finite package of data
 intended to satisfy these conditions: lists of flags, exact rational
 density facts, and positive-semidefinite matrices.  We call this package a
@@ -4897,7 +4906,8 @@ that are validated by formally verified
 checkers~\cite{lammich2020unsat,tan2023cakelpr}; this is how the
 empty-hexagon number, another computer-generated result in combinatorics,
 was verified~\cite{subercaseaux2024hexagon}.  For SMT, proof witnesses are
-reconstructed as proof terms inside Rocq (previously called
+replayed step by step in Isabelle/HOL and HOL4~\cite{bohme2010z3} or
+validated by a checker verified inside Rocq (previously called
 Coq)~\cite{armand2011modular}.  For
 polynomial inequalities, numerical solvers find sums-of-squares
 certificates, whose underlying relaxations go back to Parrilo and
