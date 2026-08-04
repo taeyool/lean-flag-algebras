@@ -574,19 +574,6 @@ The complete Lean development, including the certificate-to-proof compiler
 and the autoformalized meta-theory, is publicly available at
 \url{https://github.com/taeyool/lean-flag-algebras-release}.
 
-\paragraph{Beyond flag algebras.}
-Although the subject matter of this article is extremal graph theory, the
-design questions it answers are the general ones of certificate-consuming
-verification.  The compiler instantiates a \emph{candidate-generator
-pattern}: an external tool proposes data, and the proof assistant
-independently re-derives every fact the proof needs, so that the tool sits
-entirely outside the trusted base.  The specification/reflection split with
-machine-checked adequacy theorems, the elaboration-time generation of
-theorem families whose names carry metadata for later automation, and
-per-obligation trust reporting are, we believe, directly reusable in
-formalizations built around other certificate-producing methods, from
-sums-of-squares and linear-programming bounds to spectral arguments.
-
 \paragraph{Organization.}
 \Cref{sec:background} reviews the mathematical background of flag algebras
 and fixes the notation used throughout the article.  \Cref{sec:abstract}
