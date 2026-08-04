@@ -501,19 +501,6 @@ compilation happens at elaboration time, inside Lean: the theorem
 statement is fixed in the source file, and the certificate enters only
 as untrusted hint data from which the proof is synthesized.
 
-\paragraph{Trust.}
-The proofs produced by the compiler are ordinary Lean theorems, so in the
-best case the trusted base is Lean's kernel.  Five of our seven case studies
-reach that best case: every generated proof obligation is discharged by
-kernel evaluation, through \lean{decide +kernel}.  For the two largest
-certificates, kernel evaluation of the bulk density computations is not yet
-practical, and the generated files discharge those obligations with
-\lean{native\_decide}, which additionally trusts Lean's compiler; their
-positive-semidefiniteness checks remain kernel-evaluated even there.
-\Cref{sec:flagmatic} states this per-obligation trust profile explicitly.
-We regard the residual \lean{native\_decide} use as a feasibility constraint
-of the current encoding rather than a limitation of the method.
-
 \paragraph{Two semantics for forbidden subgraphs.}
 A formalization of the constrained method must also decide where the
 forbidden-graph condition enters.  The usual mathematical development builds
