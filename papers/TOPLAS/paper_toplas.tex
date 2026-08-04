@@ -533,31 +533,15 @@ heredity alone does not.
 
 \paragraph{Contributions.}
 \begin{itemize}
-\item \emph{A certificate-to-proof compiler}, packaged as an elaboration-time
-  tactic, that translates externally generated flag-algebra certificates into
-  machine-checked Lean proofs of Tur\'an-type bounds: the statement is fixed
-  in the source file and the certificate is untrusted hint data, exact
-  rational $LDL^\top$ factorizations are checked for positive
-  semidefiniteness, and the final bound is assembled with custom tactics.
-  The compiler comes with an explicit per-obligation trust model and a
-  one-click materialization of the synthesized proof script
-  (\Cref{sec:flagmatic}).
-\item \emph{An executable reflection layer} whose computations are connected
-  to the specification by adequacy theorems, and whose elaboration-time
-  commands generate the flags and the density, downward, and multiplication
-  theorems that a certificate needs, under generated names that carry
-  metadata for later automation (\Cref{sec:reflection}).
-\item \emph{A specification-layer library} formalizing the core theory of
-  flag algebras for finite simple graphs: flags and their densities, the
-  quotient algebra, positive homomorphisms and the semantic order, and the
-  downward operator with its random-extension machinery
-  (\Cref{sec:abstract}).
-\item \emph{A meta-theory of ensemble semantics} relating the ensemble
-  and quotient orders: the root-plantability criterion, a sufficient
-  condition based on blow-up closure, and a $C_4$-free counterexample.  The
-  meta-theory is formalized in a separate, automatically generated Lean
-  development that extends the manually written library
-  (\Cref{sec:metatheory}).
+\item \emph{A certificate-to-proof compiler} for Tur\'an-type bounds,
+  built as the three layers described above and invoked as an
+  elaboration-time tactic; it comes with an explicit per-obligation
+  trust model, a one-click materialization of the synthesized proof
+  script, and generated theorem families whose names carry metadata for
+  later automation (\Cref{sec:abstract,sec:reflection,sec:flagmatic}).
+\item \emph{A meta-theory of ensemble semantics}, formalized in a
+  separate, automatically generated Lean development that extends the
+  manually written library (\Cref{sec:metatheory}).
 \item \emph{An evaluation and experience report}: seven compiled
   upper-bound certificates, including the bounds of Mantel's theorem and the
   Erd\H{o}s pentagon theorem and a $C_4$-density bound for triangle-free
