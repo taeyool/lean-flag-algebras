@@ -528,17 +528,15 @@ counterexample showing that heredity alone does not.
   finite simple graphs, and \emph{a certificate-to-proof compiler} built
   on it and invoked as an elaboration-time tactic, turning externally
   generated, untrusted certificates into complete, machine-checked
-  proofs of Tur\'an-type bounds
-  (\Cref{sec:abstract,sec:reflection,sec:flagmatic}).
-\item \emph{A meta-theory of ensemble semantics}, autoformalized in a
-  separate Lean library that extends the development above
-  (\Cref{sec:metatheory}).
+  proofs of Tur\'an-type bounds.
 \item \emph{Machine-checked theorems}: seven compiled Tur\'an-type upper
   bounds, including those of Mantel's theorem and the Erd\H{o}s pentagon
   theorem, combined with matching lower-bound constructions proved
-  directly in the library (\Cref{sec:results,sec:lowerbounds}).  To our
-  knowledge, this gives the first machine-checked proof of the
-  Erd\H{o}s pentagon theorem, whose known proofs all use flag algebras.
+  directly in the formalization.  To our knowledge, this gives the first
+  machine-checked proof of the Erd\H{o}s pentagon theorem, whose known
+  proofs all use flag algebras.
+\item \emph{A meta-theory of ensemble semantics}, autoformalized in a
+  separate Lean library that extends the development above.
 \end{itemize}
 The complete Lean development, including the certificate-to-proof compiler
 and the autoformalized meta-theory, is publicly available at
@@ -559,9 +557,8 @@ certificate compilation.  \Cref{sec:obstacles} analyzes the main engineering
 obstacles, and \Cref{sec:metatheory} presents the core results of the
 meta-theory of ensemble semantics together with its autoformalization.
 \Cref{sec:unsure} records the remaining design questions.  Finally,
-\Cref{sec:related} discusses related work, \Cref{sec:conclusion} presents
-our conclusions, and \Cref{sec:compile-times} reports compilation times for
-the seven compiler examples.
+\Cref{sec:related} discusses related work, and \Cref{sec:conclusion}
+presents our conclusions.
 
 \section{Background: Flag Algebras}
 \label{sec:background}
