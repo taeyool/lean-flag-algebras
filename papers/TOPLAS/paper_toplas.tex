@@ -3755,7 +3755,11 @@ bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 (*@$\geq$@*) 24/625 := ...
 \end{lstlisting}
-proved by an explicit construction in Lean.  We first describe the
+proved by an explicit construction in Lean.  To our knowledge,
+\lean{ErdosPentagon\_Turan} is the first machine-checked proof of the
+Erd\H{o}s pentagon theorem; all known proofs of the theorem use flag
+algebras~\cite{grzesik2012,hatami2012}, so a machine-checked proof
+required a formalization of the method itself.  We first describe the
 construction and the analytic steps mathematically, and then match them with
 the formal development.
 
