@@ -335,20 +335,15 @@ proved directly in the formalization, the compiled bounds give, to our
 knowledge, the first machine-checked proof of the Erd\H{o}s pentagon
 theorem, whose known proofs all use flag algebras.
 
-The compiled bounds all concern graphs that avoid a forbidden subgraph.
-Razborov's development builds this constraint into the algebra from the
-start; we call this the built-in semantics.  Ours instead formalizes the
-algebra of unconstrained graphs once and imposes each constraint only
-where an inequality is interpreted; we call this the ensemble semantics.
-This keeps the constraint out of the algebra's definitions and lemmas, so
-one formalization serves every forbidden family.  The departure raises a
-soundness question: do the two semantics validate the same inequalities?
-We prove that every inequality valid in the built-in semantics remains
-valid in the ensemble semantics, characterize the flag types at which the
-two agree by a criterion we call root-plantability, and give a $C_4$-free
-counterexample where they differ.  The meta-theory is formalized in a
-separate, automatically generated Lean library that extends the main
-development.
+Our formalization also departs from Razborov's development in where the
+forbidden-subgraph constraint enters: rather than building each
+constraint into the algebra, it formalizes the algebra of unconstrained
+graphs once and imposes the constraint only where an inequality is
+interpreted.  This ensemble semantics keeps the constraint out of the
+algebra's definitions and lemmas, so one formalization serves every
+forbidden family.  We prove the departure sound, characterize exactly
+when the two semantics agree, and autoformalize the resulting
+meta-theory in a separate Lean library extending the main development.
 \end{abstract}
 
 \begin{CCSXML}
@@ -510,20 +505,21 @@ as untrusted hint data from which the proof is synthesized.
 
 \paragraph{Two semantics for forbidden subgraphs.}
 The compiled bounds all concern graphs that avoid a forbidden subgraph.
-Razborov's development builds this constraint into the algebra from the
-start; we call this the \emph{built-in} (quotient) semantics.  Our
-implementation instead formalizes the algebra of unconstrained graphs
-once and imposes each constraint only where an inequality is interpreted;
-we call this the \emph{ensemble} semantics.  This keeps the constraint
-out of the algebra's definitions and lemmas, so one formalization serves
-every forbidden family.  The departure raises a soundness question: do
-the two semantics validate the same inequalities?  \Cref{sec:metatheory}
-answers it, comparing the two designs the way one compares two semantics
-of a language.  Every inequality valid in the built-in semantics is valid
-in the ensemble semantics; the converse holds at the empty flag type, can
-fail at a nonempty flag type, and holds at a fixed flag type exactly when
-the constrained class is \emph{root-plantable} there.  We prove that
-blow-up closure guarantees root-plantability and give a $C_4$-free
+Razborov's development builds the constraint in from the start,
+constructing the flag algebra from $H$-free graphs only; we call this
+the \emph{built-in} (quotient) semantics.  Our implementation instead
+retains the ambient algebra of all finite graphs and imposes
+$H$-freeness only where an inequality is interpreted; we call this the
+\emph{ensemble} semantics.  This keeps the constraint out of the
+algebra's definitions and lemmas, so one formalization serves every
+forbidden family.  The departure raises a soundness question: do the two
+semantics validate the same inequalities?  \Cref{sec:metatheory} answers
+it, comparing the two designs the way one compares two semantics of a
+language.  Every inequality valid in the built-in semantics is valid in
+the ensemble semantics; the converse holds at the empty flag type, can
+fail at a nonempty flag type, and holds at a fixed flag type exactly
+when the constrained class is \emph{root-plantable} there.  We prove
+that blow-up closure guarantees root-plantability and give a $C_4$-free
 counterexample showing that heredity alone does not.
 
 \paragraph{Contributions.}
@@ -534,9 +530,9 @@ counterexample showing that heredity alone does not.
   generated, untrusted certificates into complete, machine-checked
   proofs of Tur\'an-type bounds
   (\Cref{sec:abstract,sec:reflection,sec:flagmatic}).
-\item \emph{A meta-theory of ensemble semantics}, formalized in a
-  separate, automatically generated Lean library that extends the
-  development above (\Cref{sec:metatheory}).
+\item \emph{A meta-theory of ensemble semantics}, autoformalized in a
+  separate Lean library that extends the development above
+  (\Cref{sec:metatheory}).
 \item \emph{Machine-checked theorems}: seven compiled Tur\'an-type upper
   bounds, including those of Mantel's theorem and the Erd\H{o}s pentagon
   theorem, combined with matching lower-bound constructions proved
