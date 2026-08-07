@@ -582,18 +582,17 @@ presents our conclusions.
 This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and establishes the notation used
 later in the paper.  No background in flag algebras or extremal combinatorics
-is assumed.  For a non-negative integer $n$, we write $[n]$ for the set of
-positive integers at most $n$.  We consider only undirected, finite, and simple
-graphs; for a graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$,
-respectively.
-We use the standard graph names: $K_n$ is the complete graph on $n$ vertices,
-$P_n$ the path and $C_n$ the cycle on $n$ vertices, $\overline{G}$ the
-complement of $G$, and $K_{a,b}$ the complete bipartite graph with parts of
-sizes $a$ and $b$.
+is assumed.
 
-We fix a (possibly empty) finite set $\mathcal{H}$ of forbidden graphs.  In this
-paper, an unqualified \emph{subgraph} is an ordinary, not necessarily induced,
-subgraph.  A graph is \emph{\(\mathcal{H}\)-free} if it contains no subgraph
+\paragraph{Notation.}
+For a non-negative integer $n$, we write $[n]$ for the set of positive integers
+at most $n$.  We consider only undirected, finite, and simple graphs; for a
+graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$.  We use
+the standard graph names: $K_n$ is the complete graph on $n$ vertices, $P_n$
+the path and $C_n$ the cycle on $n$ vertices, $\overline{G}$ the complement of
+$G$, and $K_{a,b}$ the complete bipartite graph with parts of sizes $a$
+and~$b$.  We fix a (possibly empty) finite set $\mathcal{H}$ of forbidden
+graphs; a graph is \emph{\(\mathcal{H}\)-free} if it contains no subgraph
 isomorphic to any member of $\mathcal{H}$.  All flag types, flags, and flag
 algebras defined below are relative to this fixed $\mathcal{H}$.
 
@@ -617,29 +616,23 @@ A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ consisting of an
 $\theta_F : [k] \hookrightarrow V(M)$ that induces a graph isomorphism from
 $\sigma$ to $M[\operatorname{Im}(\theta_F)]$.  The \emph{size} of $F$ is
 $|V(M)|$, and we write $V(F)$ for $V(M)$.
-For each $i\in[k]$, the vertex $\theta_F(i)$ carries label $i$.  The vertices
-in~$\operatorname{Im}(\theta_F)$ are therefore called the
-\emph{labeled vertices} of $F$; they are also often called its \emph{roots}.
-All remaining vertices are \emph{unlabeled}.
-For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
-we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
+For each $i\in[k]$, the vertex $\theta_F(i)$ carries label $i$, so the vertices
+in~$\operatorname{Im}(\theta_F)$ are the \emph{labeled vertices} of $F$, also
+called its \emph{roots}; all remaining vertices are \emph{unlabeled}.
+For $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
+we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$, the
 \emph{$\sigma$-flag induced by $F$ on $S$}.
-Flags over the empty flag type $\emptyset$ are simply ordinary
+Flags over the empty flag type $\emptyset$ are ordinary
 \(\mathcal{H}\)-free graphs with no labeled vertices.
 \Cref{fig:flag-examples} illustrates several flags of different flag types.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
-\emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
-if there is a graph isomorphism $\alpha: V(M_1)\to V(M_2)$
-with $\alpha \circ \theta_1 = \theta_2$; this equation says that $\alpha$
-preserves every label.  The set of isomorphism classes of
-$\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
+\emph{isomorphic}, written $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$, if
+some graph isomorphism $\alpha: V(M_1)\to V(M_2)$ satisfies
+$\alpha \circ \theta_1 = \theta_2$, an equation saying that $\alpha$
+preserves every label.  We write $\mathcal{F}^\sigma_n$ for the set of
+isomorphism classes of $\sigma$-flags of size $n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
-Each $\mathcal{F}^\sigma_n$ is finite, although
-$\mathcal{F}^\sigma$ itself is infinite.
-When a flag type~$\sigma$ is fixed, we consistently call an individual flag
-of that flag type a $\sigma$-flag.  We reserve the unqualified term \emph{flag} for
-statements in which the flag type is unspecified, varies, or is irrelevant.
 
 \begin{figure}[t]
   \centering
@@ -835,8 +828,8 @@ Fix a flag type $\sigma$ of size $k$.
 Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
 ``algebra'' means a vector space whose elements can also be multiplied.  In
 this paper, the scalar coefficients are real numbers, multiplication is
-bilinear and associative, there is a multiplicative unit, and the order of
-multiplication does not matter: $fg=gf$.} of density expressions generated
+bilinear, associative, and commutative, and there is a multiplicative
+unit.} of density expressions generated
 by $\sigma$-flags.  Each $\sigma$-flag is a symbolic building block: it stands for the
 density of that local labeled pattern in a large host graph.  The quotient
 below records the identity of Lemma~\ref{lem:chain-rule} among these building
@@ -914,15 +907,12 @@ $\ell \geq m_1 + m_2 - k$ and define
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance, this definition appears to depend on both the choice of $\ell$
-and the choice of representatives for~$[F_1]$ and $[F_2]$.  The zero-space
-quotient ensures neither matters: the product is independent of $\ell$ and
-respects isomorphism classes of the input $\sigma$-flags.  Extending bilinearly
-to all of $\mathcal{A}^\sigma$ gives an algebra over the real numbers.  Its
-multiplication is commutative, meaning that $fg=gf$ for all
-$f,g\in\mathcal{A}^\sigma$.
-The unit of this algebra is the basis element represented by the $\sigma$-flag
-$(\sigma, \operatorname{id}_{[k]})$ of size~$k$, in which the underlying graph
-is $\sigma$ itself and every vertex is labeled; we write it as
+and the choice of representatives for~$[F_1]$ and $[F_2]$; the zero-space
+quotient ensures that neither matters.  Extending bilinearly to all of
+$\mathcal{A}^\sigma$ gives a commutative algebra over the real numbers.  Its
+unit is the basis element represented by the $\sigma$-flag
+$(\sigma, \operatorname{id}_{[k]})$ of size~$k$, whose underlying graph
+is $\sigma$ itself with every vertex labeled; we write it as
 $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
@@ -993,11 +983,11 @@ In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |V(\s
   \label{eq:sum-to-one}
 \end{equation}
 Applying any $\phi \in \poshom{\sigma}$ to both sides gives
-$\sum_{F \in \mathcal{F}^\sigma_\ell} \phi([F]) = 1$;
-non-negativity then forces $\phi([F]) \in [0,1]$ for every $\sigma$-flag $F$.
-Thus, each $\phi \in \poshom{\sigma}$ determines a point in $[0,1]^{\mathcal{F}^\sigma}$
-via the assignment $F \mapsto \phi([F])$, so $\poshom{\sigma}$ can be identified with
-a subset of $[0,1]^{\mathcal{F}^\sigma}$.  %
+$\sum_{F \in \mathcal{F}^\sigma_\ell} \phi([F]) = 1$, and non-negativity then
+forces $\phi([F]) \in [0,1]$ for every $\sigma$-flag $F$.  Each
+$\phi \in \poshom{\sigma}$ therefore determines the point
+$F \mapsto \phi([F])$ of $[0,1]^{\mathcal{F}^\sigma}$, identifying
+$\poshom{\sigma}$ with a subset of that space.  %
 
 The following theorem makes precise the sense in which positive homomorphisms
 are exactly the limiting density profiles of convergent sequences of
@@ -1044,9 +1034,8 @@ $[F]\in\mathcal{C}^\sigma$, because positive homomorphisms send every flag
 basis element to a non-negative real by definition.
 For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_{\mathcal{H},\sigma} f^2$,
 because $\phi(f^2) = \phi(f)^2 \geq 0$ for every~$\phi \in \poshom{\sigma}$.
-Moreover, if $0 \leq_{\mathcal{H},\sigma} f$ and $0 \leq_{\mathcal{H},\sigma} g$, then $0 \leq_{\mathcal{H},\sigma} f + g$,
-since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}$.
-Similarly, if $0 \leq_{\mathcal{H},\sigma} f$ and $c$ is a non-negative real number, then $0 \leq_{\mathcal{H},\sigma} c \cdot f$.
+Since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
+moreover closed under addition and under multiplication by non-negative reals.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
@@ -1058,18 +1047,16 @@ lemma shows.
   $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
-  Suppose for contradiction that $\tdensity{F}{\mathcal{H}} > c$.  Then
-  there exist $\varepsilon > 0$ and an increasing sequence of
-  \(\mathcal{H}\)-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
-  $\den{F}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
-  is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and
-  $\mathcal{F}^\emptyset$ is countable, this product space is compact and
-  metrizable.  Hence the sequence $\{p^{G_k}\}$ has a convergent
-  subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
-  $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
-  $\{p^{G_{k_j}}\}$, we have
-  $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$ means $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$, a contradiction.
+  Suppose for contradiction that $\tdensity{F}{\mathcal{H}} > c$.  Then some
+  $\varepsilon > 0$ and some increasing sequence of \(\mathcal{H}\)-free graphs
+  $\{G_k\}_{k\in\mathbb{N}}$ satisfy $\den{F}{G_k} > c + \varepsilon$ for all
+  $k$.  The points $p^{G_k}$ lie in $[0,1]^{\mathcal{F}^\emptyset}$, which is
+  compact and metrizable because $\mathcal{F}^\emptyset$ is countable, so some
+  subsequence $\{p^{G_{k_j}}\}$ converges; by \Cref{thm:convergent-hom}(a) its
+  limit is some $\phi \in \poshom{\emptyset}$.  As a pointwise limit, $\phi$
+  satisfies $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$,
+  contradicting $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$, which forces
+  $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
@@ -1204,43 +1191,12 @@ nonempty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
 Equation~\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
-The following example illustrates this pattern.
-
-\begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
-We prove $K_2 \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
-Let $\sigma$ be the one-vertex flag type.
-
-\textit{Step 1: A key inequality.}
-Since $0 \leq_{\mathcal{H},\sigma} ((\fKtwobull) - (\fbarKtwobull))^2$,
-\Cref{thm:downward-nonneg} gives $0 \leq_{K_3} \llbracket((\fKtwobull) - (\fbarKtwobull))^2\rrbracket_\sigma$.
-Expanding the square, computing each product at size~$3$, and
-then applying the downward operator
-gives the following inequality in $\mathcal{A}^{\emptyset}$:
-\begin{align}
-  0 \leq_{K_3} \llbracket((\fKtwobull) - (\fbarKtwobull))^2\rrbracket_\sigma\notag
-  & = \llbracket(\fKtwobull)\cdot(\fKtwobull) - 2\cdot(\fKtwobull)\cdot(\fbarKtwobull) + (\fbarKtwobull)\cdot(\fbarKtwobull)\rrbracket_\sigma\notag\\
-  &= \left\llbracket\fbarKthreebull + \fEthreebull
-    - \fbarPthreebull - \fPthreebull
-    + \fKonetwobull\right\rrbracket_\sigma\notag\\
-  &= \fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree.
-  \label{eq:mantel-key}
-\end{align}
-
-\textit{Step 2: Algebraic derivation.}
-Starting from Equation~\eqref{eq:k2-expansion}, we add two non-negative terms and simplify using Equation~\eqref{eq:sum-to-one}:
-\begin{align*}
-  K_2
-  &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
-  &&\text{by Equation~\eqref{eq:k2-expansion}}\\
-  &\leq_{K_3} \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
-    \frac{1}{2}\left(\fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree\right) +
-    \frac{1}{3}\,\fbarPthree
-  &&\text{by Equation~\eqref{eq:mantel-key} and $0 \leq_{K_3} \fbarPthree$}\\
-  &= \frac{1}{2}\cdot\left(\fbarKthree + \fbarPthree + \fPthree\right)
-  \;=\; \frac{1}{2}\cdot\mathbf{1}.
-  &&\text{by Equation~\eqref{eq:sum-to-one}}
-\end{align*}
-\end{example}
+\Cref{sec:flagmatic-background} carries this pattern out in full for Mantel's
+theorem, taking $\sigma$ to be the one-vertex flag type and $f$ a multiple of
+$((\fKtwobull) - (\fbarKtwobull))^2$.  There the resulting downward image and
+the non-negative remainder left over at the end are exactly the data of the
+smallest certificate our compiler consumes, so the same derivation doubles as
+the introduction to certificates.
 
 \section{Formalizing Flag Algebras in Lean~4}
 \label{sec:abstract}
