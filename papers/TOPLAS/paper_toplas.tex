@@ -1271,11 +1271,10 @@ is represented by a simple graph on the label type \lean{T}.  The structure
 \lean{LabeledGraph} packages the two pieces of a concrete $\sigma$-flag: the
 field \lean{graph} stores the underlying graph $M$, and the field
 \lean{type\_embed} stores the embedding
-$\theta_F:\sigma\hookrightarrow_g M$.  In the signature, braces mark
-implicit parameters that Lean normally infers from context, whereas square
-brackets mark typeclass assumptions.  Thus, \lean{[Fintype T]} tells Lean that
-the label type \lean{T} is finite; later definitions use assumptions such as
-\lean{[DecidableEq V]} when equality on a vertex type must be decidable.
+$\theta_F:\sigma\hookrightarrow_g M$.  In the signature, braces mark implicit
+parameters that Lean normally infers from context, whereas square brackets
+mark typeclass assumptions such as \lean{[Fintype T]}, which records that the
+label type \lean{T} is finite.
 
 We define \lean{LabeledGraphIso} as a structure representing isomorphisms
 between two \lean{LabeledGraph} terms, and define \lean{Flag} by quotienting
@@ -1290,8 +1289,7 @@ infixl:50 " (*@\textcolor{orange!80!black}{$\simeq$}@*)f " => LabeledGraphIso
 
 instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type)
     : Setoid (LabeledGraph (*@$\sigma$@*) V) where
-  -- r : LabeledGraph (*@\textcolor{gray}{$\sigma$}@*) V (*@\textcolor{gray}{$\to$}@*) LabeledGraph (*@\textcolor{gray}{$\sigma$}@*) V (*@\textcolor{gray}{$\to$}@*) Prop
-  r     := fun G G' => Nonempty (G (*@$\simeq$@*)f G')
+  r     := fun (G G' : LabeledGraph (*@$\sigma$@*) V) => Nonempty (G (*@$\simeq$@*)f G')
   iseqv := ... -- proof that r defines an equivalence relation
 
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
@@ -1300,36 +1298,23 @@ def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type 
 The structure \lean{LabeledGraphIso} represents an isomorphism of concrete
 $\sigma$-flags.
 It consists of a graph isomorphism \lean{graph\_iso} between the underlying
-graphs, together with a compatibility proof \lean{type\_preserve} saying that
-this isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy
-of $\sigma$ in $G'$.  This is the Lean form of the condition
-$\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ denotes this
-type of isomorphism data, with $\sigma$ inferred from the two labeled graphs.
+graphs, together with a compatibility proof \lean{type\_preserve} that this
+isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy in
+$G'$, that is, $\alpha\circ\theta_G=\theta_{G'}$.  The notation
+$G\simeq_f G'$ denotes this type of isomorphism data.
 
 Lean's quotient type does not accept an arbitrary relation directly; it
 requires a \emph{setoid}, which packages a relation with proofs that it is an
-equivalence relation.  The instance \lean{labeledGraphSetoid} provides this package for
-\lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} identifies two
-terms $G,G'$ when a labeled-graph isomorphism $G\simeq_f G'$ exists, and its
-field \lean{iseqv} contains the proofs that this relation is reflexive,
-symmetric, and transitive.  Finally,
-\lean{Flag}~$\sigma$~\lean{V} is defined as the quotient of
+equivalence relation.  The instance \lean{labeledGraphSetoid} provides this
+package for \lean{LabeledGraph}~$\sigma$~\lean{V}: its field \lean{r}
+identifies two terms when a labeled-graph isomorphism between them exists, and
+\lean{iseqv} holds the corresponding proofs.  Then
+\lean{Flag}~$\sigma$~\lean{V} is the quotient of
 \lean{LabeledGraph}~$\sigma$~\lean{V} by that setoid, so its elements are
 precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
-\lean{V}.
-
-Lean's \lean{Quotient} type comes with double-bracket notation for equivalence
-classes.  In
-Lean code, the unsubscripted notation \(\llbracket x\rrbracket\)
-means ``the quotient class of the representative \(x\),'' with the relevant
-quotient inferred from the expected type.  Thus, in this subsection, when the
-expected type is \lean{Flag}~\(\sigma\)~\lean{V},
-\(\llbracket G\rrbracket\) is the \(\sigma\)-flag represented by the concrete
-labeled graph \(G\).  Throughout the paper, unsubscripted double brackets denote
-quotient classes, whereas the subscripted brackets
-\(\llbracket-\rrbracket_\sigma\) and \(\llbracket-\rrbracket_0\) denote the
-downward operator.  We return to this quotient-class notation in
-\Cref{sec:formal-flag-algebra}.
+\lean{V}.  Lean writes such classes with double brackets:
+\(\llbracket G\rrbracket\) is the $\sigma$-flag represented by the concrete
+labeled graph \(G\).
 
 We can now represent $\mathcal{F}^\sigma_n$ in Lean by
 \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
@@ -1415,9 +1400,8 @@ enumeration of all elements of \lean{X}, while \lean{[DecidableEq X]} supplies
 a procedure for deciding whether two elements are equal.  The pattern tuple
 may use a different vertex type \lean{Vl i} at each index.  Accordingly,
 \lean{[FintypeList Vl]} and \lean{[DecidableEqList Vl]} package the same
-information for every type \lean{Vl i}.  In Lean, such square-bracketed
-parameters are called \emph{typeclass parameters}, and Lean normally supplies
-them automatically through its typeclass inference mechanism.
+information for every type \lean{Vl i}.  Lean normally supplies all of these
+automatically through its typeclass inference mechanism.
 
 The \lean{noncomputable} keyword signals that Lean cannot synthesize an
 algorithm to evaluate this definition directly.  This poses no obstacle to
