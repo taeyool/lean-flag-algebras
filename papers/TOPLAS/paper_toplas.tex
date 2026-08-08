@@ -1028,14 +1028,14 @@ Equivalently, $f\leq_{\mathcal{H},\sigma} g$ means that
 $\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq_{\mathcal{H}} g$ in place of $f \leq_{\mathcal{H},\emptyset} g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
 Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_{\mathcal{H},\sigma} f$.
 
-Two immediate examples of elements of $\mathcal{C}^\sigma$ are flag basis
-elements and squares.  Every $\sigma$-flag $F$ gives an element
+Three facts about $\mathcal{C}^\sigma$ are immediate from the definition.
+Every $\sigma$-flag $F$ gives an element
 $[F]\in\mathcal{C}^\sigma$, because positive homomorphisms send every flag
 basis element to a non-negative real by definition.
 For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_{\mathcal{H},\sigma} f^2$,
 because $\phi(f^2) = \phi(f)^2 \geq 0$ for every~$\phi \in \poshom{\sigma}$.
-Since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
-moreover closed under addition and under multiplication by non-negative reals.
+And since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
+closed under addition and under multiplication by non-negative reals.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
@@ -1050,13 +1050,15 @@ lemma shows.
   Suppose for contradiction that $\tdensity{F}{\mathcal{H}} > c$.  Then some
   $\varepsilon > 0$ and some increasing sequence of \(\mathcal{H}\)-free graphs
   $\{G_k\}_{k\in\mathbb{N}}$ satisfy $\den{F}{G_k} > c + \varepsilon$ for all
-  $k$.  The points $p^{G_k}$ lie in $[0,1]^{\mathcal{F}^\emptyset}$, which is
-  compact and metrizable because $\mathcal{F}^\emptyset$ is countable, so some
-  subsequence $\{p^{G_{k_j}}\}$ converges; by \Cref{thm:convergent-hom}(a) its
-  limit is some $\phi \in \poshom{\emptyset}$.  As a pointwise limit, $\phi$
-  satisfies $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$,
-  contradicting $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$, which forces
-  $\phi([F]) \leq c$ for every~$\phi \in \poshom{\emptyset}$.
+  $k$.  The points $p^{G_k}$ lie in the product space
+  $[0,1]^{\mathcal{F}^\emptyset}$, which is compact and metrizable because
+  $\mathcal{F}^\emptyset$ is countable.  Hence some subsequence
+  $\{p^{G_{k_j}}\}$ converges, and by \Cref{thm:convergent-hom}(a) its limit
+  is some $\phi \in \poshom{\emptyset}$.
+  Since $\phi$ is the pointwise limit of $\{p^{G_{k_j}}\}$, it satisfies
+  $\phi([F]) = \lim_j \den{F}{G_{k_j}} \geq c + \varepsilon > c$.  But
+  $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$ forces $\phi([F]) \leq c$ for
+  every~$\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
@@ -1191,12 +1193,9 @@ nonempty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
 Equation~\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
-\Cref{sec:flagmatic-background} carries this pattern out in full for Mantel's
-theorem, taking $\sigma$ to be the one-vertex flag type and $f$ a multiple of
-$((\fKtwobull) - (\fbarKtwobull))^2$.  There the resulting downward image and
-the non-negative remainder left over at the end are exactly the data of the
-smallest certificate our compiler consumes, so the same derivation doubles as
-the introduction to certificates.
+This is the shape of proof our certificate-to-proof compiler produces, and
+\Cref{sec:flagmatic-background} follows it through in full for Mantel's
+theorem.
 
 \section{Formalizing Flag Algebras in Lean~4}
 \label{sec:abstract}
