@@ -337,7 +337,7 @@ produced the best known bounds for others.  The certificates for some of these
 results, however, contain thousands of exact rational values and are generated
 through large toolchains that rely on unverified numerical computation.  They
 are therefore too large to audit by hand and unsafe to trust without
-independent checking.  This article presents a Lean~4 formalization of flag
+independent checking.  This paper presents a Lean~4 formalization of flag
 algebras for finite simple graphs, together with a certificate-to-proof
 compiler built on the formalization.  Given such a certificate, the compiler
 treats it as untrusted input, independently verifies its algebraic identities
@@ -402,38 +402,36 @@ use flag algebras.
 \section{Introduction}
 \label{sec:intro}
 
-Some of the best-known results of modern discrete mathematics were
-established by proofs that lean on large external computations.  The
-four-color theorem was settled by extensive machine case analysis, later
-re-implemented and checked inside a proof
-assistant~\cite{gonthier2008fourcolour}; the Kepler conjecture was resolved
-by optimization-heavy computation, and a complete formal proof required
-more than a decade of further work~\cite{hales2017kepler}; the
-empty-hexagon number was determined with a SAT solver, and the result was
-later verified by formalizing the geometric reduction in Lean and checking
-the solver's clausal proof with a formally verified
-checker~\cite{heule2024hexagon,subercaseaux2024hexagon}.  These results
-share a shape: a search tool produces candidate evidence, such as a case
-analysis, an optimization certificate, or an unsatisfiability proof, and
-the theorem is only as trustworthy as the checks applied to that evidence
-and the reduction that connects it to the mathematical statement.
+Large external computations have played a central role in landmark results of
+discrete mathematics.  The four-color theorem was settled by extensive machine
+case analysis and later reimplemented and checked inside a proof
+assistant~\cite{gonthier2008fourcolour}; the Kepler conjecture was resolved by
+optimization-heavy computation, and a complete formal proof required more than
+a decade of further work~\cite{hales2017kepler}; the empty-hexagon number was
+determined with a SAT solver and later verified by formalizing the geometric
+reduction in Lean and checking the solver's clausal proof with a formally
+verified checker~\cite{heule2024hexagon,subercaseaux2024hexagon}.  Despite their
+mathematical differences, these proofs share a computational structure: a
+search tool produces candidate evidence, such as a case analysis, an
+optimization certificate, or an unsatisfiability proof, and trust in the final
+theorem rests on both the validation of that evidence and the correctness of
+the reduction connecting it to the mathematical statement.
 
-For consuming such untrusted computation, the programming-languages and
-verification communities have an established playbook.  Untrusted SAT
-solvers emit unsatisfiability certificates that are validated by formally
-verified checkers~\cite{lammich2020unsat,tan2023cakelpr}; SMT proof
-witnesses are reconstructed inside a proof assistant, step by step or
-through a verified checker~\cite{bohme2010z3,armand2011modular}; numerical
-sums-of-squares certificates for polynomial inequalities are rounded to
-rational form and reverified
-exactly~\cite{harrison2007verifying,besson2006fast,morrison2026sos}; and
-when verifying the tool itself is impractical, each of its runs can be
+The programming languages and formal verification communities have an
+established approach to such untrusted computation: treat the search tool as
+untrusted and validate the evidence it produces.  SAT solvers emit
+unsatisfiability certificates that are validated by formally verified
+checkers~\cite{lammich2020unsat,tan2023cakelpr}; SMT proof witnesses are
+reconstructed inside a proof assistant, step by step or through a verified
+checker~\cite{bohme2010z3,armand2011modular}; and numerical sums-of-squares
+certificates for polynomial inequalities are rounded to rational form and
+reverified exactly~\cite{harrison2007verifying,besson2006fast,morrison2026sos}.
+More generally, when verifying the tool itself is impractical, each run can be
 validated after the fact, as in translation
-validation~\cite{pnueli1998translation}.  This article applies that
-playbook to a proof method of extremal graph theory whose
-computer-generated certificates are, in established practice, produced and
-checked entirely outside proof assistants: Razborov's flag algebra
-method~\cite{razborov2007flag}.
+validation~\cite{pnueli1998translation}.  This paper applies the same approach
+to Razborov's flag algebra method, a proof technique in extremal graph theory
+whose computer-generated certificates are currently produced and checked
+entirely outside proof assistants~\cite{razborov2007flag}.
 
 \paragraph{Flag algebras and their certificates.}
 Many central questions of extremal combinatorics ask how often one finite
@@ -487,7 +485,7 @@ a large, numerical, unverified toolchain.  A formal proof should neither
 trust this data nor require thousands of individually written proofs.
 
 \paragraph{A certificate-to-proof compiler.}
-This article presents a certificate-to-proof compiler for the flag
+This paper presents a certificate-to-proof compiler for the flag
 algebra method: a Lean~4~\cite{moura2021lean} development that
 formalizes the method for finite simple graphs and compiles candidate
 certificates into complete, machine-checked proofs, structured so that
@@ -558,7 +556,7 @@ and the autoformalized meta-theory, is publicly available at
 
 \paragraph{Organization.}
 \Cref{sec:background} reviews the mathematical background of flag algebras
-and fixes the notation used throughout the article.  \Cref{sec:abstract}
+and fixes the notation used throughout the paper.  \Cref{sec:abstract}
 presents the specification layer, including its semantic treatment of
 forbidden-graph assumptions.  \Cref{sec:reflection} introduces the
 reflection layer: the executable graph representations, their adequacy
