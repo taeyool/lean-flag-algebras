@@ -1616,8 +1616,9 @@ $\sigma$-flag sequences and positive homomorphisms, but the formalization first 
 make each of these surrounding notions explicit.
 
 A sequence of $\sigma$-flags indexed by $\mathbb{N}$ is represented by
-\lean{FlagSeq}~$\sigma$.  The predicate \lean{ConvergesTo} says that such a
-sequence has a prescribed limiting density function.
+\lean{FlagSeq}~$\sigma$, and \lean{ConvergesTo s a} says that such a sequence
+$s$ is convergent in the sense of \Cref{sec:background-semantic-order}, with
+limit $a$.
 \begin{lstlisting}
 variable {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
 
@@ -1632,7 +1633,7 @@ Here the candidate limit \(a\) is a real-valued function on finite
 underlying sizes of the \(\sigma\)-flags \(s(0),s(1),\ldots\) strictly increase.  The
 second conjunct uses Lean's filter notation for convergence:
 \lean{atTop} is the limit \(n\to\infty\) on \(\mathbb{N}\), and
-\(\mathcal{N} a\) is the neighborhood filter of the function~\(a\).  The term
+\lean{$\mathcal{N}$\,\,a} is the neighborhood filter of the function~\(a\).  The term
 \lean{flagDensitySeq s} is the sequence of density functions associated to
 \(s\); its \(n\)-th value sends a finite \(\sigma\)-flag \(F\) to
 \(\den{F}{s(n)}\).  Thus, the \lean{Tendsto} line is the Lean statement that,
@@ -1652,28 +1653,16 @@ abbrev Hom ((*@$\sigma$@*) : FlagType (Fin k)) :=
 def PositiveHom ((*@$\sigma$@*) : FlagType (Fin k)) : Type :=
   { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
-The arrow \lean{$\to_a$[$\mathbb{R}$]} in the first definition is Lean's
-notation for the type of functions preserving addition, multiplication,
-multiplication by real scalars, and the unit.  Thus, \lean{Hom}
-abbreviates the type of these structure-preserving maps from
-\lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type \(\sigma\) supplied as
-its argument.  The second definition is Lean's subtype construction.
-Mathematically, we read it in the usual set-comprehension form
+The arrow \lean{$\to_a$[$\mathbb{R}$]} is Lean's notation for the type of
+functions preserving addition, multiplication, multiplication by real scalars,
+and the unit.  The second definition is Lean's subtype construction, whose
+separator \lean{//} precedes the defining predicate; mathematically we read
+\lean{PositiveHom}~$\sigma$ as the set
 \[
   \{\phi\in \operatorname{Hom}(\mathcal{A}^\sigma,\mathbb{R})
     \mid \phi([F])\ge 0
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
-In other words, the only extra condition imposed by \lean{PositiveHom} is
-non-negativity on flag basis elements.  In Lean syntax, the expression after
-the subtype separator \lean{//},
-\[
-  \lean{$\forall$ F : FinFlag $\sigma$, $\phi$ $\llbracket$basisVector F$\rrbracket$ $\geq$ 0},
-\]
-is the predicate that imposes this condition.
-Here \lean{basisVector F} is the formal basis vector representing \(F\), and
-the unsubscripted quotient brackets send that flag vector to its class in the flag
-algebra before \(\phi\) evaluates it.
 
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two
 separate theorems.\footnote{For readability, the displayed statements give the
@@ -1688,51 +1677,31 @@ compactly as \lean{$\phi$.coe = a} and
 density lies in \([0,1]\), so the pointwise limit of a convergent flag sequence
 does as well.}
 \begin{lstlisting}
-(*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
+(*@\textcolor{gray}{\itshape -- Theorem~\ref*{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom (s : FlagSeq (*@$\sigma$@*))
     {a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)} (hs_conv : ConvergesTo s a)
     : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\forall$@*) (F : FinFlag (*@$\sigma$@*)), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) = a F := ...
 
-(*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
+(*@\textcolor{gray}{\itshape -- Theorem~\ref*{thm:convergent-hom} (b)}@*)
 theorem positiveHom_as_flagSeq_limit ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (fun F => (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*)) := ...
 \end{lstlisting}
-Here \(a\) is the same real-valued function on finite \(\sigma\)-flags that
-appears in the definition of \lean{ConvergesTo}.  The first theorem assumes
-\lean{ConvergesTo s a} and produces a positive homomorphism \(\phi\) satisfying
-\[
-  \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr)=a(F)
-  \qquad\text{for every finite \(\sigma\)-flag \(F\)}.
-\]
-Thus, the limiting density profile of every convergent \(\sigma\)-flag
-sequence is induced by a positive homomorphism.  Conversely, the second
-theorem starts with a positive homomorphism \(\phi\) and produces a
-\(\sigma\)-flag sequence \(s\) satisfying
-\[
-  \lean{ConvergesTo}\;s\;
-    \bigl(F\mapsto\phi(\llbracket\lean{basisVector F}\rrbracket)\bigr).
-\]
-In other words, the density profile induced by every positive homomorphism
-arises as the limit of a \(\sigma\)-flag sequence.
+Part~(a) assumes \lean{ConvergesTo\,\,\,s\,\,\,a} and produces a positive
+homomorphism \(\phi\) satisfying
+\(\phi(\llbracket\lean{basisVector F}\rrbracket)=a(F)\) for every finite
+\(\sigma\)-flag \(F\).  Thus, the limiting density profile of every convergent
+\(\sigma\)-flag sequence is induced by a positive homomorphism.  Conversely,
+part~(b) starts with a positive homomorphism \(\phi\) and produces a
+\(\sigma\)-flag sequence whose limiting density profile is the one \(\phi\)
+induces.
 Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a \(\sigma\)-flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
-leave implicit.  Part~(b) goes in the opposite direction.  Starting from a
-positive homomorphism~\(\phi\), the proof uses the values~\(\phi([G])\) to put a
-probability distribution on the finite \(\sigma\)-flags of each sufficiently
-large size: a \(\sigma\)-flag \(G\) is sampled with weight \(\phi([G])\).  These
-weights are indeed probabilities, since \(\phi\) is non-negative on flag basis
-elements and Equation~\eqref{eq:sum-to-one} gives
-\(\sum_{G\in\mathcal{F}^{\sigma}_{\ell}} \phi([G])=\phi(\mathbf{1}_\sigma)=1\).
-One then samples an entire sequence \(X=(X_0,X_1,\ldots)\), where \(X_n\) is
-drawn from the distribution on \(\sigma\)-flags of size \(n^2+k\).  The key
-estimate says that, for each fixed test \(\sigma\)-flag \(F\), the density
-\(\den{F}{X_n}\) is very likely to be close to \(\phi([F])\) once \(n\) is
-large, so almost every sampled sequence has the limiting density profile
-prescribed by \(\phi\).  Selecting one such realization gives the deterministic
-\(\sigma\)-flag sequence required by Theorem~\ref{thm:convergent-hom}(b).  The
-Lean proof constructs the product measure on flag sequences, proves that the
-required coordinatewise convergence event has probability one, and selects a
+leave implicit.  Part~(b) goes the other way, and its proof is probabilistic:
+a sequence of \(\sigma\)-flags sampled using the values of \(\phi\) as weights
+almost surely has \(\phi\) as its limiting density profile.  Formalizing it
+means constructing the product measure on flag sequences, proving that the
+coordinatewise convergence event has probability one, and selecting a
 realization from that event.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
