@@ -325,41 +325,39 @@
 \begin{document}
 
 \begin{abstract}
-Razborov's flag algebra method proves asymptotic inequalities of extremal
-graph theory: statements about all sufficiently large graphs that avoid
-given patterns.  The method reduces such an inequality to finitely many
-algebraic conditions, and a semidefinite-programming (SDP) solver searches
-for a certificate that witnesses them.  Certificates behind notable
-theorems contain thousands of exact rational values and are produced by
-large, numerical, unverified toolchains, so they can be neither audited by
-hand nor sensibly trusted.  This article presents a certificate-to-proof
-compiler for the method: a Lean~4 development that formalizes flag
-algebras for finite simple graphs and compiles such untrusted certificates
-into complete, machine-checked proofs.
+Razborov's flag algebra method proves asymptotic bounds in extremal graph
+theory, such as upper bounds on how often a fixed graph pattern can occur in
+large graphs that avoid other specified patterns.  It turns a claim about
+infinitely many graphs into a finite algebraic verification.  In practice, a
+semidefinite-programming (SDP) solver searches for a certificate consisting of
+rational coefficients and matrices.  If these data satisfy certain algebraic
+identities and positivity conditions, they establish the desired bound.  The
+method has resolved several prominent problems in extremal graph theory and
+produced the best known bounds for others.  The certificates for some of these
+results, however, contain thousands of exact rational values and are generated
+through large toolchains that rely on unverified numerical computation.  They
+are therefore too large to audit by hand and unsafe to trust without
+independent checking.  This article presents a Lean~4 formalization of flag
+algebras for finite simple graphs, together with a certificate-to-proof
+compiler built on the formalization.  Given such a certificate, the compiler
+treats it as untrusted input, independently verifies its algebraic identities
+and positivity conditions against the formal definitions, and constructs a
+complete proof that is checked by Lean's kernel.
 
-The development has three layers: a specification layer that formalizes
-the mathematics of the method, a reflection layer that makes the
-specification computable and generates the thousands of verified
-identities a certificate requires, and an automation layer that drives the
-compilation.  Compilation happens at elaboration time, inside Lean: the
-theorem statement is fixed in the source file, the certificate enters only
-as untrusted hint data, and Lean recomputes every claimed fact against the
-mathematical definitions.  We evaluate the compiler on seven Tur\'an-type
-upper bounds and report a trust profile that states, for each class of
-proof obligation, the mechanism by which it is discharged.  Combined with matching extremal constructions
-proved directly in the formalization, the compiled bounds give, to our
-knowledge, the first machine-checked proof of the Erd\H{o}s pentagon
-theorem, whose known proofs all use flag algebras.
-
-Our formalization also departs from Razborov's development in where the
-forbidden-subgraph constraint enters: rather than building each
-constraint into the algebra, it formalizes the algebra of unconstrained
-graphs once and imposes the constraint only where an inequality is
-interpreted.  This ensemble semantics keeps the constraint out of the
-algebra's definitions and lemmas, so one formalization serves every
-forbidden family.  We prove the departure sound, characterize exactly
-when the two semantics agree, and autoformalize the resulting
-meta-theory in a separate Lean library extending the main development.
+The development has three layers: a specification layer that formalizes the
+mathematics of the method, a reflection layer that provides verified
+computation and generates thousands of verified identities required by a
+certificate, and an automation layer that drives the compilation.  The compiler
+runs inside Lean during elaboration: the theorem statement is fixed in the
+source file, the certificate serves only as untrusted input, and Lean recomputes
+every claimed fact against the mathematical definitions.  We evaluate the
+compiler on seven Tur\'an-type upper bounds and explain how Lean checks each
+proof obligation in the generated proofs.  Two of the compiled upper bounds,
+for Mantel's theorem and the Erd\H{o}s pentagon theorem, are paired with matching
+lower-bound constructions proved directly in Lean, thereby establishing both
+exact bounds.  In particular, this gives, to our knowledge, the first
+machine-checked proof of the Erd\H{o}s pentagon theorem, whose known proofs all
+use flag algebras.
 \end{abstract}
 
 \begin{CCSXML}
