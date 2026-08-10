@@ -1724,43 +1724,32 @@ instance ((*@$\sigma$@*) : FlagType (Fin k)) : LE (FlagAlgebra (*@$\sigma$@*)) w
 \label{sec:formal-downward}
 
 The downward operator from \Cref{sec:background-downward} forgets the
-labels of a typed flag-algebra expression while keeping the correct averaging
-factor.  On a single $\sigma$-flag $F$, the intended formula is
+labels of a typed flag-algebra expression while keeping the correct
+normalizing factor.  On a single $\sigma$-flag $F$, the intended formula is
 \[
   \llbracket [F] \rrbracket_\sigma = q_\sigma(F)\cdot [F|_\emptyset].
 \]
 The displayed formula specifies the downward operator on flag basis elements.
-To implement it, we first define the normalizing factor and the operation of
-forgetting labels on concrete $\sigma$-typed labeled graphs, and prove that
-both are independent of the chosen representative.  This gives the downward
-image of an individual $\sigma$-flag.  We then extend this operation linearly
-to flag vectors and prove that two flag vectors representing the same element
-of $\mathcal{A}^\sigma$ have the same image in $\mathcal{A}^\emptyset$.  The
-result is a well-defined operator
-\[
-  \mathcal{A}^\sigma\longrightarrow\mathcal{A}^\emptyset.
-\]
+To implement it, we first define its two ingredients, the normalizing factor
+$q_\sigma(F)$ and the unlabeled flag $F|_\emptyset$, on concrete
+$\sigma$-typed labeled graphs and lift both to flags.  This gives the downward
+image of an individual $\sigma$-flag.  We then extend that operation linearly
+to flag vectors and lift it once more, to $\mathcal{A}^\sigma$, giving a
+well-defined operator
+\(\mathcal{A}^\sigma\longrightarrow\mathcal{A}^\emptyset\).
 
-Fix a flag type $\sigma$ with $k$ vertices. We regard
-these vertices of $\sigma$ as labels.  A concrete $\sigma$-typed labeled
-graph~$G$ on~$n$ vertices includes an embedding of $\sigma$ into $G$, which
-places these labels on $k$ vertices of $G$.  Its normalizing factor is
-computed by counting such label placements.  The numerator,
-\lean{isomorphismCount G}, counts the injections of the $k$ labels into the
-underlying graph that produce a typed labeled graph isomorphic to~$G$.  Its
-denominator
-\[
-  \frac{n!}{(n-k)!}
-\]
-is the total number of injections of those labels into the $n$ vertices.
-Their ratio is $q_\sigma(G)$.
-
-The other ingredient, $F|_\emptyset$, is computed by
-\lean{unlabel\_labeledGraph}, which forgets the type embedding while retaining
-the underlying graph.  Both ingredients are defined on concrete
-$\sigma$-typed labeled graphs and then lifted to flags, by the same
-\lean{Quotient.lift} pattern used for densities in
-\Cref{sec:formal-subflag-densities}.
+For a concrete labeled graph $G$ on $n$ vertices, the normalizing factor is a
+ratio: the numerator \lean{isomorphismCount G} counts the injections
+$[k]\hookrightarrow V(G)$ that produce a typed labeled graph isomorphic
+to~$G$, and the denominator $n!/(n-k)!$ counts all possible injections.  The
+other ingredient, $F|_\emptyset$, is computed by
+\lean{unlabel\_labeledGraph}, which forgets the type embedding.  Lifting these
+two operations to flags takes the \lean{Quotient.lift} pattern of
+\Cref{sec:formal-subflag-densities}, so each needs a proof of invariance under
+isomorphism: isomorphic representatives admit the same label
+placements, and their unlabelings are isomorphic as $\emptyt$-flags.  The two
+then combine in \lean{downwardFlag}, the downward image of an individual
+$\sigma$-flag.
 \begin{lstlisting}
 variable {k n : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin k)}
 
@@ -1773,9 +1762,6 @@ noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@
 noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
-Thus \lean{downwardFlag} forms the empty-type basis vector indexed by the pair
-$\langle n,\lean{unlabel F}\rangle$ and scales it by
-\lean{downwardNormalizingFactor F}.
 
 We next lift this construction to the algebra.  The map
 \lean{downwardFlagVector} extends \lean{downwardFlag} linearly to
@@ -1809,25 +1795,23 @@ representative choices.  The final line introduces the Lean notation
 emphasizes that the result lies in the empty-type algebra.  In mathematical
 prose we use \(\llbracket f\rrbracket_\sigma\), following
 \Cref{sec:background-downward}, where the subscript instead records the type
-being forgotten.  Altogether, the implementation consists of a quotient lift
-from concrete labeled graphs to flags, a linear extension to flag vectors,
-and a second quotient lift to the flag algebra.
+being forgotten.
 
-Having constructed the algebraic map, we turn to its semantic meaning.  The
-key result is the formal random-extension identity from
-Equation~\eqref{eq:ensemble}; preservation of semantic non-negativity will
-follow from it.
-
-For the measure-theoretic statement, the implementation represents a random
-positive homomorphism by its density profile.  The sample space
-\lean{PositiveHomSpace}~$\sigma$ is the measurable subspace of
-\([0,1]^{\mathcal{F}^\sigma}\) consisting of profiles induced by positive
-homomorphisms.  Each point $\phi$ of this space determines a positive
-homomorphism, and \lean{PositiveHomSpace.toPosHom $\phi$ f} evaluates that
-homomorphism on $f$.  Thus, a probability measure on
-\lean{PositiveHomSpace}~$\sigma$ can be read simply as a distribution of
-positive homomorphisms.  With this representation, the random-extension
-identity is stated as follows.
+Having constructed the algebraic map, we turn to its semantic meaning: a
+formal counterpart of the random-extension identity of
+Equation~\eqref{eq:ensemble},
+\[
+  \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
+  \;=\;
+  \frac{\phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)}
+       {\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)}.
+\]
+Stating it in Lean requires a measurable space for the measure to live on,
+and the implementation obtains one by identifying a positive homomorphism
+with its density profile: the sample space \lean{PositiveHomSpace}~$\sigma$ is
+the measurable subspace of \([0,1]^{\mathcal{F}^\sigma}\) consisting of the
+profiles induced by positive homomorphisms.  The formal counterpart is then
+the following existence statement.
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -1839,52 +1823,23 @@ theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
 Mathlib writes \lean{$\int$ x, g x $\partial\mu$} for the integral of
 $x\mapsto g(x)$ with respect to $\mu$; here $\partial\mu$ specifies the
 measure and is not a derivative.  In the displayed theorem, $\phi$ ranges over
-\lean{PositiveHomSpace}~$\sigma$, the integrand evaluates the corresponding
-positive homomorphism on $f$, and the measure is $\mathbb{P}$.  Because
+\lean{PositiveHomSpace}~$\sigma$, the integrand
+\lean{PositiveHomSpace.toPosHom $\phi$ f} evaluates at $f$ the homomorphism
+that $\phi$ induces, and the measure is $\mathbb{P}$.  Because
 $\mathbb{P}$ is a probability measure, the left-hand side is the expectation
-\[
-  \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)].
-\]
-The theorem therefore says exactly that $\mathbb{P}$ satisfies
-Equation~\eqref{eq:ensemble}, expressed using Lean's downward notation:
-\[
-  \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)]
-  =
-  \frac{\phi_0(\llbracket f\rrbracket_0)}
-       {\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)} .
-\]
-Thus, $\mathbb{P}$ realizes the random-extension measure
-$\Ext_\sigma(\phi_0)$ from \Cref{sec:background-downward}.  Equivalently,
-\[
-  \phi_0(\llbracket f\rrbracket_0)
-  =
-  \phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)
-  \mathbb{E}_{\phi\sim\mathbb{P}}[\phi(f)].
-\]
-This rearranged form explains the probabilistic construction behind the
-formal proof.  Take a convergent sequence of finite graphs representing
-$\phi_0$; in each graph, choose an embedding of $\sigma$ uniformly at random,
-use the embedded vertices as labels, and evaluate $f$.  Averaging and passing
-to the limit produces the expectation above, while the positive factor
-$\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)$ accounts for the
-normalization of the random embedding.
+$\mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)]$.  The theorem therefore says
+exactly that $\mathbb{P}$ satisfies the identity above, so $\mathbb{P}$
+realizes the random-extension measure $\Ext_\sigma(\phi_0)$
+of \Cref{sec:background-downward}.
 
-The random-extension identity now yields the desired transfer property.  If
-$f$ is non-negative under every positive homomorphism of the $\sigma$-typed
-algebra, then every value $\phi(f)$ in the expectation is non-negative.  The
-rearranged identity therefore shows that the downward image of $f$ is
-non-negative under every empty-type positive homomorphism.  This is the Lean
-counterpart of \Cref{thm:downward-nonneg}:
+The Lean counterpart of \Cref{thm:downward-nonneg} now follows from the
+random-extension identity:
 \begin{lstlisting}
 theorem downward_preserve_semanticCone (f : FlagAlgebra (*@$\sigma$@*))
     (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) : (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*) := ...
 \end{lstlisting}
-The proof considers an arbitrary empty-type positive homomorphism $\phi_0$.
-When $\phi_0(\langle\sigma\rangle_0)>0$, it applies the random-extension
-measure above.  When $\phi_0(\langle\sigma\rangle_0)=0$, a separate lemma shows
-that every downward image evaluates to zero, so the conclusion is immediate.
-The density bounds developed later use this theorem to transfer inequalities
-from a labeled algebra to the unlabeled one.
+Every typed inequality used by the certificate proofs of
+\Cref{sec:flagmatic} reaches the unlabeled algebra through this theorem.
 
 \subsection{Forbidden Graphs and the Ensemble Semantic Order}
 \label{sec:forbidden}
