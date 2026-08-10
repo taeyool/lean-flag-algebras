@@ -423,24 +423,24 @@ emit unsatisfiability certificates that are checked by formally verified
 checkers~\cite{lammich2020unsat,tan2023cakelpr}; SMT results are validated either
 by reconstructing proofs inside a proof assistant~\cite{bohme2010z3} or by
 checking proof witnesses with a verified checker~\cite{armand2011modular}; and
-numerical sums-of-squares certificates for polynomial inequalities are rounded
-to rational form and reverified
+numerical sums-of-squares certificates for polynomial inequalities have their
+entries rounded to rational numbers and are then reverified
 exactly~\cite{harrison2007verifying,besson2006fast,morrison2026sos}.
-Across these examples, the search procedure remains unverified; assurance comes
+Across these examples, the search procedures remain unverified; assurance comes
 from independently validating the evidence produced by each run, much as
 translation validation checks individual compilation
 results~\cite{pnueli1998translation}.
 
 This paper applies the same validation principle to Razborov's flag algebra
 method~\cite{razborov2007flag}.  At a high level, the method turns an asymptotic
-density bound for large graphs into the task of finding matrices and
-coefficients that satisfy a finite system of algebraic identities and positivity
+density bound for large graphs into the task of finding matrices and numerical
+weights that satisfy a finite system of algebraic identities and positivity
 constraints.  A semidefinite-programming (SDP) solver searches numerically for
-such data, which are then converted to exact rational form and recorded in a
-certificate.  Independently checking the certificate against this system
-establishes the original bound.  This approach is especially valuable for flag
-algebras, which have been central to proofs of major results in extremal graph
-theory, including the Erd\H{o}s pentagon theorem and the
+such data, which are then converted to exact form using rational numbers and
+recorded in a certificate.  Independently checking the certificate against this
+system establishes the original bound.  This approach is especially valuable
+for flag algebras, which have been central to proofs of major results in
+extremal graph theory, including the Erd\H{o}s pentagon theorem and the
 determination of the maximum induced $C_5$
 density~\cite{hatami2012,grzesik2012,balogh2016induced5}.  Yet existing
 flag-algebra toolchains produce and check computer-generated certificates
@@ -449,50 +449,52 @@ certificate-to-proof compiler that accepts externally generated certificates
 as untrusted input and constructs complete Lean proofs.
 
 \paragraph{Flag algebras and their certificates.}
-Many central questions of extremal graph theory ask how often one finite
-pattern can occur in graphs that avoid another.  For a finite simple graph
-$F$ and a finite collection $\mathcal{H}$ of finite simple graphs, write
-$\mathrm{ex}(n,\,F;\,\mathcal{H})$ for the maximum number of induced copies
-of $F$ in an $n$-vertex graph that contains no member of $\mathcal{H}$ as a
-(not necessarily induced) subgraph.  The associated \emph{Tur\'an density}
+Many central questions of extremal graph theory concern finite simple
+graphs.\footnote{By a finite simple graph we mean an undirected graph
+with a finite vertex set, no self-loops, and at most one edge between any two
+distinct vertices.  Formally, it is a pair $G=(V,E)$, where $V$ is finite and
+$E\subseteq\binom{V}{2}$; here $\binom{V}{2}$ denotes the set of two-element
+subsets of $V$.  We write $V(G)$ and $E(G)$ for the vertex set $V$ and the edge
+set $E$, respectively.}  Such questions ask how often one pattern can occur when
+another is forbidden.  A basic example is Mantel's theorem~\cite{mantel}, which
+states precisely that
 \[
-  \tdensity{F}{\mathcal{H}}
-  :=
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}
+  \max_{\substack{|V(G)|=n\\G\text{ triangle-free}}}
+  \frac{|E(G)|}{\binom{n}{2}}
+  = \frac{1}{2}.
 \]
-records the asymptotic proportion of $|V(F)|$-vertex subsets that induce a
-copy of $F$.  (Whenever $\mathcal{H}=\{H\}$ is a singleton, we write $H$ in
-place of $\mathcal{H}$.)  Mantel's theorem~\cite{mantel}, in this language,
-states that $\tdensity{K_2}{K_3}=1/2$: the maximum edge density of
-triangle-free graphs tends to $1/2$ as the number of vertices grows.  Such an
-equality combines two bounds of very different character.  The lower bound is
-witnessed by explicit constructions; for Mantel's theorem, balanced complete
-bipartite graphs are triangle-free and have edge density tending to $1/2$.
-The upper bound is the hard half: it quantifies over \emph{all}
-sufficiently large $\mathcal{H}$-free graphs, so no finite collection of
-examples suffices, and the extremal graphs may change unpredictably as $n$
-grows.
+The limit on the left is the Tur\'an density of edges in triangle-free graphs.
+The equality combines two bounds of different character.  The lower bound
+comes from a concrete family known as the balanced complete bipartite graphs.
+For present purposes, only the existence of this family matters, not its
+construction.  Proving the matching upper bound is more difficult because it
+must control all triangle-free graphs as their size grows, rather than exhibit
+a single family.
 
-For the difficult upper-bound half, flag algebras provide the finite reduction
-outlined above.  Concretely, a \emph{candidate certificate} identifies the
-relevant flags and supplies rational matrices and coefficients that purport to
-satisfy the required identities and positive-semidefinite constraints.  The
-flag-algebra framework proves that, once these finite claims are checked, the
-desired bound holds for the entire infinite class of graphs.  The method's
-applications extend well beyond the examples already mentioned: they include
-the determination of the rainbow-triangle density~\cite{balogh2017rainbow},
-the best known upper bound on Tur\'an's tetrahedron
-problem~\cite{razborov2010tetrahedron}, and exact Tur\'an densities for
-3-uniform hypergraphs~\cite{baber2012turan}.
+Flag algebras address this difficulty through the finite algebraic reduction
+outlined above.  They use small, partially labeled graphs, called
+\emph{flags}, to encode the local configurations that enter the calculation.
+A \emph{candidate certificate} selects finitely many flags, supplies matrices
+whose entries are rational numbers, and gives rational-number coefficients that
+weight the corresponding algebraic terms.  The certificate claims that these
+data satisfy specified algebraic identities and that the matrices are positive
+semidefinite.  The flag-algebra theory guarantees that checking these finite
+claims establishes the desired asymptotic upper bound over the full class of
+graphs.
 
-The raw certificates, however, are not suitable as trusted proof artifacts.
-The certificate behind the Erd\H{o}s pentagon theorem relies on thousands of
-exact density values and on rational matrices whose positive semidefiniteness
-must be established exactly, far beyond what a human referee can audit.
-Moreover, the solvers that produce such data sit at the end of a large,
-numerical, unverified toolchain.  A formal proof should neither trust this data
-nor require thousands of individually written proofs.
+The raw certificates, however, cannot themselves serve as trusted proof
+artifacts.  A nontrivial certificate combines many flags, so validating it
+requires large tables of exact counting results for finite graphs.  Each table
+entry is a rational number recording the fraction of suitable vertex selections
+in one small, partially labeled graph that induce another specified pattern.
+The certificate behind the Erd\H{o}s pentagon theorem depends on thousands of
+such entries, together with matrices that must be proved positive semidefinite
+using exact rational arithmetic.  These obligations are far beyond what a human
+referee can audit, and the candidate data come from a large, unverified numerical
+toolchain.  A formal development should therefore check these obligations
+automatically, without trusting the raw data or requiring thousands of
+individually written proofs.
 
 \paragraph{A certificate-to-proof compiler.}
 To perform these checks at scale, we build a Lean~4~\cite{moura2021lean}
@@ -1045,6 +1047,24 @@ And since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
 closed under addition and under multiplication by non-negative reals.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
+For a finite simple graph $F$ and a finite collection $\mathcal{H}$ of finite
+simple graphs, write $\mathrm{ex}(n,\,F;\,\mathcal{H})$ for the maximum number
+of induced copies of $F$ in an $n$-vertex graph that contains no member of
+$\mathcal{H}$ as a (not necessarily induced) subgraph.  Thus an induced copy
+of $F$ preserves both edges and nonedges, whereas a subgraph copy of a member
+of $\mathcal{H}$ need preserve only its edges; additional edges between the
+corresponding vertices are allowed.  The associated
+\emph{Tur\'an density} is
+\[
+  \tdensity{F}{\mathcal{H}}
+  :=
+  \lim_{n\to\infty}
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
+\]
+It records the asymptotic proportion of $|V(F)|$-vertex subsets that induce a
+copy of $F$.  Whenever $\mathcal{H}=\{H\}$ is a singleton, we write $H$ in
+place of $\mathcal{H}$.
+
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
