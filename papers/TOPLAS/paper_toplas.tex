@@ -597,6 +597,7 @@ isomorphic to any member of $\mathcal{H}$.  All flag types, flags, and flag
 algebras defined below are relative to this fixed $\mathcal{H}$.
 
 \subsection{Flag Types and Flags}
+\label{sec:background-flags}
 
 \paragraph{Flag Types.}
 A flag type specifies the labeled part shared by all flags of that flag type.
@@ -746,6 +747,7 @@ $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 \end{figure}
 
 \subsection{Subflag Densities}
+\label{sec:background-densities}
 
 In a density calculation, flags play two roles.  The \emph{pattern flag} is the
 small local configuration whose occurrence is being measured, while the
@@ -1236,7 +1238,7 @@ those shared by a group of definitions into a \lean{variable} block, leaving
 each definition to show only its own arguments; and we occasionally replace
 implementation-oriented names with clearer paper-facing names.  Following the
 development itself, we write the empty flag type as \(\emptyt\), rather than
-the \(\emptyset\) of \Cref{sec:background}, to distinguish it from ordinary
+the \(\emptyset\) of \Cref{sec:background-flags}, to distinguish it from ordinary
 empty sets.
 
 \subsection{Flag Types and Flags}
@@ -1256,7 +1258,7 @@ Mathlib provides ${G\hookrightarrow_g H}$ for the type of graph embeddings
 from $G$ to $H$.  Such an embedding is an injective vertex map that preserves
 adjacency and non-adjacency, so its image is an induced copy of $G$ in $H$.  Mathlib also provides $G\simeq_g H$ for graph isomorphisms.
 With this notation in place, the concrete pair $F=(M,\theta_F)$ from
-\Cref{sec:background} is represented by \lean{LabeledGraph}, while its
+\Cref{sec:background-flags} is represented by \lean{LabeledGraph}, while its
 isomorphism class is represented by \lean{Flag}.
 
 \begin{lstlisting}
@@ -1329,7 +1331,7 @@ def FinFlag {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin k)) : Type 
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
-Unlike the definitions in \Cref{sec:background}, none of the definitions above
+Unlike the definitions in \Cref{sec:background-flags}, none of the definitions above
 carries the \(\mathcal{H}\)-free condition: the underlying graphs are
 arbitrary.  This is a deliberate interface choice.  The core quotient and
 density machinery is developed once for all finite graphs, while
@@ -1341,7 +1343,7 @@ homomorphisms used in the ensemble semantic order
 \label{sec:formal-subflag-densities}
 
 Formalizing the density function is not straightforward.  The density
-$\den{F_1,\ldots,F_t}{G}$ from \Cref{sec:background} should be a
+$\den{F_1,\ldots,F_t}{G}$ from \Cref{sec:background-densities} should be a
 function taking $t$ pattern $\sigma$-flags and a host $\sigma$-flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
 define a function from a quotient type in Lean is to first define it on the
@@ -1356,7 +1358,7 @@ Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph
 \lean{labeledGraphListDensity} computes the density as the number of tuples
 $(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{F_1,\ldots,F_t}{G}$,
 divided by the total number of candidate tuples.  Rather than adopting the
-probabilistic sampling formulation of \Cref{sec:background}, this direct ratio is easier to work with in Lean.
+probabilistic sampling formulation of \Cref{sec:background-densities}, this direct ratio is easier to work with in Lean.
 \begin{lstlisting}
 abbrev LabeledGraphList {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
@@ -1493,7 +1495,7 @@ add another quotienting operation.
 Building on the definitions above, we prove the following chain rule
 (\Cref{lem:chain-rule}) and several of its variants.
 Although the statement is the elementary counting identity of
-\Cref{sec:background}, its formal proof must account for the quotient
+\Cref{sec:background-densities}, its formal proof must account for the quotient
 representation:
 the counts are defined on concrete labeled graphs, and the identity between
 them comes from an explicit bijection between the choices the two sampling
@@ -3206,7 +3208,7 @@ evaluates the pair density
 in the product expansion of $[F_1]\cdot[F_2]$.  When the target must be
 lifted in Part~3, the generated file similarly contains proved evaluations of
 the required single-flag densities.  The adequacy theorems from
-\Cref{sec:reflection} turn all these reflection-layer evaluations into
+\Cref{sec:reflection-adequacy} turn all these reflection-layer evaluations into
 specification-level statements about the decoded flags.  The multiplication
 generator then combines the pair-density identities with the general
 multiplication theorem and the completeness lemma for the generated flag set
@@ -4750,7 +4752,7 @@ typically reify one goal at a time, our commands run at elaboration time to
 emit whole families of definitions and theorems ahead of any particular
 proof, and they encode enough metadata in the generated names that later
 tactics can retrieve exactly the lemmas a certificate step needs
-(\Cref{sec:reflection}).
+(\Cref{sec:reflection-generation}).
 
 \paragraph{Proof engineering at scale.}
 Sustaining large mechanized developments raises engineering questions that
@@ -4758,7 +4760,7 @@ are increasingly documented in their own right, from the survey of Ringer et
 al.~\cite{ringer2019qed} to the retrospective on Project
 Everest~\cite{ahman2026everest}.  Our analysis of engineering obstacles
 (\Cref{sec:obstacles}) and our per-obligation trust reporting
-(\Cref{sec:flagmatic}) contribute datapoints from computational mathematics, where the
+(\Cref{sec:flagmatic-trust}) contribute datapoints from computational mathematics, where the
 dominant costs (computing with quotients, comparing objects up to
 isomorphism, and controlling finite enumerations) differ from those of
 program verification.
