@@ -516,7 +516,7 @@ certificate data.  The development has three layers.
 The \emph{specification layer} (\Cref{sec:abstract}) formalizes the
 mathematics of the method: partially labeled graphs and their densities
 in large graphs, the quotient algebra of density expressions, and its
-semantics through positive homomorphisms representing graph limits.  It
+semantics through positive homomorphisms.  It
 follows the standard development closely, so flag-algebra arguments can
 be stated in Lean much as they appear on paper.
 
@@ -536,26 +536,34 @@ compilation happens at elaboration time, inside Lean: the theorem
 statement is fixed in the source file, and the certificate enters only
 as untrusted hint data from which the proof is synthesized.
 
-\boldparagraph{Two semantics for forbidden subgraphs.}
-The compiled bounds all concern graphs that avoid a forbidden subgraph.
-Razborov's development builds the constraint in from the start,
-constructing the flag algebra from $H$-free graphs only; we call this
-the \emph{built-in} (quotient) semantics.  Our implementation instead
-retains the ambient algebra of all finite graphs and imposes
-$H$-freeness only where an inequality is interpreted; we call this the
-\emph{ensemble} semantics.  This keeps the constraint out of the
-algebra's definitions and lemmas, so one formalization serves every
-forbidden family.  The departure raises a soundness question: do the two
-semantics validate the same inequalities?  \Cref{sec:metatheory} answers
-it, comparing the two designs the way one compares two semantics of a
-language.  Every inequality valid in the built-in semantics is valid in
-the ensemble semantics; the converse holds at the empty flag type, can
-fail at a nonempty flag type, and holds at a fixed flag type exactly
-when the constrained class is \emph{root-plantable} there.  We prove
-that blow-up closure guarantees root-plantability and give a $C_4$-free
-counterexample showing that heredity alone does not.
+\boldparagraph{A formalization-driven semantics for forbidden subgraphs.}
+Formalization did more than add assurance to the existing method: it suggested
+a different organization of the mathematics.  All seven compiled bounds
+concern graphs that avoid a specified subgraph $H$.  Razborov's standard
+presentation builds this constraint into the flag algebra from the outset,
+constructing a separate algebra for each forbidden family.  To make our Lean
+development reusable across problems, we instead retain one ambient algebra of
+all finite graphs and impose $H$-freeness only when interpreting an inequality;
+we call this alternative the \emph{ensemble semantics}.  This design simplifies
+the formalization by keeping its core definitions and lemmas independent of the
+forbidden family.  Its use in the compiler is justified directly by flag-algebra
+theory: we prove that an unlabeled inequality in the ensemble semantics yields
+the corresponding asymptotic bound in extremal graph theory.  The compiler
+reduces its typed certificate inequalities to this unlabeled case, so
+equivalence with the standard semantics is not required for the soundness of
+the compiled bounds.
+
+The alternative semantics nevertheless exposed a natural mathematical
+question: how does it relate, at nonempty flag types, to Razborov's built-in
+(quotient) semantics?  This comparison is separate from the preceding
+justification, but it led to new mathematics.  \Cref{sec:metatheory} proves that
+built-in validity always implies ensemble validity and characterizes when the
+converse holds through a new structural condition, \emph{root-plantability}.
+This result illustrates how formalization can do more than check existing
+arguments: it can also reveal new mathematical structures and questions.
 
 \boldparagraph{Contributions.}
+We make the following contributions.
 \begin{itemize}
 \item \emph{A Lean~4 formalization of the flag algebra method} for
   finite simple graphs, and \emph{a certificate-to-proof compiler} built
@@ -563,13 +571,15 @@ counterexample showing that heredity alone does not.
   generated, untrusted certificates into complete, machine-checked
   proofs of Tur\'an-type bounds.
 \item \emph{Machine-checked theorems}: seven compiled Tur\'an-type upper
-  bounds, including those of Mantel's theorem and the Erd\H{o}s pentagon
-  theorem, combined with matching lower-bound constructions proved
-  directly in the formalization.  To our knowledge, this gives the first
-  machine-checked proof of the Erd\H{o}s pentagon theorem, whose known
-  proofs all use flag algebras.
-\item \emph{A meta-theory of ensemble semantics}, autoformalized in a
-  separate Lean library that extends the development above.
+  bounds.  Two of them, for Mantel's theorem and the Erd\H{o}s pentagon
+  theorem, are paired with matching lower-bound constructions proved directly
+  in the formalization.  To our knowledge, this gives the first machine-checked
+  proof of the Erd\H{o}s pentagon theorem, whose known proofs all use flag
+  algebras.
+\item \emph{A meta-theory of ensemble semantics} relating our treatment of
+  forbidden subgraphs to Razborov's built-in semantics, together with an
+  autoformalization in a separate Lean library that extends the development
+  above.
 \end{itemize}
 The complete Lean development, including the certificate-to-proof compiler
 and the autoformalized meta-theory, is publicly available at
