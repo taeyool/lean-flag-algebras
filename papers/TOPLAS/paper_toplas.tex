@@ -4590,59 +4590,50 @@ account of the flag-algebra/graphon correspondence remains future work.
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have developed a Lean~4 formalization of Razborov's flag algebra method for
-simple graphs.  Its specification layer represents flags as quotients modulo
-isomorphism, constructs the quotient algebra of density-expansion relations,
-defines positive homomorphisms and the semantic non-negativity cone, and
-introduces the ensemble semantic order, which imposes forbidden-subgraph
-constraints only when algebra elements are compared.  On top of this
-specification, an executable reflection layer computes finite flag data and
-connects these computations to the abstract definitions through adequacy
-theorems, while a certificate-to-proof compiler uses the resulting identities
-to reconstruct Lean proofs from externally generated flag-algebra
-certificates.  We evaluated the compiler on seven upper-bound certificates:
-Mantel's theorem, bounds on the \(P_3\)- and \(C_4\)-densities of triangle-free
-graphs, the Erd\H{o}s pentagon theorem, and edge-density bounds for
-\(K_4\)-free, \(K_5\)-free, and \(C_5\)-free graphs.  The formalization also
-supports proofs written directly against its mathematical interface: we used
-it to prove the matching lower bounds for Mantel's theorem and the
-Erd\H{o}s pentagon theorem, as well as two inequalities of Goodman.  Finally,
-we summarized a separately developed mathematical meta-theory comparing the
-ensemble and quotient semantics.  Non-negativity in the quotient semantics
-always implies non-negativity in the ensemble semantics, while the converse at
-a given flag type holds for all expressions exactly when the class is
-root-plantable there.
+Flag-algebra certificates are produced by unverified numerical toolchains and
+are far too large to audit by hand.  We have built a Lean~4
+certificate-to-proof compiler that consumes them without trusting them:
+invoked as an elaboration-time tactic against a theorem stated in the source
+file, it recomputes every fact a certificate claims against formal definitions
+of the flag algebra and assembles a complete proof.  Underneath it are a
+specification layer that follows the standard mathematics and a reflection
+layer that makes the finite parts of that mathematics executable, joined by
+adequacy theorems.  We compiled seven Tur\'an-type upper bounds, and paired two
+of them, Mantel's theorem and the Erd\H{o}s pentagon theorem, with lower-bound
+constructions proved directly against the same formal interface.
 
-We do not claim to have found the uniquely right way to formalize flag
-algebras.  Our aim has instead been to make the development's design choices
-and their consequences explicit: the engineering obstacles they create, the
-executable and automation layers needed to address those obstacles, the proof
-patterns that may transfer to other formalizations, and the questions that
-remain open.  Some engineering decisions reflect what is computationally
-feasible in the current implementation rather than a principled design
-preference.  Most notably, the two largest certificates still use
-\lean{native\_decide}; we have stated this trust tradeoff explicitly.
+One design choice shaped the development throughout.  Rather than build a
+separate algebra for each forbidden family, we kept one ambient algebra and
+imposed the forbidden-subgraph constraint only when its elements are compared.
+This ensemble semantics keeps the core definitions independent of the extremal
+problem being solved, and it yields the intended asymptotic bounds on its own
+terms.  Asking how it relates to Razborov's original semantics turned into
+mathematics of its own: quotient validity always implies ensemble validity, and
+the converse holds for all expressions exactly when the class is
+root-plantable.
+
+We do not claim that this is the right way to formalize flag algebras.  Our aim
+has been to make the design choices and their consequences explicit: the
+engineering obligations they create, the layers needed to discharge them, and
+the questions left open.  Some choices reflect what is currently feasible
+rather than a principled preference; most visibly, the two largest certificates
+still use \lean{native\_decide}, a trust tradeoff we report per obligation
+rather than leave implicit.
 
 We expect the architecture to support additional parts of Razborov's
 flag-algebra calculus, especially the differential structure developed in
-Section~4.3 of his original paper~\cite{razborov2007flag}.  Formalizing this
-structure would test how much of the existing quotient-level semantics and
-finite-counting infrastructure can be reused beyond the certificate arguments
-considered here.  We have also not tested whether the architecture extends to
-richer combinatorial structures, such as hypergraphs, directed graphs, and
-oriented graphs.  Other directions for future work include building a formal
-bridge between our positive-homomorphism semantics and graphon theory.  In
-particular, the representation of every positive homomorphism by a
-graphon would connect our development more directly to the Lov\'asz
-theory~\cite{lovasz2012large} and to the existing Lean graphon
-formalization~\cite{freer2026graphon}.  Automating the discovery of SDP
-certificates within Lean, rather than importing them from external solvers, is
-a longer-term goal.  More immediately, extending the \lean{decide +kernel}
-path from the five certificates it currently covers to the two certificates
-that still use \lean{native\_decide}, or replacing the latter with a formally
-verified external checker, would eliminate the remaining dependency on Lean's
-native compiler.  This dependency is a feasibility constraint of the current
-encoding, not a logical limitation of the method.
+Section~4.3 of his original paper~\cite{razborov2007flag}, which would exercise
+the quotient-level semantics well beyond the certificate arguments considered
+here.  We have not tested whether it extends to richer combinatorial structures
+such as hypergraphs and directed graphs, which change the objects the whole
+development is built on.  A further direction is a formal bridge between our
+positive-homomorphism semantics and graphon theory, connecting the development
+to the Lov\'asz theory~\cite{lovasz2012large} and to the existing Lean graphon
+formalization~\cite{freer2026graphon}.  Most immediately, closing the
+\lean{native\_decide} gap, by extending the kernel-checked path or by
+delegating to a verified external checker, would remove the last dependency on
+Lean's native compiler: a feasibility constraint of the current encoding, not a
+limitation of the method.
 
 \subsection*{Use of AI Assistance}
 The layers of this development used AI assistance to different degrees.  The
