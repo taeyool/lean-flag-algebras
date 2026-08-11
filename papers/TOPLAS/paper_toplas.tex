@@ -414,7 +414,7 @@ verified checker~\cite{heule2024hexagon,subercaseaux2024hexagon}.  Despite their
 mathematical differences, these proofs share a computational structure.  A
 search tool produces candidate evidence such as a case analysis, an optimization
 certificate, or an unsatisfiability proof, and trust in the final theorem rests
-on both the validation of that evidence and the correctness of the reduction
+on the validation of that evidence and the correctness of the reduction
 that connects the evidence to the mathematical statement.
 
 The programming languages and formal verification communities have developed
@@ -428,25 +428,30 @@ entries rounded to rational numbers and are then reverified
 exactly~\cite{harrison2007verifying,besson2006fast,morrison2026sos}.
 Across these examples, the search procedures remain unverified; assurance comes
 from independently validating the evidence produced by each run, much as
-translation validation checks individual compilation
+translation validation checks compilation
 results~\cite{pnueli1998translation}.
 
 This paper applies the same validation principle to Razborov's flag algebra
-method~\cite{razborov2007flag}.  At a high level, the method turns an asymptotic
-density bound for large graphs into the task of finding matrices and numerical
-weights that satisfy a finite system of algebraic identities and positivity
-constraints.  A semidefinite-programming (SDP) solver searches numerically for
+method, a technique for proving asymptotic density bounds in extremal graph
+theory~\cite{razborov2007flag}.  At a high level, it reduces the proof of such a
+bound to finding matrices and numerical weights that satisfy a finite system of
+algebraic identities and positivity constraints.  A
+semidefinite-programming (SDP) solver searches numerically for
 such data, which are then converted to exact form using rational numbers and
-recorded in a certificate.  Independently checking the certificate against this
-system establishes the original bound.  This approach is especially valuable
-for flag algebras, which have been central to proofs of major results in
-extremal graph theory, including the Erd\H{o}s pentagon theorem and the
-determination of the maximum induced $C_5$
+recorded in a certificate.  Checking the resulting exact certificate against
+these conditions establishes the original bound.  This validation is especially
+valuable because the flag algebra method has been central to proofs of major
+results in extremal graph theory, including the Erd\H{o}s
+pentagon theorem and the determination of the maximum induced $C_5$
 density~\cite{hatami2012,grzesik2012,balogh2016induced5}.  Yet existing
-flag-algebra toolchains produce and check computer-generated certificates
-entirely outside proof assistants.  To close this gap, we build a reusable
-certificate-to-proof compiler that accepts externally generated certificates
-as untrusted input and constructs complete Lean proofs.
+flag-algebra toolchains both generate and check their certificates entirely
+outside proof assistants.  Formally verifying these large toolchains, including
+their graph-generation, exact-counting, and numerical-optimization
+components, would be a major undertaking, while their output certificates have
+not themselves been converted into machine-checked proofs.  We take the latter
+route: our reusable certificate-to-proof compiler treats the toolchain and its
+output as untrusted, validates each certificate, and constructs a complete Lean
+proof.
 
 \paragraph{Flag algebras and their certificates.}
 Many central questions of extremal graph theory concern finite simple
