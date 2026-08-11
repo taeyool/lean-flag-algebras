@@ -572,11 +572,10 @@ We make the following contributions.
   externally generated, untrusted certificates into complete,
   machine-checked proofs of Tur\'an-type bounds.
 \item \emph{Machine-checked extremal bounds}: seven compiled Tur\'an-type upper
-  bounds.  For two of them---Mantel's theorem and the Erd\H{o}s pentagon
-  theorem---we also prove matching lower-bound constructions directly in Lean,
-  yielding exact theorems.  To our knowledge, this gives the first
-  machine-checked proof of the Erd\H{o}s pentagon theorem, whose known proofs
-  all use flag algebras.
+  bounds.  For Mantel's theorem and the Erd\H{o}s pentagon theorem, we also
+  prove matching lower-bound constructions in Lean, yielding exact theorems.
+  To our knowledge, this is the first machine-checked proof of the Erd\H{o}s
+  pentagon theorem; all known proofs use flag algebras.
 \item \emph{A formalization-driven semantics for forbidden subgraphs.}  The
   ensemble semantics keeps the core formalization independent of the forbidden
   family, and we prove directly that its unlabeled inequalities yield the
@@ -822,9 +821,8 @@ The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling an
 intermediate $\sigma$-flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
 then sampling~$F$ inside $G'$.
-These two procedures describe the same sampling experiment.  The resulting
-identity is the single-flag case of Razborov's chain
-rule~\cite[Lemma~2.2]{razborov2007flag}.
+These procedures describe the same sampling experiment, yielding the
+single-flag case of Razborov's chain rule~\cite[Lemma~2.2]{razborov2007flag}.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
   For $F \in \mathcal{F}^\sigma_m$, $G \in \mathcal{F}^\sigma_n$, and $n'$
@@ -1111,7 +1109,7 @@ lemma shows.
 
 A matching lower bound typically comes from an explicit \(\mathcal{H}\)-free construction
 whose $F$-density approaches~$c$, pinning down $\tdensity{F}{\mathcal{H}}$ exactly.
-Two classical results illustrate how this looks in flag algebra language.
+Two classical examples illustrate this.
 
 \begin{example}[Mantel's theorem~\cite{mantel}]\label{ex:mantel}
   Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$, meaning
@@ -1883,9 +1881,8 @@ empty-type positive homomorphisms from which the random extensions of
 preceding subsections is therefore reused unchanged across extremal problems.
 
 The order used for this a posteriori condition is the
-\emph{ensemble semantic order}.  We state it for a single forbidden graph
-\(H\); a forbidden family would impose the zero-density condition below for
-every member.
+\emph{ensemble semantic order}.  We state it for one forbidden graph \(H\); a
+family would impose the zero-density condition below for each member.
 
 \begin{definition}[Ensemble semantic order]\label{def:ensemble-semantic-order}
 Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
@@ -2040,8 +2037,8 @@ compute the density \(\den{F}{G}\), one can conceptually enumerate all
 successful ones, and divide by
 \(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-flag density, the same experiment
 keeps the labeled vertices fixed and chooses only the additional unlabeled
-vertices.  The downward normalizing factor \(q_\sigma(F)\) is another finite
-count of the same flavor: it counts label placements rather than subflags.
+vertices.  The downward normalizing factor \(q_\sigma(F)\) is a similar finite
+count, but of label placements rather than subflags.
 
 Thus, an executable flag-algebra development needs two basic ingredients.  It
 must be able to enumerate the finite objects being counted, such as candidate
@@ -2049,10 +2046,10 @@ induced subflags, and it must be able to decide yes/no questions, such
 as whether two flags are isomorphic.  In Lean, these ingredients are usually
 provided by typeclass instances.  A \lean{Fintype} instance gives Lean an
 explicit finite collection containing every element of a type; a
-\lean{Decidable} instance gives a procedure for deciding a proposition.  Once
-such instances are available, a definition that says ``count all objects
-satisfying this predicate'' can be evaluated by iterating over the finite
-collection and filtering by the decision procedure.
+\lean{Decidable} instance gives a procedure for deciding a proposition.  With
+these instances, a definition that says ``count all objects satisfying this
+predicate'' can be evaluated by iterating over the finite collection and
+filtering with the decision procedure.
 
 The specification layer of \Cref{sec:abstract}, however, is not designed
 around producing such executable \lean{Fintype} and \lean{Decidable} instances.
@@ -2079,10 +2076,9 @@ The reflection layer therefore does not use \lean{SimpleGraph} directly as the
 evaluator's representation.  Instead, it introduces a family of more rigid
 edge-set representations: an \(n\)-vertex graph has vertex type \lean{Fin n},
 and its edge set is stored as \lean{Finset (Sym2 (Fin n))}, a finite set of
-unordered pairs of vertices.  This representation is packaged as the structure
-\lean{Sym2Graph}.  We then reuse the same graph structure to define a
-concrete flag type, \lean{Sym2FlagType}, and a concrete labeled graph,
-\lean{Sym2LabeledGraph}.
+unordered pairs of vertices.  This representation is packaged as
+\lean{Sym2Graph} and reused to define the concrete flag type
+\lean{Sym2FlagType} and labeled graph \lean{Sym2LabeledGraph}.
 \begin{lstlisting}
 structure Sym2Graph (n : (*@$\mathbb{N}$@*)) where
   edges       : Finset (Sym2 (Fin n))
@@ -2375,9 +2371,8 @@ the closed reflection-layer computation
 \begin{lstlisting}
   sym2FlagDensity(*@$_2$@*)  Sym2Flag_2_1_0_0  Sym2Flag_2_1_0_1  Sym2Flag_3_1_0_1  =  1 / 2
 \end{lstlisting}
-The tactic \lean{decide +kernel} closes a decidable goal by evaluating it
-inside the kernel.  Here it runs the reflection-layer density computation above
-and closes the goal, so nothing outside the kernel is trusted.
+The tactic \lean{decide +kernel} closes this decidable goal by evaluating the
+reflection-layer density computation inside the kernel.
 
 The downward operator from \Cref{sec:formal-downward} follows the same
 reflection pattern.  The specification-level definition uses the abstract
@@ -2388,8 +2383,8 @@ downward normalizing factor \(q_\sigma(F)\), implemented as
 Lean enumerates the finite set of type embeddings that
 produce an equivalent flag, takes its cardinality, and divides by the total
 number \(n!/(n-k)!\) of injections of the \(k\) labels into the \(n\) vertices.
-The resulting computation is invariant under flag equivalence, so it can then
-be lifted through the \lean{Sym2Flag} quotient.
+Because the computation is invariant under flag equivalence, it lifts through
+the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
 def isoEmbeddingCount_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
@@ -2449,9 +2444,8 @@ on concrete $\sigma$-flags.  The
 reflection layer computes the underlying $\emptyset$-flag and its normalizing
 factor, and the adequacy theorem certifies their product as the abstract
 downward image.  By linearity, a finite linear combination of flag basis
-elements is handled term by term, so the downward identities needed in later
-flag-algebra proofs can be established by computation rather than by separate
-counting arguments.
+elements is handled term by term, allowing later downward identities to be
+established computationally rather than by separate counting arguments.
 
 \subsection{Elaboration-Time Generation of Flags and Theorems}
 \label{sec:reflection-generation}
@@ -2464,9 +2458,8 @@ the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
 \(q_\sigma(\fbarPthreebull)=2/3\), it performs the same two steps with
 \lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
 uniform: they prove the reflected evaluators correct for every possible input.
-What repeats in a concrete development is not the correctness argument, but
-its specialization to each concrete $\sigma$-flag and to each concrete density
-instance used by the later algebraic proof.
+Only their specialization to each concrete $\sigma$-flag and density instance
+used by the later algebraic proof is repeated.
 
 The generated flags are named by a fixed scheme, already visible in the
 constants of \Cref{sec:reflection-adequacy}.  A name such as
@@ -2484,8 +2477,8 @@ reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
 scheme, and the empty flag type is written \(k=m=0\).  Thus,
 \lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
 number \(1\) among the three-vertex flags of the unique one-vertex type,
-namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is the
-corresponding basis element of the flag algebra.
+namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is its
+flag-algebra basis element.
 
 We use Lean's metaprogramming facilities to automate this repetition.  They
 specialize the uniform adequacy theorems to concrete flags and to the required
@@ -2531,8 +2524,8 @@ label-preserving isomorphism, appears among the generated flags.  For the empty
 flag type, this means that every \(n\)-vertex graph is represented up to
 isomorphism; for a forbid-free enumeration, the same statement is restricted
 to the \(H\)-free flags.
-\Cref{tab:generation-commands} collects the whole command family, including
-the forbid-free variants described below.
+\Cref{tab:generation-commands} collects the command family, including the
+forbid-free variants below.
 
 \begin{table}
   \centering
@@ -2616,10 +2609,9 @@ provides the coefficients needed to express its density in terms of the
 
 \medskip
 \noindent\textbf{Optimizations.}
-The pipeline employs the following optimizations to reduce the computational
-cost of elaboration.  These optimizations do not eliminate the inherent
-combinatorial growth of flag enumeration and density computation, but they
-make the nontrivial examples considered in this paper feasible.
+The following optimizations reduce the computational cost of elaboration.
+They do not eliminate the inherent combinatorial growth of flag enumeration
+and density computation, but make this paper's nontrivial examples feasible.
 
 \begin{itemize}
 \item \textbf{Size-inductive enumeration.}
@@ -2696,8 +2688,8 @@ which expresses the desired asymptotic upper bound on the induced density of
 finite witness for this inequality: it specifies flags, rational matrices, and
 coefficients that purport to express the gap
 \(c\cdot\mathbf{1}-[F]\) as a sum of terms that are non-negative under the
-\(\mathcal H\)-free condition.  Flagmatic~\cite{vaughan2013flagmatic} uses
-semidefinite programming to search for such a witness.
+\(\mathcal H\)-free condition.  Flagmatic~\cite{vaughan2013flagmatic} searches
+for such witnesses by semidefinite programming.
 
 This section concerns certificate verification rather than certificate
 search.  Our compiler accepts a certificate produced by Flagmatic as untrusted
@@ -2754,7 +2746,7 @@ term.  We then show that
   K_2 + Q = \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree.
 \]
 Write $r:=\tfrac13\cdot\fbarPthree$ for the displayed remainder.  The
-non-negativity of $Q$ and $r$ then proves the desired bound.
+non-negativity of $Q$ and $r$ proves the bound.
 
 To construct $f$, take the two size-$2$ $\sigma$-flags $\fKtwobull$ and
 $\fbarKtwobull$.  We use these pictures directly in the algebraic calculation
@@ -2951,11 +2943,9 @@ parts are:
     their basis elements $e_{t,i}:=[E_{t,i}]$ and must prove that $M_t$ is
     positive semidefinite.
   \item \textbf{Lifting the target (when needed).}  If the target graph $F$
-    has fewer than $N$ vertices, where $N$ is the host size chosen up front to
-    bound the certificate search in \Cref{sec:flagmatic-background}, the proof
-    must first lift $[F]$ to the
-    host-size basis, dropping the contributions that contain a copy of the
-    forbidden graph.
+    has fewer vertices than the host size $N$ chosen to bound the certificate
+    search in \Cref{sec:flagmatic-background}, the proof must lift $[F]$ to the
+    host-size basis, dropping contributions that contain the forbidden graph.
   \item \textbf{Assembling the main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
     and the certificate's non-negative remainder~$r$, the proof must assemble
@@ -2977,9 +2967,8 @@ parts are:
     coefficients.
 \end{enumerate}
 
-The compiler handles each part with a small set of reusable proof-producing
-components.  Consequently, a new theorem primarily requires new certificate
-data rather than a new proof architecture.
+Reusable proof-producing components handle each part, so a new theorem
+primarily requires new certificate data rather than a new proof architecture.
 
 For the certificate shapes supported by the current implementation, this
 four-part process is exposed as a tactic.  A source file states the desired
@@ -3187,8 +3176,7 @@ and downward identities generated in Part~1.  The
 \lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf{1}$ in the same
 basis, dispatching on the forbidden graph exactly as
 \lean{flag\_expand\_hfree} does in Part~3.  Finally,
-the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects the coefficients of matching
-basis elements.
+the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects like basis terms.
 
 After these rewrites, the difference between the right- and left-hand sides is
 exactly the remainder $r$ from the certificate calculation.  The tactic
@@ -3258,7 +3246,7 @@ runtime.  Finally, the custom
 tactics are unverified metaprograms whose dependence on elaborated expression
 shapes affects robustness and portability.  They construct proof terms that
 Lean checks, so a tactic failure leaves the proof incomplete rather than
-establishing an invalid theorem.
+proving an invalid theorem.
 
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
@@ -3312,8 +3300,8 @@ all with~$8\times8$ matrices.  These certificates are Flagmatic's output as
 produced, with no attempt to minimize the number of blocks or the matrix
 dimensions; more compact certificates for the same bounds may exist, but the
 unoptimized output already compiles end to end.  Together, these examples
-exercise targets both
-at and below the host size, and increasingly large multi-block normalizations.
+exercise targets at and below the host size and increasingly large multi-block
+normalizations.
 
 The $C_5$-free edge-density case shows that the forbidden graph need not be
 complete; the generated file proves that graphs containing no $C_5$ subgraph
@@ -3408,7 +3396,7 @@ This inequality is formalized as \lean{Mantel\_flag\_bound}.  If a positive
 homomorphism $\phi$ represents a triangle-free limit, then
 $\phi([K_3])=0$, and evaluating the displayed inequality gives
 $\phi([K_2])\leq\tfrac12$.  This pointwise statement is recorded as
-\lean{Mantel\_flag\_bound'}, and the remaining argument proceeds from it.
+\lean{Mantel\_flag\_bound'} and drives the remaining argument.
 
 The matching lower bound comes from the balanced complete bipartite graph
 $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ and is formalized as
@@ -3683,8 +3671,8 @@ left-hand side involves a flag of type \lean{Flag $\sigma$ (Fin $m$)},
 whereas the flags on the right have type \lean{Flag $\sigma$ (Fin $n$)}.  A
 term of the first type cannot be used where Lean expects a term of the
 second, and an ordinary equality can only compare terms having the same
-type.  Thus, the identity is not merely hard to prove; as written, it is not
-a well-typed statement.
+type.  Thus, the identity is not merely hard to prove; it is ill-typed as
+written.
 
 The first formalization task is therefore to construct explicitly
 the common ambient space that paper mathematics leaves implicit.
@@ -3809,9 +3797,9 @@ equality of their vertex-type families and then use that equality to compare
 the tuples.  This type-alignment step has no counterpart on paper, where the
 two expressions simply denote the same reordered pair.
 
-The bridging lemma \lean{flagListDensity\_HEq\_eq} packages these
-requirements: if the two vertex-type families are equal and the two tuples
-agree after their types are aligned, then the two densities coincide.
+The bridging lemma \lean{flagListDensity\_HEq\_eq} packages these requirements:
+if the vertex-type families are equal and the tuples agree after alignment,
+then their densities coincide.
 \begin{lstlisting}
 theorem flagListDensity_HEq_eq {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
     {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
@@ -4035,8 +4023,8 @@ this ideal.  We therefore have a canonical quotient map
   \twoheadrightarrow
   \FlagAlg{\sigma}[\mathcal K]
 \]
-that sends every \(\sigma\)-flag outside \(\mathcal K\) to zero and every
-remaining \(\sigma\)-flag to its counterpart in the constrained algebra.
+that sends each \(\sigma\)-flag outside \(\mathcal K\) to zero and each
+remaining flag to its constrained counterpart.
 
 Let
 \[
@@ -4273,8 +4261,8 @@ existence of a suitable interior, not that every interior works.
 Every blow-up-closed hereditary graph class is root-plantable at every
 nonempty flag type that is non-degenerate for the class.  The empty flag type is
 root-plantable for every hereditary graph class, independently of blow-up
-closure.  Consequently, quotient and ensemble orders agree at every
-non-degenerate flag type in a blow-up-closed class.
+closure.  Consequently, the two orders agree at every non-degenerate flag type
+for any blow-up-closed class.
 \end{theorem}
 
 The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
@@ -4291,9 +4279,9 @@ The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
 uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
 corresponding fiber with probability bounded away from zero.  When a fixed
 finite \(\sigma\)-flag is sampled from the blow-up, its sampled vertices lie in distinct
-fibers with probability tending to one.  On this event, their adjacencies are
-determined by the corresponding vertices of \(G\), so the internal structure
-of the replacement graphs \(J_v\) does not affect the sampled \(\sigma\)-flag.
+fibers with probability tending to one.  On this event, the corresponding
+vertices of \(G\) determine their adjacencies, so the internal structure of the
+replacement graphs \(J_v\) does not affect the sample.
 
 These estimates connect the finite blow-up construction to the definition of
 \(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
@@ -4321,8 +4309,8 @@ Equation~\eqref{eq:S-subset-Q}.
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
 for \(r\geq3\), including triangle-free graphs.  Complete blow-ups, in which
-every \(J_v\) is a clique, cover, for example, graphs whose connected
-components are cliques.  Both are instances of
+every \(J_v\) is a clique, cover, for example, graphs whose components are
+cliques.  Both are instances of
 \Cref{thm:blowup-root-plantability-summary}.
 
 \boldparagraph{Why the criterion is nontrivial.}
@@ -4363,7 +4351,7 @@ Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be non-negative in the
 quotient semantics.
 The example exhibits a genuine gap between the two typed orders: quotient
 semantics permits a specially chosen vertex to carry the label, whereas
-ensemble semantics obtains the labeled vertex by uniform random sampling.
+ensemble semantics labels a uniformly sampled vertex.
 
 The gap does not invalidate the final unlabeled density bounds of this
 paper.  The
@@ -4377,9 +4365,8 @@ which is root-plantable for every hereditary class by
 (\lean{generalizedTuranDensity\_\allowbreak le\_\allowbreak of\_\allowbreak forbidLE},
 \Cref{sec:forbidden}) then turns these conclusions into classical
 statements about Tur\'an densities.  Root-plantability is therefore not a
-hypothesis of any of these results.  It concerns only the completeness of
-the intermediate typed calculus, whether typed ensemble reasoning proves
-exactly the typed inequalities of the constrained algebra.
+hypothesis of any of these results.  It concerns only whether the intermediate
+ensemble calculus proves exactly the constrained algebra's typed inequalities.
 
 \boldparagraph{Formalization and scope.}
 The Lean formalization of the meta-theory presented in this section is included
@@ -4415,9 +4402,8 @@ library had already fixed the representations and semantic interfaces and
 provided the ambient flag algebra, positive-homomorphism spaces, random
 extensions, the downward operator, and the density and representation
 theorems on which the meta-theory depends.  The generated meta-theory files
-could therefore focus on the new constrained layer, beginning with the
-forbidden ideal and constrained quotient, while reusing these established
-foundations.
+could therefore build the new constrained layer---the forbidden ideal and
+constrained quotient---on this foundation.
 
 The present section isolates the core meta-theoretic consequences of
 \lean{forbidLE}: quotient inequalities always imply ensemble inequalities,
@@ -4465,9 +4451,8 @@ removes inadmissible flags through the constrained algebra.  As
 precisely when the underlying hereditary class is root-plantable; in that
 case, the two semantics validate the same typed inequalities.  Even without
 root-plantability, every quotient inequality implies the corresponding
-ensemble inequality.  This one-way implication is sufficient for
-transferring the formal flag-algebra inequalities used here to the final
-unlabeled Tur\'an bounds.
+ensemble inequality.  This one-way implication is sufficient to transfer the
+flag-algebra inequalities formalized here to the final unlabeled Tur\'an bounds.
 
 These semantic results do not by themselves determine which design is
 preferable in a proof assistant.  Even when root-plantability ensures that the
@@ -4705,9 +4690,9 @@ it to prove the matching lower bounds for Mantel's theorem and the
 Erd\H{o}s pentagon theorem, as well as two inequalities of Goodman.  Finally,
 we summarized a separately developed mathematical meta-theory comparing the
 ensemble and quotient semantics.  Non-negativity in the quotient semantics
-always implies non-negativity in the ensemble semantics, while the converse
-holds for every typed expression exactly when the constrained class is
-root-plantable at that flag type.
+always implies non-negativity in the ensemble semantics, while the converse at
+a given flag type holds for all expressions exactly when the class is
+root-plantable there.
 
 We do not claim to have found the uniquely right way to formalize flag
 algebras.  Our aim has instead been to make the development's design choices
