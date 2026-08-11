@@ -84,6 +84,9 @@
 \newcommand{\poshom}[1]{\mathrm{Hom}^+(\mathcal{A}^{#1}, \mathbb{R})}
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+% Retain acmart's semantic paragraph-heading structure and spacing, but make
+% the run-in heading text more visible by setting it in upright bold.
+\newcommand{\boldparagraph}[1]{\paragraph{\textnormal{\textbf{#1}}}}
 % Allow line breaks after underscores in long Lean identifiers; without this
 % the narrower acmsmall measure produces overfull lines.  Robust so that
 % \lean can appear inside captions and other moving arguments.
@@ -453,7 +456,7 @@ route: our reusable certificate-to-proof compiler treats the toolchain and its
 output as untrusted, validates each certificate, and constructs a complete Lean
 proof.
 
-\paragraph{Flag algebras and their certificates.}
+\boldparagraph{Flag algebras and their certificates.}
 To see what such a bound and its certificate look like, consider a classical
 problem about finite simple graphs.\footnote{By a finite simple graph, we mean
 an undirected graph with a finite vertex set, no self-loops, and at most one
@@ -503,7 +506,7 @@ toolchain.  It must check these obligations automatically inside the proof
 assistant, without trusting the raw data or requiring thousands of handwritten
 proofs.
 
-\paragraph{A certificate-to-proof compiler.}
+\boldparagraph{A certificate-to-proof compiler.}
 To perform these checks at scale, we build a Lean~4~\cite{moura2021lean}
 development that formalizes the flag algebra method for finite simple graphs
 and implements a certificate-to-proof compiler.  The compiler turns candidate
@@ -533,7 +536,7 @@ compilation happens at elaboration time, inside Lean: the theorem
 statement is fixed in the source file, and the certificate enters only
 as untrusted hint data from which the proof is synthesized.
 
-\paragraph{Two semantics for forbidden subgraphs.}
+\boldparagraph{Two semantics for forbidden subgraphs.}
 The compiled bounds all concern graphs that avoid a forbidden subgraph.
 Razborov's development builds the constraint in from the start,
 constructing the flag algebra from $H$-free graphs only; we call this
@@ -552,7 +555,7 @@ when the constrained class is \emph{root-plantable} there.  We prove
 that blow-up closure guarantees root-plantability and give a $C_4$-free
 counterexample showing that heredity alone does not.
 
-\paragraph{Contributions.}
+\boldparagraph{Contributions.}
 \begin{itemize}
 \item \emph{A Lean~4 formalization of the flag algebra method} for
   finite simple graphs, and \emph{a certificate-to-proof compiler} built
@@ -572,7 +575,7 @@ The complete Lean development, including the certificate-to-proof compiler
 and the autoformalized meta-theory, is publicly available at
 \url{https://github.com/taeyool/lean-flag-algebras-release}.
 
-\paragraph{Organization.}
+\boldparagraph{Organization.}
 \Cref{sec:background} reviews the mathematical background of flag algebras
 and fixes the notation used throughout the paper.  \Cref{sec:abstract}
 presents the specification layer, including its semantic treatment of
@@ -598,7 +601,7 @@ following Razborov~\cite{razborov2007flag}, and establishes the notation used
 later in the paper.  No background in flag algebras or extremal graph theory
 is assumed.
 
-\paragraph{Notation.}
+\boldparagraph{Notation.}
 For a non-negative integer $n$, we write $[n]$ for the set of positive integers
 at most $n$.  We consider only undirected, finite, and simple graphs; for a
 graph $G$, its vertex and edge sets are denoted by $V(G)$ and $E(G)$.  We use
@@ -613,7 +616,7 @@ algebras defined below are relative to this fixed $\mathcal{H}$.
 \subsection{Flag Types and Flags}
 \label{sec:background-flags}
 
-\paragraph{Flag Types.}
+\boldparagraph{Flag Types.}
 A flag type specifies the labeled part shared by all flags of that flag type.
 Formally, a \emph{flag type} of size $k$ is an \(\mathcal{H}\)-free graph
 \(\sigma\) with vertex set $[k]$.  The \emph{empty flag type} $\emptyset$, of
@@ -621,7 +624,7 @@ size zero, is the unique graph on the empty vertex set.
 We use the term \emph{flag type} rather than Razborov's original \emph{type}
 to avoid confusion with Lean's type system in later sections.
 
-\paragraph{Flags.}
+\boldparagraph{Flags.}
 For a graph $G$ and a set $S\subseteq V(G)$, let $G[S]$ denote the
 \emph{induced subgraph} of $G$ on $S$: its vertex set is $S$, and its edges are
 exactly the edges of $G$ with both endpoints in $S$.
@@ -772,7 +775,7 @@ host flag when a third flag variable is needed.
 
 Let $\sigma$ be a flag type of size $k$.  
 
-\paragraph{Single-flag density.}
+\boldparagraph{Single-flag density.}
 For a $\sigma$-flag $F$ of size $m$
 (the pattern $\sigma$-flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
 (the host $\sigma$-flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
@@ -803,7 +806,7 @@ When $n < m$, we set $\den{F}{G} := 0$ by convention.
   \]
 \end{example}
 
-\paragraph{Chain rule.}
+\boldparagraph{Chain rule.}
 The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling an
 intermediate $\sigma$-flag $G'$ of some size $n'$ with $m \leq n' \leq n$ inside $G$ and
@@ -822,7 +825,7 @@ rule~\cite[Lemma~2.2]{razborov2007flag}.
   \]
 \end{lemma}
 
-\paragraph{Multi-flag density.}
+\boldparagraph{Multi-flag density.}
 For pattern $\sigma$-flags $F_1, \ldots, F_t$ of sizes $m_1, \ldots, m_t$ and
 a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $F_1, \ldots, F_t$
 \emph{fit} in $G$ if
@@ -911,7 +914,7 @@ We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
   \end{equation}
 \end{example}
 
-\paragraph{Multiplication.}
+\boldparagraph{Multiplication.}
 For $\sigma$-flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
 $F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
 $\ell \geq m_1 + m_2 - k$ and define
@@ -974,7 +977,7 @@ whose value under every positive homomorphism is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
 to do.
 
-\paragraph{Convergent sequences.}
+\boldparagraph{Convergent sequences.}
 Call a sequence $\{G_n\}_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{increasing} if
 $|V(G_1)| < |V(G_2)| < \cdots$.  Each host $\sigma$-flag $G$ defines a point
 $p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(F) := \den{F}{G}$.
@@ -982,7 +985,7 @@ An increasing sequence is \emph{convergent} if the sequence of points $p^{G_n}$
 converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
 equivalently, if $\lim_{n\to\infty}\den{F}{G_n}$ exists for every $\sigma$-flag $F$.
 
-\paragraph{Positive homomorphisms.}
+\boldparagraph{Positive homomorphisms.}
 A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is a map
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ that preserves addition,
@@ -1022,7 +1025,7 @@ $\sigma$-flags~\cite{razborov2007flag}.
   \end{enumerate}
 \end{theorem}
 
-\paragraph{Semantic non-negativity cone and order.}
+\boldparagraph{Semantic non-negativity cone and order.}
 For a fixed flag type $\sigma$, define the \emph{semantic non-negativity cone}
 \[
   \mathcal{C}^\sigma
@@ -1053,7 +1056,7 @@ because $\phi(f^2) = \phi(f)^2 \geq 0$ for every~$\phi \in \poshom{\sigma}$.
 And since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
 closed under addition and under multiplication by non-negative reals.
 
-\paragraph{From semantic non-negativity to Tur\'an density.}
+\boldparagraph{From semantic non-negativity to Tur\'an density.}
 For a finite simple graph $F$ and a finite collection $\mathcal{H}$ of finite
 simple graphs, write $\mathrm{ex}(n,\,F;\,\mathcal{H})$ for the maximum number
 of induced copies of $F$ in an $n$-vertex graph that contains no member of
@@ -1162,7 +1165,7 @@ the typed unit therefore gives
   q_\sigma(\mathbf{1}_\sigma)\,\langle\sigma\rangle_0.
 \]
 
-\paragraph{Random homomorphisms.}
+\boldparagraph{Random homomorphisms.}
 A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ records the limiting
 densities of unlabeled graphs along a convergent sequence of finite graphs.
 For a nonempty flag type $\sigma$, its random extension can be understood
@@ -3072,7 +3075,7 @@ to Lean's enumeration, printing the resulting identifier mapping and the
 Part~1 generation commands.  We now explain the synthesized proof one part
 at a time.
 
-\paragraph{Generating the flags and density data (Part~1).}
+\boldparagraph{Generating the flags and density data (Part~1).}
 This is where the reflection layer of \Cref{sec:reflection} enters the
 compiler, making the finite bookkeeping involving flags and densities
 executable and checkable.  Part~1 is the scaffolding that lives in the source
@@ -3109,7 +3112,7 @@ generator then combines the pair-density identities with the general
 multiplication theorem and the completeness lemma for the generated flag set
 to derive the required product expansions.
 
-\paragraph{Certifying the matrices (Part~2).}
+\boldparagraph{Certifying the matrices (Part~2).}
 With the flags and their rewrite theorems in place, Part~2 discharges the
 positive-semidefiniteness obligations.  For each SDP block, the certificate
 stores rational matrices $Q'_t$ and $R_t$ with
@@ -3149,7 +3152,7 @@ discussed in \Cref{sec:flagmatic-trust}.  In either case, a reconstructed
 matrix can contribute to the final theorem only if both its PSD proof and the
 subsequent algebraic calculation are accepted by Lean.
 
-\paragraph{Lifting the target (Part~3).}
+\boldparagraph{Lifting the target (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
 aligns the target with that data when necessary.  The certificate identities
 are expressed at the host size $N$, so when the target graph $F$ itself has
@@ -3186,7 +3189,7 @@ $H$-free condition then forces those flags' terms to vanish, which justifies
 expanding over exactly the flags Part~1 emitted.  From $N$ and $K$ alone, the
 tactic establishes this bridge itself.
 
-\paragraph{Assembling the main theorem (Part~4).}
+\boldparagraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the
 chain of inequalities from \Cref{sec:flagmatic-background}.  The certificate identity
 $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ supplies its middle equality, while the
@@ -3239,7 +3242,7 @@ the normalization and the final non-negativity check together verify the
 conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ and the last inequality
 $c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
 
-\paragraph{The checked artifact.}
+\boldparagraph{The checked artifact.}
 The certificate-specific assembly just described is performed by the tactic's
 elaboration-time code: it parses the target, bound, forbidden graph, host
 size, and SDP blocks; finds, for each compact graph string, the isomorphic
@@ -3373,7 +3376,7 @@ formalization (\Cref{sec:lowerbounds}), completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
 
-\paragraph{Limitations.}
+\boldparagraph{Limitations.}
 \label{sec:flagmatic-open}
 We point out three limitations of the current compiler.
 First, this evaluation establishes coverage of the seven cases above, not
@@ -3418,7 +3421,7 @@ the corresponding exact Tur\'an-density results.  Finally, two inequalities of
 Goodman show that the same framework supports flag-algebra arguments outside
 the certificate problems considered in \Cref{sec:flagmatic}.
 
-\paragraph{Mantel's theorem.}
+\boldparagraph{Mantel's theorem.}
 \Cref{ex:mantel} states $\tdensity{K_2}{K_3}=\tfrac12$.  The Lean development
 records it in four statements:
 \begin{lstlisting}
@@ -3478,7 +3481,7 @@ $\phi([K_2])\geq\tfrac12+\varepsilon$, contradicting
 $\tfrac12$, so the normalized extremal numbers converge to $\tfrac12$, which
 is the statement of \lean{Mantel\_Turan}.
 
-\paragraph{The Erd\H{o}s pentagon theorem.}
+\boldparagraph{The Erd\H{o}s pentagon theorem.}
 This example shows how an explicit construction and the passage from finite
 graphs to limiting densities complement a compiler-generated upper bound.
 The full result of \Cref{ex:pentagon},
@@ -3591,7 +3594,7 @@ as the witness.  Normalizing the finite bound above and passing to the limit
 along the graph sizes $5n$ then gives
 \lean{ErdosPentagon\_Turan\_lowerBound}.
 
-\paragraph{Direct Goodman inequalities.}
+\boldparagraph{Direct Goodman inequalities.}
 The final examples use the core flag-algebra infrastructure directly for two
 inequalities outside the Tur\'an-density certificate problems considered in
 \Cref{sec:flagmatic}.  Both are due to Goodman~\cite{goodman1959}.
@@ -4047,7 +4050,7 @@ beginning?  This led us to develop a separate mathematical meta-theory.
 This section gives the definitions and main results needed to state that answer;
 a forthcoming paper will present the full theory and its applications.
 
-\paragraph{The constrained positive-homomorphism space.}
+\boldparagraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let~\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
 \(\sigma\).  Here \emph{hereditary} means closed under taking induced
 subgraphs: if~\(G\in\mathcal K\) and \(S\subseteq V(G)\), then
@@ -4137,7 +4140,7 @@ zero sets of continuous evaluation maps.  We write
 \(Q_0:=Q_{\emptyset}\) for the corresponding space of constrained empty-type
 positive homomorphisms.
 
-\paragraph{Random extensions and the root-planting space.}
+\boldparagraph{Random extensions and the root-planting space.}
 Assume that \(\sigma\) is \emph{non-degenerate} for \(\mathcal K\): that is,
 there is some \(\phi_0\in Q_0\) for which
 \(\phi_0(\langle\sigma\rangle_0)>0\).  By Razborov's random-extension result
@@ -4294,7 +4297,7 @@ cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a co
 quotient proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
-\paragraph{When root-plantability holds.}
+\boldparagraph{When root-plantability holds.}
 The criterion in \Cref{thm:support-closure-summary} reduces semantic completeness to a structural problem about the
 graph class.  Our main positive result gives a broad answer.  Given
 \(G\in\mathcal K\), a vertex~\(v\in V(G)\), and a graph \(J\), write
@@ -4366,7 +4369,7 @@ every \(J_v\) is a clique, cover, for example, graphs whose connected
 components are cliques.  Both are instances of
 \Cref{thm:blowup-root-plantability-summary}.
 
-\paragraph{Why the criterion is nontrivial.}
+\boldparagraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
 class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
 let \(\sigma_1\) be the one-vertex type.
@@ -4422,7 +4425,7 @@ hypothesis of any of these results.  It concerns only the completeness of
 the intermediate typed calculus, whether typed ensemble reasoning proves
 exactly the typed inequalities of the constrained algebra.
 
-\paragraph{Formalization and scope.}
+\boldparagraph{Formalization and scope.}
 The Lean formalization of the meta-theory presented in this section is included
 in the public release of our flag-algebra development linked in
 \Cref{sec:intro}, under the module \lean{LeanFlagAlgebras.MetaTheory}.  The
@@ -4493,7 +4496,7 @@ scale.  For each question, we distinguish what the present development
 demonstrates from what would require alternative implementations or larger
 computations to determine.
 
-\paragraph{When should a forbidden-graph constraint enter the formalization?}
+\boldparagraph{When should a forbidden-graph constraint enter the formalization?}
 The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
 algebra independent of the forbidden graph and imposes the constraint later,
 when a semantic inequality is stated.  Razborov's universal-theory
@@ -4519,7 +4522,7 @@ incorporating it at the outset may streamline arguments specific to a fixed
 extremal problem.  Evaluating this tradeoff would require formalizing
 comparable certificate proofs under both designs.
 
-\paragraph{Which engineering obstacles are Lean-specific?}
+\boldparagraph{Which engineering obstacles are Lean-specific?}
 \Cref{sec:obstacles} includes both obligations common to quotient-based
 formalizations and difficulties tied more closely to Lean.  If flags are
 represented as isomorphism classes, a construction first defined on labeled
@@ -4539,7 +4542,7 @@ Agda, or Isabelle/HOL\@.  The underlying combinatorial identities and the
 well-definedness obligations created by quotient representations would remain,
 but their formal expression and proof cost could differ.
 
-\paragraph{Should specification and computation use separate representations?}
+\boldparagraph{Should specification and computation use separate representations?}
 Our development maintains two representations
 (\Cref{sec:abstract,sec:reflection}).  The specification layer uses
 quotients and definitions close to the mathematics, allowing the abstract
@@ -4559,7 +4562,7 @@ statements and proofs of the abstract theory.  We have not carried this
 alternative through comparable case studies, so we do not know which
 architecture minimizes the total proof and computation cost.
 
-\paragraph{Can the computational layer scale beyond five vertices?}
+\boldparagraph{Can the computational layer scale beyond five vertices?}
 Our seven end-to-end certificates (\Cref{sec:results}) expand their
 calculations over graphs on three, four, or five vertices.  At this scale,
 the optimized enumeration of \Cref{sec:reflection-generation}, size-inductive,
@@ -4595,7 +4598,7 @@ or how much of the gap such optimizations can close.
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Certificate checking and proof reconstruction.}
+\boldparagraph{Certificate checking and proof reconstruction.}
 Consuming the output of untrusted solvers without trusting them is a
 well-developed theme in verification.  For SAT, solvers emit clausal proofs
 that are validated by formally verified
@@ -4626,7 +4629,7 @@ quotient algebra, and forbidden-subgraph reasoning.  Second, we reconstruct
 proofs inside the object logic rather than compile a standalone verified
 checker.
 
-\paragraph{Proof by reflection in proof assistants.}
+\boldparagraph{Proof by reflection in proof assistants.}
 Proof by reflection is a classical technique in the Rocq community; Chlipala
 gives an extended treatment~\cite{chlipala2013cpdt}, and Lean supports
 verified computation through tactics such as \lean{decide} and
@@ -4637,7 +4640,7 @@ alongside their abstract counterparts in Rocq.  Our
 the same philosophy, adapted to Lean~4's type-class and instance-search
 mechanism.
 
-\paragraph{Metaprogramming and elaboration-time generation.}
+\boldparagraph{Metaprogramming and elaboration-time generation.}
 Our generation commands and custom tactics are built on Lean~4's
 metaprogramming framework~\cite{moura2021lean}, which exposes the elaborator
 to user code in the tradition of the Lean~3 framework of Ebner et
@@ -4649,7 +4652,7 @@ proof, and they encode enough metadata in the generated names that later
 tactics can retrieve exactly the lemmas a certificate step needs
 (\Cref{sec:reflection-generation}).
 
-\paragraph{Proof engineering at scale.}
+\boldparagraph{Proof engineering at scale.}
 Sustaining large mechanized developments raises engineering questions that
 are increasingly documented in their own right, from the survey of Ringer et
 al.~\cite{ringer2019qed} to the retrospective on Project
@@ -4660,7 +4663,7 @@ dominant costs (computing with quotients, comparing objects up to
 isomorphism, and controlling finite enumerations) differ from those of
 program verification.
 
-\paragraph{Formalizations of combinatorics.}
+\boldparagraph{Formalizations of combinatorics.}
 Substantial combinatorial arguments have already been formalized in Lean.
 Dillies and Mehta formalized Szemer\'edi's regularity lemma and the
 qualitative form of Roth's theorem~\cite{dillies2022szemeredi}, and Mehta
@@ -4674,7 +4677,7 @@ both at once: it combines quotient and measure-theoretic semantics with
 thousands of exact finite-density computations and an externally computed
 semidefinite certificate.
 
-\paragraph{Computer-assisted flag algebra arguments.}
+\boldparagraph{Computer-assisted flag algebra arguments.}
 The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
 of exact and approximate flag-algebra bounds, but it does not produce
 proof-assistant proof terms; Razborov's survey~\cite{razborov2013flag}
@@ -4683,7 +4686,7 @@ proof-producing reconstruction stage: certificate data proposes a
 calculation, while Lean verifies the finite identities, the
 positive-semidefinite matrices, and the final combinatorial statement.
 
-\paragraph{Concurrent formalizations of flag algebras.}
+\boldparagraph{Concurrent formalizations of flag algebras.}
 Concurrently with and independently of our work, Davey, Hurley, de Joannis
 de Verclos, Kang, and Volec formalized in Lean~4 the theory of \emph{local
 flag algebras} introduced in their accompanying paper~\cite{davey2026local}
@@ -4711,7 +4714,7 @@ ongoing work on the Lean formalization of the flag algebras, which focuses
 on carrying out flag-algebra inequality proofs fully and automatically
 inside Lean, without relying on an external tool or solver.
 
-\paragraph{Graph limits and Tur\'an densities.}
+\boldparagraph{Graph limits and Tur\'an densities.}
 The mathematical foundation of flag algebras (convergent graph sequences,
 positive homomorphisms, the graphon limit) is developed in depth by
 Lov\'asz and Szegedy and by Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.
