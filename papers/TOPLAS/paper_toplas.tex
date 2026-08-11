@@ -2020,32 +2020,23 @@ formalization is their computable counterpart.
 \label{sec:reflection-concrete}
 
 The finite coefficients in a flag-algebra proof come from concrete counting
-problems.  For example, suppose \(F\) and \(G\) are \(\emptyset\)-flags.  To
-compute the density \(\den{F}{G}\), one can conceptually enumerate all
-\(|V(F)|\)-vertex subsets of \(G\), regard their induced graphs as
-\(\emptyset\)-flags, test which of them are isomorphic to \(F\), count the
-successful ones, and divide by
-\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-flag density, the same experiment
-keeps the labeled vertices fixed and chooses only the additional unlabeled
-vertices.  The downward normalizing factor \(q_\sigma(F)\) is a similar finite
-count, but of label placements rather than subflags.
+problems.  Computing a density \(\den{F}{G}\) means carrying out the sampling
+experiment of \Cref{sec:background-densities}: enumerate the candidate vertex
+subsets of the host \(G\), test which of them induce a copy of the pattern
+\(F\), and divide by the number of choices.  The downward normalizing factor
+\(q_\sigma(F)\) is a similar finite count, but of label placements rather than
+subflags.
 
-Thus, an executable flag-algebra development needs two basic ingredients.  It
-must be able to enumerate the finite objects being counted, such as candidate
-induced subflags, and it must be able to decide yes/no questions, such
-as whether two flags are isomorphic.  In Lean, these ingredients are usually
-provided by typeclass instances.  A \lean{Fintype} instance gives Lean an
-explicit finite collection containing every element of a type; a
-\lean{Decidable} instance gives a procedure for deciding a proposition.  With
-these instances, a definition that says ``count all objects satisfying this
-predicate'' can be evaluated by iterating over the finite collection and
-filtering with the decision procedure.
+An executable flag-algebra development therefore needs two basic ingredients: a
+way to enumerate the finite objects being counted, such as candidate induced
+subflags, and a way to decide yes/no questions, such as whether two flags are
+isomorphic.  In Lean these are the \lean{Fintype} and \lean{Decidable}
+typeclasses, and together they make a definition that counts the objects
+satisfying a predicate executable.
 
 The specification layer of \Cref{sec:abstract}, however, is not designed
-around producing such executable \lean{Fintype} and \lean{Decidable} instances.
-Its starting point is Mathlib's graph type \lean{SimpleGraph V}, where
-\lean{V} is the type whose elements are the vertices of the graph and the
-adjacency relation \lean{Adj} takes two vertices and returns a proposition:
+around producing such executable instances.  Its starting point is Mathlib's graph type
+\lean{SimpleGraph V}, whose adjacency relation returns a proposition:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
   Adj      : V -> (*@$\,$@*) V -> (*@$\,$@*) Prop
@@ -2053,21 +2044,19 @@ structure SimpleGraph (V : Type*) where
   loopless : Irreflexive Adj
 \end{lstlisting}
 This works well for the mathematical specification, but it is too general to be
-the data structure of the evaluator.  The vertex type \lean{V} need not come
-with an algorithm for enumerating its vertices, and the relation~\lean{Adj} need
-not come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
-\lean{Flag}s are built on top of this graph type, they inherit the same
-generality.  Even if the specification layer knows that, for each size, there are
-only finitely many flags up to isomorphism, this does not by itself provide the
-computational choices needed by the evaluator: a concrete enumeration of
-representatives and a Boolean procedure for comparing them up to isomorphism.
+the data structure of the evaluator: the vertex type \lean{V} need not come with
+an algorithm for enumerating its vertices, and \lean{Adj} need not come with a
+Boolean decision procedure.  \lean{LabeledGraph}s and \lean{Flag}s, built on top
+of this graph type, inherit the same generality; knowing that only finitely many
+flags of each size exist up to isomorphism supplies neither ingredient.
 
 The reflection layer therefore does not use \lean{SimpleGraph} directly as the
 evaluator's representation.  Instead, it introduces a family of more rigid
 edge-set representations: an \(n\)-vertex graph has vertex type \lean{Fin n},
-and its edge set is stored as \lean{Finset (Sym2 (Fin n))}, a finite set of
-unordered pairs of vertices.  This representation is packaged as
-\lean{Sym2Graph} and reused to define the concrete flag type
+whose vertices \(0,1,\ldots,n-1\) Lean can enumerate, and its edge set is stored
+as \lean{Finset (Sym2 (Fin n))}, an explicit finite set of unordered pairs
+against which adjacency is a membership test.  This representation is packaged
+as \lean{Sym2Graph} and reused to define the concrete flag type
 \lean{Sym2FlagType} and labeled graph \lean{Sym2LabeledGraph}.
 \begin{lstlisting}
 structure Sym2Graph (n : (*@$\mathbb{N}$@*)) where
@@ -2081,60 +2070,44 @@ structure Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagTy
   edges_valid : forall e in edges, (*@$\neg$@*) e.IsDiag
   type_embed  : fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges) (*@$\hookrightarrow$@*)g fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
-The expression \lean{SetLike.coe edges} is the coercion that views the
-finite edge set \lean{edges : Finset (Sym2 (Fin n))} as an ordinary set of
-unordered pairs.  This coercion is needed because Mathlib's constructor
-\lean{fromEdgeSet} builds an abstract \lean{SimpleGraph} from a set of
-unordered vertex pairs, not from a \lean{Finset}.  Thus,
-\lean{fromEdgeSet (SetLike.coe edges)} is the abstract graph decoded from the
-concrete edge data.  The field \lean{type\_embed} then says that the graph
-decoded from \(\sigma\)'s edge set embeds into the graph decoded from the field
-\lean{edges}.  In other words, the concrete
-\lean{Finset}-based representation still carries the usual flag-labeling map
-used by the specification layer.
-
-In this concrete definition, unlike in a general \lean{SimpleGraph}, Lean can
-enumerate all vertices of the type \lean{Fin n}, namely \(0,1,\ldots,n-1\).
-It can also check whether two vertices \(u\) and \(v\) are adjacent by testing
-whether the unordered pair \(\{u,v\}\) belongs to the explicit finite edge set
-\lean{edges}.
+Mathlib's constructor \lean{fromEdgeSet} builds an abstract \lean{SimpleGraph}
+from a set of unordered pairs, and \lean{SetLike.coe} presents the edge
+\lean{Finset} as such a set, so \lean{fromEdgeSet (SetLike.coe edges)} is the abstract graph decoded
+from the concrete edge data.  Between the two decoded graphs, the field
+\lean{type\_embed} carries the same embedding \(\theta_F\) as the
+\lean{LabeledGraph} of \Cref{sec:flagtypes}.
 
 These basic choices then scale to the finite searches used by the evaluator.
-For example, to compute a density \(\den{F}{G}\),
-the evaluator must range over possible placements of \(F\)
-inside the host \(G\).  Such a placement first chooses a finite set of vertices
-of \(G\) that contains all labeled vertices; this set then determines an
-induced subflag of \(G\), which can be tested for isomorphism with \(F\).
-The following \lean{Fintype} instance provides the enumeration used to range
-over these possible placements:
+To compute a density \(\den{F}{G}\) it must range over the placements of the
+pattern \(F\) inside the host \(G\), each of which chooses a vertex set of
+\(G\) containing all labeled vertices and thereby determines an induced subflag
+to be tested against \(F\).  The following \lean{Fintype} instance enumerates
+those placements:
 \begin{lstlisting}
-structure Sym2InducedLabeledSubgraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
-    (G : Sym2LabeledGraph (*@$\sigma$@*) n) where
+variable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+
+structure Sym2InducedLabeledSubgraph (G : Sym2LabeledGraph (*@$\sigma$@*) n) where
   verts : Finset (Fin n)
-  -- G.type_verts is the image of G.type_embed: the labeled vertices of G.
   verts_subset : G.type_verts (*@$\subseteq$@*) verts
 
-def Sym2InducedLabeledSubgraph.edges {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
-    {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
-    : Finset (Sym2 (Fin n)) :=
+def Sym2InducedLabeledSubgraph.edges {G : Sym2LabeledGraph (*@$\sigma$@*) n}
+    (H : Sym2InducedLabeledSubgraph G) : Finset (Sym2 (Fin n)) :=
   G.edges.filter (fun (e : Sym2 (Fin n)) =>
     forall (v : Fin n), v (*@$\in$@*) e -> (*@$\,$@*) v (*@$\in$@*) H.verts)
 
-instance {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G : Sym2LabeledGraph (*@$\sigma$@*) n)
-    : Fintype (Sym2InducedLabeledSubgraph G) where
-  -- This Finset.univ enumerates all vertex subsets V : Finset (Fin n).
+instance (G : Sym2LabeledGraph (*@$\sigma$@*) n) : Fintype (Sym2InducedLabeledSubgraph G) where
   elems := (Finset.univ : Finset (Finset (Fin n))).filterMap
     (fun (V : Finset (Fin n)) =>
       if hV : G.type_verts (*@$\subseteq$@*) V
       then some ({ verts := V, verts_subset := hV } : Sym2InducedLabeledSubgraph G)
       else none)
     (by ...)
-  -- complete proves that every H : Sym2InducedLabeledSubgraph G appears in elems.
   complete := fun (H : Sym2InducedLabeledSubgraph G) => ...
 \end{lstlisting}
 The type \lean{Sym2InducedLabeledSubgraph G} represents induced subflags
 of \(G\): it stores the chosen vertex set together with a proof that this set
-includes the labeled vertices.  Its edge set is then computed by filtering
+includes \lean{G.type\_verts}, the image of the type embedding.  Its edge set
+is then computed by filtering
 \(G\)'s explicit edge set to the edges whose endpoints both lie in the
 chosen vertex set.  The \lean{Fintype (Sym2InducedLabeledSubgraph G)} instance
 provides an enumeration of all induced subflags of \(G\).  Concretely,
@@ -2144,44 +2117,28 @@ them.  Here the
 enumeration is deliberately simple: since the vertices of \(G\) are
 \lean{Fin n}, Lean enumerates all subsets of \(\{0,\ldots,n-1\}\), keeps
 exactly those containing \lean{G.type\_verts}, and stores the retained subset
-with the proof of containment.  Each retained subset is then viewed as an
-induced subflag by using \(G\) to compute the corresponding induced edge set.
-Thus, the subset enumeration becomes a finite list of candidates
-\(H : \lean{Sym2InducedLabeledSubgraph G}\), which is the search space for the
-density calculation.  To compute the numerator of \(\den{F}{G}\), we still need
-to recognize which of these candidates are isomorphic to the pattern \(F\).
-This is the second basic ingredient: a decidable predicate on candidates which,
-given \(H\), decides whether the labeled graph associated to \(H\) is
-isomorphic to~\(F\), with the type labels respected.
+with the proof of containment.
+What remains is the second basic ingredient: a decidable predicate that, given
+a candidate \(H\), decides whether its labeled graph is isomorphic to the
+pattern \(F\) with the type labels respected.
 
-The schematic predicate \lean{candidateMatches F H} below isolates this test.
-It is a one-pattern presentation of the isomorphism check that appears inside
-the implementation's tuple-level predicate \lean{predIsoSym2LabeledHl}.  It
-turns the induced subgraph \(H\) into its associated labeled graph and asks
-whether the result is isomorphic to \(F\), with the type labels respected.  As
-stated, \lean{candidateMatches F H} is a proposition, not a program.  The
-reflection step is to show Lean how to decide it from the concrete
-data stored in \(F\), \(G\), and~\(H\).  The following small instance displays
-the mechanism used in the implementation: expose the finite vertex set of the
-candidate, read adjacency from explicit edge membership, reject candidates of
-the wrong size, and then invoke the finite isomorphism search.
+The definitions below isolate this test at a single pattern.  They are written
+for exposition: our Lean development states the same condition for tuples of
+patterns, as \lean{predIsoSym2LabeledHl}, and decides it the same way.  As
+stated, \lean{candidateMatches F H} is a proposition, not a program; the
+reflection step is the instance that shows Lean how to decide it from the
+concrete edge data.
 \begin{lstlisting}
-/-- Schematic one-pattern helper: H is isomorphic to the concrete pattern F. -/
-def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
-    : Prop :=
+def candidateMatches (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n}
+    (H : Sym2InducedLabeledSubgraph G) : Prop :=
   Nonempty (H.toLabeledSubgraph.coe (*@$\simeq$@*)f F.toLabeledGraph)
 
-/-- The finite edge-set representation turns the predicate into executable code. -/
-instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+instance candidateMatchesDecidable
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     : DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H) :=
   fun H => by
-    -- the vertex set of H is finite
     have : Fintype H.toLabeledSubgraph.subgraph.verts := by ...
-    -- adjacency in H is decidable
     have : DecidableRel H.toLabeledSubgraph.coe.graph.Adj := by ...
-    -- adjacency in F is decidable
     have : DecidableRel F.toLabeledGraph.graph.Adj := by ...
     exact if hsize : H.verts.card = m then
       (by
@@ -2190,79 +2147,49 @@ instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) 
     else
       isFalse (fun hIso => hsize (verts_card_of_coe_iso H F hIso))
 
-/-- A one-pattern illustrative version of the reflection-layer density computation. -/
-def sym2LabeledGraphDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
+def sym2LabeledGraphDensity(*@$_1$@*) (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     [DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H)]
     : (*@$\mathbb{Q}$@*) :=
   ((Finset.univ : Finset (Sym2InducedLabeledSubgraph G)).filter
     (fun H => candidateMatches F H)).card / Nat.choose (n - k) (m - k)
 \end{lstlisting}
-The body of \lean{candidateMatches} decodes both sides before comparing them.
-The pattern is decoded by \lean{F.toLabeledGraph}, which reads \(F\)'s edge
-\lean{Finset} through \lean{fromEdgeSet} and keeps the type embedding, giving
-the abstract \lean{LabeledGraph} of \Cref{sec:flagtypes}.  The candidate is
-decoded in two steps.  First, \lean{H.toLabeledSubgraph} is the labeled
-subgraph of \lean{G.toLabeledGraph} whose vertices are \lean{H.verts} and whose
-edges are the induced ones computed above.  Second, \lean{.coe} views that
-subgraph as a labeled graph in its own right, on the vertex type
-\lean{H.verts}, forgetting that it sits inside \(G\).  The two decoded labeled
-graphs are then compared with the isomorphism type \(\simeq_f\) of
-\Cref{sec:flagtypes}, and \lean{Nonempty} turns it into the proposition that
-some such isomorphism exists.
+The body of \lean{candidateMatches} compares two abstract \lean{LabeledGraph}s,
+each decoded from its concrete representation.
+\lean{F.toLabeledGraph} decodes the pattern as above, and the candidate is
+decoded in two steps: \lean{H.toLabeledSubgraph} is the labeled subgraph of
+\lean{G.toLabeledGraph} on the vertices \lean{H.verts}, and \lean{.coe} views
+that subgraph as a labeled graph in its own right, forgetting that it sits
+inside \(G\).  The two are then compared with the isomorphism type
+\(\simeq_f\) of \Cref{sec:flagtypes}, and \lean{Nonempty} asserts that such an
+isomorphism exists.
 
 The proof of the instance is the computational heart of the example.  After the
 local \lean{Fintype} and \lean{DecidableRel} instances have been assembled, the
-\lean{hsize} branch reaches the \lean{infer\_instance} line; this is the
-generic inference step.  It asks typeclass search to decide the
-\lean{Nonempty} proposition in the definition of \lean{candidateMatches}, which
-says that such an isomorphism exists.  The generic decidability instance does
-this by enumerating finitely many graph isomorphisms and checking the
-type-preservation condition.
-The schematic predicate \lean{candidateMatches~F~H} has therefore been reduced
-to a finite search.  The \lean{hsize} branch is not conceptually necessary for the
-definition, but it matches the implementation's computation-oriented proof: a
-candidate whose vertex set has the wrong cardinality cannot be isomorphic to
-\(F\), so it is rejected before the isomorphism search is run.
+\lean{hsize} branch reaches \lean{infer\_instance}, which asks typeclass search
+to decide that \lean{Nonempty} proposition; the generic instance does so by
+enumerating finitely many graph isomorphisms and checking the type-preservation
+condition.  The predicate has therefore been reduced to a finite search.  The
+\lean{hsize} branch itself is not needed for that, but it reproduces the
+implementation's prefilter: a candidate whose vertex set has the wrong
+cardinality cannot be isomorphic to \(F\), so it is rejected before the
+isomorphism search runs.
 
-Once the matching predicate is decidable, the density computation is ordinary
-finite evaluation.  The illustrative definition
-\lean{sym2LabeledGraphDensity}$_1$
-enumerates all candidates \(H : \lean{Sym2InducedLabeledSubgraph G}\), filters
-them by \lean{candidateMatches F H}, counts the survivors, and divides by the
-number of ways to choose the non-type vertices.  The same pattern is used for
-the multi-argument density \(\den{F_1,\ldots,F_t}{G}\) formalized in
-\Cref{sec:formal-subflag-densities}.  There the numerator counts tuples of
-induced subgraphs that realize \(F_1,\ldots,F_t\) inside \(G\), with the
-chosen non-type vertices pairwise disjoint.  The actual predicate
-\lean{predIsoSym2LabeledHl} in our Lean formalization is the computable version of this
-condition for tuples.  Given the tuple of patterns \lean{Hl}
-and a tuple of candidate induced subgraphs \lean{Gl}, it checks, for every
-\lean{i : Fin t}, that \lean{Gl i} matches the corresponding pattern
-\lean{Hl i}, using the same decidable matching test as above, and that the
-candidates are disjoint away from the shared type vertices.  Our
-computable implementation of \(\den{F_1,\ldots,F_t}{G}\) uses this
-predicate to filter the finite set of candidate tuples, and then counts the
-surviving tuples.  In particular, the computable counterparts
-of the specification-level densities \(\mathtt{flagDensity}_1\) and
-\(\mathtt{flagDensity}_2\) are:
-\begin{lstlisting}
-def sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
-
-def sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
-    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
-\end{lstlisting}
-The arguments here are of type \lean{Sym2Flag}, the reflection-layer counterpart
-of \lean{Flag} obtained by quotienting \lean{Sym2LabeledGraph} by concrete
-isomorphism; \Cref{sec:reflection-adequacy} constructs it.
-Note that unlike the specification-level density functions, these definitions do not
-carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
-evaluating them.  But computability alone does not say that they implement the
-density functions from the specification layer.  The correspondence between
-this implementation and our noncomputable specification of
-\(\den{F_1,\ldots,F_t}{G}\) is established by the adequacy theorems explained
-in the next subsection.
+Once the matching predicate is decidable, the density is ordinary finite
+evaluation: \lean{sym2LabeledGraphDensity}$_1$ filters the candidates by it,
+counts the survivors, and divides by the number of ways to choose the non-type
+vertices.  The multi-flag density \(\den{F_1,\ldots,F_t}{G}\) of
+\Cref{sec:formal-subflag-densities} follows the same pattern, with the
+tuple-level predicate additionally requiring the chosen non-type vertices to be
+pairwise disjoint.  In particular, the computable counterparts of
+\(\mathtt{flagDensity}_1\) and \(\mathtt{flagDensity}_2\) are
+\lean{sym2FlagDensity}$_1$ and \lean{sym2FlagDensity}$_2$, whose arguments have
+type \lean{Sym2Flag}, the reflection-layer counterpart of \lean{Flag}
+constructed in \Cref{sec:reflection-adequacy}.  Unlike the specification-level
+density functions, these definitions do not carry the \lean{noncomputable}
+keyword: Lean has an executable algorithm for evaluating them.  But
+computability alone does not say that they implement the density functions from
+the specification layer.  That correspondence is established by the adequacy
+theorems of the next subsection.
 
 \subsection{Adequacy Theorems for Reflection}
 \label{sec:reflection-adequacy}
@@ -2272,15 +2199,16 @@ isomorphism.
 The reflection layer repeats the same construction for the concrete graph
 representation from \Cref{sec:reflection-concrete}:
 \begin{lstlisting}
-def sym2LabeledGraphEqv {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) 
-    : Prop := ...
+variable {k m m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
 
-instance sym2LabeledGraphSetoid {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) 
+def sym2LabeledGraphEqv (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) : Prop := ...
+
+instance sym2LabeledGraphSetoid ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*))
     : Setoid (Sym2LabeledGraph (*@$\sigma$@*) n) where
   r     := sym2LabeledGraphEqv
   iseqv := ... -- reflexivity, symmetry, and transitivity of r
 
-def Sym2Flag {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
+def Sym2Flag ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
   Quotient (sym2LabeledGraphSetoid (*@$\sigma$@*) n)
 \end{lstlisting}
 The omitted definition of \lean{sym2LabeledGraphEqv} is standard, and says
@@ -2298,7 +2226,7 @@ stated in the
 specification layer, we need an explicit map from the latter representation to
 the former.  We call this map \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
-def Sym2Flag.toFlag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (G : Sym2Flag (*@$\sigma$@*) n) 
+def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n)
     : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
   Quotient.lift
     (fun G : Sym2LabeledGraph (*@$\sigma$@*) n => (*@$\llbracket$@*)G.toLabeledGraph(*@$\rrbracket$@*))
@@ -2320,11 +2248,10 @@ of \lean{flagDensity$_1$} and \lean{flagDensity$_2$}
 after we decode \lean{Sym2Flag}s back to ordinary
 \lean{Flag}s using \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
-theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n)
+theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*) (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
 
-theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
+theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
@@ -2376,17 +2303,14 @@ number \(n!/(n-k)!\) of injections of the \(k\) labels into the \(n\) vertices.
 Because the computation is invariant under flag equivalence, it lifts through
 the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
-def isoEmbeddingCount_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
-    (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
+def isoEmbeddingCount_sym2LabeledGraph (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
   (isoSym2TypeEmbeddingSetWithSameGraph G).card
 
-def downwardNormalizingFactor_sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
-    (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
+def downwardNormalizingFactor_sym2LabeledGraph (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - k).factorial
   isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
 
-def downwardNormalizingFactor_Sym2Flag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
+def downwardNormalizingFactor_Sym2Flag (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G => downwardNormalizingFactor_sym2LabeledGraph G)
     ... -- proof that downwardNormalizingFactor_sym2LabeledGraph respects the equivalence relation
@@ -2408,7 +2332,7 @@ the same value.
 We then prove that the specification-level and executable implementations of
 the downward normalizing factor agree.
 \begin{lstlisting}
-theorem downwardNormalizingFactor_eq {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (F : Sym2Flag (*@$\sigma$@*) n)
+theorem downwardNormalizingFactor_eq (F : Sym2Flag (*@$\sigma$@*) n)
     : downwardNormalizingFactor F.toFlag = downwardNormalizingFactor_Sym2Flag F := ...
 \end{lstlisting}
 After decoding a concrete \lean{Sym2Flag} back to an abstract \lean{Flag}, this
