@@ -454,52 +454,54 @@ output as untrusted, validates each certificate, and constructs a complete Lean
 proof.
 
 \paragraph{Flag algebras and their certificates.}
-Many central questions of extremal graph theory concern finite simple
-graphs.\footnote{By a finite simple graph we mean an undirected graph
-with a finite vertex set, no self-loops, and at most one edge between any two
-distinct vertices.  Formally, it is a pair $G=(V,E)$, where $V$ is finite and
-$E\subseteq\binom{V}{2}$; here $\binom{V}{2}$ denotes the set of two-element
-subsets of $V$.  We write $V(G)$ and $E(G)$ for the vertex set $V$ and the edge
-set $E$, respectively.}  Such questions ask how often one pattern can occur when
-another is forbidden.  A basic example is Mantel's theorem~\cite{mantel}, which
-states precisely that
+To see what such a bound and its certificate look like, consider a classical
+problem about finite simple graphs.\footnote{By a finite simple graph, we mean
+an undirected graph with a finite vertex set, no self-loops, and at most one
+edge between any two distinct vertices.  Formally, it is a pair $G=(V,E)$,
+where $V$ is finite and $E\subseteq\binom{V}{2}$; here $\binom{V}{2}$ denotes
+the set of two-element subsets of $V$.  We write $V(G)$ and $E(G)$ for the
+vertex set $V$ and the edge set $E$, respectively.}  What is the largest
+possible fraction of vertex pairs that can be edges if the graph contains no
+triangle?  As the number of vertices grows, Mantel's theorem gives the exact
+answer~\cite{mantel}:
 \[
   \lim_{n\to\infty}
   \max_{\substack{|V(G)|=n\\G\text{ triangle-free}}}
   \frac{|E(G)|}{\binom{n}{2}}
   = \frac{1}{2}.
 \]
-The limit on the left is the Tur\'an density of edges in triangle-free graphs.
-The equality combines two bounds of different character.  The lower bound
-comes from a concrete family known as the balanced complete bipartite graphs.
-For present purposes, only the existence of this family matters, not its
-construction.  Proving the matching upper bound is more difficult because it
-must control all triangle-free graphs as their size grows, rather than exhibit
-a single family.
+The expression on the left is the Tur\'an density of edges in triangle-free
+graphs.  The two directions of the equality have very different proof burdens.
+For the lower bound, one explicit construction suffices: balanced complete
+bipartite graphs contain no triangles and have edge densities approaching
+$1/2$.  The details of the construction are unimportant here; its role is
+simply to witness that $1/2$ is attainable in the limit.  The upper bound is
+the universal part: it must show that no family of increasingly large
+triangle-free graphs can asymptotically exceed $1/2$.  This universal claim is
+the part established by the flag-algebra certificate.
 
-Flag algebras address this difficulty through the finite algebraic reduction
-outlined above.  They use small, partially labeled graphs, called
-\emph{flags}, to encode the local configurations that enter the calculation.
-A \emph{candidate certificate} selects finitely many flags, supplies matrices
-whose entries are rational numbers, and gives rational-number coefficients that
-weight the corresponding algebraic terms.  The certificate claims that these
-data satisfy specified algebraic identities and that the matrices are positive
-semidefinite.  The flag-algebra theory guarantees that checking these finite
-claims establishes the desired asymptotic upper bound over the full class of
-graphs.
+Flag algebras make such a certificate possible by reducing the universal claim
+to a finite algebraic calculation over small, partially labeled graphs, called
+\emph{flags}, that encode the relevant local configurations.  A
+\emph{candidate certificate} selects finitely many flags, supplies matrices
+with rational entries, and gives rational coefficients that weight the
+resulting algebraic terms.  It asserts that these data satisfy specified
+algebraic identities and that the matrices are positive semidefinite.  Once
+these finite claims are verified, flag-algebra theory lifts them to the desired
+asymptotic upper bound for every graph in the class under consideration.
 
-The raw certificates, however, cannot themselves serve as trusted proof
-artifacts.  A nontrivial certificate combines many flags, so validating it
-requires large tables of exact counting results for finite graphs.  Each table
-entry is a rational number recording the fraction of suitable vertex selections
-in one small, partially labeled graph that induce another specified pattern.
-The certificate behind the Erd\H{o}s pentagon theorem depends on thousands of
-such entries, together with matrices that must be proved positive semidefinite
-using exact rational arithmetic.  These obligations are far beyond what a human
-referee can audit, and the candidate data come from a large, unverified numerical
-toolchain.  A formal development should therefore check these obligations
-automatically, without trusting the raw data or requiring thousands of
-individually written proofs.
+Finite, however, does not mean small or readily auditable.  A nontrivial
+certificate combines many flags and depends on large tables of exact counting
+results for finite graphs.  Each table entry is a rational number recording the
+fraction of suitable vertex selections in one small, partially labeled graph
+that induce another specified pattern.  For the Erd\H{o}s pentagon theorem,
+these tables contain thousands of entries; the certificate also includes
+matrices whose positive semidefiniteness must be established using exact
+rational arithmetic.  This scale is beyond realistic human audit, and a formal
+development cannot simply trust data produced by a large, unverified numerical
+toolchain.  It must check these obligations automatically inside the proof
+assistant, without trusting the raw data or requiring thousands of handwritten
+proofs.
 
 \paragraph{A certificate-to-proof compiler.}
 To perform these checks at scale, we build a Lean~4~\cite{moura2021lean}
