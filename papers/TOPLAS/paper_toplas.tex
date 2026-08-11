@@ -548,16 +548,15 @@ all finite graphs and impose $H$-freeness only when interpreting an inequality;
 we call this alternative the \emph{ensemble semantics}.  This design simplifies
 the formalization by keeping its core definitions and lemmas independent of the
 forbidden family.  Its use in the compiler is justified directly by flag-algebra
-theory: we prove that an unlabeled inequality in the ensemble semantics yields
-the corresponding asymptotic bound in extremal graph theory.  The compiler
-reduces its certificate inequalities over partially labeled graphs to this
-unlabeled case, so equivalence with the standard semantics is not required for
-the soundness of the compiled bounds.
+theory: we prove that the ensemble inequalities the compiler establishes yield
+the corresponding asymptotic bounds in extremal graph theory.  The standard
+semantics plays no role in this justification, so equivalence between the two
+is not required for the soundness of the compiled bounds.
 
 The alternative semantics nevertheless exposed a natural mathematical
-question: how does it relate to Razborov's built-in (quotient) semantics when
-one or more vertices are labeled?  This comparison is separate from the
-preceding justification, but it led to new mathematics.
+question: when do the two semantics validate the same inequalities?  This
+comparison is separate from the preceding justification, but it led to new
+mathematics.
 \Cref{sec:metatheory} proves that built-in validity always implies ensemble
 validity and characterizes, through a structural condition that we call
 \emph{root-plantability}, when the converse holds for all inequalities.  This
@@ -578,8 +577,8 @@ We make the following contributions.
   pentagon theorem; all known proofs use flag algebras.
 \item \emph{A formalization-driven semantics for forbidden subgraphs.}  The
   ensemble semantics keeps the core formalization independent of the forbidden
-  family, and we prove directly that its unlabeled inequalities yield the
-  intended asymptotic bounds.  We also present selected results from the
+  family, and we prove directly that it yields the intended asymptotic bounds.
+  We also present selected results from the
   mathematical comparison it prompted, together with their autoformalization;
   a separate mathematics paper will develop the broader meta-theory and its
   applications.
