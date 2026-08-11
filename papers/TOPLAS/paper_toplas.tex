@@ -329,7 +329,7 @@ Razborov's flag algebra method proves asymptotic bounds in extremal graph
 theory, such as upper bounds on how often a fixed graph pattern can occur in
 large graphs that avoid other specified patterns.  It turns a claim about
 infinitely many graphs into a finite algebraic verification.  In practice, a
-semidefinite-programming (SDP) solver searches for a certificate consisting of
+semidefinite-programming solver searches for a certificate consisting of
 rational coefficients and matrices.  If these data satisfy certain algebraic
 identities and positivity conditions, they establish the desired bound.  The
 method has resolved several prominent problems in extremal graph theory and
@@ -337,7 +337,7 @@ produced the best known bounds for others.  The certificates for some of these
 results, however, contain thousands of exact rational values and are generated
 through large toolchains that rely on unverified numerical computation.  They
 are therefore too large to audit by hand and unsafe to trust without
-independent checking.  This paper presents a Lean~4 formalization of flag
+independent checking.  We present a Lean~4 formalization of flag
 algebras for finite simple graphs, together with a certificate-to-proof
 compiler built on the formalization.  Given such a certificate, the compiler
 treats it as untrusted input, independently verifies its algebraic identities
