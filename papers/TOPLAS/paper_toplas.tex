@@ -4424,68 +4424,58 @@ or how much of the gap such optimizations can close.
 
 \boldparagraph{Certificate checking and proof reconstruction.}
 Consuming the output of untrusted solvers without trusting them is a
-well-developed theme in verification.  For SAT, solvers emit clausal proofs
-that are validated by formally verified
-checkers~\cite{lammich2020unsat,tan2023cakelpr}; this is how the
-empty-hexagon number, another computer-generated result in combinatorics,
-was verified~\cite{subercaseaux2024hexagon}.  For SMT, proof witnesses are
-replayed step by step in Isabelle/HOL and HOL4~\cite{bohme2010z3} or
-validated by a checker verified inside Rocq (previously called
-Coq)~\cite{armand2011modular}.  For
-polynomial inequalities, numerical solvers find sums-of-squares
-certificates, whose underlying relaxations go back to Parrilo and
-Sturmfels~\cite{parrilo2003minimizing}; the certificates are rounded to
-rational form and verified exactly: by Harrison in HOL Light~\cite{harrison2007verifying}, by
-reflexive tactics in Rocq~\cite{besson2006fast}, and in Lean~4 by Morrison's
+well-developed theme in verification: clausal proofs for
+SAT~\cite{lammich2020unsat,tan2023cakelpr}, proof reconstruction and verified
+checkers for SMT~\cite{bohme2010z3,armand2011modular}, and rounded
+sums-of-squares certificates for polynomial
+inequalities~\cite{harrison2007verifying,besson2006fast,morrison2026sos},
+whose relaxations go back to Parrilo and
+Sturmfels~\cite{parrilo2003minimizing}.  Validating each run of a complex
+untrusted tool, rather than the tool itself, is the translation-validation
+strategy~\cite{pnueli1998translation}, and the general discipline of having a
+computation emit a witness that a cheap checker can verify is that of
+certifying algorithms~\cite{mcconnell2011certifying}, whose checkers have
+themselves been verified in a proof assistant~\cite{alkassar2014framework};
+Roux et al.\ study the discipline for numerical SDP-solver output in the
+context of program invariants~\cite{roux2018validating}.  Our compiler is closest to Morrison's
 \lean{sos} tactic~\cite{morrison2026sos}, which finds a certificate with an
 external semidefinite solver, rounds it, and verifies it through an
-$LDL^\top$ factorization; Roux et al.\ study the validation of numerical
-SDP-solver output in the context of program
-invariants~\cite{roux2018validating}.  Validating each run of a complex
-untrusted tool, rather than the tool itself, is the translation-validation
-strategy~\cite{pnueli1998translation}.  Our compiler uses the same
-discovery-versus-verification separation and, like the \lean{sos} tactic, is
-invoked as a tactic that treats its certificate input as hint data for a
-stated goal, verified through an exact rational $LDL^\top$ check.  What distinguishes the flag-algebra setting is, first, the
-heterogeneity and scale of the obligations: a single certificate mixes
-thousands of graph-counting identities, algebraic normalization in a
-quotient algebra, and forbidden-subgraph reasoning.  Second, we reconstruct
-proofs inside the object logic rather than compile a standalone verified
-checker.
+$LDL^\top$ factorization: we too are invoked on a stated goal with the
+certificate as hint data, and check positive semidefiniteness by exact
+rational $LDL^\top$.  What distinguishes the flag-algebra setting is that the
+certificate refers to objects the checker must first build: a \lean{sos} or
+clausal certificate is checked against objects the goal already names, whereas
+here Lean regenerates the flags up to isomorphism and proves the enumeration
+exhaustive before any coefficient can be checked.  The obligations that follow
+are correspondingly mixed: thousands of density identities decided by kernel
+evaluation, normalization in a quotient algebra, and forbidden-subgraph
+reasoning.
 
-\boldparagraph{Proof by reflection in proof assistants.}
+\boldparagraph{Proof by reflection and trusted evaluation.}
 Proof by reflection is a classical technique in the Rocq community; Chlipala
-gives an extended treatment~\cite{chlipala2013cpdt}, and Lean supports
-verified computation through tactics such as \lean{decide} and
-\lean{norm\_num}.  Cohen et al.~\cite{cohen2013refinements} develop
-a systematic methodology for building efficiently computable representations
-alongside their abstract counterparts in Rocq.  Our
-\lean{Sym2Graph}/\lean{SimpleGraph} pair with its adequacy theorems follows
-the same philosophy, adapted to Lean~4's type-class and instance-search
-mechanism.
-
-\boldparagraph{Metaprogramming and elaboration-time generation.}
-Our generation commands and custom tactics are built on Lean~4's
-metaprogramming framework~\cite{moura2021lean}, which exposes the elaborator
-to user code in the tradition of the Lean~3 framework of Ebner et
-al.~\cite{ebner2017structured}; MetaCoq plays a similar role in the Rocq
-ecosystem~\cite{sozeau2020metacoq}.  Where reflection-based developments
-typically reify one goal at a time, our commands run at elaboration time to
-emit whole families of definitions and theorems ahead of any particular
-proof, and they encode enough metadata in the generated names that later
-tactics can retrieve exactly the lemmas a certificate step needs
-(\Cref{sec:reflection-generation}).
+gives an extended treatment~\cite{chlipala2013cpdt}.  Cohen et
+al.~\cite{cohen2013refinements} develop a systematic methodology for building
+efficiently computable representations alongside their abstract counterparts,
+which our \lean{Sym2Graph}/\lean{SimpleGraph} pair and its adequacy theorems
+follow.  Reflection then raises the question of what performs the evaluation.
+Rocq has developed this design space explicitly: \lean{vm\_compute} evaluates
+through a bytecode machine whose correctness is part of the
+kernel~\cite{gregoire2002compiled}, whereas \lean{native\_compute} compiles to
+native code and adds the OCaml compiler and runtime to the trusted
+base~\cite{boespflug2011full}.  Lean's \lean{decide +kernel} and
+\lean{native\_decide} occupy the same two positions, and our certificates sit
+at both; we report which obligation rests on which mechanism
+(\Cref{sec:flagmatic-trust}) rather than quote a single trust level.
 
 \boldparagraph{Proof engineering at scale.}
 Sustaining large mechanized developments raises engineering questions that
 are increasingly documented in their own right, from the survey of Ringer et
 al.~\cite{ringer2019qed} to the retrospective on Project
-Everest~\cite{ahman2026everest}.  Our analysis of engineering obstacles
-(\Cref{sec:obstacles}) and our per-obligation trust reporting
-(\Cref{sec:flagmatic-trust}) contribute datapoints from computational mathematics, where the
-dominant costs (computing with quotients, comparing objects up to
-isomorphism, and controlling finite enumerations) differ from those of
-program verification.
+Everest~\cite{ahman2026everest}.  That literature draws mostly on program
+verification; the obstacles we report (\Cref{sec:obstacles}) come from
+computational mathematics, where the dominant costs are computing with
+quotients, comparing objects up to isomorphism, and controlling finite
+enumerations.
 
 \boldparagraph{Formalizations of combinatorics.}
 Substantial combinatorial arguments have already been formalized in Lean.
@@ -4495,57 +4485,52 @@ the Kruskal--Katona theorem~\cite{mehta2022kruskal}.  Subercaseaux et
 al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon number against
 a SAT certificate.  The collaborative PFR project~\cite{pfr2023} formalized
 the Gowers--Green--Manners--Tao proof~\cite{gowers2025marton} of the
-polynomial Freiman--Ruzsa conjecture in characteristic two.  These developments lean on heavy
-computation or on a large supporting library.  A flag-algebra argument combines
-quotient and measure-theoretic semantics with thousands of exact density
-computations and an external semidefinite certificate.
+polynomial Freiman--Ruzsa conjecture in characteristic two.  Our development
+is aimed at the method rather than at a single theorem: it formalizes the flag
+algebra, its semantics, and the finite machinery its certificates need.
+\Cref{sec:lowerbounds} shows the resulting library used directly, for
+arguments the compiler does not cover.
 
 \boldparagraph{Computer-assisted flag algebra arguments.}
-The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
-of exact and approximate flag-algebra bounds, but it does not produce
-proof-assistant proof terms; Razborov's survey~\cite{razborov2013flag}
-organizes many early applications of the method.  Our work adds a
-proof-producing reconstruction stage: certificate data proposes a
-calculation, while Lean verifies the finite identities, the
-positive-semidefinite matrices, and the final combinatorial statement.
+Flagmatic~\cite{vaughan2013flagmatic} automates the computation of exact and
+approximate flag-algebra bounds but does not produce proof-assistant proof
+terms; Razborov's survey~\cite{razborov2013flag} organizes many early
+applications of the method.  The seven certificates compiled here are
+Flagmatic's output as produced, and our compiler consumes them as untrusted
+input.
 
-\boldparagraph{Concurrent formalizations of flag algebras.}
-Concurrently with and independently of our work, Davey, Hurley, de Joannis
-de Verclos, Kang, and Volec formalized in Lean~4 the theory of \emph{local
-flag algebras} introduced in their accompanying paper~\cite{davey2026local}
-and applied in its companion~\cite{davey2026strong}.
-The local calculus normalizes densities by the maximum degree $\Delta$
+\boldparagraph{Concurrent flag-algebra work in Lean.}
+Two Lean developments run concurrently with, and independently of, ours: one
+formalizes a different flag-algebra calculus, the other aims to replace the
+external solver rather than to validate its output.
+Davey, Hurley, de Joannis de Verclos, Kang, and Volec formalized \emph{local
+flag algebras}, the calculus introduced in their accompanying
+paper~\cite{davey2026local} and applied in its companion~\cite{davey2026strong}.
+It normalizes densities by the maximum degree $\Delta$
 rather than by the number of vertices, so that the method still yields
-nontrivial bounds for sparse graphs of small maximum degree.  Under this
-normalization, no quotient is taken: their algebra is defined directly on
-formal combinations of isomorphism classes, evaluation at a finite graph is
-multiplicative only up to an error bounded by a constant multiple of
-$1/\Delta$, and positivity is again captured by a semantic cone.  Their formalization
-machine-certifies the new bounds of both papers, on pentagon counts in
-triangle-free graphs~\cite{davey2026local} and on the strong chromatic
-index~\cite{davey2026strong}.  Independently,
-their design arrives at the reflection pattern of \Cref{sec:reflection}: a
+nontrivial bounds for sparse graphs of small maximum degree, and under this
+normalization no quotient is taken: their algebra is defined directly on
+formal combinations of isomorphism classes.  Their formalization
+machine-certifies the new bounds of both papers, and independently arrives at
+the reflection pattern of \Cref{sec:reflection}: a
 noncomputable specification mirrored by a computable Boolean-adjacency
-representation with adequacy lemmas.  Our development formalizes the
-classical theory instead (the quotient algebra, positive homomorphisms,
-and the ensemble semantics) and is organized as a reusable library and
-proof-generating pipeline rather than around individual bounds, so the two
-developments are complementary in both scope and design.
+representation with adequacy lemmas.  Our development formalizes the classical
+theory instead: the quotient algebra, positive homomorphisms, and the ensemble
+semantics.  It is organized as a reusable library with a certificate-to-proof
+compiler on top, rather than around individual bounds, so that certificates
+produced outside Lean become Lean proofs.
 A further concurrent development is Spiegel's \emph{computational flag
-algebras} in Lean~\cite{spiegel2026computational}.  It is an independent
-ongoing work on the Lean formalization of the flag algebras, which focuses
-on carrying out flag-algebra inequality proofs fully and automatically
-inside Lean, without relying on an external tool or solver.
+algebras} in Lean~\cite{spiegel2026computational}, ongoing independent work
+aimed at carrying out flag-algebra inequality proofs fully and automatically
+inside Lean, without an external tool or solver.
 
 \boldparagraph{Graph limits and Tur\'an densities.}
 The mathematical foundation of flag algebras (convergent graph sequences,
 positive homomorphisms, the graphon limit) is developed in depth by
 Lov\'asz and Szegedy and by Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.
-Freer has independently formalized a
-substantial graphon theory in Lean~4, including cut distance, weak
-regularity,
-counting and inverse-counting lemmas, compactness, and the equivalence of two
-notions of convergence~\cite{freer2026graphon}.  Our development works with
+Freer has independently formalized a substantial graphon theory in Lean~4,
+covering cut distance, weak regularity, counting lemmas, and
+compactness~\cite{freer2026graphon}.  Our development works with
 convergent flag sequences, positive homomorphisms, and random extensions
 rather than graphons; connecting the two formalizations into a common formal
 account of the flag-algebra/graphon correspondence remains future work.
