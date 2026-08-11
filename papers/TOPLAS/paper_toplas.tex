@@ -86,7 +86,7 @@
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 % Retain acmart's semantic paragraph-heading structure and spacing, but make
 % the run-in heading text more visible by setting it in upright bold.
-\newcommand{\boldparagraph}[1]{\paragraph{\textnormal{\textbf{#1}}}}
+\newcommand{\boldparagraph}[1]{\noindentparagraph{\textnormal{\textbf{#1}}}}
 % Allow line breaks after underscores in long Lean identifiers; without this
 % the narrower acmsmall measure produces overfull lines.  Robust so that
 % \lean can appear inside captions and other moving arguments.
@@ -4603,10 +4603,9 @@ al.~\cite{subercaseaux2024hexagon} verified the empty-hexagon number against
 a SAT certificate.  The collaborative PFR project~\cite{pfr2023} formalized
 the Gowers--Green--Manners--Tao proof~\cite{gowers2025marton} of the
 polynomial Freiman--Ruzsa conjecture in characteristic two.  These developments lean on heavy
-computation or on a large supporting library.  A flag-algebra argument needs
-both at once: it combines quotient and measure-theoretic semantics with
-thousands of exact finite-density computations and an externally computed
-semidefinite certificate.
+computation or on a large supporting library.  A flag-algebra argument combines
+quotient and measure-theoretic semantics with thousands of exact density
+computations and an external semidefinite certificate.
 
 \boldparagraph{Computer-assisted flag algebra arguments.}
 The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
