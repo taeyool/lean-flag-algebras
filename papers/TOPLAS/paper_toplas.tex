@@ -1179,9 +1179,9 @@ holds~\cite{razborov2007flag}:
 there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
 such that for every~$f \in \mathcal{A}^\sigma$, the random positive
-homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
+homomorphism $\phi^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
 \begin{equation}\label{eq:ensemble}
-  \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
+  \mathbb{E}\bigl[\phi^\sigma(f)\bigr]
   \;=\;
   \frac{\phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)}
        {\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)}.
@@ -1207,17 +1207,17 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   every $\sigma$-flag contains an induced copy of $\sigma$, so the downward
   image of every $\sigma$-flag basis element also evaluates to zero under
   $\phi_0$.  By linearity, $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
-  Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
+  Otherwise, let $\phi^\sigma \sim \Ext_\sigma(\phi_0)$.
   Since $0 \leq_{\mathcal{H},\sigma} f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
-  $\mathbb{E}[\boldsymbol{\phi}^\sigma(f)] \geq 0$.
+  $\mathbb{E}[\phi^\sigma(f)] \geq 0$.
   Rearranging Equation~\eqref{eq:ensemble}:
   \[
     \phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)
     \;=\;
     \phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)
     \cdot
-    \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
+    \mathbb{E}\bigl[\phi^\sigma(f)\bigr]
     \;\geq\; 0.
   \]
   Since $\phi_0$ was arbitrary, we have $0 \leq_{\mathcal{H}} \llbracket f \rrbracket_\sigma$.
@@ -1811,7 +1811,7 @@ Having constructed the algebraic map, we turn to its semantic meaning: a
 formal counterpart of the random-extension identity of
 Equation~\eqref{eq:ensemble},
 \[
-  \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
+  \mathbb{E}\bigl[\phi^\sigma(f)\bigr]
   \;=\;
   \frac{\phi_0\bigl(\llbracket f \rrbracket_\sigma\bigr)}
        {\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)}.
@@ -1865,20 +1865,11 @@ Our Lean formalization deliberately separates building the algebra from
 imposing the constraint.  The core development constructs the ambient flag
 algebra \(\mathcal{A}^\sigma\) of all finite simple graphs, with no forbidden
 family as a parameter.  A forbidden graph enters only when we compare two
-ambient algebra elements \(f,g\in\mathcal{A}^\sigma\).  We restrict attention to
-empty-type positive homomorphisms~\(\phi_0\) that assign density zero to every
-graph containing the forbidden graph as a (not necessarily induced) subgraph,
-and, for each such \(\phi_0\) for which \(\sigma\) has positive density, we
-require \(\phi(f)\leq\phi(g)\) with probability one when \(\phi\) is sampled
-from the random-extension measure \(\Ext_\sigma(\phi_0)\) of
-\Cref{sec:background-downward}.
-
-The forbidden-graph condition therefore does not define a separate
-flag-algebra universe in the implementation; it restricts the empty-type
-positive homomorphisms from which those random extensions are formed.  The
-elements \(f\) and \(g\), as well as the definitions of flags, densities,
-products, the downward operator, and positive homomorphisms, remain those of
-the ambient algebra and can therefore be reused across extremal problems.
+ambient algebra elements \(f,g\in\mathcal{A}^\sigma\), and even then it defines
+no separate flag-algebra universe: the forbidden graph restricts the
+empty-type positive homomorphisms from which the random extensions of
+\Cref{sec:background-downward} are formed.  The whole construction of the
+preceding subsections is therefore reused unchanged across extremal problems.
 
 The order used for this a posteriori condition is the
 \emph{ensemble semantic order}.  We state it for a single forbidden graph
@@ -1908,21 +1899,16 @@ assigns density zero to every graph containing \(H\).  The second condition,
 \(\phi_0(\langle\sigma\rangle_0)>0\), says that the underlying unlabeled graph of
 \(\sigma\) has positive limiting density along any sequence of finite
 graphs converging to \(\phi_0\).  This is precisely the hypothesis under which the random-extension
-measure \(\Ext_\sigma(\phi_0)\) is defined.  The final display says that, when a
-\(\sigma\)-typed positive homomorphism \(\phi\) is sampled from this measure, the
-inequality \(\phi(f)\leq\phi(g)\) holds with probability one.
+measure \(\Ext_\sigma(\phi_0)\) is defined.  The final display asks that
+\(\phi(f)\leq\phi(g)\) hold with probability one under this measure.
 
 \begin{remark}[Relation to built-in \(H\)-free semantics]\label{rem:builtin-hfree}
-The background approach builds the \(H\)-free condition into the flag algebra
-from the outset, whereas the ensemble approach retains the ambient algebra and
-imposes the condition only when comparing its elements.  At the empty type,
-where no labels are chosen, the two approaches agree, so this distinction does
-not affect the final unlabeled Tur\'an-density bounds.  For nonempty types,
-however, the two approaches can differ: the built-in approach may fix the
-labels at an exceptional vertex configuration, whereas the ensemble approach
-obtains its labels by uniform random sampling.  An exceptional choice of labels
-may therefore affect the built-in comparison while remaining invisible to the
-ensemble comparison.
+The built-in approach of \Cref{sec:background} and the ensemble approach agree
+at the empty type, where no labels are chosen, so the distinction does not
+affect the final unlabeled Tur\'an-density bounds.  For nonempty types,
+however, they can differ: the built-in approach may fix the labels at an
+exceptional vertex configuration, which uniform random sampling makes
+invisible to the ensemble comparison.
 \Cref{sec:metatheory} gives a precise criterion for when the two approaches
 agree and an example showing that they need not.
 \end{remark}
@@ -1941,53 +1927,30 @@ def forbidLEWith (C : ForbidCondition) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop
 def forbidLE (H : SimpleGraph (Fin m)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   forbidLEWith (forbiddenCondition H) f g
 \end{lstlisting}
-Read \lean{forbidLE} first.  Its explicit argument
-\lean{H} is the forbidden graph, and \lean{f} and \lean{g} are the two
-ambient \(\sigma\)-typed flag-algebra elements being compared.  In particular,
-\lean{f} and \lean{g} do not live in a separately built \(H\)-free algebra.
-The definition delegates to \lean{forbidLEWith}, the condition-generic version
-that takes a \lean{ForbidCondition} as a parameter.  A \lean{ForbidCondition}
-is a predicate on empty-type positive homomorphisms,
-specifying which empty-type positive homomorphisms are allowed.  The particular condition
-\lean{forbiddenCondition H} selects the \(H\)-free ones: it considers only
-positive homomorphisms \(\phi_0\) such that
-\[
-  \phi_0([F])=0
-  \qquad
-  \text{for every \(\emptyset\)-flag } F
-  \text{ whose underlying graph contains } H \text{ as a subgraph}.
-\]
+Read \lean{forbidLE} first.  Its explicit argument \lean{H} is the forbidden
+graph, and \lean{f} and \lean{g} are the two ambient \(\sigma\)-typed
+flag-algebra elements being compared.  It delegates to \lean{forbidLEWith}, the
+condition-generic version parameterized by a \lean{ForbidCondition}, a
+predicate selecting which empty-type positive homomorphisms are allowed.  Here
+that predicate is \lean{forbiddenCondition H}, the \(H\)-freeness condition of
+\Cref{def:ensemble-semantic-order}.
 
-The body of \lean{forbidLEWith} ranges over empty-type positive homomorphisms
-\lean{$\phi_0$}.  The hypothesis \lean{C $\phi_0$} imposes the chosen condition
-on \lean{$\phi_0$}; for \lean{forbidLE H}, this is the \(H\)-free condition
-described above.  Recall that \lean{PositiveHomSpace $\sigma$} is the measurable
-space of \(\sigma\)-typed density profiles, each of which determines a positive
-homomorphism on \(\mathcal{A}^\sigma\).  The measure
+In the body of \lean{forbidLEWith}, the hypothesis \lean{C $\phi_0$} imposes
+that condition and the conclusion is the probability-one requirement of the
+same definition.  Two points are specific to the formalization: the event is
+carved out of \lean{PositiveHomSpace $\sigma$}, the measurable space of density
+profiles of \Cref{sec:formal-downward}, each of which determines a positive
+homomorphism on \(\mathcal{A}^\sigma\); and the measure
 \lean{$\mathbb{P}$[$\phi_0$]} is the random-extension measure
-\(\Ext_\sigma(\phi_0)\) on this space.  In the final line of the definition, the
-set
-\[
-  \{\phi\mid \phi(f)\leq\phi(g)\}
-\]
-is therefore the event that the real number assigned to \(f\) is at most the
-real number assigned to \(g\).  The equality to \(1\) says that this inequality
-holds with probability one when a density profile \(\phi\) is sampled from
-\(\Ext_\sigma(\phi_0)\).
+\(\Ext_\sigma(\phi_0)\) on that space.
 
-What remains is to connect
-the semantic predicate above to the corresponding asymptotic bound on induced densities.
-This is the Lean counterpart of \Cref{lem:semantic-bound}, with the hypothesis
-stated in the ensemble order of \Cref{def:ensemble-semantic-order} rather than
-in the built-in order of \Cref{sec:background-semantic-order}.
-In the theorem below, \(H\) is
-the forbidden graph and \(F\) is the target graph.  The expression \lean{F.toFlagAlgebra} converts
-the simple graph \(F\) into the corresponding element of the empty-type flag
-algebra \lean{FlagAlgebra $\emptyt$}, whose evaluation is the induced
-\(F\)-density.
-
-The formal bridge packages this passage from semantic order to the finite
-asymptotic statement:
+What remains is to connect this semantic predicate to the corresponding
+asymptotic bound on induced densities, the Lean counterpart of
+\Cref{lem:semantic-bound} with its hypothesis stated in the ensemble order
+rather than the built-in order of \Cref{sec:background-semantic-order}.  In the
+theorem below, \(H\) is the forbidden graph, \(F\) is the target graph, and
+\lean{F.toFlagAlgebra} converts \(F\) into the element of
+\lean{FlagAlgebra $\emptyt$} whose evaluation is the induced \(F\)-density.
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)}
@@ -1995,39 +1958,21 @@ theorem generalizedTuranDensity_le_of_forbidLE
     (h : forbidLE H F.toFlagAlgebra (c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))))
     : generalizedTuranDensity H F (*@$\leq$@*) c := ...
 \end{lstlisting}
-The hypothesis \lean{h} is an empty-typed \lean{forbidLE} inequality: the target
-graph \(F\), viewed as an element of the empty-type flag algebra, is at most
-\(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
-graph \(H\).  The conclusion is the corresponding
-Tur\'an-density bound, written in Lean as
-\lean{generalizedTuranDensity~H~F~$\leq$~c}; mathematically, it is the assertion
-\[
-  \tdensity{F}{H}
-  =
-  \lim_{N\to\infty}
-  \max_{\substack{|V(G)|=N\\ G\text{ is }H\text{-free}}}
-  \den{F}{G}
-  \leq c .
-\]
-Consequently, for each later application, it is enough to prove the empty-type
-ensemble inequality
-\[
-  [F]\leq^{\mathrm{ens}}_{H,\emptyset}c\cdot\mathbf{1}.
-\]
-The theorem above then yields the corresponding Tur\'an-density bound
-\(\tdensity{F}{H}\leq c\).  The same theorem performs this final conversion in
-every application.
+The hypothesis \lean{h} is the empty-type ensemble inequality
+\([F]\leq^{\mathrm{ens}}_{H,\emptyset}c\cdot\mathbf{1}\), and the conclusion is
+the Tur\'an-density bound \(\tdensity{F}{H}\leq c\).  Each later application
+proves the hypothesis and calls this theorem for the final conversion.
 
 The Tur\'an density \(\tdensity{F}{H}\) is represented in Lean by
-\lean{generalizedTuranDensity H F}, whose definition uses Mathlib's
-\lean{limUnder}.  This operation returns a real number even before the
-normalized extremal numbers have been shown to converge; if they did not
-converge, the returned value would have no asymptotic meaning.  We therefore
-prove \lean{tendsto\_\allowbreak generalizedTuranDensity}, which shows that the
-normalized extremal numbers converge to \(\tdensity{F}{H}\), namely to
-\lean{generalizedTuranDensity H F}.  The proof is standard: once
-\(n\geq |V(F)|\), the normalized extremal numbers are non-increasing, and they
-are bounded below by zero, so they converge.
+\lean{generalizedTuranDensity H F}, whose definition applies Mathlib's
+\lean{limUnder} to the normalized extremal numbers
+\(\mathrm{ex}(n,\,F;\,H)/\binom{n}{|V(F)|}\) of
+\Cref{sec:background-semantic-order}.  That operation returns a real number
+even before the sequence has been shown to converge, in which case the value
+would have no asymptotic meaning.  We therefore prove
+\lean{tendsto\_\allowbreak generalizedTuranDensity}: once \(n\geq |V(F)|\) the
+sequence is non-increasing and bounded below by zero, so it converges, and its
+limit is \lean{generalizedTuranDensity H F}.
 
 \section{The Reflection Layer}
 \label{sec:reflection}
