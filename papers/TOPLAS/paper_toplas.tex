@@ -333,19 +333,19 @@ theory, such as upper bounds on how often a fixed graph pattern can occur in
 large graphs that avoid other specified patterns.  It turns a claim about
 infinitely many graphs into a finite algebraic verification.  In practice, a
 semidefinite-programming solver searches for a certificate consisting of
-rational coefficients and matrices.  If these data satisfy certain algebraic
-identities and positivity conditions, they establish the desired bound.  The
-method has resolved several prominent problems in extremal graph theory and
-produced the best known bounds for others.  The certificates for some of these
-results, however, contain thousands of exact rational values and are generated
-through large toolchains that rely on unverified numerical computation.  They
-are therefore too large to audit by hand and unsafe to trust without
-independent checking.  We present a Lean~4 formalization of flag
-algebras for finite simple graphs, together with a certificate-to-proof
+matrices with rational entries and rational coefficients.  If these data
+satisfy certain algebraic identities and positivity conditions, they establish
+the desired bound.  The method has played a central role in proofs of major
+results in extremal graph theory.  The certificates for some of these results,
+however, contain thousands of exact rational values and are generated through
+large toolchains that rely on unverified numerical computation.  They are
+therefore too large to audit by hand and cannot serve as trusted proof
+artifacts without independent checking.  We present a Lean~4 formalization of
+flag algebras for finite simple graphs, together with a certificate-to-proof
 compiler built on the formalization.  Given such a certificate, the compiler
 treats it as untrusted input, independently verifies its algebraic identities
 and positivity conditions against the formal definitions, and constructs a
-complete proof that is checked by Lean's kernel.
+complete, machine-checked Lean proof.
 
 The development has three layers: a specification layer that formalizes the
 mathematics of the method, a reflection layer that provides verified
@@ -353,14 +353,14 @@ computation and generates thousands of verified identities required by a
 certificate, and an automation layer that drives the compilation.  The compiler
 runs inside Lean during elaboration: the theorem statement is fixed in the
 source file, the certificate serves only as untrusted input, and Lean recomputes
-every claimed fact against the mathematical definitions.  We evaluate the
-compiler on seven Tur\'an-type upper bounds and explain how Lean checks each
-proof obligation in the generated proofs.  Two of the compiled upper bounds,
-for Mantel's theorem and the Erd\H{o}s pentagon theorem, are paired with matching
-lower-bound constructions proved directly in Lean, thereby establishing both
-exact bounds.  In particular, this gives, to our knowledge, the first
-machine-checked proof of the Erd\H{o}s pentagon theorem, whose known proofs all
-use flag algebras.
+every fact claimed by the certificate against the mathematical definitions.
+We evaluate the compiler on seven certificates for Tur\'an-type upper bounds
+and explain how Lean checks each proof obligation in the generated proofs.  Two
+of the compiled upper bounds, for Mantel's theorem and the Erd\H{o}s pentagon
+theorem, are paired with matching lower-bound constructions proved directly in
+Lean, thereby establishing the exact value in both cases.  In particular, this
+gives, to our knowledge, the first machine-checked proof of the Erd\H{o}s
+pentagon theorem, whose known proofs all use flag algebras.
 \end{abstract}
 
 \begin{CCSXML}
@@ -446,15 +446,16 @@ these conditions establishes the original bound.  This validation is especially
 valuable because the flag algebra method has been central to proofs of major
 results in extremal graph theory, including the Erd\H{o}s
 pentagon theorem and the determination of the maximum induced $C_5$
-density~\cite{hatami2012,grzesik2012,balogh2016induced5}.  Yet existing
-flag-algebra toolchains both generate and check their certificates entirely
+density~\cite{hatami2012,grzesik2012,balogh2016induced5}.  Yet established
+toolchains for classical flag algebras, such as
+Flagmatic~\cite{vaughan2013flagmatic}, generate and check their certificates
 outside proof assistants.  Formally verifying these large toolchains, including
-their graph-generation, exact-counting, and numerical-optimization
-components, would be a major undertaking, while their output certificates have
-not themselves been converted into machine-checked proofs.  We take the latter
-route: our reusable certificate-to-proof compiler treats the toolchain and its
-output as untrusted, validates each certificate, and constructs a complete Lean
-proof.
+their graph-generation, exact-counting, and numerical-optimization components,
+would be a major undertaking, and the certificates considered here had not
+been converted into machine-checked proofs.  Rather than verify an entire
+toolchain, we build a reusable certificate-to-proof compiler that treats the
+toolchain and its output as untrusted, validates each certificate, and
+constructs a complete Lean proof.
 
 \boldparagraph{Flag algebras and their certificates.}
 To see what such a bound and its certificate look like, consider a classical
@@ -491,7 +492,7 @@ with rational entries, and gives rational coefficients that weight the
 resulting algebraic terms.  It asserts that these data satisfy specified
 algebraic identities and that the matrices are positive semidefinite.  Once
 these finite claims are verified, flag-algebra theory lifts them to the desired
-asymptotic upper bound for every graph in the class under consideration.
+asymptotic upper bound over the graph class under consideration.
 
 Finite, however, does not mean small or readily auditable.  A nontrivial
 certificate combines many flags and depends on large tables of exact counting
@@ -549,59 +550,59 @@ the formalization by keeping its core definitions and lemmas independent of the
 forbidden family.  Its use in the compiler is justified directly by flag-algebra
 theory: we prove that an unlabeled inequality in the ensemble semantics yields
 the corresponding asymptotic bound in extremal graph theory.  The compiler
-reduces its typed certificate inequalities to this unlabeled case, so
-equivalence with the standard semantics is not required for the soundness of
-the compiled bounds.
+reduces its certificate inequalities over partially labeled graphs to this
+unlabeled case, so equivalence with the standard semantics is not required for
+the soundness of the compiled bounds.
 
 The alternative semantics nevertheless exposed a natural mathematical
-question: how does it relate, at nonempty flag types, to Razborov's built-in
-(quotient) semantics?  This comparison is separate from the preceding
-justification, but it led to new mathematics.  \Cref{sec:metatheory} proves that
-built-in validity always implies ensemble validity and characterizes when the
-converse holds through a new structural condition, \emph{root-plantability}.
-This result illustrates how formalization can do more than check existing
-arguments: it can also reveal new mathematical structures and questions.
+question: how does it relate to Razborov's built-in (quotient) semantics when
+one or more vertices are labeled?  This comparison is separate from the
+preceding justification, but it led to new mathematics.
+\Cref{sec:metatheory} proves that built-in validity always implies ensemble
+validity and characterizes, through a structural condition that we call
+\emph{root-plantability}, when the converse holds for all inequalities.  This
+result illustrates how formalization can do more than check existing arguments:
+it can also reveal new mathematical structures and questions.
 
 \boldparagraph{Contributions.}
 We make the following contributions.
 \begin{itemize}
-\item \emph{A Lean~4 formalization of the flag algebra method} for
-  finite simple graphs, and \emph{a certificate-to-proof compiler} built
-  on it and invoked as an elaboration-time tactic, turning externally
-  generated, untrusted certificates into complete, machine-checked
-  proofs of Tur\'an-type bounds.
-\item \emph{Machine-checked theorems}: seven compiled Tur\'an-type upper
-  bounds.  Two of them, for Mantel's theorem and the Erd\H{o}s pentagon
-  theorem, are paired with matching lower-bound constructions proved directly
-  in the formalization.  To our knowledge, this gives the first machine-checked
-  proof of the Erd\H{o}s pentagon theorem, whose known proofs all use flag
-  algebras.
-\item \emph{A meta-theory of ensemble semantics} relating our treatment of
-  forbidden subgraphs to Razborov's built-in semantics, together with an
-  autoformalization in a separate Lean library that extends the development
-  above.
+\item \emph{A Lean~4 formalization and certificate-to-proof compiler for flag
+  algebras.}  Invoked as an elaboration-time tactic, the compiler turns
+  externally generated, untrusted certificates into complete,
+  machine-checked proofs of Tur\'an-type bounds.
+\item \emph{Machine-checked extremal bounds}: seven compiled Tur\'an-type upper
+  bounds.  For two of them---Mantel's theorem and the Erd\H{o}s pentagon
+  theorem---we also prove matching lower-bound constructions directly in Lean,
+  yielding exact theorems.  To our knowledge, this gives the first
+  machine-checked proof of the Erd\H{o}s pentagon theorem, whose known proofs
+  all use flag algebras.
+\item \emph{A formalization-driven semantics for forbidden subgraphs.}  The
+  ensemble semantics keeps the core formalization independent of the forbidden
+  family, and we prove directly that its unlabeled inequalities yield the
+  intended asymptotic bounds.  We also present selected results from the
+  mathematical comparison it prompted, together with their autoformalization;
+  a separate mathematics paper will develop the broader meta-theory and its
+  applications.
 \end{itemize}
 The complete Lean development, including the certificate-to-proof compiler
-and the autoformalized meta-theory, is publicly available at
+and the formalized semantic results presented here, is  available at
 \url{https://github.com/taeyool/lean-flag-algebras-release}.
 
 \boldparagraph{Organization.}
 \Cref{sec:background} reviews the mathematical background of flag algebras
-and fixes the notation used throughout the paper.  \Cref{sec:abstract}
-presents the specification layer, including its semantic treatment of
-forbidden-graph assumptions.  \Cref{sec:reflection} introduces the
-reflection layer: the executable graph representations, their adequacy
-theorems, and the elaboration-time generation commands.
-\Cref{sec:flagmatic} describes the automation layer and the compilation
-it drives: the exact checks of positive semidefiniteness, the proof
-automation, and the evaluation on seven certificates.
+and fixes the notation used throughout the paper.
+\Cref{sec:abstract,sec:reflection,sec:flagmatic} present the specification,
+reflection, and automation layers, respectively: the specification layer
+includes the semantic treatment of forbidden-subgraph assumptions, and the
+automation layer includes the evaluation of the compiler on seven certificates.
 \Cref{sec:lowerbounds} illustrates direct uses of the formalization beyond
-certificate compilation.  \Cref{sec:obstacles} analyzes the main engineering
-obstacles, and \Cref{sec:metatheory} presents the core results of the
-meta-theory of ensemble semantics together with its autoformalization.
-\Cref{sec:unsure} records the remaining design questions.  Finally,
-\Cref{sec:related} discusses related work, and \Cref{sec:conclusion}
-presents our conclusions.
+certificate compilation, and \Cref{sec:obstacles} analyzes the main engineering
+obstacles.  \Cref{sec:metatheory} presents the selected results comparing the
+ensemble and built-in semantics that are included in this paper.
+\Cref{sec:unsure} records the remaining design questions,
+\Cref{sec:related} discusses related work, and \Cref{sec:conclusion} concludes
+the paper.
 
 \section{Background: Flag Algebras}
 \label{sec:background}
