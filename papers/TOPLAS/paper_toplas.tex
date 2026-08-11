@@ -825,8 +825,9 @@ These procedures describe the same sampling experiment, yielding the
 single-flag case of Razborov's chain rule~\cite[Lemma~2.2]{razborov2007flag}.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
-  For $F \in \mathcal{F}^\sigma_m$, $G \in \mathcal{F}^\sigma_n$, and $n'$
-  with $m \leq n' \leq n$,
+  Let $\sigma$ be a flag type of size $k$, let $m,n,n' \in \mathbb{N}$ satisfy
+  $k \leq m \leq n' \leq n$, and let $F \in \mathcal{F}^\sigma_m$ and
+  $G \in \mathcal{F}^\sigma_n$.  Then
   \[
     \den{F}{G}
     \;=\;
@@ -924,8 +925,9 @@ We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
 \end{example}
 
 \boldparagraph{Multiplication.}
-For $\sigma$-flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
-$F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
+For $m_1,m_2 \in \mathbb{N}$ and $\sigma$-flags
+$F_1 \in \mathcal{F}^\sigma_{m_1}$ and $F_2 \in \mathcal{F}^\sigma_{m_2}$,
+choose an auxiliary size $\ell \in \mathbb{N}$ with
 $\ell \geq m_1 + m_2 - k$ and define
 \begin{equation}
   \label{eq:mul}
@@ -1005,7 +1007,8 @@ Following standard flag-algebra terminology, we call such a homomorphism
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
-In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |V(\sigma)|$:
+In $\mathcal{A}^\sigma$, the following identity holds for every
+$\ell \in \mathbb{N}$ with $\ell \geq |V(\sigma)|$:
 \begin{equation}
   \sum_{F \in \mathcal{F}^\sigma_\ell} [F] \;=\; \mathbf{1}_\sigma.
   \label{eq:sum-to-one}
@@ -1022,6 +1025,7 @@ are exactly the limiting density profiles of convergent sequences of
 $\sigma$-flags~\cite{razborov2007flag}.
 
 \begin{theorem}[Razborov]\label{thm:convergent-hom}
+  Let $\sigma$ be a flag type.
   \begin{enumerate}
   \item[\textup{(a)}] If $\{G_n\}_{n\in\mathbb{N}}$ is a convergent sequence of
     $\sigma$-flags, then
@@ -1089,7 +1093,8 @@ reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  If $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  Let $F \in \mathcal{F}^\emptyset$ and $c \in \mathbb{R}$.  If
+  $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$, then
   $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
@@ -2773,8 +2778,9 @@ certificates; they are exactly what our compiler automates.
 The same idea scales by replacing one square with weighted sums of many
 squares.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
 $e_i:=[E_i]\in\mathcal A^\sigma$ be their basis elements, and collect these
-algebra elements into a vector $v=(e_1,\ldots,e_r)^\top$.  A symmetric matrix $M$ is \emph{positive semidefinite}
-(PSD) if $x^\top Mx\geq 0$ for every real vector~$x$.  Consequently, when $M=(M_{ij})$
+algebra elements into a vector $v=(e_1,\ldots,e_r)^\top$.  A symmetric matrix
+$M\in\mathbb{R}^{r\times r}$ is \emph{positive semidefinite}
+(PSD) if $x^\top Mx\geq 0$ for every $x\in\mathbb{R}^r$.  Consequently, when $M=(M_{ij})$
 is PSD, the flag-algebra quadratic form
 $\langle v,Mv\rangle=\sum_{i,j}M_{ij} e_i e_j$ is non-negative under every
 positive homomorphism: evaluating the algebra elements turns it into the ordinary real
@@ -4072,7 +4078,8 @@ homomorphism can be approximated by finite constructions of this kind.} when
 \(S_\sigma=Q_\sigma\).
 
 \begin{definition}[Quotient and ensemble orders]\label{def:two-constrained-orders}
-For \(f,g\in\FlagAlg{\sigma}[\mathcal G]\), define
+Let \(\mathcal K\subseteq\mathcal G\) be hereditary, let \(\sigma\) be a flag
+type, and let \(f,g\in\FlagAlg{\sigma}[\mathcal G]\).  Define
 \[
   f\leq^{\mathrm{quot}}_{\mathcal K,\sigma}g
   \quad\Longleftrightarrow\quad
@@ -4122,7 +4129,7 @@ Moreover, the two orders agree for every pair \((f,g)\) if and only if the class
 is root-plantable at \(\sigma\):
 \[
   \left(
-    \forall f,g,\quad
+    \forall f,g\in\FlagAlg{\sigma}[\mathcal G],\quad
     f\leq^{\mathrm{quot}}_{\mathcal K,\sigma}g
     \ \Longleftrightarrow\
     f\leq^{\mathrm{ens}}_{\mathcal K,\sigma}g
