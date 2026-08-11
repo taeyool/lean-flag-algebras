@@ -2001,33 +2001,23 @@ one would bury the mathematical argument under routine case analysis.
 The second approach is computation-oriented.  Instead of proving each finite
 calculation from scratch, we prove once that an algorithm correctly performs the
 kind of calculation we need, and then we let Lean run that algorithm inside later
-proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
-Lean formalization is the computable counterpart of the specification layer
-described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
-such as testing whether two labeled graphs represent the same flag, computing a
-density, or expanding a product,
-it provides a program that carries out the calculation and a theorem saying that
-the program's output agrees with the abstract definition.  Later proofs can then
-run the program and invoke the correctness theorem, rather than reconstructing
-the finite verification case by case.
-
-Flag algebras are especially well suited to this style.  In applications, the
-candidate bounds and their supporting numerical data are often found by
-computer search or semidefinite programming, and validating the resulting
-proof already amounts to checking finite data: same-flag tests, subflag
-densities, multiplication tables, and rational arithmetic.  A formal
-proof should neither trust those external tables nor replay each entry as a
-hand proof.  Reflection gives the middle path.
+proofs.  This is the idea of \emph{reflection}: for each such operation, a
+program that carries out the calculation, paired with a theorem saying that the
+program's output agrees with the abstract definition.  Later proofs run the
+program and invoke the theorem, rather than reconstructing the finite
+verification case by case.  Flag algebras are especially well suited to this
+style, because the candidate bounds and their supporting numerical data are
+found by an SDP solver, so validating the resulting proof already amounts to
+checking finite data.  Such data should
+neither be taken on trust nor replayed as a hand proof, and reflection is the
+middle path: Lean recomputes the entries itself.
 
 \Cref{sec:abstract} gave the specification layer: definitions close to the
 mathematics, where flags are identified up to isomorphism and quotient classes
 hide arbitrary choices of representatives.  Those definitions are the right ones
 for stating theorems, but many are marked \lean{noncomputable} because they are
-specifications rather than efficient programs.  This section develops the
-executable mirror of that layer: concrete graph and flag representations,
-procedures for isomorphism testing, for computing densities, and for computing
-downward normalizing factors, and adequacy theorems
-proving that those procedures agree with the quotient-based definitions.
+specifications rather than efficient programs.  The reflection layer of our Lean
+formalization is their computable counterpart.
 
 \subsection{Concrete Graph Representations and Finite Search}
 \label{sec:reflection-concrete}
