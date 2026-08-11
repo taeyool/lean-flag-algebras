@@ -3525,7 +3525,12 @@ types need not be definitionally equal, and therefore may require explicit
 casts.  The enumeration issue, by contrast, is not primarily a
 consequence of the underlying type theory.  It arises from elaboration and
 typeclass inference, which may synthesize different enumerations at different
-occurrences.  The following subsections treat these obstacles separately.
+occurrences.  Only the first is forced by the representation itself and would
+arise in any proof assistant that models flags as isomorphism classes; the
+others are shaped by Lean's treatment of dependent equality and instance
+synthesis, so a port to Rocq, Agda, or Isabelle/HOL\@ would likely meet them
+in a different form.  The following subsections treat these obstacles
+separately.
 
 Counting identities present one further challenge: two density expressions
 may count the same configurations using different finite representations.
@@ -4076,7 +4081,7 @@ the prescribed profile with non-vanishing probability.  The equality
 homomorphism can be approximated by finite constructions of this kind.} when
 \(S_\sigma=Q_\sigma\).
 
-\begin{definition}[Quotient and ensemble orders]\label{def:two-constrained-orders}
+\begin{definition}[Built-in and ensemble orders]\label{def:two-constrained-orders}
 Let \(\mathcal K\subseteq\mathcal G\) be hereditary, let \(\sigma\) be a flag
 type, and let \(f,g\in\FlagAlg{\sigma}[\mathcal G]\).  Define
 \[
@@ -4098,8 +4103,9 @@ and
 \]
 \end{definition}
 
-The first is the ordinary semantic order in the constrained quotient algebra:
-equivalently, every positive homomorphism
+The first is the built-in order of \Cref{rem:builtin-hfree}, written
+\(\leq^{\mathrm{quot}}\) because it is the ordinary semantic order in the
+constrained quotient algebra: equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
 \(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second quantifies over each
 \(\phi_0\in Q_0\) on its right-hand side.  For such a
@@ -4144,7 +4150,7 @@ condition under which the two orders agree.  Evaluation of
 \(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
 measure is equivalent to non-negativity on its support; continuity then shows
 that non-negativity in the ensemble semantics is exactly non-negativity on
-\(S_\sigma\).  Non-negativity in the quotient semantics is, by definition,
+\(S_\sigma\).  Non-negativity in the built-in semantics is, by definition,
 non-negativity on \(Q_\sigma\).
 The inclusion in Equation~\eqref{eq:S-subset-Q} proves the forward implication, and
 \(S_\sigma=Q_\sigma\) proves equivalence.
@@ -4155,10 +4161,10 @@ The necessity of root-plantability requires more than this observation.  If
 continuous function that is strictly positive on \(S_\sigma\) and strictly
 negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
 function by evaluation of a flag-algebra element.  The resulting element is
-non-negative in the ensemble semantics but not in the quotient semantics,
+non-negative in the ensemble semantics but not in the built-in semantics,
 so the two orders
 cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
-quotient proofs are always sound for ensemble semantics, and they capture all
+built-in proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
 \boldparagraph{When root-plantability holds.}
@@ -4268,8 +4274,8 @@ every point of \(S_{\sigma_1}\) evaluates \(d\) to zero,
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \end{equation}
 Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be non-negative in the
-quotient semantics.
-The example exhibits a genuine gap between the two typed orders: quotient
+built-in semantics.
+The example exhibits a genuine gap between the two typed orders: built-in
 semantics permits a specially chosen vertex to carry the label, whereas
 ensemble semantics labels a uniformly sampled vertex.
 
@@ -4349,106 +4355,63 @@ non-hereditary limit constraints such as fixing the edge density.
 \label{sec:unsure}
 
 The formalization and end-to-end certificate proofs presented above are fully
-checked in Lean.  This section instead concerns design questions whose broader
-consequences cannot be settled by the present implementation alone: when
-forbidden-graph constraints should enter the theory, which engineering costs
-are specific to Lean, whether specification and computation should use
-separate representations, and how far the current computational layer can
-scale.  For each question, we distinguish what the present development
-demonstrates from what would require alternative implementations or larger
-computations to determine.
+checked in Lean.  This section instead concerns design questions that the
+present implementation cannot settle on its own.  For each, we distinguish what
+the development demonstrates from what would require alternative
+implementations or larger computations to determine.
 
 \boldparagraph{When should a forbidden-graph constraint enter the formalization?}
-The predicate \lean{forbidLE} (\Cref{sec:forbidden}) keeps the ambient flag
-algebra independent of the forbidden graph and imposes the constraint later,
-when a semantic inequality is stated.  Razborov's universal-theory
-presentation instead incorporates the constraint into the construction of
-the flags, algebras, and positive homomorphisms.  Consequently, the two
-approaches give different semantics to intermediate inequalities involving
-labeled flags: the former restricts their interpretations, whereas the latter
-removes inadmissible flags through the constrained algebra.  As
-\Cref{thm:support-closure-summary} shows, this distinction disappears
-precisely when the underlying hereditary class is root-plantable; in that
-case, the two semantics validate the same typed inequalities.  Even without
-root-plantability, every quotient inequality implies the corresponding
-ensemble inequality.  This one-way implication is sufficient to transfer the
-flag-algebra inequalities formalized here to the final unlabeled Tur\'an bounds.
+We deferred it: the ensemble semantics (\Cref{sec:forbidden}) imposes the
+constraint only at the point of comparison, and the seven certificates of
+\Cref{sec:results}, which forbid four different graphs, share one ambient
+algebra and one body of algebraic lemmas.  The choice costs nothing in
+soundness: the ensemble semantics yields the asymptotic bounds on its own, and
+the comparison with Razborov's built-in semantics in \Cref{sec:metatheory} is
+mathematics rather than a proof obligation.
 
-These semantic results do not by themselves determine which design is
-preferable in a proof assistant.  Even when root-plantability ensures that the
-two semantics validate the same inequalities, the implementations may have
-different proof-engineering costs.  Deferring the constraint allows core
-definitions and algebraic lemmas to be reused across forbidden graphs;
-incorporating it at the outset may streamline arguments specific to a fixed
-extremal problem.  Evaluating this tradeoff would require formalizing
-comparable certificate proofs under both designs.
-
-\boldparagraph{Which engineering obstacles are Lean-specific?}
-\Cref{sec:obstacles} includes both obligations common to quotient-based
-formalizations and difficulties tied more closely to Lean.  If flags are
-represented as isomorphism classes, a construction first defined on labeled
-graphs must be proved invariant under isomorphism before it can be applied to
-flags.  The same well-definedness obligation would arise in any proof
-assistant using this representation.  The remaining difficulties have causes
-more closely tied to Lean.  Binding a particular \lean{Fintype}
-instance is needed because Lean's elaborator may synthesize different instance
-terms for different occurrences of the same carrier type.  The use of
-\lean{HEq} reflects Lean's dependent type theory: pointwise-equal type families
-need not be definitionally equal, so terms indexed by them cannot immediately
-be compared using ordinary equality.
-Other proof assistants handle finite enumeration, implicit arguments, and
-dependent equality differently.  We therefore do not know which of these
-Lean-specific proof-engineering techniques would be needed in a port to Rocq,
-Agda, or Isabelle/HOL\@.  The underlying combinatorial identities and the
-well-definedness obligations created by quotient representations would remain,
-but their formal expression and proof cost could differ.
+This does not settle which design is cheaper overall.  Incorporating the
+constraint from the outset may streamline arguments specific to a fixed
+extremal problem, and we have not formalized comparable certificate proofs
+under that design.  Even when root-plantability makes the two semantics
+validate the same inequalities, the implementations need not cost the same.
 
 \boldparagraph{Should specification and computation use separate representations?}
-Our development maintains two representations
-(\Cref{sec:abstract,sec:reflection}).  The specification layer uses
-quotients and definitions close to the mathematics, allowing the abstract
-theory to ignore choices of graph representatives.  The reflection layer uses
-the concrete \lean{Sym2Graph} representation to evaluate finite densities,
-downward coefficients, and multiplication tables.  Adequacy theorems connect
-the two, turning these evaluations into facts about the specification-level
-definitions.  The density and multiplication facts used throughout our case
-studies are obtained in this way.
-
-This separation lets us keep the abstract development simple while retaining
-an efficient executable representation.  It also creates a substantial
-bridge of adequacy proofs.  One alternative is to state the theory directly
-on a concrete, canonical representation: this would reduce the bridge, but
-representation and canonicalization choices would become visible in the
-statements and proofs of the abstract theory.  We have not carried this
-alternative through comparable case studies, so we do not know which
-architecture minimizes the total proof and computation cost.
+Maintaining the two representations of \Cref{sec:abstract,sec:reflection} kept
+the abstract development close to the mathematics, and every density and
+multiplication fact used by the seven case studies was obtained by executable
+evaluation and carried across by an adequacy theorem.  The bridge itself is
+substantial.  One alternative is to state the theory directly on a concrete,
+canonical representation: this would reduce the bridge, but representation and
+canonicalization choices would become visible in the statements and proofs of
+the abstract theory.  Deciding between the two on cost would take a second
+development of comparable scope.  The separation is at least a well-trodden
+one: it is the established methodology of Cohen et
+al.~\cite{cohen2013refinements}, and the concurrent formalization of local
+flag algebras~\cite{davey2026local}, a calculus that normalizes by maximum
+degree and takes no quotient at all, independently makes the same split
+between a noncomputable specification and a computable representation.
 
 \boldparagraph{Can the computational layer scale beyond five vertices?}
 Our seven end-to-end certificates (\Cref{sec:results}) expand their
-calculations over graphs on three, four, or five vertices.  At this scale,
-the optimized enumeration of \Cref{sec:reflection-generation}, size-inductive,
-deduplicated, and pruned under the forbidden graph, keeps the required
-families of finite identities manageable.  For the Erd\H{o}s pentagon
-certificate, whose calculations expand over five-vertex graphs, the three
-flag types require 1800, 672, and 360 pair-density theorems, respectively.
-Lean checks all 2832 identities by \lean{decide +kernel} and then uses the
-resulting theorems in the complete certificate proof.  This confirms that
-certificates at the five-vertex scale do go through the current reflection
-and automation layers, though only just: the Erd\H{o}s pentagon is the
-largest certificate carried entirely on the kernel-checked path.
+calculations over graphs on three, four, or five vertices.  At this scale, the
+optimized enumeration of \Cref{sec:reflection-generation} keeps the required
+families of finite identities manageable: the Erd\H{o}s pentagon certificate
+needs 2,832 pair-density theorems across its three flag types, all checked by
+\lean{decide +kernel}.  Certificates at the five-vertex scale therefore do go
+through the current reflection and automation layers, though only just, since
+the Erd\H{o}s pentagon is the largest carried entirely on the kernel-checked
+path.
 
 Going substantially beyond five vertices remains a major engineering
 challenge.  As the number of vertices grows, so do the families of flags,
 the density and multiplication identities generated from their pairs, and the
 expressions that the final algebraic proof must normalize.  The cost of
-kernel-checked evaluation grows with them: already at five vertices, the two
-largest certificates, with 10,332 and 8,172 pair-density theorems, could not
-be checked by \lean{decide +kernel} in acceptable time and fall back to
-\lean{native\_decide} (\Cref{tab:compile-times}), and eliminating that
-fallback is part of the same scaling problem.  Scaling to larger
-certificates will therefore likely require more efficient executable graph
-representations and counting algorithms in the reflection layer, as well as
-improvements to theorem generation and algebraic normalization.  This
+kernel-checked evaluation grows with them: the two certificates that fall back
+to \lean{native\_decide} (\Cref{sec:results}) need 10,332 and 8,172
+pair-density theorems.  Scaling further will therefore likely require more
+efficient executable graph representations and counting algorithms in the
+reflection layer, as well as improvements to theorem generation and algebraic
+normalization.  This
 ceiling is not unique to formal verification: certificate generation itself
 faces the same combinatorial growth, and Flagmatic is in practice limited to
 expanding its calculations in the basis of graphs on about seven or eight
@@ -4607,8 +4570,8 @@ separate algebra for each forbidden family, we kept one ambient algebra and
 imposed the forbidden-subgraph constraint only when its elements are compared.
 This ensemble semantics keeps the core definitions independent of the extremal
 problem being solved, and it yields the intended asymptotic bounds on its own
-terms.  Asking how it relates to Razborov's original semantics turned into
-mathematics of its own: quotient validity always implies ensemble validity, and
+terms.  Asking how it relates to the built-in semantics turned into
+mathematics of its own: built-in validity always implies ensemble validity, and
 the converse holds for all expressions exactly when the class is
 root-plantable.
 
