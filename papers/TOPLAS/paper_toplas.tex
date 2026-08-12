@@ -4199,33 +4199,44 @@ gap.
 \label{sec:related}
 
 \boldparagraph{Certificate checking and proof reconstruction.}
-Consuming the output of untrusted solvers without trusting them is a
-well-developed theme in verification: clausal proofs for
-SAT~\cite{lammich2020unsat,tan2023cakelpr}, proof reconstruction and verified
-checkers for SMT~\cite{bohme2010z3,armand2011modular}, and rounded
-sums-of-squares certificates for polynomial
-inequalities~\cite{harrison2007verifying,besson2006fast,morrison2026sos},
-whose underlying semidefinite relaxation goes back to Shor and
-Parrilo~\cite{parrilo2003minimizing}.  Validating each run of a complex
-untrusted tool, rather than the tool itself, is the translation-validation
-strategy~\cite{pnueli1998translation}, and the general discipline of having a
-computation emit a witness that a cheap checker can verify is that of
-certifying algorithms~\cite{mcconnell2011certifying}, whose checkers have
-themselves been formally verified~\cite{alkassar2014framework};
-Roux et al.\ study the discipline for numerical SDP-solver output in the
-context of program invariants~\cite{roux2018validating}.  Our compiler is closest to Morrison's
-\lean{sos} tactic~\cite{morrison2026sos}, which finds a certificate with an
-external semidefinite solver, rounds it, and verifies it through an
-$LDL^\top$ factorization: we too are invoked on a stated goal with the
-certificate as hint data, and check positive semidefiniteness by exact
-rational $LDL^\top$.  What distinguishes the flag-algebra setting is that the
-certificate refers to objects the checker must first build: a \lean{sos} or
-clausal certificate is checked against objects the goal already names, whereas
-here Lean regenerates the flags up to isomorphism and proves the enumeration
-exhaustive before any coefficient can be checked.  The obligations that follow
-are correspondingly mixed: thousands of density identities decided by
-trusted evaluation, normalization in a quotient algebra, and
-forbidden-subgraph reasoning.
+Checking the output of an untrusted solver without adding the solver to the
+trusted base is a well-established theme in verification.  Examples include
+clausal proofs for SAT~\cite{lammich2020unsat,tan2023cakelpr}, proof
+reconstruction and verified checkers for
+SMT~\cite{bohme2010z3,armand2011modular}, and sums-of-squares certificates for
+polynomial
+inequalities~\cite{harrison2007verifying,besson2006fast,morrison2026sos}.
+These systems follow the certifying-algorithm paradigm: an untrusted procedure
+performs the expensive search and returns evidence that a simpler checker
+validates~\cite{mcconnell2011certifying}; such checkers can themselves be
+formally verified~\cite{alkassar2014framework}.  Translation validation applies
+the same per-run principle to compilers and other
+translators~\cite{pnueli1998translation}.  Roux et al.\ apply the pattern to
+numerical SDP-solver output for polynomial program
+invariants~\cite{roux2018validating}.
+
+Our approach is closest to Morrison's \lean{sos}
+tactic~\cite{morrison2026sos}, which uses an external semidefinite solver to
+find a floating-point Gram matrix, rounds it to rational data, and verifies the
+resulting sums-of-squares decomposition through rational $LDL^\top$.  The final
+tactic in our pipeline plays a similar role: it treats the certificate as
+untrusted hint data and, for each sums-of-squares block, constructs an exact
+rational factorization
+$M=L\operatorname{diag}(d)L^\top$
+and asks Lean to check both the matrix identity and the non-negativity of every
+entry of $d$.  These checks establish positive semidefiniteness without
+floating-point arithmetic.  The main difference lies in the verified context
+available to the checker.  For \lean{sos}, the stated goal already supplies the
+polynomial inequality; after reifying the goal, the tactic can check the
+rational sums-of-squares identity directly.  A flag-algebra certificate, by
+contrast, names types, flags, and host graphs considered up to isomorphism,
+while the theorem statement neither enumerates these objects nor supplies the
+density and multiplication identities needed to check the certificate.
+Earlier elaboration commands therefore generate canonical representatives,
+prove the enumerations exhaustive, and establish the required identities before
+the final tactic matches the certificate flags, expands the quadratic forms,
+and checks the resulting coefficients.  Verification also requires
+normalization in the quotient algebra and forbidden-subgraph reasoning.
 
 \boldparagraph{Proof by reflection and trusted evaluation.}
 Proof by reflection is a classical technique in the Rocq community, going
