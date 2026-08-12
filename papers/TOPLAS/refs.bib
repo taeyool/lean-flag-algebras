@@ -189,7 +189,7 @@
   author = {A. Anderson and others},
   title  = {Formalization of the polynomial {F}reiman--{R}uzsa conjecture of {M}arton},
   year   = {2023},
-  note   = {Formalization project, version 0.1.0},
+  note   = {Formalization project led by T. Tao, version 0.1.0},
   url    = {https://teorth.github.io/pfr/}
 }
 
@@ -204,7 +204,7 @@
   author = {E. R. Vaughan},
   title  = {Flagmatic 2.0},
   year   = {2013},
-  note   = {Computer software. Archived copy available at \url{https://github.com/jsliacan/flagmatic-2.0}}
+  note   = {Computer software. Community-maintained copy available at \url{https://github.com/jsliacan/flagmatic-2.0}, accessed August 2026}
 }
 
 @book{chlipala2013cpdt,
@@ -250,14 +250,15 @@
   pages     = {83--99},
   publisher = {American Mathematical Society},
   address   = {Providence, RI},
-  year      = {2003}
+  year      = {2003},
+  doi       = {10.1090/dimacs/060/08}
 }
 
 @misc{morrison2026sos,
   author = {K. Morrison},
   title  = {Harrison's sum-of-squares decision procedure for nonlinear real arithmetic in {L}ean 4},
   year   = {2026},
-  note   = {Computer software},
+  note   = {Computer software, accessed August 2026},
   url    = {https://github.com/leanprover/sos}
 }
 
@@ -295,9 +296,9 @@
 
 @misc{freer2026graphon,
   author = {C. Freer},
-  title  = {Graphon theory in {L}ean 4},
+  title  = {Graphons in {L}ean 4},
   year   = {2026},
-  note   = {Computer software},
+  note   = {Computer software, accessed August 2026},
   url    = {https://github.com/cameronfreer/graphon}
 }
 
@@ -323,10 +324,11 @@
 }
 
 %% ---- Added 2026-07-30 for the TOPLAS reframing (intro + related work). ----
-%% TODO(verify before submission): the following bibliographic details were
-%% added from memory and should be double-checked against the publishers'
-%% pages: volume/pages of tan2023cakelpr, roux2018validating,
-%% sozeau2020metacoq, besson2006fast, armand2011modular; DOI of moura2021lean.
+%% 2026-08-12 fact-check: tan2023cakelpr, roux2018validating, besson2006fast,
+%% and armand2011modular verified against dblp/Crossref (roux author list
+%% corrected: Sankaranarayanan, not Garoche); DOIs added.
+%% TODO(verify before submission): volume/pages of sozeau2020metacoq; DOI of
+%% moura2021lean.
 
 @article{gonthier2008fourcolour,
   author  = {G. Gonthier},
@@ -357,7 +359,8 @@
   pages     = {151--166},
   publisher = {Springer},
   address   = {Berlin, Heidelberg},
-  year      = {1998}
+  year      = {1998},
+  doi       = {10.1007/BFb0054170}
 }
 
 @inproceedings{armand2011modular,
@@ -369,7 +372,8 @@
   pages     = {135--150},
   publisher = {Springer},
   address   = {Berlin, Heidelberg},
-  year      = {2011}
+  year      = {2011},
+  doi       = {10.1007/978-3-642-25379-9_12}
 }
 
 %% Added 2026-08-04 (intro fact-check); details verified against dblp/Springer.
@@ -402,6 +406,7 @@
   title   = {Verified propagation redundancy and compositional {UNSAT} checking in {C}ake{ML}},
   journal = {International Journal on Software Tools for Technology Transfer},
   volume  = {25},
+  number  = {2},
   pages   = {167--184},
   year    = {2023},
   doi     = {10.1007/s10009-022-00690-y}
@@ -416,17 +421,19 @@
   pages     = {48--62},
   publisher = {Springer},
   address   = {Berlin, Heidelberg},
-  year      = {2007}
+  year      = {2007},
+  doi       = {10.1007/978-3-540-74464-1_4}
 }
 
 @article{roux2018validating,
-  author  = {P. Roux and Y.-L. Voronin and P.-L. Garoche},
+  author  = {P. Roux and Y.-L. Voronin and S. Sankaranarayanan},
   title   = {Validating numerical semidefinite programming solvers for polynomial invariants},
   journal = {Formal Methods in System Design},
   volume  = {53},
   number  = {2},
   pages   = {286--312},
-  year    = {2018}
+  year    = {2018},
+  doi     = {10.1007/s10703-017-0302-y}
 }
 
 @inproceedings{moura2021lean,
@@ -464,7 +471,7 @@
 }
 
 @article{ahman2026everest,
-  author  = {D. Ahman and K. Bhargavan and B. Bond and J. Bosamiya and others},
+  author  = {D. Ahman and K. Bhargavan and B. Bond and J. Bosamiya and C. Brzuska and A. Delignat-Lavaud and C. Fournet and A. Fromherz and S. Gibson and C. Hawblitzel and C. Hritcu and M. Kohlweiss and G. Mart{\'i}nez and H. Ni and B. Parno and J. Protzenko and T. Ramananandro and A. Rastogi and E. Rivas and N. Swamy and S. Zanella-B{\'e}guelin},
   title   = {Project {E}verest: Perspectives from developing industrial-grade high-assurance software},
   journal = {ACM Transactions on Programming Languages and Systems},
   volume  = {48},
@@ -518,4 +525,32 @@
   pages   = {241--273},
   year    = {2014},
   doi     = {10.1007/s10817-013-9289-2}
+}
+
+%% ---- Added 2026-08-12 (related-work fact-check); verified against dblp/DROPS. ----
+
+@inproceedings{boutin1997reflection,
+  author    = {S. Boutin},
+  title     = {Using reflection to build efficient and certified decision procedures},
+  booktitle = {Theoretical Aspects of Computer Software (TACS 1997)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {1281},
+  pages     = {515--529},
+  publisher = {Springer},
+  address   = {Berlin, Heidelberg},
+  year      = {1997},
+  doi       = {10.1007/BFb0014565}
+}
+
+@inproceedings{dahmen2019capset,
+  author    = {S. R. Dahmen and J. H{\"o}lzl and R. Y. Lewis},
+  title     = {Formalizing the solution to the cap set problem},
+  booktitle = {10th International Conference on Interactive Theorem Proving (ITP 2019)},
+  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
+  volume    = {141},
+  pages     = {15:1--15:19},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address   = {Dagstuhl, Germany},
+  year      = {2019},
+  doi       = {10.4230/LIPIcs.ITP.2019.15}
 }
