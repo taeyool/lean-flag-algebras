@@ -4114,63 +4114,68 @@ it would require either building a competing implementation or running
 substantially larger examples.
 
 \boldparagraph{When should a forbidden-graph constraint enter the formalization?}
-We deferred it: the ensemble semantics (\Cref{sec:forbidden}) imposes the
-constraint only at the point of comparison, and the seven certificates of
-\Cref{sec:results}, which forbid four different graphs, share one ambient
-algebra and one body of algebraic lemmas.  The choice costs nothing in
-soundness: the ensemble semantics yields the asymptotic bounds on its own, and
-the comparison with Razborov's built-in semantics in \Cref{sec:metatheory} is
-mathematics rather than a proof obligation.
+In our ensemble semantics (\Cref{sec:forbidden}), we defer the constraint until
+elements are compared.  Consequently, the seven certificates of
+\Cref{sec:results}, involving four different forbidden graphs, share a single
+ambient algebra and a common library of algebraic lemmas.  This choice does not
+compromise soundness: the ensemble semantics yields the asymptotic bounds
+directly.  Comparing it with Razborov's standard, built-in semantics in
+\Cref{sec:metatheory} is a separate mathematical question, not a
+soundness obligation.
 
-This does not settle which design is cheaper overall.  Incorporating the
-constraint from the outset may streamline arguments specific to a fixed
-extremal problem, and we have not formalized comparable certificate proofs
-under that design.  Even when root-plantability makes the two semantics
-validate the same inequalities, the implementations need not cost the same.
+This does not determine which design is more economical overall.  Building the
+constraint in from the outset may streamline arguments for a fixed extremal
+problem, but we have not formalized comparable certificate proofs using that
+design.  Even when root-plantability ensures that the two semantics validate
+the same inequalities, their implementations may differ in engineering and
+computational cost.
 
 \boldparagraph{Should specification and computation use separate representations?}
-Maintaining the two representations of \Cref{sec:abstract,sec:reflection} kept
-the abstract development close to the mathematics, and every density and
-multiplication fact used by the seven case studies was obtained by executable
-evaluation and carried across by an adequacy theorem.  The bridge itself is
-substantial.  One alternative is to state the theory directly on a concrete,
-canonical representation: this would reduce the bridge, but representation and
-canonicalization choices would become visible in the statements and proofs of
-the abstract theory.  Deciding between the two on cost would take a second
-development of comparable scope.  The separation is at least a well-trodden
-one: it is the established methodology of Cohen et
-al.~\cite{cohen2013refinements}, and the concurrent formalization of local
-flag algebras~\cite{davey2026local}, a calculus that normalizes by maximum
-degree and takes no quotient at all, independently makes the same split
-between a noncomputable specification and a computable representation.
+Using separate representations for specification and computation kept the
+abstract development close to standard mathematics while making finite
+calculations executable.  In all seven case studies, the required density facts
+were obtained by executable evaluation and transferred to the specification
+layer by adequacy theorems; the multiplication facts were then derived from
+these density facts.  Maintaining this bridge required substantial work.  An
+alternative would be to formulate the theory directly using a concrete,
+canonical representation.  This could reduce the bridging work, but choices
+about representation and canonicalization would then appear in the statements
+and proofs of the mathematical theory.  Determining which approach is less
+costly would require a second development of comparable scope.  Nevertheless,
+our separation follows the established methodology of Cohen et
+al.~\cite{cohen2013refinements}.  It also appears independently in the
+concurrent formalization of local flag algebras~\cite{davey2026local}, a
+calculus normalized by maximum degree that takes no quotient and likewise
+separates a noncomputable specification from a computable representation.
 
 \boldparagraph{Can the computational layer scale beyond five vertices?}
-Our seven end-to-end certificates (\Cref{sec:results}) expand their
-calculations over graphs on three, four, or five vertices.  At this scale, the
-optimized enumeration of \Cref{sec:reflection-generation} keeps the required
-families of finite identities manageable: the Erd\H{o}s pentagon certificate
-needs 2,832 pair-density theorems across its three flag types, all checked by
-\lean{decide +kernel}.  Certificates at the five-vertex scale therefore do go
-through the current reflection and automation layers, though only just, since
-the Erd\H{o}s pentagon is the largest carried entirely on the kernel-checked
-path.
+Our seven end-to-end certificates (\Cref{sec:results}) use host graphs on three,
+four, or five vertices.  At these sizes, the optimized enumeration of
+\Cref{sec:reflection-generation} keeps the required families of finite
+identities manageable.  The Erd\H{o}s pentagon certificate, for example,
+generates 2,832 pair-density theorems across its three flag types, all checked
+by \lean{decide +kernel}.  Thus, the current reflection and automation layers
+can handle certificates with five-vertex hosts.  Fully kernel-checked
+compilation, however, is already near its practical limit: the Erd\H{o}s
+pentagon certificate is the largest example completed entirely on the
+kernel-checked path.
 
 Going substantially beyond five vertices remains a major engineering
-challenge.  As the number of vertices grows, so do the families of flags,
-the density and multiplication identities generated from their pairs, and the
-expressions that the final algebraic proof must normalize.  The cost of
-kernel-checked evaluation grows with them: the two certificates that fall back
-to \lean{native\_decide} (\Cref{sec:results}) need 10,332 and 8,172
-pair-density theorems.  Scaling further will therefore likely require more
-efficient executable graph representations and counting algorithms in the
-reflection layer, as well as improvements to theorem generation and algebraic
-normalization.  This
-ceiling is not unique to formal verification: certificate generation itself
-faces the same combinatorial growth, and Flagmatic is in practice limited to
-expanding its calculations in the basis of graphs on about seven or eight
-vertices.  The formal pipeline reaches its
-limit earlier, and we have not yet determined which of its costs dominates
-or how much of the gap such optimizations can close.
+challenge.  As the host size grows, the number of flags and generated
+pair-density and multiplication identities grows, as does the size of the
+expressions that the final algebraic proof must normalize.  The other two
+five-vertex certificates illustrate this growth: the $K_5$-free and
+$C_5$-free edge-density cases require 10,332 and 8,172 pair-density theorems,
+respectively, and therefore use \lean{native\_decide}.  Scaling further will
+likely require more efficient executable graph representations and counting
+algorithms in the reflection layer, as well as improvements to theorem
+generation and algebraic normalization.  The same combinatorial growth also
+constrains certificate generation: the Flagmatic user guide documents support
+for bases of up to eight vertices for ordinary graphs and seven for
+3-graphs~\cite{vaughan2012flagmaticguide}.  Our formal pipeline currently
+reaches a practical limit earlier, and we have not yet determined which stage
+is the dominant bottleneck or how much these optimizations could narrow the
+gap.
 
 \section{Related Work}
 \label{sec:related}
