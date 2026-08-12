@@ -4218,24 +4218,21 @@ invariants~\cite{roux2018validating}.
 Our approach is closest to Morrison's \lean{sos}
 tactic~\cite{morrison2026sos}, which uses an external semidefinite solver to
 find a floating-point Gram matrix, rounds it to rational data, and verifies the
-resulting sums-of-squares decomposition through rational $LDL^\top$.  The final
-tactic in our pipeline plays a similar role: it treats the certificate as
-untrusted hint data and, for each sums-of-squares block, constructs an exact
-rational factorization
+resulting sums-of-squares decomposition through rational $LDL^\top$.  Our
+certificate-checking tactic, \lean{flag\_certificate}, plays a similar role: it
+treats the certificate as untrusted hint data and, for each sums-of-squares
+block, constructs an exact rational factorization
 $M=L\operatorname{diag}(d)L^\top$
 and asks Lean to check both the matrix identity and the non-negativity of every
 entry of $d$.  These checks establish positive semidefiniteness without
-floating-point arithmetic.  The main difference lies in the verified context
-available to the checker.  For \lean{sos}, the stated goal already supplies the
-polynomial inequality; after reifying the goal, the tactic can check the
-rational sums-of-squares identity directly.  A flag-algebra certificate, by
-contrast, names types, flags, and host graphs considered up to isomorphism,
-while the theorem statement neither enumerates these objects nor supplies the
-density and multiplication identities needed to check the certificate.
-Earlier elaboration commands therefore generate canonical representatives,
-prove the enumerations exhaustive, and establish the required identities before
-the final tactic matches the certificate flags, expands the quadratic forms,
-and checks the resulting coefficients.  Verification also requires
+floating-point arithmetic.  The main difference is that \lean{sos} does not
+have to construct and verify a separate family of combinatorial objects before
+checking its certificate.  A flag-algebra certificate, by contrast, refers to
+types, flags, and host graphs considered up to isomorphism.
+Certificate-specific elaboration commands therefore generate canonical
+representatives, prove the enumerations exhaustive, and establish the required
+density and multiplication identities before \lean{flag\_certificate}
+interprets and checks the certificate.  This verification also involves
 normalization in the quotient algebra and forbidden-subgraph reasoning.
 
 \boldparagraph{Proof by reflection and trusted evaluation.}
@@ -4338,9 +4335,9 @@ Flag-algebra certificates are produced by unverified numerical toolchains and
 are far too large to audit by hand.  We have built a Lean~4
 certificate-to-proof pipeline that consumes such certificates without trusting
 them.  Certificate-specific elaboration commands first generate the required
-density and multiplication identities; a final tactic then reads the
-certificate, checks its remaining claims, and assembles a complete proof of a
-theorem stated in the source file.  Underlying the pipeline are a
+density and multiplication identities; the certificate-checking tactic then
+reads the certificate, checks its remaining claims, and assembles a complete
+proof of a theorem stated in the source file.  Underlying the pipeline are a
 specification layer that follows the standard mathematics and a reflection
 layer that makes the finite parts of that mathematics executable, joined by
 adequacy theorems.  We compiled seven Tur\'an-type upper bounds, and paired two
