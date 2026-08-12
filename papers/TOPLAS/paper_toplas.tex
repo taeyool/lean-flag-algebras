@@ -4228,34 +4228,36 @@ interprets and checks the certificate.  This verification also involves
 normalization in the quotient algebra and forbidden-subgraph reasoning.
 
 \boldparagraph{Proof by reflection and trusted evaluation.}
-Proof by reflection is a classical technique in the Rocq community, going
-back to Boutin~\cite{boutin1997reflection}; Chlipala gives an extended
-treatment~\cite{chlipala2013cpdt}.  Cohen et
-al.~\cite{cohen2013refinements} develop a systematic methodology for building
-efficiently computable representations alongside their abstract counterparts,
-which our \lean{Sym2Graph}-based reflection layer and its adequacy theorems
-follow.  Reflection then raises the question of what performs the evaluation.
-Rocq has developed this design space explicitly: \lean{vm\_compute} evaluates
-through a bytecode machine implemented inside the
-kernel~\cite{gregoire2002compiled}, whereas \lean{native\_compute} compiles to
-native code and adds the OCaml compiler and runtime to the trusted
-base~\cite{boespflug2011full}.  Lean's \lean{decide +kernel} and
-\lean{native\_decide} occupy the same two trust positions (though the Lean
-kernel reduces terms directly rather than through a bytecode machine), and
-our certificates sit at both; we report which obligation rests on which
-mechanism (\Cref{sec:flagmatic-trust}) rather than quote a single trust
-level.
+Proof by reflection has a long history in Rocq, from
+Boutin~\cite{boutin1997reflection} to the extended treatment by
+Chlipala~\cite{chlipala2013cpdt}.  Cohen et
+al.~\cite{cohen2013refinements} develop a refinement methodology for relating
+representations suited to mathematical reasoning to more efficient
+representations suited to computation.  Our \lean{Sym2Graph}-based reflection
+layer follows this general pattern, with adequacy theorems connecting its
+computable representations to their specification-level counterparts.  The
+trust boundary of reflected computation depends on how that computation is
+evaluated.  Rocq's \lean{vm\_compute} uses a bytecode-based virtual machine
+within its trusted reduction machinery~\cite{gregoire2002compiled}, whereas
+\lean{native\_compute} compiles the computation to OCaml and therefore also
+relies on the OCaml compiler and runtime~\cite{boespflug2011full}.  Lean offers
+an analogous choice: \lean{decide +kernel} evaluates the decision procedure by
+kernel reduction, whereas \lean{native\_decide} uses Lean's native compiler and
+extends the trusted base accordingly.  Our development uses both mechanisms,
+and \Cref{sec:flagmatic-trust} identifies which one is used for each certificate
+obligation.
 
 \boldparagraph{Proof engineering at scale.}
 Sustaining large mechanized developments raises engineering questions that
-are increasingly documented in their own right, from the survey of Ringer et
+are increasingly studied in their own right, from the survey of Ringer et
 al.~\cite{ringer2019qed} to the retrospective on Project
-Everest~\cite{ahman2026everest}.  That literature draws mostly on program
-verification; the obstacles we report (\Cref{sec:obstacles}) come from
-computational mathematics: in our development the dominant costs were
-computing with quotients of graphs up to isomorphism, casting between
-mathematically equal but not definitionally equal types, and controlling
-finite enumerations.
+Everest~\cite{ahman2026everest}.  That literature focuses largely on program
+verification, whereas the obstacles we report (\Cref{sec:obstacles}) arise
+from formalizing computational mathematics.  In our development, the main
+sources of proof-engineering effort were proving constructions well defined on
+graphs represented up to isomorphism, reconciling related objects whose
+dependent types Lean does not recognize as identical, and keeping inferred
+finite enumerations consistent.
 
 \boldparagraph{Formalizations of combinatorics.}
 Substantial combinatorial arguments have already been formalized in Lean.
@@ -4269,7 +4271,7 @@ a SAT certificate.  The collaborative PFR project~\cite{pfr2023} formalized
 the Gowers--Green--Manners--Tao proof~\cite{gowers2025marton} of the
 polynomial Freiman--Ruzsa conjecture in characteristic two.  Those
 formalizations are each organized around a headline theorem, contributing
-reusable infrastructure along the way; ours is aimed at the method itself: it
+reusable infrastructure along the way. Ours is aimed at the method itself: it
 formalizes the flag algebra, its semantics, and the finite machinery its
 certificates need.
 \Cref{sec:lowerbounds} shows the resulting library used directly, for
@@ -4309,16 +4311,14 @@ aimed at carrying out flag-algebra inequality proofs fully and automatically
 inside Lean, without an external tool or solver.
 
 \boldparagraph{Graph limits.}
-The theory of graph limits, to which flag algebras are closely related
-(convergent graph sequences, homomorphism densities, the graphon limit), is
-developed in depth by Lov\'asz and Szegedy and by
-Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.
-Freer has independently formalized a substantial graphon theory in Lean~4,
-covering cut distance, weak regularity, counting lemmas, and
-compactness~\cite{freer2026graphon}.  Our development works with
-convergent flag sequences, positive homomorphisms, and random extensions
-rather than graphons; connecting the two formalizations into a common formal
-account of the flag-algebra/graphon correspondence remains future work.
+Graphon theory provides an alternative analytic framework for the asymptotic
+graph-density phenomena studied by flag algebras; see Lov\'asz and Szegedy and
+Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.  Freer has formalized a
+substantial graphon theory in Lean~4, covering cut distance, weak regularity,
+counting lemmas, and compactness~\cite{freer2026graphon}.  Our
+development formalizes the flag-algebra side of this relationship rather than
+graphons.  Formally connecting our positive-homomorphism semantics to Freer's
+graphon formalization remains future work.
 
 \section{Conclusion}
 \label{sec:conclusion}
