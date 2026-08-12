@@ -3513,12 +3513,14 @@ operation on a quotient.  Comparing flags of different sizes, and comparing a
 tuple with its reordering, both come from carrying data in types, which puts
 related objects beyond the reach of ordinary equality.  The enumeration issue,
 by contrast,
-arises from elaboration and typeclass inference, which may synthesize
+arises from elaboration and instance synthesis, which may produce
 different enumerations at different occurrences.  Only the first is forced by
 the representation itself and would arise in any proof assistant that models
-flags as isomorphism classes; the others are shaped by Lean's treatment of
-dependent equality and instance synthesis, so a port to Rocq (formerly Coq),
-Agda, or Isabelle/HOL\@ would likely meet them in a different form.  A final
+flags as isomorphism classes.  The others are artifacts of a dependently
+typed setting with typeclass-driven elaboration: a port to Rocq (formerly
+Coq) or Agda would meet close analogues, whereas Isabelle/HOL's simple type
+theory cannot index flags by size at all, so a port there would trade these
+obstacles for a different set of obligations.  A final
 subsection collects the proof method these obligations kept demanding:
 identifying two finite sets by an explicit bijection.
 
@@ -3532,13 +3534,13 @@ flags only once
 \[
   G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G')
 \]
-is established.  \lean{Quotient.lift} takes that proof and returns the
+is established.  \lean{Quotient.lift} takes the rule and that proof and returns the
 function on flags, so the mechanism costs a line; the proof is what costs.
 
 The obligation recurs for every density and every graph operator, and again
-at the reflection boundary, where the decoding \lean{Sym2Flag.toFlag} of
-\Cref{sec:reflection-adequacy} must be shown to send equivalent concrete
-representations to the same abstract flag.  Rather than exposing both
+at the reflection boundary, where defining the decoding
+\lean{Sym2Flag.toFlag} of \Cref{sec:reflection-adequacy} requires showing
+that equivalent concrete representations decode to the same abstract flag.  Rather than exposing both
 representations in every later theorem, we discharge the obligation once and
 let subsequent proofs work with flags.
 
@@ -3550,7 +3552,7 @@ freely can inhabit different types and fall outside ordinary equality.  What
 the remedy costs depends on what the mismatch means.  A flag's size is such an
 index: the expansion identity~\eqref{eq:expansion-identity} equates a size-$m$
 flag with a combination of size-$n$ flags, and the dependent sum of
-\Cref{sec:formal-subflag-densities} suffices, since it puts every size in
+\Cref{sec:flagtypes} suffices, since it puts every size in
 \lean{FinFlag}~$\sigma$ and the two sides are then distinct elements that the
 quotient is there to identify, their difference being a generator of the zero
 space.  A reordered tuple is the harder case.  A tuple's type records the
@@ -3630,10 +3632,10 @@ The bridging lemma \lean{flagListDensity\_HEq\_eq} closes the gap:
 theorem flagListDensity_HEq_eq
     {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
     {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
-    (h_Vl_eq : Vl(*@$_0$@*) = Vl(*@$_1$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
+    (h_Vl_eq : Vl(*@$_1$@*) = Vl(*@$_0$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagListDensity Fl(*@$_0$@*) G = flagListDensity Fl(*@$_1$@*) G := ...
 \end{lstlisting}
-Its hypothesis \lean{h\_Vl\_eq} states \lean{listTypePermute Vl $\pi$ = Vl'},
+Its hypothesis \lean{h\_Vl\_eq} states \lean{Vl' = listTypePermute Vl $\pi$},
 proved by checking the two indices of \lean{Fin 2}, while \lean{h\_HEq} uses
 Lean's \emph{heterogeneous} equality, which relates terms whose types are not
 yet known to be equal; here it says that both tuples place $F_1$ at position
@@ -3651,7 +3653,7 @@ Lean distinguishes a proof that a type is finite from a mechanism for
 enumerating its elements.  An instance of \lean{Finite T} provides only the
 former; an instance of \lean{Fintype T} provides the latter:
 \begin{lstlisting}
-class Fintype (T : Type) where
+class Fintype (T : Type*) where
   elems : Finset T
   complete : (*@$\forall$@*) x : T, x (*@$\in$@*) elems
 \end{lstlisting}
@@ -3670,8 +3672,8 @@ evaluating them.
 The elaborator synthesizes such instances automatically, and the difficulty is
 not obtaining one but obtaining the same one every time.  In a development
 with multiple overlapping constructions (quotient types, embedded subgraphs,
-partial-function spaces), the same type can receive different \lean{Fintype}
-instances from different elaboration paths.  Their \lean{elems} fields cannot
+spaces of label placements and constrained embeddings), the same type can
+receive different \lean{Fintype} instances from different elaboration paths.  Their \lean{elems} fields cannot
 disagree as sets, since \lean{complete} forces each to contain every element;
 what differs is the term denoting that set, and when the two terms do not
 reduce to a common one definitionally, a rewrite or a direct application
@@ -3679,8 +3681,8 @@ fails, even though the instances are provably equal.
 
 The formalization responds in two ways.  The first is preventive: the moment a
 finite set is named, the intended instance is chosen and bound with
-\lean{let}, so that every later occurrence elaborates against the same binding
-rather than a fresh search.  The fragment below proves that two finite sets
+\lean{let}, so that every later occurrence elaborates against the same
+binding.  The fragment below proves that two finite sets
 related by a bijection have equal \lean{toFinset} counts:
 \begin{lstlisting}
 -- S0 and S1 are the two finite sets being counted,
@@ -3697,9 +3699,10 @@ It names the instance for each set, derives the equality of cardinalities from
 the bijection, and rewrites the \lean{toFinset} counts into that form.  The
 \lean{@} notation writes out the instance arguments that Lean would otherwise
 infer for itself, so one can see that \lean{card\_eq} and the two
-\lean{toFinset} terms use the same ones; without the bindings, instance search
-would run afresh at each occurrence and could return different terms, so the
-rewrite would fail.
+\lean{toFinset} terms use the same ones; without the bindings, each
+occurrence would receive whatever instance its own elaboration path supplies,
+and the rewrite fails whenever that term differs from the one inside the
+count being rewritten.
 
 This pattern appears in the proof of \lean{flagDensity\allowbreak\_permute},
 the invariance theorem of \Cref{sec:reordered-flag-tuples}: there \lean{S0}
