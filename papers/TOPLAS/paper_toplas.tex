@@ -3603,12 +3603,14 @@ The invariance is proved once, for
 every length and every permutation; the symmetry to be derived from it is the
 pair case:
 \begin{lstlisting}
-theorem flagDensity_permute {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
-    (Fl : FlagList (*@$\sigma$@*) t Vl) (G : Flag (*@$\sigma$@*) W) ((*@$\pi$@*) : Perm t)
+variable {T W U(*@$_0$@*) U(*@$_1$@*) : Type} [Fintype T] [Fintype W] [DecidableEq W] {(*@$\sigma$@*) : FlagType T}
+         [Fintype U(*@$_0$@*)] [DecidableEq U(*@$_0$@*)] [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
+         {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+
+theorem flagDensity_permute (Fl : FlagList (*@$\sigma$@*) t Vl) (G : Flag (*@$\sigma$@*) W) ((*@$\pi$@*) : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute (*@$\pi$@*)) G := ...
 
-theorem flagPairDensity_comm {T U(*@$_0$@*) U(*@$_1$@*) W : Type} {(*@$\sigma$@*) : FlagType T} 
-    (F(*@$_0$@*) : Flag (*@$\sigma$@*) U(*@$_0$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
+theorem flagPairDensity_comm (F(*@$_0$@*) : Flag (*@$\sigma$@*) U(*@$_0$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G = flagDensity(*@$_2$@*) F(*@$_1$@*) F(*@$_0$@*) G := ...
 \end{lstlisting}
 To derive the second statement from the first, suppose the $\sigma$-flags
@@ -3629,8 +3631,8 @@ definitionally the same.
 
 The bridging lemma \lean{flagListDensity\_HEq\_eq} closes the gap:
 \begin{lstlisting}
-theorem flagListDensity_HEq_eq
-    {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
+theorem flagListDensity_HEq_eq {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
+    [FintypeList Vl(*@$_0$@*)] [DecidableEqList Vl(*@$_0$@*)] [FintypeList Vl(*@$_1$@*)] [DecidableEqList Vl(*@$_1$@*)]
     {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
     (h_Vl_eq : Vl(*@$_1$@*) = Vl(*@$_0$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagListDensity Fl(*@$_0$@*) G = flagListDensity Fl(*@$_1$@*) G := ...
@@ -3720,12 +3722,13 @@ differ only in the inferred instances inside them.  The
 tactic \lean{congr!} closes such goals; it decomposes the equality into
 congruence subgoals and discharges the instance mismatches, which is sound
 because any two \lean{Fintype} instances of the same type are provably
-equal (\lean{Fintype T} is a subsingleton).  The bridging lemma
+equal (\lean{Fintype T} is a subsingleton, and likewise \lean{DecidableEq T}).  The bridging lemma
 \lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq}, the other theorem of
 \Cref{sec:reordered-flag-tuples}, is closed exactly this way: once its
 families and tuples have been identified, the two sides differ only in the
-\lean{Fintype} instances that its \lean{FintypeList} hypothesis supplies for
-the component types, and \lean{congr!} resolves those.
+enumeration and decidability instances that its \lean{FintypeList} and
+\lean{DecidableEqList} hypotheses supply for the component types, and
+\lean{congr!} resolves those.
 
 These explicit \lean{Fintype} choices are needed only where finite sets are
 converted to \lean{Finset}s or their cardinalities are compared.  Once the
