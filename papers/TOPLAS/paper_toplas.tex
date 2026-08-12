@@ -3531,9 +3531,7 @@ do not depend on arbitrary vertex names, but it also imposes a recurring
 well-definedness obligation.  A construction defined on concrete graphs gives
 a construction on flags only after it has been shown to respect isomorphism.
 Thus, for a rule $G\mapsto A(G)$, one must prove
-\[
-  G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G').
-\]
+that $G \simeq_f G'$ implies $A(G)=A(G')$.
 In Lean, \lean{Quotient.lift} combines the rule with this compatibility proof
 to produce a function on flags.  The quotient lift itself is brief; proving
 the required compatibility is often the substantial part.
@@ -3591,13 +3589,11 @@ by precomposition:
 \begin{lstlisting}
 abbrev Perm (t : (*@$\mathbb{N}$@*)) := Fin t (*@$\simeq$@*) Fin t
 
-def listTypePermute {t : (*@$\mathbb{N}$@*)} (Vl : Fin t (*@$\to$@*) Type) ((*@$\pi$@*) : Perm t)
-    : Fin t (*@$\to$@*) Type :=
+def listTypePermute {t : (*@$\mathbb{N}$@*)} (Vl : Fin t (*@$\to$@*) Type) ((*@$\pi$@*) : Perm t) : Fin t (*@$\to$@*) Type :=
   fun i => Vl ((*@$\pi$@*) i)
 
 def FlagList.permute {T : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
-    (Fl : FlagList (*@$\sigma$@*) t Vl) ((*@$\pi$@*) : Perm t)
-    : FlagList (*@$\sigma$@*) t (listTypePermute Vl (*@$\pi$@*)) :=
+    (Fl : FlagList (*@$\sigma$@*) t Vl) ((*@$\pi$@*) : Perm t) : FlagList (*@$\sigma$@*) t (listTypePermute Vl (*@$\pi$@*)) :=
   fun i => Fl ((*@$\pi$@*) i)
 \end{lstlisting}
 The permuted tuple places \lean{Fl ($\pi$ i)} at position \lean{i}, so the
