@@ -3659,7 +3659,7 @@ class Fintype (T : Type*) where
 \end{lstlisting}
 The field \lean{elems} is a concrete finite set of elements of \lean{T} and
 \lean{complete} proves that every element belongs to it, so \lean{Fintype} is
-the interface counting needs.  The sets this development counts are described
+the interface through which this development counts.  The sets this development counts are described
 by conditions, not by explicit enumerations: the tuples of induced copies
 realizing a given flag list, or the type embeddings producing a given flag.
 Lean can usually
@@ -3731,6 +3731,20 @@ These explicit \lean{Fintype} choices are needed only where finite sets are
 converted to \lean{Finset}s or their cardinalities are compared.  Once the
 required counting identity has been proved, the subsequent algebraic argument
 uses that identity without referring to the chosen instances.
+
+The discipline above is what the \lean{Fintype} interface requires; Mathlib's
+own documentation says that one generally relies on congruence lemmas when
+rewriting expressions involving \lean{Fintype} instances.  The library also
+provides a cardinality that removes this class of mismatch at its root:
+\lean{Nat.card}, with \lean{Set.ncard} for sets, is a function of the type
+alone, so it carries no instance argument for elaboration paths to disagree
+about, and \lean{Nat.card\_congr} transports a count along a bijection with no
+instance management.  The documentation recommends it precisely when
+finiteness is propositional rather than structural, as it is throughout this
+layer.  In retrospect, stating the specification-layer counts with
+\lean{Nat.card} would have avoided the mismatches this subsection manages,
+leaving a single conversion to \lean{Finset} counts at the reflection
+boundary, where enumeration is genuinely structural.
 
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
