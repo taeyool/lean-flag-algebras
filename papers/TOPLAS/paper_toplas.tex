@@ -3627,7 +3627,8 @@ definitionally the same.
 
 The bridging lemma \lean{flagListDensity\_HEq\_eq} closes the gap:
 \begin{lstlisting}
-theorem flagListDensity_HEq_eq {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
+theorem flagListDensity_HEq_eq
+    {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
     {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
     (h_Vl_eq : Vl(*@$_0$@*) = Vl(*@$_1$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagListDensity Fl(*@$_0$@*) G = flagListDensity Fl(*@$_1$@*) G := ...
@@ -3656,72 +3657,58 @@ class Fintype (T : Type) where
 \end{lstlisting}
 The field \lean{elems} is a concrete finite set of elements of \lean{T} and
 \lean{complete} proves that every element belongs to it, so \lean{Fintype} is
-the interface counting algorithms need.  \lean{Fintype.ofFinite} produces an
-instance from a proof of finiteness by invoking Lean's choice axiom
-\lean{Classical.choice}; the result is noncomputable, so every lemma about
-\lean{Fintype} applies to it but Lean cannot evaluate its \lean{elems} to
-list the elements of $T$.  That costs nothing when a proof relates
-cardinalities to one another by lemmas, which is how the counting below
-proceeds.  Proving a concrete numeric value of \lean{Fintype.card T} by
-computation instead requires a computable instance, which is the form the
-reflection layer (\Cref{sec:reflection}) builds.
+the interface counting needs.  The sets this development counts are described
+by conditions, not by explicit enumerations: the tuples of induced copies
+realizing a given flag list, or the type embeddings producing a given flag.
+Lean can usually
+infer that such a set is \lean{Finite}, but \lean{Fintype.card} and the lemmas
+about it require a \lean{Fintype}, and \lean{Fintype.ofFinite} supplies one by
+invoking \lean{Classical.choice}.  That instance is noncomputable, which costs
+nothing here, since these proofs relate cardinalities by lemmas rather than
+evaluating them.
 
-This distinction becomes especially important when formalizing cardinalities of finite sets
-and finite counting arguments.  A set $S=\{x:T\mid P(x)\}$ is represented as a
-predicate of type \lean{Set T}; when
-we count its elements, the relevant type is the subtype of terms $x:T$
-satisfying $P(x)$.  Lean can often infer that this subtype is \lean{Finite}
-without having a particular \lean{Fintype} enumeration available, but the
-cardinality function \lean{Fintype.card} and the lemmas about it, such as
-\lean{Finset.card\_univ} and \lean{Fintype.card\_congr}, require a
-\lean{Fintype} instance.  The elaborator does synthesize \lean{Fintype}
-instances automatically; the difficulty is not obtaining an instance but
-obtaining the same one every time.  In a development with multiple
-overlapping constructions (quotient types, embedded subgraphs,
+The elaborator synthesizes such instances automatically, and the difficulty is
+not obtaining one but obtaining the same one every time.  In a development
+with multiple overlapping constructions (quotient types, embedded subgraphs,
 partial-function spaces), the same type can receive different \lean{Fintype}
-instances from different elaboration paths.  As sets, their \lean{elems}
-fields cannot disagree, since \lean{complete} forces each to contain every
-element of the type; what can differ is the term denoting that set.  When
-the two \lean{elems} terms do not reduce to a common term definitionally,
-the kernel rejects the goal even though the instances are provably equal.
+instances from different elaboration paths.  Their \lean{elems} fields cannot
+disagree as sets, since \lean{complete} forces each to contain every element;
+what differs is the term denoting that set, and when the two terms do not
+reduce to a common one definitionally, a rewrite or a direct application
+fails, even though the instances are provably equal.
 
-The formalization responds in two ways.  The first is preventive: the
-moment a finite set is named, the intended instance is chosen and bound
-with \lean{let}, so that every later occurrence elaborates against the same
-binding rather than a fresh search:
+The formalization responds in two ways.  The first is preventive: the moment a
+finite set is named, the intended instance is chosen and bound with
+\lean{let}, so that every later occurrence elaborates against the same binding
+rather than a fresh search.  The fragment below proves that two finite sets
+related by a bijection have equal \lean{toFinset} counts:
 \begin{lstlisting}
--- S0 and S1 are the two finite sets being counted.
--- Choose and name the Fintype enumeration used for each one.
+-- S0 and S1 are the two finite sets being counted,
+-- and h_iso_S0_S1 a bijection between them.
 let hS0 : Fintype S0 := Fintype.ofFinite S0
 let hS1 : Fintype S1 := Fintype.ofFinite S1
--- h_iso_S0_S1 is a bijection between the two sets.
--- The @ notation exposes the Fintype arguments that Lean normally inserts.
 have card_eq : @Fintype.card S0 hS0 = @Fintype.card S1 hS1 :=
   @Fintype.card_congr S0 S1 hS0 hS1 h_iso_S0_S1
--- Rewrite the toFinset counts in the goal to Fintype cardinalities.
 have count_eq : S0.toFinset.card = S1.toFinset.card := by
-  -- These two toFinset terms also use hS0 and hS1, respectively.
   rw [Set.toFinset_card, Set.toFinset_card]
   exact card_eq
 \end{lstlisting}
-The \lean{@} notation makes explicit where the two named instances enter:
-they are the enumerations used by the two \lean{Fintype.card} terms and the
-arguments of \lean{Fintype.card\_congr}, and the \lean{toFinset} expressions
-use them implicitly, so \lean{Set.toFinset\_card} rewrites the concrete
-counts to exactly the terms appearing in \lean{card\_eq}.  Without the local
-bindings, Lean could synthesize those hidden arguments independently at the
-different occurrences, producing terms that are propositionally equal but do
-not match for rewriting.
+It names the instance for each set, derives the equality of cardinalities from
+the bijection, and rewrites the \lean{toFinset} counts into that form.  The
+\lean{@} notation writes out the instance arguments that Lean would otherwise
+infer for itself, so one can see that \lean{card\_eq} and the two
+\lean{toFinset} terms use the same ones; without the bindings, instance search
+would run afresh at each occurrence and could return different terms, so the
+rewrite would fail.
 
-This pattern appears in \lean{flagDensity\allowbreak\_permute} from
-\Cref{sec:reordered-flag-tuples}.  There, \lean{S0} and \lean{S1} are the
-sets of tuples of pairwise-disjoint induced copies that realize \lean{Fl} and
-\lean{Fl.permute $\pi$}, respectively.  The mathematical step is the
-reindexing bijection \lean{h\_iso\_S0\_S1}; the named \lean{Fintype}
-instances ensure that the cardinality equality obtained from this bijection
-rewrites the counts occurring in the density definition.  The flag-operator
-proofs use the same pattern for the isomorphism set associated with a fixed
-underlying graph.
+This pattern appears in the proof of \lean{flagDensity\allowbreak\_permute},
+the invariance theorem of \Cref{sec:reordered-flag-tuples}: there \lean{S0}
+and \lean{S1} are the sets of tuples of pairwise-disjoint induced copies that
+realize \lean{Fl} and \lean{Fl.permute $\pi$}, the mathematical step is the
+reindexing bijection, and the named instances ensure that the resulting
+cardinality equality rewrites the counts occurring in the density definition.
+The downward-operator proofs of \Cref{sec:formal-downward} use the same
+pattern for the set of type embeddings that produce a given flag.
 
 The second response repairs mismatches that do occur.  Once the
 mathematical steps of such a proof are done, what remains is a goal of a
@@ -3731,13 +3718,11 @@ tactic \lean{congr!} closes such goals; it decomposes the equality into
 congruence subgoals and discharges the instance mismatches, which is sound
 because any two \lean{Fintype} instances of the same type are provably
 equal (\lean{Fintype T} is a subsingleton).  The bridging lemma
-\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq} of
-\Cref{sec:reordered-flag-tuples} is finished exactly this way: it carries
-a \lean{FintypeList} instance for each vertex-type family, supplying a
-\lean{Fintype} instance for every component type.  Once the families and the
-tuples have been identified, the two sides of the goal differ only in the
-\lean{Fintype} instances supplied for the component types; \lean{congr!}
-resolves these remaining differences.
+\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq}, the other theorem of
+\Cref{sec:reordered-flag-tuples}, is closed exactly this way: once its
+families and tuples have been identified, the two sides differ only in the
+\lean{Fintype} instances that its \lean{FintypeList} hypothesis supplies for
+the component types, and \lean{congr!} resolves those.
 
 These explicit \lean{Fintype} choices are needed only where finite sets are
 converted to \lean{Finset}s or their cardinalities are compared.  Once the
