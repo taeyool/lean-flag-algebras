@@ -3750,12 +3750,13 @@ boundary, where enumeration is genuinely structural.
 \label{sec:proof-style}
 
 Explicit bijections became an unexpectedly prevalent proof pattern in the
-specification layer.  We expected many of these equalities to follow from
-existing counting lemmas or symbolic simplification, but unfolding the
-definitions repeatedly exposed the same structure: the two sides are
-cardinalities of finite sets of configurations presented in different ways.
-Our most reliable method is to identify the two sets and construct an explicit
-bijection between them.
+specification layer.  We expected the counting equalities the layer requires
+to follow by rewriting with existing counting lemmas or by symbolic
+simplification, but case after case, unfolding the definitions exposed the
+same structure: the two sides are cardinalities of finite sets of
+configurations presented in different ways.  Our most reliable method is to
+identify the two sets and construct an explicit bijection between them, which
+Mathlib's cardinality lemmas then convert into the required equality.
 
 Proving the chain rule (\Cref{lem:chain-rule}) made the pattern
 clear.  Its two sampling procedures are visibly two descriptions of one
