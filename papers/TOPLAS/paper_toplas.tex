@@ -4455,16 +4455,16 @@ rather than principled preferences; most visibly, the two largest certificates
 still rely on \lean{native\_decide}, so their proofs also trust Lean's native
 compiler.
 
-We expect the architecture to support additional parts of Razborov's
-flag-algebra calculus, especially the differential structure developed in
-Section~4.3 of his original paper~\cite{razborov2007flag}, which would exercise
-the quotient-level semantics well beyond the certificate arguments considered
-here.  We have not tested whether it extends to richer combinatorial structures
-such as hypergraphs and directed graphs, which change the objects the whole
-development is built on.  A further direction is a formal bridge between our
-positive-homomorphism semantics and graphon theory, connecting the development
-to the Lov\'asz theory~\cite{lovasz2012large} and to the existing Lean graphon
-formalization~\cite{freer2026graphon}.
+Several directions remain for future work.  One is to extend our Lean
+development to additional parts of Razborov's flag-algebra calculus, especially
+the differential structure developed in Section~4.3 of his original
+paper~\cite{razborov2007flag}; this would exercise the quotient-level semantics
+well beyond the certificate arguments considered here.  Another is to adapt the
+formalization to richer combinatorial structures such as hypergraphs and
+directed graphs.  A third is to build a formal bridge between our
+positive-homomorphism semantics and graphon theory, connecting our development
+to Lov\'asz's graph-limit theory~\cite{lovasz2012large} and the existing Lean
+formalization of graphons~\cite{freer2026graphon}.
 
 \subsection*{Use of AI Assistance}
 The layers of this development used AI assistance to different degrees.  The
