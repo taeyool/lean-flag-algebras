@@ -3510,9 +3510,9 @@ the underlying mathematics, but they recur often enough to impose a
 substantial proof-engineering cost, and their causes differ.  Invariance
 under isomorphism is the well-definedness condition required to define an
 operation on a quotient.  Comparing flags of different sizes, and comparing a
-tuple with its reordering, reflect a limitation of Lean's underlying type
-theory: mathematically equal types need not be definitionally equal, and
-therefore may require explicit casts.  The enumeration issue, by contrast,
+tuple with its reordering, both come from carrying data in types, which puts
+related objects beyond the reach of ordinary equality.  The enumeration issue,
+by contrast,
 arises from elaboration and typeclass inference, which may synthesize
 different enumerations at different occurrences.  Only the first is forced by
 the representation itself and would arise in any proof assistant that models
@@ -3737,29 +3737,22 @@ specification layer.  We expected many of these equalities to follow from
 existing counting lemmas or symbolic simplification, but unfolding the
 definitions repeatedly exposed the same structure: the two sides are
 cardinalities of finite sets of configurations presented in different ways.
-Our most reliable method is to identify the two sets, construct an explicit
-bijection, and use it to prove equality of their cardinalities; the bijection
-carries the main mathematical content of the proof.
+Our most reliable method is to identify the two sets and construct an explicit
+bijection between them.
 
-Our experience proving the density chain rules (\Cref{lem:chain-rule}) made
-this pattern particularly clear.  A chain rule identifies two sampling procedures: choosing the required
-subflags directly in the host, or making the same choice in stages through an
-intermediate $\sigma$-flag.  On paper, these procedures are readily seen as two
-descriptions of the same experiment.  In Lean, after unfolding the
-definitions, the proof came down to a bijection between the finite sets of
-choices made by the two procedures.  This bijection yielded equality of the
-corresponding counts and hence the chain rule.
+Proving the chain rule (\Cref{lem:chain-rule}) made the pattern
+clear.  Its two sampling procedures are visibly two descriptions of one
+experiment on paper; in Lean, after unfolding the definitions, the proof came
+down to a bijection between the finite sets of choices the two procedures
+make, which yielded the equality of counts and hence the rule.
 
 The same method proves permutation invariance, invariance under inserting an
 empty flag, the downward-operator counting identities, and the adequacy of
-the computational subgraph representation.  Although these obligations arise
-in different parts of the formalization, each reduces to an explicit
-correspondence between two finite sets.  The bijection contains the
-mathematical argument, while the instance discipline of
-\Cref{sec:fintype} handles the resulting cardinalities.  We do not claim
-that bijections are the only possible approach, but their effectiveness
-across these different obligations made them our default method for finite
-counting identities.
+the computational subgraph representation.  In each, the bijection carries the
+mathematical argument, while the instance discipline of \Cref{sec:fintype}
+handles the resulting cardinalities.  We do not claim bijections are the only
+approach, but their effectiveness across these obligations made them our
+default method.
 
 \section{A Meta-Theory of Ensemble Semantics}
 \label{sec:metatheory}
