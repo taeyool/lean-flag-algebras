@@ -3854,12 +3854,13 @@ There is also an intrinsic description:
     \(\mathcal K\)}
   \right\}.
 \end{equation}
-One inclusion is immediate from \(q_\sigma([F])=0\); the other holds because
-the flags outside \(\mathcal K\) span exactly the ideal that \(q_\sigma\)
-kills, so a homomorphism vanishing on them factors through \(q_\sigma\).
-Equation~\eqref{eq:Q-sigma-intrinsic} also shows
-that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
-zero sets of continuous evaluation maps.  We write
+The inclusion of \eqref{eq:Q-sigma} in \eqref{eq:Q-sigma-intrinsic} is
+immediate, since \(q_\sigma\) already kills every \(\sigma\)-flag outside
+\(\mathcal K\).  For the reverse inclusion, those flags span exactly the ideal
+\(q_\sigma\) kills, so a homomorphism vanishing on them factors through
+\(q_\sigma\).  The description also exhibits \(Q_\sigma\) as an intersection of
+zero sets of continuous evaluation maps, hence as a closed subset of
+\(X_\sigma\).  We write
 \(Q_0:=Q_{\emptyset}\) for the corresponding space of constrained empty-type
 positive homomorphisms.
 
@@ -3868,10 +3869,7 @@ Assume that \(\sigma\) is \emph{non-degenerate} for \(\mathcal K\): that is,
 there is some \(\phi_0\in Q_0\) for which
 \(\phi_0(\langle\sigma\rangle_0)>0\).  By Razborov's random-extension result
 recalled in \Cref{sec:background-downward}, every such \(\phi_0\) determines a
-unique probability measure \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\).  It is
-obtained by choosing a uniformly random occurrence of \(\sigma\) in each
-member of a graph sequence converging to \(\phi_0\) and passing to the
-limit.  For a probability
+unique probability measure \(\Ext_\sigma(\phi_0)\) on \(X_\sigma\).  For a probability
 measure~\(\mu\) on~\(X_\sigma\), its
 support \(\operatorname{supp}(\mu)\) consists of those points
 \(\chi\in X_\sigma\) for which every open neighborhood of \(\chi\) has positive
@@ -3947,17 +3945,11 @@ The first is the built-in order of \Cref{rem:builtin-hfree}, written
 \(\leq^{\mathrm{quot}}\) because it is the ordinary semantic order in the
 constrained quotient algebra: equivalently, every positive homomorphism
 \(\psi:\FlagAlg{\sigma}[\mathcal K]\to\R\) satisfies
-\(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second quantifies over each
-\(\phi_0\in Q_0\) on its right-hand side.  For such a
-\(\phi_0\), the measure \(\Ext_\sigma(\phi_0)\) is the probability distribution
-on \(X_\sigma\) obtained by taking a sequence of finite graphs converging
-to \(\phi_0\), choosing uniformly at random an embedding of \(\sigma\) into
-each of them, using the embedded vertices as labels, and passing to the
-limit.  Thus, the second display requires
-that the random positive homomorphism \(\chi\sim\Ext_\sigma(\phi_0)\) satisfy
-\(\chi(f)\leq\chi(g)\) with probability one.
-For the \(H\)-free class, consisting of graphs containing no subgraph
-isomorphic to \(H\),
+\(\psi(q_\sigma(f))\leq\psi(q_\sigma(g))\).  The second requires, for each
+admissible \(\phi_0\), that the random positive homomorphism
+\(\chi\sim\Ext_\sigma(\phi_0)\) satisfy \(\chi(f)\leq\chi(g)\) with
+probability one.
+For the \(H\)-free class,
 \(\lean{forbidLE H f g}\) in our Lean formalization implements this ensemble order.  The corresponding
 notions of non-negativity are \(0\leq^{\mathrm{quot}}_{\mathcal K,\sigma}f\) and
 \(0\leq^{\mathrm{ens}}_{\mathcal K,\sigma}f\).
@@ -3984,16 +3976,19 @@ is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-The equality \(S_\sigma=Q_\sigma\) is the right condition because each order is
-non-negativity of the continuous function \(\chi\mapsto\chi(g-f)\) on one of
-the two spaces: almost-sure non-negativity under a measure is non-negativity
-on its support, so the ensemble order tests \(S_\sigma\), while the built-in
-order tests \(Q_\sigma\) by definition.  Equation~\eqref{eq:S-subset-Q} then
-gives the forward implication.  For the converse, a point of
-\(Q_\sigma\setminus S_\sigma\) can be separated from \(S_\sigma\) by a
-continuous function and the separating function approximated by a
-flag-algebra element, which is then ensemble-non-negative but not built-in
-non-negative.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
+Both orders ask that the same continuous function
+\(\chi\mapsto\chi(g-f)\) be non-negative, and differ only in where it is
+tested: almost-sure non-negativity under a measure is non-negativity on its
+support, so the ensemble order tests \(S_\sigma\), while the built-in order
+tests \(Q_\sigma\) by definition.  The implication is then exactly the
+inclusion \(S_\sigma\subseteq Q_\sigma\) of
+Equation~\eqref{eq:S-subset-Q}, and when \(S_\sigma=Q_\sigma\) the two tests
+coincide, so the orders agree on every pair.  Conversely, if
+\(S_\sigma\subsetneq Q_\sigma\), a point of \(Q_\sigma\setminus S_\sigma\)
+can be separated from \(S_\sigma\) by a continuous function, and a
+flag-algebra element approximating it is ensemble-non-negative but not
+built-in non-negative, so some pair disagrees.
+Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
 built-in proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
@@ -4043,22 +4038,19 @@ cliques.  Both are instances of
 
 \boldparagraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
-class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
-let \(\sigma_1\) be the one-vertex type.
+class of \(C_4\)-free graphs and let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
 at random has normalized degree tending to zero.  
 Let \(d:=\fKtwobull\in\FlagAlg{\sigma_1}[\mathcal G]\), so that the density of
 \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of its labeled
 vertex.  Every \(\chi\in S_{\sigma_1}\) therefore satisfies \(\chi(d)=0\), and
-\(-d\) is non-negative in the ensemble semantics.  Arbitrarily large stars are
-\(C_4\)-free, however, since they contain no cycle at all.  Label the center
-of \(K_{1,t}\) to obtain a \(\sigma_1\)-flag, and let
-\(\chi_*\in Q_{\sigma_1}\) be the limit of that sequence.  Every leaf is
+\(-d\) is non-negative in the ensemble semantics.  But arbitrarily large stars
+are \(C_4\)-free: the star \(K_{1,t}\) consists of one vertex, its
+\emph{center}, adjacent to \(t\) pairwise non-adjacent leaves.  Label the
+center to obtain a \(\sigma_1\)-flag, and let \(\chi_*\in Q_{\sigma_1}\) be the
+limit of that sequence.  Every leaf is
 adjacent to the center, so \(\chi_*(d)=1\) and
-\(\chi_*\notin S_{\sigma_1}\), whence
-\begin{equation}\label{eq:c4-strict-inclusion}
-  S_{\sigma_1}\subsetneq Q_{\sigma_1}.
-\end{equation}
+\(\chi_*\notin S_{\sigma_1}\), hence \(S_{\sigma_1}\subsetneq Q_{\sigma_1}\).
 Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) fails to be non-negative in the
 built-in semantics.
 The example exhibits a genuine gap between the two typed orders: built-in
@@ -4101,8 +4093,8 @@ its characterization of when the two orders agree;
 nonempty-type and empty-type claims of
 \Cref{thm:blowup-root-plantability-summary}; and
 \lean{c4free\_not\_rootPlantable}, together with
-\lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion in
-Equation~\eqref{eq:c4-strict-inclusion}.
+\lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion
+\(S_{\sigma_1}\subsetneq Q_{\sigma_1}\) for the \(C_4\)-free class.
 
 These files were generated by Claude Code from an already-developed
 mathematical account and its theorem targets, and Lean checks the resulting
