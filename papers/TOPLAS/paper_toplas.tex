@@ -3757,20 +3757,14 @@ default method.
 \section{A Meta-Theory of Ensemble Semantics}
 \label{sec:metatheory}
 
-The definition of \lean{forbidLE} in \Cref{sec:forbidden} was a deliberate
-departure from the usual presentation of constrained flag algebras.  Rather
-than building a new algebra for each forbidden family, it retains the same
-ambient algebra and imposes the forbidden-graph condition only when
-interpreting its elements.  It considers only unlabeled positive
-homomorphisms satisfying that condition, applies the corresponding
-random-extension measure to each one, and requires the desired inequality to
-hold with probability one under that measure.
-This engineering choice exposed a mathematical problem in its own right:
-when does this \emph{ensemble semantics} validate exactly the same typed
-inequalities as a flag algebra in which the constraint is built in from the
-beginning?  This led us to develop a separate mathematical meta-theory.
-This section gives the definitions and main results needed to state that answer;
-a forthcoming paper will present the full theory and its applications.
+Defining \lean{forbidLE} as we did in \Cref{sec:forbidden}, by constraining
+the interpretations rather than the algebra, exposed a mathematical problem in
+its own right: when does this \emph{ensemble semantics} validate exactly the
+same typed inequalities as a flag algebra in which the constraint is built in
+from the beginning?  This section gives the definitions and main results
+needed to state the answer.  The proofs are only sketched; a forthcoming paper
+will present the full theory and its applications, and the results reported
+here are machine-checked in the released development.
 
 \boldparagraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let~\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
@@ -3787,12 +3781,11 @@ To make the underlying graph class explicit, we write
 in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
 belong to~\(\mathcal K\) occur in this constrained algebra.  Because
 \(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
-graphs lie outside \(\mathcal K\), span an ideal,\footnote{Here an ideal \(I\)
+graphs lie outside \(\mathcal K\), span an ideal,\footnote{An ideal \(I\) here
 is a linear subspace of the flag algebra that is also closed under
-multiplication by arbitrary algebra elements.  Thus, \(I\) is closed under
-addition and real scalar multiplication, and if \(x\in I\) and \(a\) belongs
-to the flag algebra, then \(ax\in I\).  This property makes the quotient by
-\(I\) an algebra in which every element of \(I\) is identified with zero.} and the usual constrained
+multiplication by arbitrary algebra elements.  That closure is what makes the
+quotient by \(I\) again an algebra, one in which every element of \(I\) has
+become zero.} and the usual constrained
 algebra is canonically isomorphic to the quotient of the ambient algebra by
 this ideal.  We therefore have a canonical quotient map
 \[
@@ -3840,22 +3833,9 @@ There is also an intrinsic description:
     \(\mathcal K\)}
   \right\}.
 \end{equation}
-The inclusion from left to right is immediate.  If
-\(\chi=\psi\circ q_\sigma\) belongs to \(Q_\sigma\), then
-\(q_\sigma([F])=0\) for every \(\sigma\)-flag \(F\) outside \(\mathcal K\),
-and hence \(\chi([F])=0\).
-
-For the reverse inclusion, suppose that \(\chi\in X_\sigma\) vanishes on
-every \(\sigma\)-flag outside \(\mathcal K\).  Here heredity ensures that the
-span of these flags is an ideal.  Every \(\sigma\)-flag \(F\) appearing in
-the product of a \(\sigma\)-flag \(F'\) outside \(\mathcal K\) with another
-\(\sigma\)-flag \(F''\) contains \(F'\) as an induced subflag.  The flag \(F\)
-must therefore also lie outside \(\mathcal K\), since otherwise heredity would
-imply that the underlying graph of \(F'\) lies in \(\mathcal K\).  Thus, the
-span of the flags outside \(\mathcal K\) is precisely the ideal killed by
-\(q_\sigma\).  The homomorphism \(\chi\) vanishes on this ideal and therefore
-factors through \(q_\sigma\) as a positive homomorphism on the constrained
-algebra.  Hence \(\chi\in Q_\sigma\), proving the reverse inclusion.
+One inclusion is immediate from \(q_\sigma([F])=0\); the other holds because
+the flags outside \(\mathcal K\) span exactly the ideal that \(q_\sigma\)
+kills, so a homomorphism vanishing on them factors through \(q_\sigma\).
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
@@ -3900,40 +3880,25 @@ space:
   \bigl(\phi_0\in Q_0,
         \phi_0(\langle\sigma\rangle_0)>0\bigr).
 \]
-Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
-downward operator to \([F]\) produces a non-negative multiple of
-\([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
-Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if~\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
-identity in Equation~\eqref{eq:ensemble} gives
-\[
-  \mathbb{E}[\phi([F])]=0.
-\]
-Since every positive homomorphism \(\phi'\) satisfies \(\phi'([F])\geq0\), it
-follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
-\(\phi([F])=0\) with probability one.  Applying this argument to
-the countable collection of \(\sigma\)-flags outside \(\mathcal K\) shows that a positive
-homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
-probability one.  Since \(Q_\sigma\) is closed, Equation~\eqref{eq:S-sigma} yields the
+Indeed, for a \(\sigma\)-flag \(F\) outside \(\mathcal K\), the downward image
+of \([F]\) is a non-negative multiple of \([F|_\emptyset]\), which every
+\(\phi_0\in Q_0\) evaluates to zero, so the random-extension identity
+\eqref{eq:ensemble} forces \(\mathbb{E}[\phi([F])]=0\) and hence
+\(\phi([F])=0\) almost surely.  Ranging over the countably many such flags
+puts the sample in \(Q_\sigma\) with probability one, and \(Q_\sigma\) is
+closed, so Equation~\eqref{eq:S-sigma} yields the
 fundamental inclusion
 \begin{equation}\label{eq:S-subset-Q}
   S_\sigma\subseteq Q_\sigma.
 \end{equation}
-We say that \((\mathcal G,\mathcal K,\sigma)\) is
-\emph{root-plantable}\footnote{The vertices distinguished by the flag type
-\(\sigma\) are often called the \emph{roots}, which explains the first part of
-the term \emph{root-plantable}.  A finite \(\sigma\)-flag \((G,\theta)\)
-records a profile of \(\sigma\)-flag densities relative to a specified embedding
-\(\theta:\sigma\to G\), whose image consists of the labeled vertices.  To
-\emph{plant} this profile in a larger graph \(H\in\mathcal K\), without
-specifying labels in advance, is to produce many embeddings
-\(\widehat\theta:\sigma\to H\) whose profiles of \(\sigma\)-flag densities approximate the
-profile specified by \((G,\theta)\).  Here ``many'' means that these embeddings
-form a fraction bounded away from zero of all embeddings of \(\sigma\) in
-\(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\) reproduces
-the prescribed profile with non-vanishing probability.  The equality
-\(S_\sigma=Q_\sigma\) says that every constrained \(\sigma\)-typed positive
-homomorphism can be approximated by finite constructions of this kind.} when
-\(S_\sigma=Q_\sigma\).
+We say that \((\mathcal G,\mathcal K,\sigma)\) is \emph{root-plantable} when
+\(S_\sigma=Q_\sigma\).  The name records what the equality says: the labeled
+vertices of \(\sigma\) are its \emph{roots}, and to \emph{plant} a
+\(\sigma\)-flag's density profile in a larger graph of the class, without
+choosing its labels in advance, is to make a fraction bounded away from zero
+of all embeddings of \(\sigma\) reproduce that profile.  Root-plantability
+asks that every constrained \(\sigma\)-typed positive homomorphism be
+approximable by finite constructions of this kind.
 
 \begin{definition}[Built-in and ensemble orders]\label{def:two-constrained-orders}
 Let \(\mathcal K\subseteq\mathcal G\) be hereditary, let \(\sigma\) be a flag
@@ -3998,26 +3963,16 @@ is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-The proof explains why the equality \(S_\sigma=Q_\sigma\) is exactly the
-condition under which the two orders agree.  Evaluation of
-\(g-f\) defines a continuous function
-\(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
-measure is equivalent to non-negativity on its support; continuity then shows
-that non-negativity in the ensemble semantics is exactly non-negativity on
-\(S_\sigma\).  Non-negativity in the built-in semantics is, by definition,
-non-negativity on \(Q_\sigma\).
-The inclusion in Equation~\eqref{eq:S-subset-Q} proves the forward implication, and
-\(S_\sigma=Q_\sigma\) proves equivalence.
-
-The necessity of root-plantability requires more than this observation.  If
-\(S_\sigma\subsetneq Q_\sigma\), choose
-\(\chi_*\in Q_\sigma\setminus S_\sigma\).  Topological separation gives a
-continuous function that is strictly positive on \(S_\sigma\) and strictly
-negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
-function by evaluation of a flag-algebra element.  The resulting element is
-non-negative in the ensemble semantics but not in the built-in semantics,
-so the two orders
-cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
+The equality \(S_\sigma=Q_\sigma\) is the right condition because each order is
+non-negativity of the continuous function \(\chi\mapsto\chi(g-f)\) on one of
+the two spaces: almost-sure non-negativity under a measure is non-negativity
+on its support, so the ensemble order tests \(S_\sigma\), while the built-in
+order tests \(Q_\sigma\) by definition.  Equation~\eqref{eq:S-subset-Q} then
+gives the forward implication.  For the converse, a point of
+\(Q_\sigma\setminus S_\sigma\) can be separated from \(S_\sigma\) by a
+continuous function and the separating function approximated by a
+flag-algebra element, which is then ensemble-non-negative but not built-in
+non-negative.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
 built-in proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
@@ -4045,46 +4000,18 @@ closure.  Consequently, the two orders agree at every non-degenerate flag type
 for any blow-up-closed class.
 \end{theorem}
 
-The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
-of finite \(\sigma\)-flags whose underlying graphs lie in \(\mathcal K\).  For
-each such \(\sigma\)-flag \((G,\theta)\), the proof applies the preceding
-replacement construction once for each vertex of \(G\): the vertices
-\(v\in V(G)\) are replaced one at a time by graphs \(J_v\), and at every
-step blow-up closure supplies an interior for which the current graph
-remains in \(\mathcal K\), so the final blow-up also lies in \(\mathcal K\).  The resulting blow-up has a natural projection back to \(G\): every
-vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
-\(v\) under this projection, the \emph{fiber over~\(v\)}.
-
-The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
-uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
-corresponding fiber with probability bounded away from zero.  When a fixed
-finite \(\sigma\)-flag is sampled from the blow-up, its sampled vertices lie in distinct
-fibers with probability tending to one.  On this event, the corresponding
-vertices of \(G\) determine their adjacencies, so the internal structure of the
-replacement graphs \(J_v\) does not affect the sample.
-
-These estimates connect the finite blow-up construction to the definition of
-\(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
-Because \(X_\sigma\) has the topology of pointwise convergence on \(\sigma\)-flags,
-membership in \(U\) can be ensured by approximating the values of finitely many
-\(\sigma\)-flags within a prescribed tolerance.  Choose~\((G,\theta)\)
-sufficiently far along the sequence representing \(\chi\), and then choose its
-blow-up sufficiently large.  The construction ensures that a positive fraction
-of the embeddings of \(\sigma\) into the blow-up produce \(\sigma\)-typed
-density profiles lying in \(U\): the labeled vertices enter the designated
-fibers with probability bounded away from zero, while the distinct-fiber
-estimate preserves the required \(\sigma\)-flag densities.
-
-Passing to a limit of these unlabeled blow-ups gives some \(\phi_0\in Q_0\) for
-which
-\[
-  \Ext_\sigma(\phi_0)(U)>0.
-\]
-Therefore, \(U\) intersects \(\operatorname{supp}(\Ext_\sigma(\phi_0))\).  Since
-every neighborhood \(U\) of \(\chi\) has this property, \(\chi\) lies in the
-closure of the union of these supports, namely \(S_\sigma\).  Hence
-\(Q_\sigma\subseteq S_\sigma\), while the opposite inclusion is
-Equation~\eqref{eq:S-subset-Q}.
+The proof takes a target \(\chi\in Q_\sigma\), represented by a sequence of
+finite \(\sigma\)-flags in \(\mathcal K\), and blows up each of them one vertex
+at a time, closure supplying an interior at every step that keeps the graph in
+\(\mathcal K\).  Making the fibers over the labeled vertices large enough
+forces a uniformly chosen embedding of \(\sigma\) to land on them with
+probability bounded away from zero, while a fixed sample lands in distinct
+fibers with probability tending to one, so the interiors do not affect the
+densities it sees.  A positive fraction of the embeddings therefore realizes
+the profile of \(\chi\) to any prescribed accuracy, which places \(\chi\) in
+the support of \(\Ext_\sigma(\phi_0)\) for a limit \(\phi_0\) of the unlabeled
+blow-ups, hence in \(S_\sigma\).  With
+Equation~\eqref{eq:S-subset-Q} this gives \(S_\sigma=Q_\sigma\).
 
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
@@ -4099,31 +4026,15 @@ class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
 let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
 at random has normalized degree tending to zero.  
-Let~\(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the flag-algebra element represented by
-the following two-vertex \(\sigma_1\)-flag:
-\[
-  d :=
-  \begin{tikzpicture}[scale=0.75,baseline=-0.55ex]
-    \draw[graph edge] (0,0) -- (1.2,0);
-    \node[graph root] at (0,0) {};
-    \node[graph vertex] at (1.2,0) {};
-    \node[font=\scriptsize] at (0,-0.32) {\(1\)};
-  \end{tikzpicture}
-\]
-The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus,
-the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
-its labeled vertex: the probability that one additional uniformly sampled
-vertex is adjacent to it.  The preceding observation implies that every
-\(\chi\in S_{\sigma_1}\) satisfies \(\chi(d)=0\), so \(-d\) is non-negative
-in the ensemble semantics.  On the other hand, arbitrarily large stars are
-\(C_4\)-free: the star \(K_{1,t}\) consists of one vertex, its
-\emph{center}, adjacent to \(t\) pairwise non-adjacent leaves, and contains
-no cycle at all.  Label the center of \(K_{1,t}\) to obtain a
-\(\sigma_1\)-flag, and let \(\chi_*\in Q_{\sigma_1}\) be the positive
-homomorphism arising as the limit of this sequence of \(\sigma_1\)-flags.
-Every leaf is adjacent to the center, so \(\chi_*(d)=1\).  Since
-every point of \(S_{\sigma_1}\) evaluates \(d\) to zero,
-\(\chi_*\notin S_{\sigma_1}\), and hence
+Let \(d:=\fKtwobull\in\FlagAlg{\sigma_1}[\mathcal G]\), so that the density of
+\(d\) in a finite \(\sigma_1\)-flag is the normalized degree of its labeled
+vertex.  Every \(\chi\in S_{\sigma_1}\) therefore satisfies \(\chi(d)=0\), and
+\(-d\) is non-negative in the ensemble semantics.  Arbitrarily large stars are
+\(C_4\)-free, however, since they contain no cycle at all.  Label the center
+of \(K_{1,t}\) to obtain a \(\sigma_1\)-flag, and let
+\(\chi_*\in Q_{\sigma_1}\) be the limit of that sequence.  Every leaf is
+adjacent to the center, so \(\chi_*(d)=1\) and
+\(\chi_*\notin S_{\sigma_1}\), whence
 \begin{equation}\label{eq:c4-strict-inclusion}
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \end{equation}
@@ -4172,38 +4083,22 @@ nonempty-type and empty-type claims of
 \lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion in
 Equation~\eqref{eq:c4-strict-inclusion}.
 
-These Lean files were generated by Claude Code from an already-developed
-mathematical account and its theorem targets.  Lean checks the resulting proof
-terms, and the released development builds without incomplete proofs.
+These files were generated by Claude Code from an already-developed
+mathematical account and its theorem targets, and Lean checks the resulting
+proof terms.  The autoformalization was feasible because it extended rather
+than rebuilt the manual development of the preceding sections, which had
+already fixed the representations and semantic interfaces and supplied the
+ambient algebra, the positive-homomorphism spaces, the random extensions, and
+the downward operator; only the constrained layer, the forbidden ideal and its
+quotient, had to be built.
 
-This autoformalization was feasible because it extended, rather than rebuilt,
-the manual formalization reported in the preceding sections.  The manual
-library had already fixed the representations and semantic interfaces and
-provided the ambient flag algebra, positive-homomorphism spaces, random
-extensions, the downward operator, and the density and representation
-theorems on which the meta-theory depends.  The generated meta-theory files
-could therefore build the new constrained layer---the forbidden ideal and
-constrained quotient---on this foundation.
-
-The present section isolates the core meta-theoretic consequences of
-\lean{forbidLE}: quotient inequalities always imply ensemble inequalities,
-root-plantability characterizes when the converse holds, and blow-up closure
-is a broad sufficient condition for root-plantability.  A forthcoming paper
-will give the complete mathematical and formal account and pursue three
-extensions.  First, it will develop the finite planting criterion.  For every
-fixed flag size and error tolerance, this criterion asks that each sufficiently
-large finite \(\sigma\)-flag in the class admit a larger graph in the class
-with a positive-density set of \(\sigma\)-embeddings that reproduce, to the
-specified accuracy, all of its \(\sigma\)-flag densities up to that size.
-This finite condition implies root-plantability.  Second, the forthcoming
-work will study further graph classes for which quotient and ensemble
-semantics agree or disagree.  A representative source of disagreement is a
-pinning obstruction: every admissible random-extension measure forces the
-density of a particular \(\sigma\)-flag to one value almost surely, while the
-constrained quotient contains a positive homomorphism assigning it a
-different value.  Third, it will develop relative ensemble semantics for
-arbitrary sets of admissible unlabeled positive homomorphisms, allowing
-non-hereditary limit constraints such as fixing the edge density.
+This section isolates the core consequences of \lean{forbidLE}: built-in
+inequalities always imply ensemble ones, root-plantability characterizes when
+the converse holds, and blow-up closure is a broad sufficient condition for
+it.  The forthcoming paper gives the complete account and goes further, with a
+finite criterion implying root-plantability, further classes on either side of
+the boundary, and a relative ensemble semantics that admits non-hereditary
+constraints such as a fixed edge density.
 
 \section{Open Design Questions}
 \label{sec:unsure}
