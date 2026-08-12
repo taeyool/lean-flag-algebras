@@ -3510,15 +3510,17 @@ the underlying mathematics, but they recur often enough to impose a
 substantial proof-engineering cost, and their causes differ.  Invariance
 under isomorphism is the well-definedness condition required to define an
 operation on a quotient.  Comparing flags of different sizes, and comparing a
-tuple with its reordering, reflect a limitation of Lean's underlying type
-theory: mathematically equal types need not be definitionally equal, and
-therefore may require explicit casts.  The enumeration issue, by contrast,
-arises from elaboration and typeclass inference, which may synthesize
+tuple with its reordering, both come from carrying data in types, which puts
+related objects beyond the reach of ordinary equality.  The enumeration issue,
+by contrast,
+arises from elaboration and instance synthesis, which may produce
 different enumerations at different occurrences.  Only the first is forced by
 the representation itself and would arise in any proof assistant that models
-flags as isomorphism classes; the others are shaped by Lean's treatment of
-dependent equality and instance synthesis, so a port to Rocq (formerly Coq),
-Agda, or Isabelle/HOL\@ would likely meet them in a different form.  A final
+flags as isomorphism classes.  The others are artifacts of a dependently
+typed setting with typeclass-driven elaboration: a port to Rocq (formerly
+Coq) or Agda would meet close analogues, whereas Isabelle/HOL's simple type
+theory cannot index flags by size at all, so a port there would trade these
+obstacles for a different set of obligations.  A final
 subsection collects the proof method these obligations kept demanding:
 identifying two finite sets by an explicit bijection.
 
@@ -3532,13 +3534,13 @@ flags only once
 \[
   G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G')
 \]
-is established.  \lean{Quotient.lift} takes that proof and returns the
+is established.  \lean{Quotient.lift} takes the rule and that proof and returns the
 function on flags, so the mechanism costs a line; the proof is what costs.
 
 The obligation recurs for every density and every graph operator, and again
-at the reflection boundary, where the decoding \lean{Sym2Flag.toFlag} of
-\Cref{sec:reflection-adequacy} must be shown to send equivalent concrete
-representations to the same abstract flag.  Rather than exposing both
+at the reflection boundary, where defining the decoding
+\lean{Sym2Flag.toFlag} of \Cref{sec:reflection-adequacy} requires showing
+that equivalent concrete representations decode to the same abstract flag.  Rather than exposing both
 representations in every later theorem, we discharge the obligation once and
 let subsequent proofs work with flags.
 
@@ -3550,7 +3552,7 @@ freely can inhabit different types and fall outside ordinary equality.  What
 the remedy costs depends on what the mismatch means.  A flag's size is such an
 index: the expansion identity~\eqref{eq:expansion-identity} equates a size-$m$
 flag with a combination of size-$n$ flags, and the dependent sum of
-\Cref{sec:formal-subflag-densities} suffices, since it puts every size in
+\Cref{sec:flagtypes} suffices, since it puts every size in
 \lean{FinFlag}~$\sigma$ and the two sides are then distinct elements that the
 quotient is there to identify, their difference being a generator of the zero
 space.  A reordered tuple is the harder case.  A tuple's type records the
@@ -3627,12 +3629,13 @@ definitionally the same.
 
 The bridging lemma \lean{flagListDensity\_HEq\_eq} closes the gap:
 \begin{lstlisting}
-theorem flagListDensity_HEq_eq {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
+theorem flagListDensity_HEq_eq
+    {T W : Type} {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl(*@$_0$@*) Vl(*@$_1$@*) : Fin t (*@$\to$@*) Type}
     {Fl(*@$_0$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_0$@*)} {Fl(*@$_1$@*) : FlagList (*@$\sigma$@*) t Vl(*@$_1$@*)}
-    (h_Vl_eq : Vl(*@$_0$@*) = Vl(*@$_1$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
+    (h_Vl_eq : Vl(*@$_1$@*) = Vl(*@$_0$@*)) (h_HEq : HEq Fl(*@$_0$@*) Fl(*@$_1$@*)) (G : Flag (*@$\sigma$@*) W)
     : flagListDensity Fl(*@$_0$@*) G = flagListDensity Fl(*@$_1$@*) G := ...
 \end{lstlisting}
-Its hypothesis \lean{h\_Vl\_eq} states \lean{listTypePermute Vl $\pi$ = Vl'},
+Its hypothesis \lean{h\_Vl\_eq} states \lean{Vl' = listTypePermute Vl $\pi$},
 proved by checking the two indices of \lean{Fin 2}, while \lean{h\_HEq} uses
 Lean's \emph{heterogeneous} equality, which relates terms whose types are not
 yet known to be equal; here it says that both tuples place $F_1$ at position
@@ -3650,78 +3653,65 @@ Lean distinguishes a proof that a type is finite from a mechanism for
 enumerating its elements.  An instance of \lean{Finite T} provides only the
 former; an instance of \lean{Fintype T} provides the latter:
 \begin{lstlisting}
-class Fintype (T : Type) where
+class Fintype (T : Type*) where
   elems : Finset T
   complete : (*@$\forall$@*) x : T, x (*@$\in$@*) elems
 \end{lstlisting}
 The field \lean{elems} is a concrete finite set of elements of \lean{T} and
 \lean{complete} proves that every element belongs to it, so \lean{Fintype} is
-the interface counting algorithms need.  \lean{Fintype.ofFinite} produces an
-instance from a proof of finiteness by invoking Lean's choice axiom
-\lean{Classical.choice}; the result is noncomputable, so every lemma about
-\lean{Fintype} applies to it but Lean cannot evaluate its \lean{elems} to
-list the elements of $T$.  That costs nothing when a proof relates
-cardinalities to one another by lemmas, which is how the counting below
-proceeds.  Proving a concrete numeric value of \lean{Fintype.card T} by
-computation instead requires a computable instance, which is the form the
-reflection layer (\Cref{sec:reflection}) builds.
+the interface counting needs.  The sets this development counts are described
+by conditions, not by explicit enumerations: the tuples of induced copies
+realizing a given flag list, or the type embeddings producing a given flag.
+Lean can usually
+infer that such a set is \lean{Finite}, but \lean{Fintype.card} and the lemmas
+about it require a \lean{Fintype}, and \lean{Fintype.ofFinite} supplies one by
+invoking \lean{Classical.choice}.  That instance is noncomputable, which costs
+nothing here, since these proofs relate cardinalities by lemmas rather than
+evaluating them.
 
-This distinction becomes especially important when formalizing cardinalities of finite sets
-and finite counting arguments.  A set $S=\{x:T\mid P(x)\}$ is represented as a
-predicate of type \lean{Set T}; when
-we count its elements, the relevant type is the subtype of terms $x:T$
-satisfying $P(x)$.  Lean can often infer that this subtype is \lean{Finite}
-without having a particular \lean{Fintype} enumeration available, but the
-cardinality function \lean{Fintype.card} and the lemmas about it, such as
-\lean{Finset.card\_univ} and \lean{Fintype.card\_congr}, require a
-\lean{Fintype} instance.  The elaborator does synthesize \lean{Fintype}
-instances automatically; the difficulty is not obtaining an instance but
-obtaining the same one every time.  In a development with multiple
-overlapping constructions (quotient types, embedded subgraphs,
-partial-function spaces), the same type can receive different \lean{Fintype}
-instances from different elaboration paths.  As sets, their \lean{elems}
-fields cannot disagree, since \lean{complete} forces each to contain every
-element of the type; what can differ is the term denoting that set.  When
-the two \lean{elems} terms do not reduce to a common term definitionally,
-the kernel rejects the goal even though the instances are provably equal.
+The elaborator synthesizes such instances automatically, and the difficulty is
+not obtaining one but obtaining the same one every time.  In a development
+with multiple overlapping constructions (quotient types, embedded subgraphs,
+spaces of label placements and constrained embeddings), the same type can
+receive different \lean{Fintype} instances from different elaboration paths.  Their \lean{elems} fields cannot
+disagree as sets, since \lean{complete} forces each to contain every element;
+what differs is the term denoting that set, and when the two terms do not
+reduce to a common one definitionally, a rewrite or a direct application
+fails, even though the instances are provably equal.
 
-The formalization responds in two ways.  The first is preventive: the
-moment a finite set is named, the intended instance is chosen and bound
-with \lean{let}, so that every later occurrence elaborates against the same
-binding rather than a fresh search:
+The formalization responds in two ways.  The first is preventive: the moment a
+finite set is named, the intended instance is chosen and bound with
+\lean{let}, so that every later occurrence elaborates against the same
+binding.  The fragment below proves that two finite sets
+related by a bijection have equal \lean{toFinset} counts:
 \begin{lstlisting}
--- S0 and S1 are the two finite sets being counted.
--- Choose and name the Fintype enumeration used for each one.
+-- S0 and S1 are the two finite sets being counted,
+-- and h_iso_S0_S1 a bijection between them.
 let hS0 : Fintype S0 := Fintype.ofFinite S0
 let hS1 : Fintype S1 := Fintype.ofFinite S1
--- h_iso_S0_S1 is a bijection between the two sets.
--- The @ notation exposes the Fintype arguments that Lean normally inserts.
 have card_eq : @Fintype.card S0 hS0 = @Fintype.card S1 hS1 :=
   @Fintype.card_congr S0 S1 hS0 hS1 h_iso_S0_S1
--- Rewrite the toFinset counts in the goal to Fintype cardinalities.
 have count_eq : S0.toFinset.card = S1.toFinset.card := by
-  -- These two toFinset terms also use hS0 and hS1, respectively.
   rw [Set.toFinset_card, Set.toFinset_card]
   exact card_eq
 \end{lstlisting}
-The \lean{@} notation makes explicit where the two named instances enter:
-they are the enumerations used by the two \lean{Fintype.card} terms and the
-arguments of \lean{Fintype.card\_congr}, and the \lean{toFinset} expressions
-use them implicitly, so \lean{Set.toFinset\_card} rewrites the concrete
-counts to exactly the terms appearing in \lean{card\_eq}.  Without the local
-bindings, Lean could synthesize those hidden arguments independently at the
-different occurrences, producing terms that are propositionally equal but do
-not match for rewriting.
+It names the instance for each set, derives the equality of cardinalities from
+the bijection, and rewrites the \lean{toFinset} counts into that form.  The
+\lean{@} notation writes out the instance arguments that Lean would otherwise
+infer for itself, so one can see that \lean{card\_eq} and the two
+\lean{toFinset} terms use the same ones; without the bindings, each
+occurrence would receive whatever instance its own elaboration path supplies,
+and the rewrite fails whenever that term differs from the one inside the
+count being rewritten.
 
-This pattern appears in \lean{flagDensity\allowbreak\_permute} from
-\Cref{sec:reordered-flag-tuples}.  There, \lean{S0} and \lean{S1} are the
-sets of tuples of pairwise-disjoint induced copies that realize \lean{Fl} and
-\lean{Fl.permute $\pi$}, respectively.  The mathematical step is the
-reindexing bijection \lean{h\_iso\_S0\_S1}; the named \lean{Fintype}
-instances ensure that the cardinality equality obtained from this bijection
-rewrites the counts occurring in the density definition.  The flag-operator
-proofs use the same pattern for the isomorphism set associated with a fixed
-underlying graph.
+This pattern appears in the proof of \lean{flagDensity\allowbreak\_permute},
+the invariance theorem of \Cref{sec:reordered-flag-tuples}: there \lean{S0}
+and \lean{S1} are the sets of tuples of pairwise-disjoint induced copies that
+realize \lean{Fl} and \lean{Fl.permute $\pi$}, the mathematical step is the
+reindexing bijection, and the named instances ensure that the resulting
+cardinality equality rewrites the counts occurring in the density definition.
+The downward-operator proofs of \Cref{sec:formal-downward} use the same
+pattern for the set of type embeddings that produce a given flag.
 
 The second response repairs mismatches that do occur.  Once the
 mathematical steps of such a proof are done, what remains is a goal of a
@@ -3731,13 +3721,11 @@ tactic \lean{congr!} closes such goals; it decomposes the equality into
 congruence subgoals and discharges the instance mismatches, which is sound
 because any two \lean{Fintype} instances of the same type are provably
 equal (\lean{Fintype T} is a subsingleton).  The bridging lemma
-\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq} of
-\Cref{sec:reordered-flag-tuples} is finished exactly this way: it carries
-a \lean{FintypeList} instance for each vertex-type family, supplying a
-\lean{Fintype} instance for every component type.  Once the families and the
-tuples have been identified, the two sides of the goal differ only in the
-\lean{Fintype} instances supplied for the component types; \lean{congr!}
-resolves these remaining differences.
+\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq}, the other theorem of
+\Cref{sec:reordered-flag-tuples}, is closed exactly this way: once its
+families and tuples have been identified, the two sides differ only in the
+\lean{Fintype} instances that its \lean{FintypeList} hypothesis supplies for
+the component types, and \lean{congr!} resolves those.
 
 These explicit \lean{Fintype} choices are needed only where finite sets are
 converted to \lean{Finset}s or their cardinalities are compared.  Once the
@@ -3752,47 +3740,34 @@ specification layer.  We expected many of these equalities to follow from
 existing counting lemmas or symbolic simplification, but unfolding the
 definitions repeatedly exposed the same structure: the two sides are
 cardinalities of finite sets of configurations presented in different ways.
-Our most reliable method is to identify the two sets, construct an explicit
-bijection, and use it to prove equality of their cardinalities; the bijection
-carries the main mathematical content of the proof.
+Our most reliable method is to identify the two sets and construct an explicit
+bijection between them.
 
-Our experience proving the density chain rules (\Cref{lem:chain-rule}) made
-this pattern particularly clear.  A chain rule identifies two sampling procedures: choosing the required
-subflags directly in the host, or making the same choice in stages through an
-intermediate $\sigma$-flag.  On paper, these procedures are readily seen as two
-descriptions of the same experiment.  In Lean, after unfolding the
-definitions, the proof came down to a bijection between the finite sets of
-choices made by the two procedures.  This bijection yielded equality of the
-corresponding counts and hence the chain rule.
+Proving the chain rule (\Cref{lem:chain-rule}) made the pattern
+clear.  Its two sampling procedures are visibly two descriptions of one
+experiment on paper; in Lean, after unfolding the definitions, the proof came
+down to a bijection between the finite sets of choices the two procedures
+make, which yielded the equality of counts and hence the rule.
 
 The same method proves permutation invariance, invariance under inserting an
 empty flag, the downward-operator counting identities, and the adequacy of
-the computational subgraph representation.  Although these obligations arise
-in different parts of the formalization, each reduces to an explicit
-correspondence between two finite sets.  The bijection contains the
-mathematical argument, while the instance discipline of
-\Cref{sec:fintype} handles the resulting cardinalities.  We do not claim
-that bijections are the only possible approach, but their effectiveness
-across these different obligations made them our default method for finite
-counting identities.
+the computational subgraph representation.  In each, the bijection carries the
+mathematical argument, while the instance discipline of \Cref{sec:fintype}
+handles the resulting cardinalities.  We do not claim bijections are the only
+approach, but their effectiveness across these obligations made them our
+default method.
 
 \section{A Meta-Theory of Ensemble Semantics}
 \label{sec:metatheory}
 
-The definition of \lean{forbidLE} in \Cref{sec:forbidden} was a deliberate
-departure from the usual presentation of constrained flag algebras.  Rather
-than building a new algebra for each forbidden family, it retains the same
-ambient algebra and imposes the forbidden-graph condition only when
-interpreting its elements.  It considers only unlabeled positive
-homomorphisms satisfying that condition, applies the corresponding
-random-extension measure to each one, and requires the desired inequality to
-hold with probability one under that measure.
-This engineering choice exposed a mathematical problem in its own right:
-when does this \emph{ensemble semantics} validate exactly the same typed
-inequalities as a flag algebra in which the constraint is built in from the
-beginning?  This led us to develop a separate mathematical meta-theory.
-This section gives the definitions and main results needed to state that answer;
-a forthcoming paper will present the full theory and its applications.
+Defining \lean{forbidLE} as we did in \Cref{sec:forbidden}, by constraining
+the interpretations rather than the algebra, exposed a mathematical problem in
+its own right: when does this \emph{ensemble semantics} validate exactly the
+same typed inequalities as a flag algebra in which the constraint is built in
+from the beginning?  This section gives the definitions and main results
+needed to state the answer.  The proofs are only sketched; a forthcoming paper
+will present the full theory and its applications, and the results reported
+here are machine-checked in the released development.
 
 \boldparagraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let~\(\mathcal K\subseteq\mathcal G\) be a hereditary class, and fix a flag type
@@ -3809,12 +3784,11 @@ To make the underlying graph class explicit, we write
 in \(\mathcal K\).  Only \(\sigma\)-flags whose underlying unlabeled graphs
 belong to~\(\mathcal K\) occur in this constrained algebra.  Because
 \(\mathcal K\) is hereditary, the remaining \(\sigma\)-flags, whose underlying
-graphs lie outside \(\mathcal K\), span an ideal,\footnote{Here an ideal \(I\)
+graphs lie outside \(\mathcal K\), span an ideal,\footnote{An ideal \(I\) here
 is a linear subspace of the flag algebra that is also closed under
-multiplication by arbitrary algebra elements.  Thus, \(I\) is closed under
-addition and real scalar multiplication, and if \(x\in I\) and \(a\) belongs
-to the flag algebra, then \(ax\in I\).  This property makes the quotient by
-\(I\) an algebra in which every element of \(I\) is identified with zero.} and the usual constrained
+multiplication by arbitrary algebra elements.  That closure is what makes the
+quotient by \(I\) again an algebra, one in which every element of \(I\) has
+become zero.} and the usual constrained
 algebra is canonically isomorphic to the quotient of the ambient algebra by
 this ideal.  We therefore have a canonical quotient map
 \[
@@ -3862,22 +3836,9 @@ There is also an intrinsic description:
     \(\mathcal K\)}
   \right\}.
 \end{equation}
-The inclusion from left to right is immediate.  If
-\(\chi=\psi\circ q_\sigma\) belongs to \(Q_\sigma\), then
-\(q_\sigma([F])=0\) for every \(\sigma\)-flag \(F\) outside \(\mathcal K\),
-and hence \(\chi([F])=0\).
-
-For the reverse inclusion, suppose that \(\chi\in X_\sigma\) vanishes on
-every \(\sigma\)-flag outside \(\mathcal K\).  Here heredity ensures that the
-span of these flags is an ideal.  Every \(\sigma\)-flag \(F\) appearing in
-the product of a \(\sigma\)-flag \(F'\) outside \(\mathcal K\) with another
-\(\sigma\)-flag \(F''\) contains \(F'\) as an induced subflag.  The flag \(F\)
-must therefore also lie outside \(\mathcal K\), since otherwise heredity would
-imply that the underlying graph of \(F'\) lies in \(\mathcal K\).  Thus, the
-span of the flags outside \(\mathcal K\) is precisely the ideal killed by
-\(q_\sigma\).  The homomorphism \(\chi\) vanishes on this ideal and therefore
-factors through \(q_\sigma\) as a positive homomorphism on the constrained
-algebra.  Hence \(\chi\in Q_\sigma\), proving the reverse inclusion.
+One inclusion is immediate from \(q_\sigma([F])=0\); the other holds because
+the flags outside \(\mathcal K\) span exactly the ideal that \(q_\sigma\)
+kills, so a homomorphism vanishing on them factors through \(q_\sigma\).
 Equation~\eqref{eq:Q-sigma-intrinsic} also shows
 that \(Q_\sigma\) is closed in \(X_\sigma\), since it is an intersection of
 zero sets of continuous evaluation maps.  We write
@@ -3922,40 +3883,25 @@ space:
   \bigl(\phi_0\in Q_0,
         \phi_0(\langle\sigma\rangle_0)>0\bigr).
 \]
-Indeed, let \(F\) be a \(\sigma\)-flag outside \(\mathcal K\).  Applying the
-downward operator to \([F]\) produces a non-negative multiple of
-\([F|_\emptyset]\), whose underlying graph also lies outside \(\mathcal K\).
-Every \(\phi_0\in Q_0\) evaluates \([F|_\emptyset]\) to zero.  Therefore, if~\(\phi\sim\Ext_\sigma(\phi_0)\), the random-extension
-identity in Equation~\eqref{eq:ensemble} gives
-\[
-  \mathbb{E}[\phi([F])]=0.
-\]
-Since every positive homomorphism \(\phi'\) satisfies \(\phi'([F])\geq0\), it
-follows that for \(\phi\sim\Ext_\sigma(\phi_0)\), we have
-\(\phi([F])=0\) with probability one.  Applying this argument to
-the countable collection of \(\sigma\)-flags outside \(\mathcal K\) shows that a positive
-homomorphism sampled from \(\Ext_\sigma(\phi_0)\) belongs to \(Q_\sigma\) with
-probability one.  Since \(Q_\sigma\) is closed, Equation~\eqref{eq:S-sigma} yields the
+Indeed, for a \(\sigma\)-flag \(F\) outside \(\mathcal K\), the downward image
+of \([F]\) is a non-negative multiple of \([F|_\emptyset]\), which every
+\(\phi_0\in Q_0\) evaluates to zero, so the random-extension identity
+\eqref{eq:ensemble} forces \(\mathbb{E}[\phi([F])]=0\) and hence
+\(\phi([F])=0\) almost surely.  Ranging over the countably many such flags
+puts the sample in \(Q_\sigma\) with probability one, and \(Q_\sigma\) is
+closed, so Equation~\eqref{eq:S-sigma} yields the
 fundamental inclusion
 \begin{equation}\label{eq:S-subset-Q}
   S_\sigma\subseteq Q_\sigma.
 \end{equation}
-We say that \((\mathcal G,\mathcal K,\sigma)\) is
-\emph{root-plantable}\footnote{The vertices distinguished by the flag type
-\(\sigma\) are often called the \emph{roots}, which explains the first part of
-the term \emph{root-plantable}.  A finite \(\sigma\)-flag \((G,\theta)\)
-records a profile of \(\sigma\)-flag densities relative to a specified embedding
-\(\theta:\sigma\to G\), whose image consists of the labeled vertices.  To
-\emph{plant} this profile in a larger graph \(H\in\mathcal K\), without
-specifying labels in advance, is to produce many embeddings
-\(\widehat\theta:\sigma\to H\) whose profiles of \(\sigma\)-flag densities approximate the
-profile specified by \((G,\theta)\).  Here ``many'' means that these embeddings
-form a fraction bounded away from zero of all embeddings of \(\sigma\) in
-\(H\).  Consequently, a uniformly chosen occurrence of \(\sigma\) reproduces
-the prescribed profile with non-vanishing probability.  The equality
-\(S_\sigma=Q_\sigma\) says that every constrained \(\sigma\)-typed positive
-homomorphism can be approximated by finite constructions of this kind.} when
-\(S_\sigma=Q_\sigma\).
+We say that \((\mathcal G,\mathcal K,\sigma)\) is \emph{root-plantable} when
+\(S_\sigma=Q_\sigma\).  The name records what the equality says: the labeled
+vertices of \(\sigma\) are its \emph{roots}, and to \emph{plant} a
+\(\sigma\)-flag's density profile in a larger graph of the class, without
+choosing its labels in advance, is to make a fraction bounded away from zero
+of all embeddings of \(\sigma\) reproduce that profile.  Root-plantability
+asks that every constrained \(\sigma\)-typed positive homomorphism be
+approximable by finite constructions of this kind.
 
 \begin{definition}[Built-in and ensemble orders]\label{def:two-constrained-orders}
 Let \(\mathcal K\subseteq\mathcal G\) be hereditary, let \(\sigma\) be a flag
@@ -4020,26 +3966,16 @@ is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-The proof explains why the equality \(S_\sigma=Q_\sigma\) is exactly the
-condition under which the two orders agree.  Evaluation of
-\(g-f\) defines a continuous function
-\(\chi\mapsto\chi(g-f)\) on \(X_\sigma\).  Almost-sure non-negativity under a
-measure is equivalent to non-negativity on its support; continuity then shows
-that non-negativity in the ensemble semantics is exactly non-negativity on
-\(S_\sigma\).  Non-negativity in the built-in semantics is, by definition,
-non-negativity on \(Q_\sigma\).
-The inclusion in Equation~\eqref{eq:S-subset-Q} proves the forward implication, and
-\(S_\sigma=Q_\sigma\) proves equivalence.
-
-The necessity of root-plantability requires more than this observation.  If
-\(S_\sigma\subsetneq Q_\sigma\), choose
-\(\chi_*\in Q_\sigma\setminus S_\sigma\).  Topological separation gives a
-continuous function that is strictly positive on \(S_\sigma\) and strictly
-negative at \(\chi_*\).  The Stone--Weierstrass theorem then approximates this
-function by evaluation of a flag-algebra element.  The resulting element is
-non-negative in the ensemble semantics but not in the built-in semantics,
-so the two orders
-cannot agree for all elements.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
+The equality \(S_\sigma=Q_\sigma\) is the right condition because each order is
+non-negativity of the continuous function \(\chi\mapsto\chi(g-f)\) on one of
+the two spaces: almost-sure non-negativity under a measure is non-negativity
+on its support, so the ensemble order tests \(S_\sigma\), while the built-in
+order tests \(Q_\sigma\) by definition.  Equation~\eqref{eq:S-subset-Q} then
+gives the forward implication.  For the converse, a point of
+\(Q_\sigma\setminus S_\sigma\) can be separated from \(S_\sigma\) by a
+continuous function and the separating function approximated by a
+flag-algebra element, which is then ensemble-non-negative but not built-in
+non-negative.  Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
 built-in proofs are always sound for ensemble semantics, and they capture all
 ensemble-valid typed inequalities exactly under root-plantability.
 
@@ -4067,46 +4003,18 @@ closure.  Consequently, the two orders agree at every non-degenerate flag type
 for any blow-up-closed class.
 \end{theorem}
 
-The proof starts from a target \(\chi\in Q_\sigma\), represented by a sequence
-of finite \(\sigma\)-flags whose underlying graphs lie in \(\mathcal K\).  For
-each such \(\sigma\)-flag \((G,\theta)\), the proof applies the preceding
-replacement construction once for each vertex of \(G\): the vertices
-\(v\in V(G)\) are replaced one at a time by graphs \(J_v\), and at every
-step blow-up closure supplies an interior for which the current graph
-remains in \(\mathcal K\), so the final blow-up also lies in \(\mathcal K\).  The resulting blow-up has a natural projection back to \(G\): every
-vertex of \(J_v\) is mapped to \(v\).  We call \(V(J_v)\), the inverse image of
-\(v\) under this projection, the \emph{fiber over~\(v\)}.
-
-The fibers over the labeled vertices \(\theta(i)\) are made large enough that a
-uniformly chosen embedding of \(\sigma\) places each label \(i\) in the
-corresponding fiber with probability bounded away from zero.  When a fixed
-finite \(\sigma\)-flag is sampled from the blow-up, its sampled vertices lie in distinct
-fibers with probability tending to one.  On this event, the corresponding
-vertices of \(G\) determine their adjacencies, so the internal structure of the
-replacement graphs \(J_v\) does not affect the sample.
-
-These estimates connect the finite blow-up construction to the definition of
-\(S_\sigma\).  Let \(U\) be any open neighborhood of \(\chi\) in \(X_\sigma\).
-Because \(X_\sigma\) has the topology of pointwise convergence on \(\sigma\)-flags,
-membership in \(U\) can be ensured by approximating the values of finitely many
-\(\sigma\)-flags within a prescribed tolerance.  Choose~\((G,\theta)\)
-sufficiently far along the sequence representing \(\chi\), and then choose its
-blow-up sufficiently large.  The construction ensures that a positive fraction
-of the embeddings of \(\sigma\) into the blow-up produce \(\sigma\)-typed
-density profiles lying in \(U\): the labeled vertices enter the designated
-fibers with probability bounded away from zero, while the distinct-fiber
-estimate preserves the required \(\sigma\)-flag densities.
-
-Passing to a limit of these unlabeled blow-ups gives some \(\phi_0\in Q_0\) for
-which
-\[
-  \Ext_\sigma(\phi_0)(U)>0.
-\]
-Therefore, \(U\) intersects \(\operatorname{supp}(\Ext_\sigma(\phi_0))\).  Since
-every neighborhood \(U\) of \(\chi\) has this property, \(\chi\) lies in the
-closure of the union of these supports, namely \(S_\sigma\).  Hence
-\(Q_\sigma\subseteq S_\sigma\), while the opposite inclusion is
-Equation~\eqref{eq:S-subset-Q}.
+The proof takes a target \(\chi\in Q_\sigma\), represented by a sequence of
+finite \(\sigma\)-flags in \(\mathcal K\), and blows up each of them one vertex
+at a time, closure supplying an interior at every step that keeps the graph in
+\(\mathcal K\).  Making the fibers over the labeled vertices large enough
+forces a uniformly chosen embedding of \(\sigma\) to land on them with
+probability bounded away from zero, while a fixed sample lands in distinct
+fibers with probability tending to one, so the interiors do not affect the
+densities it sees.  A positive fraction of the embeddings therefore realizes
+the profile of \(\chi\) to any prescribed accuracy, which places \(\chi\) in
+the support of \(\Ext_\sigma(\phi_0)\) for a limit \(\phi_0\) of the unlabeled
+blow-ups, hence in \(S_\sigma\).  With
+Equation~\eqref{eq:S-subset-Q} this gives \(S_\sigma=Q_\sigma\).
 
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
@@ -4121,31 +4029,15 @@ class of \(C_4\)-free graphs, those containing no \(C_4\) as a subgraph, and
 let \(\sigma_1\) be the one-vertex type.
 Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen uniformly
 at random has normalized degree tending to zero.  
-Let~\(d\in\FlagAlg{\sigma_1}[\mathcal G]\) be the flag-algebra element represented by
-the following two-vertex \(\sigma_1\)-flag:
-\[
-  d :=
-  \begin{tikzpicture}[scale=0.75,baseline=-0.55ex]
-    \draw[graph edge] (0,0) -- (1.2,0);
-    \node[graph root] at (0,0) {};
-    \node[graph vertex] at (1.2,0) {};
-    \node[font=\scriptsize] at (0,-0.32) {\(1\)};
-  \end{tikzpicture}
-\]
-The filled vertex carries label \(1\), and the open vertex is unlabeled.  Thus,
-the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
-its labeled vertex: the probability that one additional uniformly sampled
-vertex is adjacent to it.  The preceding observation implies that every
-\(\chi\in S_{\sigma_1}\) satisfies \(\chi(d)=0\), so \(-d\) is non-negative
-in the ensemble semantics.  On the other hand, arbitrarily large stars are
-\(C_4\)-free: the star \(K_{1,t}\) consists of one vertex, its
-\emph{center}, adjacent to \(t\) pairwise non-adjacent leaves, and contains
-no cycle at all.  Label the center of \(K_{1,t}\) to obtain a
-\(\sigma_1\)-flag, and let \(\chi_*\in Q_{\sigma_1}\) be the positive
-homomorphism arising as the limit of this sequence of \(\sigma_1\)-flags.
-Every leaf is adjacent to the center, so \(\chi_*(d)=1\).  Since
-every point of \(S_{\sigma_1}\) evaluates \(d\) to zero,
-\(\chi_*\notin S_{\sigma_1}\), and hence
+Let \(d:=\fKtwobull\in\FlagAlg{\sigma_1}[\mathcal G]\), so that the density of
+\(d\) in a finite \(\sigma_1\)-flag is the normalized degree of its labeled
+vertex.  Every \(\chi\in S_{\sigma_1}\) therefore satisfies \(\chi(d)=0\), and
+\(-d\) is non-negative in the ensemble semantics.  Arbitrarily large stars are
+\(C_4\)-free, however, since they contain no cycle at all.  Label the center
+of \(K_{1,t}\) to obtain a \(\sigma_1\)-flag, and let
+\(\chi_*\in Q_{\sigma_1}\) be the limit of that sequence.  Every leaf is
+adjacent to the center, so \(\chi_*(d)=1\) and
+\(\chi_*\notin S_{\sigma_1}\), whence
 \begin{equation}\label{eq:c4-strict-inclusion}
   S_{\sigma_1}\subsetneq Q_{\sigma_1}.
 \end{equation}
@@ -4194,38 +4086,22 @@ nonempty-type and empty-type claims of
 \lean{S$\sigma$\_subset\_Q$\sigma$}, formalizes the strict inclusion in
 Equation~\eqref{eq:c4-strict-inclusion}.
 
-These Lean files were generated by Claude Code from an already-developed
-mathematical account and its theorem targets.  Lean checks the resulting proof
-terms, and the released development builds without incomplete proofs.
+These files were generated by Claude Code from an already-developed
+mathematical account and its theorem targets, and Lean checks the resulting
+proof terms.  The autoformalization was feasible because it extended rather
+than rebuilt the manual development of the preceding sections, which had
+already fixed the representations and semantic interfaces and supplied the
+ambient algebra, the positive-homomorphism spaces, the random extensions, and
+the downward operator; only the constrained layer, the forbidden ideal and its
+quotient, had to be built.
 
-This autoformalization was feasible because it extended, rather than rebuilt,
-the manual formalization reported in the preceding sections.  The manual
-library had already fixed the representations and semantic interfaces and
-provided the ambient flag algebra, positive-homomorphism spaces, random
-extensions, the downward operator, and the density and representation
-theorems on which the meta-theory depends.  The generated meta-theory files
-could therefore build the new constrained layer---the forbidden ideal and
-constrained quotient---on this foundation.
-
-The present section isolates the core meta-theoretic consequences of
-\lean{forbidLE}: quotient inequalities always imply ensemble inequalities,
-root-plantability characterizes when the converse holds, and blow-up closure
-is a broad sufficient condition for root-plantability.  A forthcoming paper
-will give the complete mathematical and formal account and pursue three
-extensions.  First, it will develop the finite planting criterion.  For every
-fixed flag size and error tolerance, this criterion asks that each sufficiently
-large finite \(\sigma\)-flag in the class admit a larger graph in the class
-with a positive-density set of \(\sigma\)-embeddings that reproduce, to the
-specified accuracy, all of its \(\sigma\)-flag densities up to that size.
-This finite condition implies root-plantability.  Second, the forthcoming
-work will study further graph classes for which quotient and ensemble
-semantics agree or disagree.  A representative source of disagreement is a
-pinning obstruction: every admissible random-extension measure forces the
-density of a particular \(\sigma\)-flag to one value almost surely, while the
-constrained quotient contains a positive homomorphism assigning it a
-different value.  Third, it will develop relative ensemble semantics for
-arbitrary sets of admissible unlabeled positive homomorphisms, allowing
-non-hereditary limit constraints such as fixing the edge density.
+This section isolates the core consequences of \lean{forbidLE}: built-in
+inequalities always imply ensemble ones, root-plantability characterizes when
+the converse holds, and blow-up closure is a broad sufficient condition for
+it.  The forthcoming paper gives the complete account and goes further, with a
+finite criterion implying root-plantability, further classes on either side of
+the boundary, and a relative ensemble semantics that admits non-hereditary
+constraints such as a fixed edge density.
 
 \section{Open Design Questions}
 \label{sec:unsure}
