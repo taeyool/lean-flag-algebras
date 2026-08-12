@@ -4425,33 +4425,35 @@ account of the flag-algebra/graphon correspondence remains future work.
 
 Flag-algebra certificates are produced by unverified numerical toolchains and
 are far too large to audit by hand.  We have built a Lean~4
-certificate-to-proof compiler that consumes them without trusting them:
-invoked as an elaboration-time tactic against a theorem stated in the source
-file, it recomputes every fact a certificate claims against formal definitions
-of the flag algebra and assembles a complete proof.  Underneath it are a
+certificate-to-proof pipeline that consumes such certificates without trusting
+them.  Certificate-specific elaboration commands first generate the required
+density and multiplication identities; a final tactic then reads the
+certificate, checks its remaining claims, and assembles a complete proof of a
+theorem stated in the source file.  Underlying the pipeline are a
 specification layer that follows the standard mathematics and a reflection
 layer that makes the finite parts of that mathematics executable, joined by
 adequacy theorems.  We compiled seven Tur\'an-type upper bounds, and paired two
 of them, Mantel's theorem and the Erd\H{o}s pentagon theorem, with lower-bound
 constructions proved directly against the same formal interface.
 
-One design choice shaped the development throughout.  Rather than build a
-separate algebra for each forbidden family, we kept one ambient algebra and
-imposed the forbidden-subgraph constraint only when its elements are compared.
-This ensemble semantics keeps the core definitions independent of the extremal
-problem being solved, and it yields the intended asymptotic bounds on its own
-terms.  Asking how it relates to the built-in semantics turned into
-mathematics of its own: built-in validity always implies ensemble validity, and
-the converse holds for all expressions exactly when the class is
-root-plantable.
+One design choice shaped the development throughout.  In the standard
+semantics, the forbidden-subgraph constraint is built into a separate algebra
+for each forbidden family.  We instead kept one ambient algebra and imposed the
+constraint only when its elements are compared.  This ensemble semantics keeps
+the core definitions independent of the extremal problem being solved, and it
+yields the intended asymptotic bounds on its own terms.  Comparing the two
+semantics led to mathematics of its own: validity in the standard semantics
+always implies validity in the ensemble semantics, and the converse holds for
+all expressions exactly when the class is root-plantable.
 
-We do not claim that this is the right way to formalize flag algebras.  Our aim
+We do not claim that the approach presented here is the right way to formalize
+flag algebras.  Our aim
 has been to make the design choices and their consequences explicit: the
 engineering obligations they create, the layers needed to discharge them, and
-the questions left open.  Some choices reflect what is currently feasible
-rather than a principled preference; most visibly, the two largest certificates
-still use \lean{native\_decide}, a trust tradeoff we report per obligation
-rather than leave implicit.
+the questions left open.  Some choices reflect current feasibility constraints
+rather than principled preferences; most visibly, the two largest certificates
+still rely on \lean{native\_decide}, so their proofs also trust Lean's native
+compiler.
 
 We expect the architecture to support additional parts of Razborov's
 flag-algebra calculus, especially the differential structure developed in
@@ -4462,11 +4464,7 @@ such as hypergraphs and directed graphs, which change the objects the whole
 development is built on.  A further direction is a formal bridge between our
 positive-homomorphism semantics and graphon theory, connecting the development
 to the Lov\'asz theory~\cite{lovasz2012large} and to the existing Lean graphon
-formalization~\cite{freer2026graphon}.  Most immediately, closing the
-\lean{native\_decide} gap, by extending the kernel-checked path or by
-delegating to a verified external checker, would remove the last dependency on
-Lean's native compiler: a feasibility constraint of the current encoding, not a
-limitation of the method.
+formalization~\cite{freer2026graphon}.
 
 \subsection*{Use of AI Assistance}
 The layers of this development used AI assistance to different degrees.  The
