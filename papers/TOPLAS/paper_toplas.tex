@@ -4108,9 +4108,10 @@ constraints such as a fixed edge density.
 
 The formalization and end-to-end certificate proofs presented above are fully
 checked in Lean.  This section instead concerns design questions that the
-present implementation cannot settle on its own.  For each, we distinguish what
-the development demonstrates from what would require alternative
-implementations or larger computations to determine.
+present implementation cannot settle on its own.  For each question, we state
+what our implementation establishes and what remains unknown because answering
+it would require either building a competing implementation or running
+substantially larger examples.
 
 \boldparagraph{When should a forbidden-graph constraint enter the formalization?}
 We deferred it: the ensemble semantics (\Cref{sec:forbidden}) imposes the
