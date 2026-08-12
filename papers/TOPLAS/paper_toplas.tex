@@ -3504,45 +3504,49 @@ while forbidding another as a subgraph.
 \section{Engineering Obstacles}
 \label{sec:obstacles}
 
-The specification layer of \Cref{sec:abstract} makes explicit several proof
-obligations that ordinary combinatorial notation hides.  They do not change
-the underlying mathematics, but they recur often enough to impose a
-substantial proof-engineering cost, and their causes differ.  Invariance
-under isomorphism is the well-definedness condition required to define an
-operation on a quotient.  Comparing flags of different sizes, and comparing a
-tuple with its reordering, both come from carrying data in types, which puts
-related objects beyond the reach of ordinary equality.  The enumeration issue,
-by contrast,
-arises from elaboration and instance synthesis, which may produce
-different enumerations at different occurrences.  Only the first is forced by
-the representation itself and would arise in any proof assistant that models
-flags as isomorphism classes.  The others are artifacts of a dependently
-typed setting with typeclass-driven elaboration: a port to Rocq (formerly
-Coq) or Agda would meet close analogues, whereas Isabelle/HOL's simple type
-theory cannot index flags by size at all, so a port there would trade these
-obstacles for a different set of obligations.  A final
-subsection collects the proof method these obligations kept demanding:
-identifying two finite sets by an explicit bijection.
+The specification layer of \Cref{sec:abstract} turns several steps that
+ordinary combinatorial notation leaves implicit into explicit Lean proof
+obligations.  These obligations do not change the underlying mathematics, but
+discharging them repeatedly requires substantial proof-engineering effort.
+This section examines three recurring sources of that effort.  First, because
+flags are represented as isomorphism classes, every construction defined on
+concrete graphs must be shown to be independent of the chosen representatives.
+Second, some graph data, including flag sizes and the vertex types of tuple
+entries, is encoded in Lean's types.  Reordering a tuple therefore changes not
+only its entries but also the type-level order of their vertex types, and Lean
+need not recognize the result as having the same type as a tuple constructed
+directly in the new order.  Third, typeclass inference may construct different
+terms representing the same finite enumeration, causing otherwise
+straightforward rewrites to fail unless the relevant instances are controlled
+explicitly.  The first three subsections examine these obstacles in turn.  The
+final subsection describes a separate proof pattern that became common in the
+specification layer: proving finite counting identities by constructing
+explicit bijections.
 
 \subsection{Computing with Graphs up to Isomorphism}
 
 As described in \Cref{sec:flagtypes}, a flag is an isomorphism class of
-concrete labeled graphs, so that later statements do not depend on arbitrary
-vertex names.  Every construction first described on a representative
-therefore owes a well-definedness proof: a rule $G\mapsto A(G)$ descends to
-flags only once
+concrete labeled graphs.  This representation ensures that later statements
+do not depend on arbitrary vertex names, but it also imposes a recurring
+well-definedness obligation.  A construction defined on concrete graphs gives
+a construction on flags only after it has been shown to respect isomorphism.
+Thus, for a rule $G\mapsto A(G)$, one must prove
 \[
-  G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G')
+  G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G').
 \]
-is established.  \lean{Quotient.lift} takes the rule and that proof and returns the
-function on flags, so the mechanism costs a line; the proof is what costs.
+In Lean, \lean{Quotient.lift} combines the rule with this compatibility proof
+to produce a function on flags.  The quotient lift itself is brief; proving
+the required compatibility is often the substantial part.
 
-The obligation recurs for every density and every graph operator, and again
-at the reflection boundary, where defining the decoding
-\lean{Sym2Flag.toFlag} of \Cref{sec:reflection-adequacy} requires showing
-that equivalent concrete representations decode to the same abstract flag.  Rather than exposing both
-representations in every later theorem, we discharge the obligation once and
-let subsequent proofs work with flags.
+This obligation arises whenever a density or graph operation is first defined
+on concrete labeled graphs and then lifted to flags.  It appears again at the
+reflection boundary: \lean{Sym2Flag} is a quotient of computational graph
+representations, so defining the decoding map
+\lean{Sym2Flag.toFlag} of \Cref{sec:reflection-adequacy} requires proving that
+equivalent concrete representations decode to the same abstract flag.  Once
+this compatibility has been established, \lean{Quotient.lift} yields a
+well-defined decoding map that the subsequent adequacy theorems can reuse
+without exposing concrete representatives.
 
 \subsection{Comparing Reordered Flag Tuples}
 \label{sec:reordered-flag-tuples}
