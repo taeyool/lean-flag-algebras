@@ -3651,35 +3651,39 @@ constructing \lean{[F}$_1$\lean{, F}$_0$\lean{]}$^{\mathtt{f}}$ directly.
 \subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
 
-Lean distinguishes a proof that a type is finite from a mechanism for
-enumerating its elements.  An instance of \lean{Finite T} provides only the
-former; an instance of \lean{Fintype T} provides the latter:
+Lean distinguishes knowing that a type is finite from having explicit finite
+data listing all its elements.  An instance of \lean{Finite T} provides only
+the former, whereas an instance of \lean{Fintype T} provides the latter:
 \begin{lstlisting}
 class Fintype (T : Type*) where
   elems : Finset T
   complete : (*@$\forall$@*) x : T, x (*@$\in$@*) elems
 \end{lstlisting}
-The field \lean{elems} is a concrete finite set of elements of \lean{T} and
-\lean{complete} proves that every element belongs to it, so \lean{Fintype} is
-the interface through which this development counts.  The sets this development counts are described
-by conditions, not by explicit enumerations: the tuples of induced copies
-realizing a given flag list, or the type embeddings producing a given flag.
-Lean can usually
-infer that such a set is \lean{Finite}, but \lean{Fintype.card} and the lemmas
-about it require a \lean{Fintype}, and \lean{Fintype.ofFinite} supplies one by
-invoking \lean{Classical.choice}.  That instance is noncomputable, which costs
-nothing here, since these proofs relate cardinalities by lemmas rather than
-evaluating them.
+The field \lean{elems} contains every element of \lean{T}, as guaranteed by
+\lean{complete}.  Our specification-layer definitions use this data when
+taking cardinalities.  In Lean, the collections they count are typically
+subtypes defined by predicates rather than explicit enumerations.  Examples
+include tuples of pairwise-disjoint sets of unlabeled vertices in a host flag
+that, together with the labeled vertices, induce the flags in a given flag
+list, and type embeddings whose images produce a given flag.  Lean can
+generally establish \lean{Finite} for these subtypes, and
+\lean{Fintype.ofFinite} can then choose a \lean{Fintype} instance
+noncomputably.  This is sufficient here because the proofs use the chosen
+instance only to state and compare cardinalities, not to evaluate the
+enumeration.
 
-The elaborator synthesizes such instances automatically, and the difficulty is
-not obtaining one but obtaining the same one every time.  In a development
-with multiple overlapping constructions (quotient types, embedded subgraphs,
-spaces of label placements and constrained embeddings), the same type can
-receive different \lean{Fintype} instances from different elaboration paths.  Their \lean{elems} fields cannot
-disagree as sets, since \lean{complete} forces each to contain every element;
-what differs is the term denoting that set, and when the two terms do not
-reduce to a common one definitionally, a rewrite or a direct application
-fails, even though the instances are provably equal.
+\lean{Fintype.ofFinite} is not Lean's only way to construct the required
+instance.  At later use sites, operations such as \lean{Fintype.card} leave
+their \lean{Fintype} arguments implicit, and typeclass inference may construct
+them by another available route.  For example, Lean can construct a
+\lean{Fintype} for a predicate-defined subtype by filtering the existing
+\lean{Fintype} enumeration of its ambient type.  We call the resulting instance
+\emph{structurally derived} because it is assembled from the subtype structure
+and the existing instance on the ambient type.  Consequently, a count
+definition may contain the instance chosen locally by
+\lean{Fintype.ofFinite}, while a cardinality lemma receives this structurally
+derived instance.  Both enumerate the same elements and are provably equal,
+but if their terms are not definitionally equal, a direct rewrite can fail.
 
 The formalization responds in two ways.  The first is preventive: the moment a
 finite set is named, the intended instance is chosen and bound with
@@ -3687,8 +3691,8 @@ finite set is named, the intended instance is chosen and bound with
 binding.  The fragment below proves that two finite sets
 related by a bijection have equal \lean{toFinset} counts:
 \begin{lstlisting}
--- S0 and S1 are the two finite sets being counted,
--- and h_iso_S0_S1 a bijection between them.
+-- S0 and S1 are the sets that are finite. They are being counted.
+-- h_iso_S0_S1 a bijection between them.
 let hS0 : Fintype S0 := Fintype.ofFinite S0
 let hS1 : Fintype S1 := Fintype.ofFinite S1
 have card_eq : @Fintype.card S0 hS0 = @Fintype.card S1 hS1 :=
@@ -3708,10 +3712,11 @@ count being rewritten.
 
 This pattern appears in the proof of \lean{flagDensity\allowbreak\_permute},
 the invariance theorem of \Cref{sec:reordered-flag-tuples}: there \lean{S0}
-and \lean{S1} are the sets of tuples of pairwise-disjoint induced copies that
-realize \lean{Fl} and \lean{Fl.permute $\pi$}, the mathematical step is the
-reindexing bijection, and the named instances ensure that the resulting
-cardinality equality rewrites the counts occurring in the density definition.
+and \lean{S1} consist of tuples of pairwise-disjoint sets of unlabeled host
+vertices that induce \lean{Fl} and \lean{Fl.permute $\pi$}, respectively.  The
+mathematical step is the reindexing bijection, and the named instances ensure
+that the resulting cardinality equality rewrites the counts occurring in the
+density definition.
 The downward-operator proofs of \Cref{sec:formal-downward} use the same
 pattern for the set of type embeddings that produce a given flag.
 
