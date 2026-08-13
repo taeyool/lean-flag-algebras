@@ -2371,7 +2371,9 @@ density and multiplication commands take a pattern size \(p\) and a host size
 says that no forbidden-graph filter is being applied.
 The flag-generating commands also emit a completeness lemma: every
 \(n\)-vertex \(\sigma\)-flag, up to isomorphism, appears among the generated
-names.
+names.  That lemma specializes a theorem proved once and for all, by induction
+on the size: our enumeration algorithm produces a representative of every
+isomorphism class.
 \Cref{tab:generation-commands} collects the command family, including the
 forbid-free variants below.
 
@@ -2446,8 +2448,8 @@ and density computation, but make this paper's nontrivial examples feasible.
 The enumeration of flags is inductive in the size: the underlying
 \(n\)-vertex graph representatives are obtained by extending the
 \((n-1)\)-vertex representatives by one vertex in all possible ways, and the
-typed flags on \(n\) vertices are obtained by placing the flag type's labels on
-those representatives in every valid way.  The working lists therefore stay
+flag type's labels are then placed on them in every valid
+way.  The working lists therefore stay
 close to one representative per isomorphism class, rather than covering all
 \(2^{\binom{n}{2}}\) graphs on a fixed vertex set.
 
@@ -2460,31 +2462,14 @@ expensive part, so each candidate carries a cheap isomorphism-invariant key,
 derived from its edge count and degree sequence, and the expensive test runs
 only when two keys collide.
 
-\item \textbf{Completeness from a verified enumerator.}
-Certifying a generated list by independently enumerating the full quotient
-type and comparing would establish completeness only for that run, and would
-repeat the brute-force search that the size-inductive enumeration is designed
-to avoid.  Instead, we prove once and for all, by induction on the size, that
-the enumeration algorithm of our Lean implementation produces a representative
-of every isomorphism class.  A concrete run then needs only to check that the
-emitted constants coincide with the algorithm's output, and completeness
-follows by specializing that general theorem.
-
 \item \textbf{Pruning under a forbidden graph.}
 For a complete forbidden graph, the size induction itself prunes: only
-\(H\)-free representatives are extended, only \(H\)-free extensions are kept,
+\(H\)-free representatives are extended, only \(H\)-free extensions kept,
 and a cheap clique test decides containment, so flags containing \(H\) are
-never generated.  For other forbidden graphs, the representative enumeration
-is filtered before any typed structure is built, so the labeled-graph work is
-spent only on the surviving graphs.  Pruning misses no \(H\)-free isomorphism
-class, since \(H\)-freeness is invariant under isomorphism and preserved by
-deleting a vertex, so the filtered completeness lemma again follows by
-induction on size.  That lemma expresses \(H\)-freeness in flag-algebra terms,
-requiring every induced pattern whose underlying graph contains \(H\) to have
-density zero, whereas the pruning algorithm uses ordinary subgraph
-containment.  Lean proves that the two tests retain exactly the same flags, so
-the enumeration can use the executable test while later proofs use the
-density-based statement.
+never generated.  Pruning misses no \(H\)-free isomorphism
+class, since \(H\)-freeness is isomorphism-invariant and preserved by vertex
+deletion, so the filtered completeness lemma again follows by
+induction on size.
 
 \end{itemize}
 
