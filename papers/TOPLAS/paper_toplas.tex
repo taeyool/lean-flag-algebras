@@ -3701,24 +3701,32 @@ have count_eq : S0.toFinset.card = S1.toFinset.card := by
   rw [Set.toFinset_card, Set.toFinset_card]
   exact card_eq
 \end{lstlisting}
-It names the instance for each set, derives the equality of cardinalities from
-the bijection, and rewrites the \lean{toFinset} counts into that form.  The
-\lean{@} notation writes out the instance arguments that Lean would otherwise
-infer for itself, so one can see that \lean{card\_eq} and the two
-\lean{toFinset} terms use the same ones; without the bindings, each
-occurrence would receive whatever instance its own elaboration path supplies,
-and the rewrite fails whenever that term differs from the one inside the
-count being rewritten.
+The proof names the \lean{Fintype} instance for each set and uses the bijection
+to derive an equality of their cardinalities.  The \lean{@} notation makes the
+instance arguments to \lean{Fintype.card} and \lean{Fintype.card\_congr}
+explicit.  By contrast, the corresponding arguments of the two
+\lean{toFinset} expressions remain implicit in the displayed code; typeclass
+inference supplies \lean{hS0} and \lean{hS1} from the preceding bindings.  The
+final two lines confirm that these choices agree: \lean{Set.toFinset\_card}
+rewrites each count using the instance carried by its \lean{toFinset}
+expression, and \lean{exact card\_eq} succeeds because those inferred instances
+are definitionally the same as the explicit instances in \lean{card\_eq}.
+Without the bindings, separate occurrences may receive different instances,
+causing the final step to fail.
 
-This pattern appears in the proof of \lean{flagDensity\allowbreak\_permute},
-the invariance theorem of \Cref{sec:reordered-flag-tuples}: there \lean{S0}
-and \lean{S1} consist of tuples of pairwise-disjoint sets of unlabeled host
-vertices that induce \lean{Fl} and \lean{Fl.permute $\pi$}, respectively.  The
-mathematical step is the reindexing bijection, and the named instances ensure
-that the resulting cardinality equality rewrites the counts occurring in the
-density definition.
-The downward-operator proofs of \Cref{sec:formal-downward} use the same
-pattern for the set of type embeddings that produce a given flag.
+The proof of \lean{flagDensity\allowbreak\_permute}, the invariance theorem of
+\Cref{sec:reordered-flag-tuples}, uses this combination of an explicit
+bijection and fixed \lean{Fintype} instances.  For each concrete representative
+of the host flag, \lean{S0} and \lean{S1} consist of tuples of subflags obtained
+from pairwise-disjoint choices of unlabeled host vertices.  The tuples in
+\lean{S0} realize \lean{Fl}, while those in \lean{S1} realize
+\lean{Fl.permute $\pi$}.  Reindexing the tuple entries gives a bijection between
+\lean{S0} and \lean{S1}, and the fixed instances allow the resulting
+cardinality equality to rewrite the numerator of the density.  A related
+bijective count proves that \lean{isomorphismCount}, used in the downward
+operator of \Cref{sec:formal-downward}, is invariant under replacing a labeled
+graph by an isomorphic representative: the isomorphism transports label
+placements and gives a bijection between the corresponding sets.
 
 The second response repairs mismatches that do occur.  Once the
 mathematical steps of such a proof are done, what remains is a goal of a
