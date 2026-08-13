@@ -137,7 +137,7 @@ Four kinds of head terms inside a `downward (...)` wrapper are handled:
 * plain flag term (contains a `FlagAlgebra_*` / `Flag_*` constant but is not
   wrapped in `downward`) — move directly with `forbidLEWith_move_add_left_iff` /
   `forbidLEWith_move_term_left_iff` without any rewriting. -/
-private def stepReduceDownwardFlagMul : TacticM Bool :=
+def stepReduceDownwardFlagMul : TacticM Bool :=
   withMainContext do
     let curNs ← getCurrNamespace
     let goal   ← getMainGoal
@@ -350,6 +350,24 @@ private partial def runReduceDownwardFlagMul
           | none => none
         throwError m!"reduce_downward_flagmul made no progress. lhs={lhs}; addDetected={add?.isSome}; downwardDetected={down?.isSome}; smulOnHeadDetected={smulOnHead?.isSome}"
 
+/-- Right-associate the left-hand side, the way `reduce_downward_flagmul` does before it starts
+iterating. Split out so a caller driving the reduction in chunks can do it exactly once. -/
+def prepareReduceDownwardFlagMul : TacticM Unit := do
+  evalTactic (← `(tactic| try simp only [downward_add, add_assoc]))
+
+/-- Run at most `budget` reduction steps and report how many actually fired (`0` means the
+left-hand side is drained). Unlike `runReduceDownwardFlagMul` this neither insists on making
+progress nor runs to a fixpoint, so a caller can interleave other work — `flag_certificate`
+uses it to sort and merge the accumulated right-hand side every `budget` summands instead of
+once at the very end, which keeps each sort/merge pass over a short sum. -/
+def reduceDownwardFlagMulChunk (budget : Nat) : TacticM Nat := do
+  let mut steps : Nat := 0
+  for _ in [0:budget] do
+    if !(← stepReduceDownwardFlagMul) then
+      break
+    steps := steps + 1
+  return steps
+
 /-- Repeatedly rewrite the left-hand side of a `forbidLEWith`/`inducedForbidLE` goal whose summands
 have the form `downward (c • (A * B))`, replacing each `A * B` with the
 expansion supplied by the corresponding `flagMul_*` theorem and moving the
@@ -358,7 +376,7 @@ already-rewritten terms onto the right.
 Before iterating, this tactic right-associates the sum with
 `simp only [downward_add, add_assoc]`. -/
 elab "reduce_downward_flagmul" : tactic => do
-  evalTactic (← `(tactic| try simp only [downward_add, add_assoc]))
+  prepareReduceDownwardFlagMul
   runReduceDownwardFlagMul
 
 end FlagAlgebras.Automation

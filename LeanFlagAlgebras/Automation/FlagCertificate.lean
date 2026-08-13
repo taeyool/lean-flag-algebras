@@ -49,6 +49,45 @@ open Flags.Densities
 
 namespace FlagAlgebras.Automation.FlagCertificate
 
+/-- How many `reduce_downward_flagmul` summands `flag_certificate` moves onto the right-hand side
+before pausing to sort and merge it.
+
+`reduce_downward_flagmul` drains the left-hand side one product at a time, so with a single
+sort at the end (`0`, the old behaviour) that sort sees the whole certificate at once. The
+sort/merge pass is superlinear in the number of summands, so doing it every `n` products
+instead — over the merged residue plus `n` fresh terms — is substantially cheaper, and the
+downstream `expand_one_hfree_at` / `simp [downward…]` steps then run over an already-collapsed
+sum too.
+
+Chunking is not free: `norm_num` re-runs once per round, so very small values lose. `32` measured
+best on the examples in this repo (`K5freeEdge` 91.9 s → 61.8 s; the 6-vertex `K3forbidC6`
+59 min → 5 min). Set to `0` to recover the single-pass behaviour. -/
+register_option flagCert.sortChunk : Nat := {
+  defValue := 32
+  descr := "flag_certificate: sort/merge the accumulated RHS every n reduction steps (0 = once)"
+}
+
+/-- Drain the left-hand side with `reduce_downward_flagmul`, sorting and merging the accumulated
+right-hand side every `chunk` summands (`chunk = 0`: drain fully, sort once — the caller's tail
+then does the single normalization). See `flagCert.sortChunk`. -/
+def reduceAndSortChunked (chunk : Nat) : TacticM Unit := do
+  prepareReduceDownwardFlagMul
+  if chunk == 0 then
+    discard <| reduceDownwardFlagMulChunk 1000000
+    return
+  repeat
+    let steps ← reduceDownwardFlagMulChunk chunk
+    if steps == 0 then break
+    -- Restricted to the right-hand side: the summands still waiting on the left must keep the
+    -- `downward (c • (A * B))` shape that `stepReduceDownwardFlagMul` matches on.
+    evalTactic (← `(tactic|
+      try (conv_rhs =>
+        simp only [smul_smul, downward_add, downward_smul, downward_neg, downward_zero])))
+    evalTactic (← `(tactic| flagsum_ac_sort_rhs_pipeline))
+
+@[inherit_doc reduceAndSortChunked]
+elab "reduce_downward_flagmul_chunked " n:num : tactic => reduceAndSortChunked n.getNat
+
 /-! ## Rational and flagmatic-string parsing -/
 
 /-- Parse `"a/b"`, `"a"` (possibly negative) into a `Rat`. -/
@@ -734,8 +773,14 @@ size ≤ 16 are supported (extend Automation/FinSumUniv.lean and finSumUnivWord)
     scriptLines := scriptLines.push "rw [forbidLEWith_rw_left_add_right flagCert_expand]"
   tacs := tacs.push (← `(tactic| simp [$[$simpArgs:term],*]))
   scriptLines := scriptLines.push simpStr
-  tacs := tacs.push (← `(tactic| reduce_downward_flagmul))
-  scriptLines := scriptLines.push "reduce_downward_flagmul"
+  let sortChunk := flagCert.sortChunk.get (← getOptions)
+  if sortChunk == 0 then
+    tacs := tacs.push (← `(tactic| reduce_downward_flagmul))
+    scriptLines := scriptLines.push "reduce_downward_flagmul"
+  else
+    let chunkLit : TSyntax `num := Syntax.mkNumLit (toString sortChunk)
+    tacs := tacs.push (← `(tactic| reduce_downward_flagmul_chunked $chunkLit))
+    scriptLines := scriptLines.push s!"reduce_downward_flagmul_chunked {sortChunk}"
   let hostNLit : TSyntax `num := Syntax.mkNumLit (toString cert.hostN)
   tacs := tacs.push (← `(tactic| expand_one_hfree_at $hostNLit $fStx))
   scriptLines := scriptLines.push s!"expand_one_hfree_at {cert.hostN} {tag}"

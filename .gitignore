@@ -39,3 +39,7 @@ HANDOFF.md
 
 # local referee/review notes (not part of the repo)
 papers/POPL27/referee_feedback_paper_draft.md
+
+# Benchmark scratch (harness, logs, prebuilt oleans) — keep only the writeup
+bench/*
+!bench/RESULTS.md

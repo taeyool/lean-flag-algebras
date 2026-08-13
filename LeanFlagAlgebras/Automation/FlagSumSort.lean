@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import Mathlib.Tactic.Conv
+import LeanFlagAlgebras.FlagAlgebra.FlagAlgebra
 
 /-! # `flagsum_sort` / `flagsum_ac_sort` tactics: canonical ordering of additive expressions
 
@@ -391,6 +392,22 @@ tactic-mode goal (`mkMergeStepProof`, the same "synthetic mvar + evalTactic" pat
 `proveEqByAddAC` already uses), so `add_smul`/`add_assoc` go through the ordinary elaborator
 instead of being hand-assembled. -/
 
+/-- `-x = (-1 : ℝ) • x`, restricted to `FlagAlgebra σ`.
+
+`mergeAdjacentAndProve` only merges summands carrying an explicit `c • _` coefficient (see
+`termOf`), so a bare `-x` never combines with the `c • x` next to it. That is what used to strand
+a `- FlagAlgebra_n_0_0_i` summand in the `objN = hostN` certificates: the objective is moved onto
+the right as a plain flag and never cancels against the `bound • FlagAlgebra_n_0_0_i` coming from
+the unit expansion, leaving `flag_nonneg` the unprovable goal `0 ≤ φ (-FlagAlgebra_…)`.
+
+`acSortPipeline`'s pre-simp already rewrites `-(a • x)` to `(-a) • x` (`← neg_smul`); it just had
+no rule for a negation with no coefficient at all. A general `← neg_one_smul` would be wrong here:
+`ℝ` is a module over itself, so it would rewrite scalar literals too. Restricting the statement to
+`FlagAlgebra σ` makes it fire on flag summands only. -/
+theorem flagNeg_eq_negOne_smul {n₀ : ℕ} {σ : FlagAlgebras.FlagType (Fin n₀)}
+    (x : FlagAlgebras.FlagAlgebra σ) : -x = (-1 : ℝ) • x :=
+  (neg_one_smul ℝ x).symm
+
 private def mkSmul (coeff base : Expr) : MetaM Expr :=
   mkAppM ``HSMul.hSMul #[coeff, base]
 
@@ -448,38 +465,57 @@ private def mergeableCoeffs (key1 key2 : String) (coeff1 coeff2 : Option Expr) (
         pure none
   | _, _ => pure none
 
-/-- Walks a sorted `(key, coeff?, base)` list left to right, merging maximal adjacent runs that
+/-- Walks a sorted `(key, coeff?, base)` array left to right, merging maximal adjacent runs that
 share a base (only among entries with an explicit `coeff`). Returns the merged list together with
 a proof that the right-associated sum of the input equals the right-associated sum of the merged
-list. -/
-private partial def mergeAdjacentAndProve (prefixFn : Expr) :
-    List (String × Option Expr × Expr) → TacticM (List (String × Option Expr × Expr) × Expr)
-  | [] => throwError "mergeAdjacentAndProve: empty term list"
-  | [(k, oc, b)] => do
-      pure ([(k, oc, b)], ← mkEqRefl (← termOf oc b))
-  | (k1, oc1, b1) :: (k2, oc2, b2) :: rest => do
-      match ← mergeableCoeffs k1 k2 oc1 oc2 b1 b2 with
-      | some (c1, c2) => do
-          let c12 ← mkAppM ``HAdd.hAdd #[c1, c2]
-          let t1 ← mkSmul c1 b1
-          let t2 ← mkSmul c2 b1
-          let t12 ← mkSmul c12 b1
-          match rest with
-          | [] => do
-              let step ← mkMergeStepProof (← mkAppM ``HAdd.hAdd #[t1, t2]) t12
-              pure ([(k1, some c12, b1)], step)
-          | _ :: _ => do
-              let (mergedRest, eq2) ← mergeAdjacentAndProve prefixFn ((k1, some c12, b1) :: rest)
-              let restTerms ← rest.mapM fun (_, oc, b) => termOf oc b
-              let restRebuilt := mkRightAssocAddFast prefixFn restTerms
-              let lhs ← mkAppM ``HAdd.hAdd #[t1, ← mkAppM ``HAdd.hAdd #[t2, restRebuilt]]
-              let rhs ← mkAppM ``HAdd.hAdd #[t12, restRebuilt]
-              let bridge ← mkMergeStepProof lhs rhs
-              pure (mergedRest, ← mkEqTrans bridge eq2)
-      | none => do
-          let (mergedRest, restEq) ← mergeAdjacentAndProve prefixFn ((k2, oc2, b2) :: rest)
-          let t1 ← termOf oc1 b1
-          pure ((k1, oc1, b1) :: mergedRest, ← congrArgAddLeft prefixFn t1 restEq)
+list.
+
+`entries` is the sorted input; `suffix i` must be the right-associated sum of `entries[i:]`, and
+`suffix` is built once by the caller. Two things keep a merge step `O(1)` rather than `O(n)`:
+
+* the unmerged remainder is looked up in `suffix` instead of being rebuilt — the previous version
+  re-derived it with `rest.mapM termOf`, one `mkAppM` (and so one typeclass search) per remaining
+  summand *per step*, which made the whole pass quadratic (~52 000 instance searches for a
+  324-term sum, and far worse for the size-6 examples);
+* the remainder is abstracted as a local `r` before the step's proof goal is built, so
+  `mkMergeStepProof` really does see the `O(1)` goal `c₁ • x + (c₂ • x + r) = (c₁ + c₂) • x + r`
+  instead of one containing the whole rest of the sum for `simp only` to walk.
+
+The proof shape is unchanged — each step is still discharged by a small tactic-mode goal, so the
+instance paths that this module's history warns about are the same as before. -/
+private partial def mergeAdjacentAndProve (prefixFn : Expr)
+    (entries : Array (String × Option Expr × Expr)) (suffix : Array Expr) :
+    TacticM (List (String × Option Expr × Expr) × Expr) := do
+  let n := entries.size
+  if n == 0 then throwError "mergeAdjacentAndProve: empty term list"
+  let rec go (head : String × Option Expr × Expr) (i : Nat) :
+      TacticM (List (String × Option Expr × Expr) × Expr) := do
+    let (k1, oc1, b1) := head
+    if i ≥ n then
+      return ([head], ← mkEqRefl (← termOf oc1 b1))
+    let (k2, oc2, b2) := entries[i]!
+    match ← mergeableCoeffs k1 k2 oc1 oc2 b1 b2 with
+    | some (c1, c2) => do
+        let c12 ← mkAppM ``HAdd.hAdd #[c1, c2]
+        let t1 ← mkSmul c1 b1
+        let t2 ← mkSmul c2 b1
+        let t12 ← mkSmul c12 b1
+        if i + 1 ≥ n then
+          let step ← mkMergeStepProof (← mkAppM ``HAdd.hAdd #[t1, t2]) t12
+          return ([(k1, some c12, b1)], step)
+        let (mergedRest, eq2) ← go (k1, some c12, b1) (i + 1)
+        let restRebuilt := suffix[i + 1]!
+        let ty ← inferType t1
+        let bridge ← withLocalDeclD `r ty fun r => do
+          let lhsR ← mkAppM ``HAdd.hAdd #[t1, ← mkAppM ``HAdd.hAdd #[t2, r]]
+          let rhsR ← mkAppM ``HAdd.hAdd #[t12, r]
+          pure (mkApp (← mkLambdaFVars #[r] (← mkMergeStepProof lhsR rhsR)) restRebuilt)
+        return (mergedRest, ← mkEqTrans bridge eq2)
+    | none => do
+        let (mergedRest, restEq) ← go (k2, oc2, b2) (i + 1)
+        let t1 ← termOf oc1 b1
+        return ((k1, oc1, b1) :: mergedRest, ← congrArgAddLeft prefixFn t1 restEq)
+  go entries[0]! 1
 
 /-- `conv`-mode step: after `acSortNormalizeConv` has sorted the current focus by base index,
 merge adjacent same-base runs (coefficient consolidation), then re-associate the result to
@@ -502,7 +538,16 @@ private def mergeSameBaseTermsConv : TacticM Unit :=
     match getAddPrefixFn? focus with
     | none => pure ()
     | some prefixFn =>
-        let (merged, mergeProof) ← mergeAdjacentAndProve prefixFn pairs.toList
+        -- Build each summand and each right-associated suffix exactly once; the merge walk
+        -- indexes into `suffix` instead of re-deriving the remainder at every step.
+        let termArr ← pairs.mapM fun (_, oc, b) => termOf oc b
+        let mut suffix : Array Expr := Array.replicate termArr.size default
+        if termArr.size > 0 then
+          suffix := suffix.set! (termArr.size - 1) termArr[termArr.size - 1]!
+          for j in [0:termArr.size - 1] do
+            let idx := termArr.size - 2 - j
+            suffix := suffix.set! idx (mkAppN prefixFn #[termArr[idx]!, suffix[idx + 1]!])
+        let (merged, mergeProof) ← mergeAdjacentAndProve prefixFn pairs suffix
         let didMerge := merged.length < pairs.size
         let mergedTerms ← merged.mapM fun (_, oc, b) => termOf oc b
         let mergedExprRight := mkRightAssocAddFast prefixFn mergedTerms
@@ -558,7 +603,8 @@ elab "ac_sort_at_pipeline" : conv => do
   -- trips `simp`'s "maximum number of steps exceeded" guard. This is a limit, not a loop.
   evalTactic (← `(tactic|
     (try (simp (config := { maxSteps := 10000000 }) only
-      [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
+      [neg_neg, neg_add, sub_eq_add_neg, ← neg_smul, flagNeg_eq_negOne_smul,
+       add_assoc, smul_smul]))))
   acSortNormalizeConv
   mergeSameBaseTermsConv
 
