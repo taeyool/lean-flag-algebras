@@ -2502,17 +2502,13 @@ for such witnesses by semidefinite programming.
 
 This section concerns certificate verification rather than certificate
 search.  Our compiler accepts a certificate produced by Flagmatic as untrusted
-input, matches its flags, matrices, and target data against Lean's own
-enumerations, regenerates the required flags, recomputes their density and
-multiplication identities, verifies the rational matrix factorizations, and
-assembles the final inequality.  The compiler runs inside Lean's elaborator:
-the desired theorem is stated in the source file, and the
-\lean{flag\_certificate} tactic reads the certificate file at elaboration
-time and synthesizes a proof of exactly that statement.  Automating this
-translation is important because nontrivial certificates contain extensive
-finite bookkeeping that would be tedious and error-prone to reproduce
-manually.  The resulting theorem is accepted only after Lean has checked
-every mathematical obligation.
+input and runs inside Lean's elaborator: the desired theorem is stated in the
+source file, and the \lean{flag\_certificate} tactic reads the certificate
+file at elaboration time and synthesizes a proof of exactly that
+statement.  Automating this translation is important because nontrivial
+certificates contain extensive finite bookkeeping that would be tedious and
+error-prone to reproduce manually.  The \emph{automation layer}, presented in
+the following subsections, drives this compilation.
 
 We first explain how positive semidefinite matrices justify the inequalities
 encoded by a certificate.  We then identify the four obligations common to our
@@ -2529,12 +2525,13 @@ by applying the downward operator to a positive-semidefinite quadratic
 expression.  The other is a remainder $r$, a linear combination of
 $\mathcal H$-free flags with non-negative coefficients.  Under the
 $\mathcal H$-free condition, these data yield the chain
-\[
+\begin{equation}
+  \label{eq:cert-chain}
   [F]
   \leq_{\mathcal H} [F]+\sum_t Q_t
   = c\cdot\mathbf{1}-r
   \leq_{\mathcal H} c\cdot\mathbf{1}.
-\]
+\end{equation}
 The first inequality uses the non-negativity of the $Q_t$, the equality is the
 finite calculation recorded by the certificate, and the final inequality uses
 the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
@@ -2579,14 +2576,8 @@ For every positive homomorphism $\phi\in\poshom{\sigma}$,
 The first equality unfolds the definition of $f$ and uses preservation of
 scalar multiplication; the second uses preservation of multiplication, which
 rewrites the flag-algebra square as the square of the real number
-\(\phi((\fKtwobull)-(\fbarKtwobull))\).  This makes the source of the
-non-negativity explicit: the final expression for \(\phi(f)\),
-\[
-  \tfrac12\bigl(\phi((\fKtwobull)-(\fbarKtwobull))\bigr)^2,
-\]
-is non-negative because it is a positive scalar multiple of the square of a
-real number.  Thus, $f$ is non-negative in $\mathcal A^\sigma$, and
-\Cref{thm:downward-nonneg} gives $0\leq_{K_3}Q$.
+\(\phi((\fKtwobull)-(\fbarKtwobull))\).  Thus, $f$ is non-negative in
+$\mathcal A^\sigma$, and \Cref{thm:downward-nonneg} gives $0\leq_{K_3}Q$.
 
 To calculate $Q$ in the common size-three basis, we use the triangle-free
 flags $\fbarKthree$, $\fbarPthree$, and $\fPthree$.  The size-three expansion
@@ -2660,10 +2651,8 @@ the non-negative remainder $r=\tfrac13\cdot\fbarPthree$.  We chose this small
 certificate by hand; in larger examples, Flagmatic's SDP search supplies the
 analogous flags, positive semidefinite matrices, and remainder coefficients.
 Checking even this certificate requires expanding a product, computing its
-downward image, expanding the target and the unit to a common host size,
-and collecting coefficients.  These calculations remain suitable for
-automation but become impractical to perform and transcribe by hand for larger
-certificates; they are exactly what our compiler automates.
+downward image, expanding the target and the unit to a common host size, and
+collecting coefficients: exactly what our compiler automates.
 
 The same idea scales by replacing one square with weighted sums of many
 squares.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
@@ -2709,20 +2698,10 @@ condition, of the form
   c\cdot\mathbf{1} - r,
 \]
 where every $M_t$ is PSD and $r$ is a linear combination of $\mathcal H$-free
-flags with non-negative coefficients.  Equivalently,
-the certificate justifies the derivation
-\begin{align*}
-  [F]
-  \leq_{\mathcal H}
-  \bigl([F]+\sum_t Q_t\bigr)
-  =
-  \bigl(c\cdot\mathbf{1}-r\bigr)
-  \leq_{\mathcal H} c\cdot\mathbf{1}.
-\end{align*}
-The first inequality adds the non-negative downward quadratic forms.  The
-equality is the certificate identity checked after all terms have been
-expanded in the common host-size basis, and the final inequality follows from
-the non-negativity of $r$.  The certificate records the chosen
+flags with non-negative coefficients, so these data justify the
+chain~\eqref{eq:cert-chain}.  Its equality is now the certificate identity
+checked after all terms have been expanded in the common host-size
+basis.  The certificate records the chosen
 flags, the rational matrices $M_t$, and the target-density data needed to state
 this calculation.  Our compiler does not trust the certificate's derived
 density or multiplication tables: it recomputes them in Lean, proves the
@@ -2746,7 +2725,6 @@ parts are:
     restricted to those that are free of the chosen forbidden graph, and must
     prove the identities for single-flag densities, flag-pair densities, and
     products of flags sharing a common flag type.
-    These identities support the algebraic rewrites used later in the proof.
   \item \textbf{Certifying the matrices.}  For each SDP block $t$, the
     certificate supplies a rational matrix $M_t$ and a list of
     $\sigma_t$-flags $E_{t,i}$.  The proof must define the vector~$v_t$ of
@@ -2759,22 +2737,9 @@ parts are:
   \item \textbf{Assembling the main theorem.}  With
     $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
     and the certificate's non-negative remainder~$r$, the proof must assemble
-    the bound $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
-    in \Cref{sec:flagmatic-background}:
-    \[
-      [F]
-      \;\leq_{\mathcal H}\;
-      [F] + \sum_t Q_t
-      \;=\;
-      c\cdot\mathbf{1}-r
-      \;\leq_{\mathcal H}\;
-      c\cdot\mathbf{1}.
-    \]
-    The first inequality adds the non-negative downward quadratic forms arising
-    from the matrices certified in Part~2.  The middle equality is checked using
-    the identities from Part~1 and, when needed, the target-lifting identity
-    from Part~3.  The final inequality follows because $r$ has non-negative
-    coefficients.
+    the chain~\eqref{eq:cert-chain}, whose middle equality is checked using the
+    identities from Part~1 and, when needed, the target-lifting identity from
+    Part~3.
 \end{enumerate}
 
 Reusable proof-producing components handle each part, so a new theorem
@@ -2809,11 +2774,7 @@ subcommand of the \lean{flagmatic\_to\_lean.py} script:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-Here \lean{<cert>.json} is a placeholder for a Flagmatic certificate file, which
-identifies the target and forbidden graphs and contains the proposed bound,
-the flag types and flags used by each SDP block, and the rational matrix data.  The
-argument \lean{<target>.lean} is the path at which the script should write the
-generated Lean source file.  The output file contains the flag and density
+The output file contains the flag and density
 generation commands of Part~1, the theorem statement read off the
 certificate with its one-line \lean{flag\_certificate} proof, and a closing
 restatement of the bound as a generalized Tur\'an density
@@ -2903,9 +2864,7 @@ enters this check.  Lean does not separately compare $M_t$ with the original
 $Q'_t$ and $R_t$ fields of the certificate; that reconstruction is performed
 by the tactic's unverified elaboration-time code.  An incorrect $LDL^\top$
 witness is therefore rejected, while fidelity to the source certificate is
-discussed in \Cref{sec:flagmatic-trust}.  In either case, a reconstructed
-matrix can contribute to the final theorem only if both its PSD proof and the
-subsequent algebraic calculation are accepted by Lean.
+discussed in \Cref{sec:flagmatic-trust}.
 
 \boldparagraph{Lifting the target (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
@@ -2981,12 +2940,10 @@ this comparison by rewriting both sides in the basis of $H$-free flags at the
 host size $N$.  When necessary, the Part~3 lemma first expands $[F]$ to that
 basis.
 Expanding each quadratic form produces downward images of products of basis
-elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
-and downward identities generated in Part~1.  The
-\lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf{1}$ in the same
-basis, dispatching on the forbidden graph exactly as
-\lean{flag\_expand\_hfree} does in Part~3.  Finally,
-the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects like basis terms.
+elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the
+multiplication and downward identities generated in Part~1,
+\lean{expand\_one\_hfree\_at} expands $\mathbf{1}$ in the same basis, and
+\lean{flagsum\_ac\_sort\_rhs\_pipeline} collects like basis terms.
 
 After these rewrites, the difference between the right- and left-hand sides is
 exactly the remainder $r$ from the certificate calculation.  The tactic
@@ -2998,13 +2955,11 @@ $c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
 
 \boldparagraph{The checked artifact.}
 The certificate-specific assembly just described is performed by the tactic's
-elaboration-time code: it parses the target, bound, forbidden graph, host
-size, and SDP blocks; finds, for each compact graph string, the isomorphic
-entry of Lean's canonical enumeration, whose index selects the corresponding
-\lean{FlagAlgebra\_n\_k\_m\_i} constant; reconstructs the matrices and their
-$LDL^\top$ witnesses; and decides whether the target requires lifting.  Because the matching runs against the enumeration
-Lean itself computes, no agreement between an external enumeration order and
-Lean's is assumed.  Certificates change the assembled data and the number of
+elaboration-time code, which resolves each compact graph string to the entry
+of Lean's canonical enumeration whose index selects the corresponding
+\lean{FlagAlgebra\_n\_k\_m\_i} constant.  Because the matching runs against the
+enumeration Lean itself computes, no agreement between an external enumeration
+order and Lean's is assumed.  Certificates change the assembled data and the number of
 SDP blocks, but not the four-part proof structure.  In both frontends, what
 Lean accepts is a proof of the stated theorem, checked from scratch: every
 intermediate proposition and the final bound are carried by proof terms, and
@@ -3019,9 +2974,9 @@ valid, and is it the statement the certificate was meant to yield?
 
 For the first question, neither the SDP solver nor the compiler frontends
 (the \lean{flag\_certificate} metaprogram and the scaffolding script) are
-trusted for the logical validity of a theorem that Lean accepts.  The
-example files used here introduce neither axiom declarations nor
-\lean{sorry}, so every claim is carried by a proof term Lean checks: the
+trusted for the logical validity of a theorem that Lean accepts.  No example
+file introduces an axiom declaration or a \lean{sorry}
+(\Cref{sec:results}), so every claim is carried by a proof term Lean checks: the
 reconstructed matrices must be proved positive semidefinite, the certificate
 calculation must normalize to non-negative coefficients, and the final
 theorem must typecheck.  Subject to Lean's trusted base, erroneous data
@@ -3069,10 +3024,7 @@ forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
 is proved by a single \lean{flag\_certificate} call.  All seven files compile
 and contain neither \lean{sorry} nor generated axiom declarations.  No
 certificate coefficient appears in the source at all: the data is consumed at
-elaboration time.  All but the
-$K_5$- and $C_5$-free edge-density files are checked entirely by
-\lean{decide +kernel}; those two use
-\lean{native\_decide}.
+elaboration time.
 Table~\ref{tab:flagmatic-scenarios} summarizes the seven cases;
 \Cref{sec:compile-times} reports their compilation times and peak memory
 under both evaluation modes.
@@ -3100,13 +3052,9 @@ under both evaluation modes.
 
 The cases play complementary roles.  Mantel is a hand-checkable baseline: its
 single $2\times2$ SDP block is the explicit square from
-\Cref{sec:flagmatic-background}.  Here the dimension of a block is the
-dimension of its certificate matrix, equivalently the length of its associated
-flag vector.  The $C_4$-density certificate has two blocks, with matrices of
-dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
-has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
-$5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
-all with~$8\times8$ matrices.  These certificates are Flagmatic's output as
+\Cref{sec:flagmatic-background}.  The largest cases, the $K_5$- and $C_5$-free
+edge densities, each use four blocks of $8\times8$
+matrices.  These certificates are Flagmatic's output as
 produced, with no attempt to minimize the number of blocks or the matrix
 dimensions; more compact certificates for the same bounds may exist, but the
 unoptimized output already compiles end to end.  Together, these examples
