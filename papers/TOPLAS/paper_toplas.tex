@@ -3603,8 +3603,8 @@ The invariance is proved once, for
 every length and every permutation; the symmetry to be derived from it is the
 pair case:
 \begin{lstlisting}
-variable {T W U(*@$_0$@*) U(*@$_1$@*) : Type} [Fintype T] [Fintype W] [DecidableEq W] {(*@$\sigma$@*) : FlagType T}
-         [Fintype U(*@$_0$@*)] [DecidableEq U(*@$_0$@*)] [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
+variable {T W U(*@$_0$@*) U(*@$_1$@*) : Type} [Fintype T] [Fintype W] [Fintype U(*@$_0$@*)] [Fintype U(*@$_1$@*)]
+         [DecidableEq W] [DecidableEq U(*@$_0$@*)] [DecidableEq U(*@$_1$@*)] {(*@$\sigma$@*) : FlagType T} 
          {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
 
 theorem flagDensity_permute (Fl : FlagList (*@$\sigma$@*) t Vl) (G : Flag (*@$\sigma$@*) W) ((*@$\pi$@*) : Perm t)
@@ -3642,7 +3642,7 @@ proved by checking the two indices of \lean{Fin 2}, while \lean{h\_HEq} uses
 Lean's \emph{heterogeneous} equality, which relates terms whose types are not
 yet known to be equal; here it says that both tuples place $F_1$ at position
 $0$ and $F_0$ at position $1$.  Once the types are identified, that
-heterogeneous equality can be used as an ordinary one, and the lemma
+heterogeneous equality can be used as an ordinary equality, and the lemma
 concludes that the densities agree.  The
 formal argument thus recovers what is immediate on paper: permuting
 \lean{[F}$_0$\lean{, F}$_1$\lean{]}$^{\mathtt{f}}$ produces the same pair as
