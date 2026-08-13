@@ -2521,8 +2521,9 @@ trust model and evaluate the compiler on seven certificates.
 At a high level, a flag-algebra certificate proves
 $[F] \leq_{\mathcal H} c\cdot\mathbf{1}$ by constructing two kinds of
 non-negative correction term.  One kind consists of terms $Q_t$, each obtained
-by applying the downward operator to a positive-semidefinite quadratic
-expression.  The other is a remainder $r$, a linear combination of
+by applying the downward operator to a non-negative element of some
+$\mathcal{A}^\sigma$, which a certificate supplies as a positive semidefinite
+quadratic form in flags.  The other is a remainder $r$, a linear combination of
 $\mathcal H$-free flags with non-negative coefficients.  Under the
 $\mathcal H$-free condition, these data yield the chain
 \begin{equation}
@@ -2534,38 +2535,25 @@ $\mathcal H$-free condition, these data yield the chain
 \end{equation}
 The first inequality uses the non-negativity of the $Q_t$, the equality is the
 finite calculation recorded by the certificate, and the final inequality uses
-the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
-$c\cdot\mathbf{1}-[F]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
-searches for this data using an SDP solver and outputs it as a certificate.  Our
-compiler consumes the certificate as untrusted input and asks Lean to verify
-the non-negativity of the $Q_t$ and $r$ and the intervening equality.
+the non-negativity of $r$.
 
-Mantel's theorem gives a small certificate with exactly the structure above.
+Mantel's theorem gives a small certificate of this shape.
 Here the target is $F=K_2$, whose density is the edge density, and we
 abbreviate its basis element $[K_2]$ by
 $K_2$.
-We work with the one-vertex type $\sigma$, choose a non-negative element
-$f\in\mathcal A^\sigma$, and use \Cref{thm:downward-nonneg} to make its
-downward image $Q:=\llbracket f\rrbracket_\sigma$ a non-negative correction
-term.  We then show that
-\[
-  K_2 + Q = \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree.
-\]
-Write $r:=\tfrac13\cdot\fbarPthree$ for the displayed remainder.  The
-non-negativity of $Q$ and $r$ proves the bound.
-
-To construct $f$, take the two size-$2$ $\sigma$-flags $\fKtwobull$ and
-$\fbarKtwobull$.  We use these pictures directly in the algebraic calculation
-below.\footnote{Strictly,
-each picture denotes a finite $\sigma$-flag, whereas the algebraic operations
-below apply to its quotient class in $\mathcal A^\sigma$.  We follow the usual
-convention of omitting brackets around pictorial basis elements.}
-Set
+We work with the one-vertex type $\sigma$ and its two size-$2$ flags
+$\fKtwobull$ and $\fbarKtwobull$, using these pictures directly in the
+algebraic calculation below and omitting their brackets as usual.  Set
 \[
   f := \tfrac12((\fKtwobull)-(\fbarKtwobull))^2,
   \qquad
   Q := \llbracket f \rrbracket_\sigma.
 \]
+We then show that
+\[
+  K_2 + Q = \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree.
+\]
+
 For every positive homomorphism $\phi\in\poshom{\sigma}$,
 \begin{align*}
   \phi(f)
@@ -2573,7 +2561,7 @@ For every positive homomorphism $\phi\in\poshom{\sigma}$,
   = \tfrac12\,\bigl(\phi((\fKtwobull)-(\fbarKtwobull))\bigr)^2
   \;\geq\; 0.
 \end{align*}
-The first equality unfolds the definition of $f$ and uses preservation of
+The first equality uses preservation of
 scalar multiplication; the second uses preservation of multiplication, which
 rewrites the flag-algebra square as the square of the real number
 \(\phi((\fKtwobull)-(\fbarKtwobull))\).  Thus, $f$ is non-negative in
@@ -2594,19 +2582,19 @@ A size-three product expansion followed by the downward operator gives
 \begin{align*}
   Q
   &=
-  \bigl\llbracket
-    \tfrac12\bigl((\fKtwobull)-(\fbarKtwobull)\bigr)^2
-  \bigr\rrbracket_\sigma\\
+  \left\llbracket
+    \tfrac12\left((\fKtwobull)-(\fbarKtwobull)\right)^2
+  \right\rrbracket_\sigma\\
   &=
-  \bigl\llbracket
+  \left\llbracket
     \tfrac12\left(
        \fbarKthreebull+\fEthreebull
        -\fbarPthreebull-\fPthreebull
        +\fKonetwobull
      \right)
-  \bigr\rrbracket_\sigma\\
+  \right\rrbracket_\sigma\\
   &= \tfrac12\left(
-       \fbarKthree
+       1\cdot\fbarKthree
        + \tfrac13\cdot\fbarPthree
        - \tfrac23\cdot\fbarPthree
        - \tfrac23\cdot\fPthree
@@ -2616,9 +2604,9 @@ A size-three product expansion followed by the downward operator gives
      -\tfrac16\cdot\fbarPthree
      -\tfrac16\cdot\fPthree.
 \end{align*}
-The fractions produced by the downward operator are its normalizing factors:
-they record whether one, two, or all three choices of the labeled vertex
-produce the displayed $\sigma$-flag.
+The coefficients produced by the downward operator are its normalizing factors:
+$1/3$, $2/3$, or $1$ according as one, two, or all three choices of the
+labeled vertex recover the displayed $\sigma$-flag.
 
 Combining these identities now gives a derivation of the desired bound:
 \begin{align*}
@@ -2637,31 +2625,17 @@ Combining these identities now gives a derivation of the desired bound:
   &= \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree\\
   &\leq_{K_3} \tfrac12\cdot\mathbf{1}.
 \end{align*}
-The first inequality adds the non-negative downward square $Q$.  The
-successive equalities substitute the expansions of $K_2$ and $Q$, collect their
-coefficients, and regroup the result as $\tfrac12\cdot\mathbf{1}$ minus the
-remainder using the unit expansion
-$\mathbf{1} = \fbarKthree+\fbarPthree+\fPthree$.  The final inequality follows
-because the remainder $r=\tfrac13\cdot\fbarPthree$ is non-negative.
+The final inequality follows because the remainder
+$r=\tfrac13\cdot\fbarPthree$ is non-negative.
 
-The essential certificate data for this example are precisely the nontrivial
-terms in this derivation: the two $\sigma$-flags $\fKtwobull$ and
-$\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
-the non-negative remainder $r=\tfrac13\cdot\fbarPthree$.  We chose this small
-certificate by hand; in larger examples, Flagmatic's SDP search supplies the
-analogous flags, positive semidefinite matrices, and remainder coefficients.
-Checking even this certificate requires expanding a product, computing its
-downward image, expanding the target and the unit to a common host size, and
-collecting coefficients: exactly what our compiler automates.
-
-The same idea scales by replacing one square with weighted sums of many
-squares.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
+The same idea scales when the single square is replaced by a positive
+semidefinite quadratic form.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
 $e_i:=[E_i]\in\mathcal A^\sigma$ be their basis elements, and collect these
 algebra elements into a vector $v=(e_1,\ldots,e_r)^\top$.  A symmetric matrix
 $M\in\mathbb{R}^{r\times r}$ is \emph{positive semidefinite}
 (PSD) if $x^\top Mx\geq 0$ for every $x\in\mathbb{R}^r$.  Consequently, when $M=(M_{ij})$
 is PSD, the flag-algebra quadratic form
-$\langle v,Mv\rangle=\sum_{i,j}M_{ij} e_i e_j$ is non-negative under every
+$v^\top Mv=\sum_{i,j}M_{ij} e_i e_j$ is non-negative under every
 positive homomorphism: evaluating the algebra elements turns it into the ordinary real
 quadratic form $x^\top Mx$.  The downward operator then transfers this
 non-negativity from the labeled algebra to the unlabeled one.
@@ -2670,24 +2644,23 @@ Flagmatic finds the matrices by turning this decomposition problem into a
 \emph{semidefinite program} (SDP).  It first fixes a host size $N$ and chooses
 the flag types and flags that may occur.  It expands the target, the unit, and
 the downward quadratic forms in the common basis of allowed $N$-vertex graphs,
-namely those that avoid $\mathcal H$.  At this point, the entries of the matrices
-are unknowns.  Requiring the coefficient left over for every host graph to be
+namely those that avoid $\mathcal H$, with the matrix entries as
+unknowns.  Requiring the coefficient left over for every host graph to be
 non-negative gives linear constraints on those entries, and requiring each
 matrix to be PSD gives the semidefinite constraints.  An SDP solver finds
 numerical matrices satisfying these conditions, after which Flagmatic converts
 them into exact rational matrices.
 
-A full certificate uses several flag types at once, one PSD matrix per flag
-type, so the single matrix $M$ above becomes a family indexed by the flag type.
-The index $t$ ranges over the chosen flag types $\sigma_t$, each contributing
-its own flag vector $v_t$ and matrix $M_t$.  We call the data for one such
-index, the flag type $\sigma_t$ together with $v_t$ and $M_t$, an \emph{SDP block};
+A full certificate uses several flag types at once, so the single matrix $M$
+above becomes a family: the index $t$ ranges over the chosen flag types
+$\sigma_t$, each contributing its own flag vector $v_t$ and matrix $M_t$.  We
+call one such triple an \emph{SDP block};
 the name reflects that the matrices $M_t$ are the diagonal blocks of the
 semidefinite program's matrix variable.  The downward quadratic form
 block~$t$ produces is
 \[
   Q_t := \bigl\llbracket
-    \langle v_t, M_t\, v_t\rangle
+    v_t^\top M_t\, v_t
   \bigr\rrbracket_{\sigma_t}.
 \]
 The resulting certificate specifies an identity, modulo the $\mathcal H$-free
@@ -2735,8 +2708,9 @@ parts are:
     search in \Cref{sec:flagmatic-background}, the proof must lift $[F]$ to the
     host-size basis, dropping contributions that contain the forbidden graph.
   \item \textbf{Assembling the main theorem.}  With
-    $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
-    and the certificate's non-negative remainder~$r$, the proof must assemble
+    $Q_t:=\bigl\llbracket v_t^\top M_t v_t\bigr\rrbracket_{\sigma_t}$
+    and the non-negative remainder~$r$ the calculation leaves over, the proof
+    must assemble
     the chain~\eqref{eq:cert-chain}, whose middle equality is checked using the
     identities from Part~1 and, when needed, the target-lifting identity from
     Part~3.
