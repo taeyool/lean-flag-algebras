@@ -2205,30 +2205,18 @@ representation from \Cref{sec:reflection-concrete}:
 \begin{lstlisting}
 variable {k m m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
 
-def sym2LabeledGraphEqv (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) : Prop := ...
-
 instance sym2LabeledGraphSetoid ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*))
     : Setoid (Sym2LabeledGraph (*@$\sigma$@*) n) where
-  r     := sym2LabeledGraphEqv
+  r     := sym2LabeledGraphEqv -- related by a label-preserving isomorphism
   iseqv := ... -- reflexivity, symmetry, and transitivity of r
 
 def Sym2Flag ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
   Quotient (sym2LabeledGraphSetoid (*@$\sigma$@*) n)
 \end{lstlisting}
-The omitted definition of \lean{sym2LabeledGraphEqv} is standard, and says
-that two concrete labeled graphs are equivalent if there
-exists a label-preserving graph isomorphism between them.
-The displayed setoid instance packages this relation with its equivalence
-proofs, and \lean{Sym2Flag} takes the resulting quotient.
-
-We now have two corresponding representations of flags.  The
-specification-oriented development of \Cref{sec:flagtypes} uses
-\lean{Flag}, while the computation-oriented development
-of \Cref{sec:reflection-concrete} uses
-\lean{Sym2Flag}.  To use a computation from the reflection layer in a theorem
-stated in the
-specification layer, we need an explicit map from the latter representation to
-the former.  We call this map \lean{Sym2Flag.toFlag}:
+We now have two representations of flags: \lean{Flag} in the specification
+layer and \lean{Sym2Flag} in the reflection layer.  To use a reflection-layer
+computation in a specification-layer theorem, we need a map from
+\lean{Sym2Flag} to \lean{Flag}.  That map is \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
 def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n)
     : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
@@ -2239,18 +2227,11 @@ def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n)
 \end{lstlisting}
 
 With \lean{Sym2Flag.toFlag} in hand, we can carry out the reflection described
-in \Cref{sec:reflection}.  It asks for a program and a theorem saying that the
-program's output agrees with the abstract definition in the specification
-layer.
-\Cref{sec:reflection-concrete} supplied the programs, and the theorems are the
-ones below.  Our
-\emph{adequacy theorems} state that
-\lean{sym2FlagDensity$_1$} and \lean{sym2FlagDensity$_2$}
-agree
-with the abstract definitions
-of \lean{flagDensity$_1$} and \lean{flagDensity$_2$}
-after we decode \lean{Sym2Flag}s back to ordinary
-\lean{Flag}s using \lean{Sym2Flag.toFlag}:
+in \Cref{sec:reflection}.  The preceding subsection supplied the programs; the
+\emph{adequacy theorems} below are the theorems that certify them, saying that
+\lean{sym2FlagDensity$_1$} and \lean{sym2FlagDensity$_2$} agree with
+\lean{flagDensity$_1$} and \lean{flagDensity$_2$} once the \lean{Sym2Flag}
+arguments are decoded:
 \begin{lstlisting}
 theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*) (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
@@ -2259,18 +2240,11 @@ theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n)
     : flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
-A computable definition together with its adequacy theorem is what we call a
-\emph{reflected} computation.
-With these adequacy theorems in place, a proof about a density in the
-specification layer can be reduced to a proof about the corresponding
-computable density in the reflection layer.  Since this density is computable,
-Lean can then run the executable algorithm certified by the adequacy theorem to
-check the claimed value.  For example, the density
-\[
-  \den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}
-  = \frac{1}{2}
-\]
-from \Cref{ex:typed-edge-nonedge-product} is proved as follows:
+A computable definition with its adequacy theorem is what we call a
+\emph{reflected} computation.  A specification-level claim can then be
+rewritten into the reflection layer and evaluated there.  For example,
+the density \(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull} = 1/2\) of
+\Cref{ex:typed-edge-nonedge-product} is proved as follows:
 \begin{lstlisting}
 example : flagDensity(*@$_2$@*)
              Sym2Flag_2_1_0_0.toFlag
@@ -2280,20 +2254,16 @@ example : flagDensity(*@$_2$@*)
   rw [flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)]
   decide +kernel
 \end{lstlisting}
-In the code, the three displayed constants are concrete \lean{Sym2Flag}s in
-the reflection layer: \lean{Sym2Flag\_2\_1\_0\_0} corresponds to
-\(\fbarKtwobull\), \lean{Sym2Flag\_2\_1\_0\_1} corresponds to \(\fKtwobull\),
-and \lean{Sym2Flag\_3\_1\_0\_1} corresponds to \(\fbarPthreebull\).  The
-statement applies \lean{toFlag} to each of these concrete flags, so it is a
-specification-level statement about
-\lean{flagDensity}$_2$.  The command \lean{rw} uses the adequacy theorem
-\lean{flagDensity}$_2$\lean{\_eq\_sym2FlagDensity}$_2$ and changes the goal to
-the closed reflection-layer computation
+The three constants are concrete \lean{Sym2Flag}s: \lean{Sym2Flag\_2\_1\_0\_0}
+is \(\fbarKtwobull\), \lean{Sym2Flag\_2\_1\_0\_1} is \(\fKtwobull\), and
+\lean{Sym2Flag\_3\_1\_0\_1} is \(\fbarPthreebull\).  Applying \lean{toFlag} to
+each makes the statement a specification-level one, which \lean{rw} turns by
+the adequacy theorem into the closed reflection-layer computation
 \begin{lstlisting}
   sym2FlagDensity(*@$_2$@*)  Sym2Flag_2_1_0_0  Sym2Flag_2_1_0_1  Sym2Flag_3_1_0_1  =  1 / 2
 \end{lstlisting}
-The tactic \lean{decide +kernel} closes this decidable goal by evaluating the
-reflection-layer density computation inside the kernel.
+The tactic \lean{decide +kernel} then closes this decidable goal by evaluating
+that computation inside the Lean kernel.
 
 The downward operator from \Cref{sec:formal-downward} follows the same
 reflection pattern.  The specification-level definition uses the abstract
@@ -2320,61 +2290,31 @@ def downwardNormalizingFactor_Sym2Flag (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\ma
     ... -- proof that downwardNormalizingFactor_sym2LabeledGraph respects the equivalence relation
     F
 \end{lstlisting}
-These are executable \lean{def}s, rather than specification-level
-\lean{noncomputable def}s.  The first definition computes a natural number by
-taking the cardinality of the finite set
-\lean{isoSym2TypeEmbeddingSetWithSameGraph G}.  Its elements are the type
-embeddings of \(\sigma\) into \(G\)'s graph, in the sense of the
-\lean{type\_embed} field of \lean{Sym2LabeledGraph}, that give a labeled graph
-isomorphic to \(G\).  The
-second definition divides that count by the number of injections, so its value
-is exactly \(q_\sigma(G)\).  The final \lean{Quotient.lift} applies this same
-representative-level computation to a \lean{Sym2Flag}; its omitted
-representative-invariance argument proves that equivalent representatives give
-the same value.
-
-We then prove that the specification-level and executable implementations of
-the downward normalizing factor agree.
+These are executable \lean{def}s rather than specification-level
+\lean{noncomputable} ones.  We then prove that the specification-level and
+executable implementations of the downward normalizing factor agree.
 \begin{lstlisting}
 theorem downwardNormalizingFactor_eq (F : Sym2Flag (*@$\sigma$@*) n)
     : downwardNormalizingFactor F.toFlag = downwardNormalizingFactor_Sym2Flag F := ...
 \end{lstlisting}
-After decoding a concrete \lean{Sym2Flag} back to an abstract \lean{Flag}, this
-adequacy theorem rewrites a goal about the specification-level coefficient as
-a goal about the executable function
-\lean{downwardNormalizingFactor\_Sym2Flag}.  For instance, for the concrete
-$\sigma$-flag corresponding to \(\fbarPthreebull\), where \(\sigma\) is the one-vertex
-flag type, Lean proves \(q_\sigma(\fbarPthreebull)=2/3\) by the same
-rewrite-and-evaluate pattern:
-\begin{lstlisting}
-example : downwardNormalizingFactor Sym2Flag_3_1_0_1.toFlag = 2 / 3 := by
-  rw [downwardNormalizingFactor_eq]
-  decide +kernel
-\end{lstlisting}
-Here the command \lean{rw} changes the goal to the closed computable equality
-\begin{lstlisting}
-  downwardNormalizingFactor_Sym2Flag  Sym2Flag_3_1_0_1  =  2 / 3
-\end{lstlisting}
-and \lean{decide +kernel} evaluates that finite computation.
+Rewriting with it turns a goal about the specification-level coefficient into a
+closed reflection-layer computation, which \lean{decide +kernel} evaluates as
+before.
 
 The reflected normalizing factor is what makes the downward operator executable
-on concrete $\sigma$-flags.  The
-reflection layer computes the underlying $\emptyset$-flag and its normalizing
-factor, and the adequacy theorem certifies their product as the abstract
-downward image.  By linearity, a finite linear combination of flag basis
+on concrete $\sigma$-flags.  Unlabeling such a flag yields the corresponding
+$\emptyset$-flag by construction, so the coefficient is the only part that has
+to be computed, and the adequacy theorem certifies
+it.  By linearity, a finite linear combination of flag basis
 elements is handled term by term, allowing later downward identities to be
 established computationally rather than by separate counting arguments.
 
 \subsection{Elaboration-Time Generation of Flags and Theorems}
 \label{sec:reflection-generation}
 
-The two examples in the preceding subsection show the basic unit of reflected
-computation.  To prove the concrete density
-\(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\), Lean rewrites the
-specification-level goal with the density adequacy theorem and then evaluates
-the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
-\(q_\sigma(\fbarPthreebull)=2/3\), it performs the same two steps with
-\lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
+The preceding subsection shows the basic unit of reflected computation: rewrite
+a specification-level goal with an adequacy theorem, then evaluate the
+resulting closed computation.  The adequacy theorems themselves are
 uniform: they prove the reflected evaluators correct for every possible input.
 Only their specialization to each concrete $\sigma$-flag and density instance
 used by the later algebraic proof is repeated.
