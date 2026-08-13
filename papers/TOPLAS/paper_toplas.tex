@@ -3728,39 +3728,40 @@ operator of \Cref{sec:formal-downward}, is invariant under replacing a labeled
 graph by an isomorphic representative: the isomorphism transports label
 placements and gives a bijection between the corresponding sets.
 
-The second response repairs mismatches that do occur.  Once the
-mathematical steps of such a proof are done, what remains is a goal of a
-characteristic shape: an equality whose two sides print identically and
-differ only in the inferred instances inside them.  The
-tactic \lean{congr!} closes such goals; it decomposes the equality into
-congruence subgoals and discharges the instance mismatches, which is sound
-because any two \lean{Fintype} instances of the same type are provably
-equal (\lean{Fintype T} is a subsingleton, and likewise \lean{DecidableEq T}).  The bridging lemma
-\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq}, the other theorem of
-\Cref{sec:reordered-flag-tuples}, is closed exactly this way: once its
-families and tuples have been identified, the two sides differ only in the
-enumeration and decidability instances that its \lean{FintypeList} and
-\lean{DecidableEqList} hypotheses supply for the component types, and
-\lean{congr!} resolves those.
+The second approach is corrective.  After the underlying mathematical objects
+have been identified, Lean may still present an equality whose two sides look
+identical but contain different hidden instance arguments.  The tactic
+\lean{congr!} decomposes such an equality into congruence subgoals and proves
+that the instances agree.  This is possible because \lean{Fintype T} is a
+subsingleton, so any two \lean{Fintype} instances of the same type are provably
+equal; the same holds for \lean{DecidableEq T}.  This is how
+\lean{flagListDensity\allowbreak\_HEq\allowbreak\_eq} from
+\Cref{sec:reordered-flag-tuples} concludes.  After the equality of the
+vertex-type families and the heterogeneous equality of the flag tuples have
+been used to identify the inputs, the remaining difference lies only in the
+\lean{FintypeList} and \lean{DecidableEqList} instances supplied for their
+component types, and \lean{congr!} resolves it.
 
-These explicit \lean{Fintype} choices are needed only where finite sets are
-converted to \lean{Finset}s or their cardinalities are compared.  Once the
-required counting identity has been proved, the subsequent algebraic argument
-uses that identity without referring to the chosen instances.
+Explicitly chosen \lean{Fintype} instances are therefore needed only when a
+collection specified by a predicate is enumerated as a \lean{Finset}, which
+stores an explicit finite enumeration, or when its cardinality is compared
+with that of another collection.  Once the required counting identity has
+been proved, the subsequent algebraic argument uses that identity without
+referring to the chosen instances.
 
-The discipline above is what the \lean{Fintype} interface requires; Mathlib's
-own documentation says that one generally relies on congruence lemmas when
-rewriting expressions involving \lean{Fintype} instances.  The library also
-provides a cardinality that removes this class of mismatch at its root:
-\lean{Nat.card}, with \lean{Set.ncard} for sets, is a function of the type
-alone, so it carries no instance argument for elaboration paths to disagree
-about, and \lean{Nat.card\_congr} transports a count along a bijection with no
-instance management.  The documentation recommends it precisely when
-finiteness is propositional rather than structural, as it is throughout this
-layer.  In retrospect, stating the specification-layer counts with
-\lean{Nat.card} would have avoided the mismatches this subsection manages,
-leaving a single conversion to \lean{Finset} counts at the reflection
-boundary, where enumeration is genuinely structural.
+% The discipline above is what the \lean{Fintype} interface requires; Mathlib's
+% own documentation says that one generally relies on congruence lemmas when
+% rewriting expressions involving \lean{Fintype} instances.  The library also
+% provides a cardinality that removes this class of mismatch at its root:
+% \lean{Nat.card}, with \lean{Set.ncard} for sets, is a function of the type
+% alone, so it carries no instance argument for elaboration paths to disagree
+% about, and \lean{Nat.card\_congr} transports a count along a bijection with no
+% instance management.  The documentation recommends it precisely when
+% finiteness is propositional rather than structural, as it is throughout this
+% layer.  In retrospect, stating the specification-layer counts with
+% \lean{Nat.card} would have avoided the mismatches this subsection manages,
+% leaving a single conversion to \lean{Finset} counts at the reflection
+% boundary, where enumeration is genuinely structural.
 
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
