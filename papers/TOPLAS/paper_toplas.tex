@@ -325,6 +325,12 @@
   Hongseok Yang, Korea Institute for Advanced Study (KIAS), Seoul,
   Republic of Korea, hongseokyang@kias.re.kr.}
 
+% acmart sets the float separations at \begin{document}, so cap the stretch
+% afterwards.  Keeping acmart's designed 15pt but shrinking "plus 8pt" stops a
+% page that needs vertical filling from dumping all of its slack into the gap
+% under a top float.
+\AtBeginDocument{\setlength{\textfloatsep}{15pt plus 2pt minus 4pt}}
+
 \begin{document}
 
 \begin{abstract}
@@ -2326,11 +2332,13 @@ indices: \(n\) is the size of the flag, \(k\) is the size of its flag type,
 \(m\) is the position of the flag type's graph in the enumeration of the
 \(k\)-vertex graphs, and \(i\) is the position of the flag itself in the
 enumeration of the \(n\)-vertex flags of that flag type.  Both enumerations are
-in a fixed canonical order.  Graphs are ordered first by their number of edges
+in a fixed canonical order, with positions counted from
+zero.  Graphs are ordered first by their number of edges
 and then by their canonical edge lists.  The canonical edge list of a graph is
 the lexicographically smallest sorted edge list obtained by relabeling its
-vertices in all possible ways.  The flags over a graph are ordered by the
-placement of their labels.  The
+vertices in all possible ways.  The flags of a fixed type are grouped by their
+underlying graph, in that same order, and within a group are ordered
+lexicographically by the vertices the labels occupy.  The
 reflection-layer constants \lean{Sym2Flag\_n\_k\_m\_i} follow the same
 scheme, and the empty flag type is written \(k=m=0\).  Thus,
 \lean{Sym2Flag\_3\_1\_0\_1} from \Cref{sec:reflection-adequacy} is flag
@@ -2338,21 +2346,10 @@ number \(1\) among the three-vertex flags of the unique one-vertex type,
 namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is its
 flag-algebra basis element.
 
-We use Lean's metaprogramming facilities to automate this repetition.  They
-specialize the uniform adequacy theorems to concrete flags and to the required
-single-pattern and pattern-pair density instances.  More precisely, the
-generation commands displayed below are custom command
-elaborators written using Lean's metaprogramming
-framework~\cite{ebner2017structured}.  During
-elaboration, the phase in which Lean processes source commands and produces
-checked definitions and theorems, these commands run the finite enumerators
-and generate proofs of the required specialized facts.  Once the resulting
-theorem families have been accepted by Lean, subsequent flag-algebra proofs
-use them as rewrite rules instead of evaluating the finite enumerators again.
-For the
-sizes and flag type used in the two examples of
-\Cref{sec:reflection-adequacy}, the relevant commands have
-the following form:
+We automate this repetition with custom command elaborators written in Lean's
+metaprogramming framework~\cite{ebner2017structured}.  During elaboration,
+these commands run the finite enumerators and generate proofs of the
+specialized facts.  A generation block has the following form:
 \begin{lstlisting}[emph={generate_empty_typed_flags,generate_flags,generate_flag_pair_density_theorems_no_forbid,generate_mul_theorems},emphstyle=\color{blue!70!black}\bfseries]
 -- Generate empty-typed flags at pattern size 2 and host size 3.
 generate_empty_typed_flags 2
@@ -2368,20 +2365,13 @@ generate_flag_pair_density_theorems_no_forbid 2 3 1 0
 generate_mul_theorems 2 3 1 0
 \end{lstlisting}
 
-The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme.  The
-command \lean{generate\allowbreak\_empty\allowbreak\_typed\allowbreak\_flags n} generates the empty-typed flags
-on \(n\) vertices, and \lean{generate\_flags n k m} generates the \(n\)-vertex
-flags of the flag type selected by \(k\) and \(m\); here \(k=1,m=0\) is the unique
-flag type on one labeled vertex.  The density and multiplication commands take a
-pattern size \(p\) and a host size \(h\), followed by the same \(k,m\)
-describing the flag type, and the suffix \lean{no\_forbid} says that no
-forbidden-graph filter is being applied.
-Here, a completeness lemma states that the generated names exhaust the
-relevant finite set: every \(n\)-vertex \(\sigma\)-flag, up to
-label-preserving isomorphism, appears among the generated flags.  For the empty
-flag type, this means that every \(n\)-vertex graph is represented up to
-isomorphism; for a forbid-free enumeration, the same statement is restricted
-to the \(H\)-free flags.
+The numerical arguments are the \(n\), \(k\), \(m\) of the naming scheme; the
+density and multiplication commands take a pattern size \(p\) and a host size
+\(h\) before the \(k,m\) of the flag type, and the suffix \lean{no\_forbid}
+says that no forbidden-graph filter is being applied.
+The flag-generating commands also emit a completeness lemma: every
+\(n\)-vertex \(\sigma\)-flag, up to isomorphism, appears among the generated
+names.
 \Cref{tab:generation-commands} collects the command family, including the
 forbid-free variants below.
 
@@ -2406,8 +2396,8 @@ forbid-free variants below.
     \lean{generate\_flag\_pair\_density\_theorems\_no\_forbid p h k m} &
       the pair-density theorems for size-\(p\) patterns in size-\(h\) hosts \\
     \lean{generate\_mul\_theorems p h k m} &
-      for every pair \(F_1,F_2\in\mathcal F^\sigma_p\), the product expansion
-      \([F_1]\cdot[F_2]=\sum_{G\in\mathcal F^\sigma_h} c_G\,[G]\) \\
+      the product expansion~\eqref{eq:mul} for pairs of size-\(p\)
+      patterns in size-\(h\) hosts \\
     \midrule
     \lean{generate\_forbid\_free\_empty\_typed\_flags n H} &
       the \(H\)-free empty-typed flags, with the filtered completeness lemma \\
@@ -2417,7 +2407,7 @@ forbid-free variants below.
     \lean{generate\_forbid\_free\_flag\_pair\_density\_theorems p h k m H} &
       the pair-density theorems over the \(H\)-free flags \\
     \lean{generate\_forbid\_free\_mul\_theorems p h k m H} &
-      the product expansions, valid modulo flags containing \(H\) \\
+      the product expansions, modulo the \(H\)-free condition \\
     \lean{generate\_forbid\_free\_flag\_density\_theorems p i h H} &
       the single-flag densities of \lean{Flag\_p\_0\_0\_i} in every
       \(H\)-free size-\(h\) host \\
@@ -2425,45 +2415,25 @@ forbid-free variants below.
   \end{tabular}
 \end{table}
 
-The important point is what each command contributes to subsequent proofs.  The
-first four commands create the named two- and three-vertex flags
-used in the examples of \Cref{sec:reflection-adequacy}, and each of the four
-also proves the corresponding completeness lemma.  Generating the typed
-flags also computes and proves their downward identities, including the
-coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
-generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
-pair of two-vertex patterns~\((F_1,F_2)\) and every three-vertex host \(G\);
-this family includes the identity
-\(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\) displayed in
-\Cref{sec:reflection-adequacy}.
-Finally, the multiplication
-command combines those coefficients with the completeness lemma for the hosts
-to prove the product expansion
-\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair; completeness is
-what justifies summing over exactly the named hosts.  Thus, elaboration produces the
-flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
-and the multiplication table, together with proofs of all
-the entries of these tables.
+Generating the typed flags also proves a downward identity for each of them,
+such as \(q_\sigma(\fbarPthreebull)=2/3\), and the pair-density command's
+family includes the identity
+\(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\) proved earlier.  The
+multiplication command combines those coefficients with the completeness lemma
+for the hosts to prove the product expansion
+\([F_1] \cdot [F_2]=\sum_G \den{F_1,F_2}{G}\,[G]\) of~\eqref{eq:mul} for every
+pattern pair; completeness is what justifies summing over exactly the named
+hosts.
 
-Extremal applications work under a forbidden-graph assumption, and each of
-the commands above has a forbid variant for this situation.  The
+Every bound compiled in \Cref{sec:flagmatic} is a bound on \(H\)-free graphs,
+and each of the commands above has a forbid-free variant for that setting.  The
 \lean{generate\_forbid\_free\_*} commands take one additional argument, a
-concrete \lean{Sym2Graph} term for the forbidden graph \(H\); the Mantel
-development, for example, defines \lean{K3} as the complete graph on three
+concrete \lean{Sym2Graph} term for the forbidden graph \(H\); our Mantel
+example, for instance, defines \lean{K3} as the complete graph on three
 vertices and runs \lean{generate\_forbid\_free\_flags 3 1 0 K3}.  These
 variants emit constants and theorems only for flags whose underlying graphs
-avoid \(H\) as an ordinary, not necessarily induced, subgraph; their
-completeness lemmas state that the named flags exhaust precisely this set,
-using the same notion of \(H\)-freeness as the forbidden-graph machinery of
-\Cref{sec:forbidden}.
-One member of the family has no unforbidden counterpart:
-\lean{generate\_forbid\_free\_flag\_density\_theorems p i h H} evaluates the
-single-flag densities \(\lean{flagDensity}_1\) of the empty-typed flag
-\lean{Flag\_p\_0\_0\_i} in every \(H\)-free host of size \(h\).  The
-certificate compiler of \Cref{sec:flagmatic} uses this table when the target is
-the \(p\)-vertex empty-typed flag indexed by \(i\) and \(p<h\): the table
-provides the coefficients needed to express its density in terms of the
-\(H\)-free \(h\)-vertex flags.
+avoid \(H\) as a subgraph, and their filtered completeness lemmas state that
+the named flags exhaust precisely this set.
 
 \medskip
 \noindent\textbf{Optimizations.}
@@ -2491,16 +2461,14 @@ derived from its edge count and degree sequence, and the expensive test runs
 only when two keys collide.
 
 \item \textbf{Completeness from a verified enumerator.}
-One way to certify a particular generated list would be to enumerate the full
-quotient type independently and compare it with that list.  Such a check would
-establish completeness only for that particular run and would repeat the
-brute-force search that the size-inductive enumeration is designed to avoid.
-Instead, we prove once and for all, by induction on the size, that the
-enumeration algorithm of our Lean implementation produces a representative of every isomorphism class.
-A concrete generation run then needs only to check that the emitted constants
-coincide with the algorithm's computed output.  The completeness of that
-output follows by specializing the general theorem about the algorithm, rather
-than by independently searching the full space again.
+Certifying a generated list by independently enumerating the full quotient
+type and comparing would establish completeness only for that run, and would
+repeat the brute-force search that the size-inductive enumeration is designed
+to avoid.  Instead, we prove once and for all, by induction on the size, that
+the enumeration algorithm of our Lean implementation produces a representative
+of every isomorphism class.  A concrete run then needs only to check that the
+emitted constants coincide with the algorithm's output, and completeness
+follows by specializing that general theorem.
 
 \item \textbf{Pruning under a forbidden graph.}
 For a complete forbidden graph, the size induction itself prunes: only
@@ -2508,17 +2476,15 @@ For a complete forbidden graph, the size induction itself prunes: only
 and a cheap clique test decides containment, so flags containing \(H\) are
 never generated.  For other forbidden graphs, the representative enumeration
 is filtered before any typed structure is built, so the labeled-graph work is
-spent only on the surviving graphs.  The pruned generation nevertheless
-proves the same filtered completeness lemma.  Its enumeration misses no
-\(H\)-free isomorphism class because \(H\)-freeness is invariant under
-isomorphism and preserved by deleting a vertex; the completeness statement
-therefore follows by induction on size.  The pruning algorithm
-decides \(H\)-freeness using ordinary subgraph containment.  The filtered
-completeness lemma expresses the same condition in flag-algebra terms, by
+spent only on the surviving graphs.  Pruning misses no \(H\)-free isomorphism
+class, since \(H\)-freeness is invariant under isomorphism and preserved by
+deleting a vertex, so the filtered completeness lemma again follows by
+induction on size.  That lemma expresses \(H\)-freeness in flag-algebra terms,
 requiring every induced pattern whose underlying graph contains \(H\) to have
-density zero.  Lean proves that these two tests retain exactly the same flags,
-so the enumeration can use the executable containment test while later proofs
-use the density-based completeness statement.
+density zero, whereas the pruning algorithm uses ordinary subgraph
+containment.  Lean proves that the two tests retain exactly the same flags, so
+the enumeration can use the executable test while later proofs use the
+density-based statement.
 
 \end{itemize}
 
