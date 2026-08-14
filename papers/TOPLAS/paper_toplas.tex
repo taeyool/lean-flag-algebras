@@ -2680,94 +2680,72 @@ numbers on trust: it recomputes the
 densities and product expansions in Lean, proves the
 matrices are PSD, and checks the calculation.
 
-\subsection{The Four-Part Compiler}
+\subsection{Compiling a Certificate}
 \label{sec:flagmatic-shape}
 \label{sec:flagmatic-pipeline}
 \label{sec:flagmatic-gen}\label{sec:flagmatic-psd}\label{sec:flagmatic-expand}%
 \label{sec:flagmatic-close}\label{sec:flagmatic-script}%
 
-We organize the compiler around a four-part proof skeleton, with one part
-for each obligation in turning a certificate into a verified proof.  The four
-parts are:
+Turning a certificate into a verified proof raises four obligations, referred
+to below as Parts~1--4:
 
 \begin{enumerate}
-  \item \textbf{Generating the flags and density data.}  The proof must name
+  \item \textbf{Generating the flags and their identities.}  The proof must name
     the flags and corresponding flag-algebra basis elements it uses,
-    restricted to those that are free of the chosen forbidden graph, and must
-    prove the identities for single-flag densities, flag-pair densities, and
-    products of flags sharing a common flag type.
-  \item \textbf{Certifying the matrices.}  For each SDP block $t$, the
-    certificate supplies a rational matrix $M_t$ and a list of
-    $\sigma_t$-flags $E_{t,i}$.  The proof must define the vector~$v_t$ of
-    their basis elements $e_{t,i}:=[E_{t,i}]$ and must prove that $M_t$ is
-    positive semidefinite.
-  \item \textbf{Lifting the target (when needed).}  If the target graph $F$
+    restricted to those free of the chosen forbidden graph, and must prove the
+    density and product identities it needs.
+  \item \textbf{Certifying the matrices.}  For each SDP block, the proof must
+    show that the certificate's matrix $M_t$ is positive semidefinite.
+  \item \textbf{Expanding the target (when needed).}  If the target graph $F$
     has fewer vertices than the host size $N$ chosen to bound the certificate
-    search in \Cref{sec:flagmatic-background}, the proof must lift $[F]$ to the
-    size-$N$ basis, dropping contributions that contain the forbidden graph.
-  \item \textbf{Assembling the main theorem.}  With
-    $Q_t:=\bigl\llbracket v_t^\top M_t v_t\bigr\rrbracket_{\sigma_t}$
-    and the non-negative remainder~$r$ the calculation leaves over, the proof
-    must assemble
-    the chain~\eqref{eq:cert-chain}, whose middle equality is checked using the
-    identities from Part~1 and, when needed, the target-lifting identity from
-    Part~3.
+    search in \Cref{sec:flagmatic-background}, the proof must expand $[F]$ in
+    the size-$N$ basis.
+  \item \textbf{Assembling the main theorem.}  The proof must assemble the
+    chain~\eqref{eq:cert-chain} from the results of the preceding parts.
 \end{enumerate}
 
 Reusable proof-producing components handle each part, so a new theorem
 primarily requires new certificate data rather than a new proof architecture.
 
 For the certificate shapes supported by the current implementation, this
-four-part process is exposed as a tactic.  A source file states the desired
-bound and proves it by naming the certificate:
+process is exposed as the \lean{flag\_certificate} tactic.  A source file
+states the desired bound and proves it by naming the certificate file and the
+forbidden graph:
 \begin{lstlisting}[emph={flag_certificate},emphstyle=\color{blue!70!black}\bfseries]
 theorem Mantel_flagAlgebra
     : FlagAlgebra_2_0_0_1 (*@$\leq$@*)[completeGraph (Fin 3)] (1 / 2 : (*@$\mathbb{R}$@*)) (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))
   := by
   flag_certificate "<mantel-cert>.json" K3
 \end{lstlisting}
-During elaboration, \lean{flag\_certificate} parses the certificate file,
-resolves each of its compact graph strings to the isomorphic entry of Lean's
-canonical enumeration, reconstructs the rational block matrices together with
-exact $LDL^\top$ witnesses, and synthesizes the proof described below, with
-the certificate data inlined as literals.  Before doing any of this, it
-checks that the theorem families of Part~1 are present in the current
-namespace; if some are missing, it fails with the exact block of generation
-commands to add.  The variant \lean{flag\_certificate?} additionally offers
+The variant \lean{flag\_certificate?} additionally offers
 the synthesized script as a standard ``Try this:'' suggestion, so a single
 editor click replaces the tactic call with the explicit proof (inline
 matrices, PSD checks, and the closing normalization), which can then be
 audited, archived, or checked independently of the certificate file.
 
-The scaffolding surrounding the statement, namely the forbidden-graph
-definition, the \lean{set\_option} block, and the Part~1 generation commands,
-is written once per certificate, by hand or by the \lean{gen-skeleton}
-subcommand of the \lean{flagmatic\_to\_lean.py} script:
+A complete source file needs a few pieces around that theorem: the forbidden
+graph as a \lean{Sym2Graph} term, the \lean{generate\_forbid\_free\_*} commands
+of \Cref{sec:reflection-generation} that supply Part~1, option settings
+choosing kernel evaluation and lifting Lean's heartbeat and recursion limits,
+and, after the theorem, a restatement of the bound as a generalized Tur\'an
+density (\Cref{sec:results}).  They are written once per certificate, by hand
+or all at once by the \lean{flagmatic\_to\_lean.py} script:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-The output file contains the flag and density
-generation commands of Part~1, the theorem statement read off the
-certificate with its one-line \lean{flag\_certificate} proof, and a closing
-restatement of the bound as a generalized Tur\'an density
-(\Cref{sec:results}).  Passing \lean{--materialize} instead emits the fully
-expanded legacy form, in which the matrices of Part~2, the target-lifting
+Passing \lean{--materialize} instead emits the fully
+expanded legacy form, in which the matrices of Part~2, the target-expansion
 lemma of Part~3, and the complete tactic proof of Part~4 appear in the
-source file itself and the certificate is not read at build time.  A
-separate diagnostic command
-\begin{lstlisting}[language={}]
-python flagmatic_to_lean.py inspect <mantel-cert>.json
-\end{lstlisting}
-checks that the certificate can be parsed and that its flags can be matched
-to Lean's enumeration, printing the resulting identifier mapping and the
-Part~1 generation commands.  We now explain the synthesized proof one part
-at a time.
+source file itself and the certificate is not read at build time.  We now
+explain the synthesized proof one part at a time.
 
-\boldparagraph{Generating the flags and density data (Part~1).}
+\boldparagraph{Generating the flags and their identities (Part~1).}
 This is where the reflection layer of \Cref{sec:reflection} enters the
 compiler, making the finite bookkeeping involving flags and densities
 executable and checkable.  Part~1 is the scaffolding that lives in the source
-file, and the prerequisite the \lean{flag\_certificate} tactic checks for: it
+file, and the prerequisite the \lean{flag\_certificate} tactic checks for,
+failing with the exact block of generation commands to add when any are
+missing.  It
 defines the certificate's forbidden graph as a \lean{Sym2Graph} term and
 invokes the \lean{generate\_forbid\_free\_*} commands of
 \Cref{sec:reflection-generation} on it.  The commands choose
@@ -2781,7 +2759,10 @@ or a \lean{Sym2Flag} at a nonempty flag type, together with its decoded
 specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.  As in
 \Cref{sec:reflection-generation}, the commands also prove the completeness
 lemma stating that the emitted flags exhaust the flags avoiding the forbidden
-graph.
+graph.  The tactic matches each of the certificate's compact graph strings
+against this enumeration, selecting the corresponding
+\lean{FlagAlgebra\_n\_k\_m\_i} constant, so no agreement between Flagmatic's
+ordering and Lean's is assumed.
 
 After emitting these flags, Part 1 generates
 the rewrite theorems, which are used later
@@ -2792,7 +2773,7 @@ For each relevant pair of $\sigma$-flags $F_1,F_2$ and host $\sigma$-flag $G$, i
 evaluates the pair density
 \(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
 in the product expansion of $[F_1]\cdot[F_2]$.  When the target must be
-lifted in Part~3, the generated file similarly contains proved evaluations of
+expanded in Part~3, the generated file similarly contains proved evaluations of
 the required single-flag densities.  The adequacy theorems from
 \Cref{sec:reflection-adequacy} turn all these reflection-layer evaluations into
 specification-level statements about the decoded flags.  The multiplication
@@ -2818,11 +2799,9 @@ theorem posSemidef_real_of_LDLt {n : (*@$\mathbb{N}$@*)}
     (hd : forall (*@$\,$@*)i, 0 <= (*@$\,$@*)d i) (hM : M = L * Matrix.diagonal d * L(*@$^\top$@*))
     : (ratMatrixToReal M).PosSemidef := ...
 \end{lstlisting}
-The lemma says that if a rational matrix $M$ factors as
-$L\operatorname{diag}(d)L^\top$ with every entry of $d$ non-negative, then the
-entrywise real cast of $M$, written \lean{ratMatrixToReal M}, is positive
-semidefinite; the $\mathbb{Q}$-to-$\mathbb{R}$ casting happens inside the
-lemma.  To use it, the tactic reconstructs $M_t$ from $Q'_t$ and $R_t$ in
+The entrywise $\mathbb{Q}$-to-$\mathbb{R}$ cast, written
+\lean{ratMatrixToReal}, happens inside the lemma, so the factorization itself
+stays in exact rational arithmetic.  To use it, the tactic reconstructs $M_t$ from $Q'_t$ and $R_t$ in
 exact rational arithmetic during elaboration, computes a factorization
 $M_t=L_t\operatorname{diag}(d_t)L_t^\top$ with $L_t$ square and unit lower
 triangular, and inlines $M_t$, $L_t$, and $d_t$ as literals in the
@@ -2838,7 +2817,7 @@ by the tactic's unverified elaboration-time code.  An incorrect $LDL^\top$
 witness is therefore rejected, while fidelity to the source certificate is
 discussed in \Cref{sec:flagmatic-trust}.
 
-\boldparagraph{Lifting the target (Part~3).}
+\boldparagraph{Expanding the target (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
 aligns the target with that data when necessary.  The certificate identities
 are expressed at the host size $N$, so when the target graph $F$ itself has
@@ -2877,12 +2856,9 @@ tactic establishes this bridge itself.
 
 \boldparagraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the
-chain of inequalities from \Cref{sec:flagmatic-background}.  The certificate identity
-$[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ supplies its middle equality, while the
-non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
-Mantel example, there is one $Q_t$, namely
-$Q=\bigl\llbracket\tfrac12((\fKtwobull)-(\fbarKtwobull))^2\bigr\rrbracket_\sigma$,
-and $r=\tfrac13\cdot\fbarPthree$.  The synthesized proof does not
+chain~\eqref{eq:cert-chain}.  In the
+Mantel example there is one $Q_t$, the $Q$ of
+\Cref{sec:flagmatic-background}, and $r=\tfrac13\cdot\fbarPthree$.  The synthesized proof does not
 define $r$ explicitly; it appears as the coefficientwise difference left after
 the two sides are expanded in a common basis.
 
@@ -2898,11 +2874,9 @@ Here $C$ is a predicate encoding the forbidden-subgraph set $\mathcal{H}$; for a
 forbidding a single graph $H$, it is \lean{forbiddenCondition H}, the
 $H$-freeness condition of \Cref{def:ensemble-semantic-order} used throughout
 this section.  Thus,
-\lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$.
-The lemma says that if $f\leq_H g$, then the inequality remains true after the
-non-negative downward quadratic form determined by the PSD matrix $M$ and flag
-vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
-semidefiniteness generated in Part~2.
+\lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$, and
+the hypothesis \lean{hM} is the positive-semidefiniteness proof generated in
+Part~2.
 The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
 $[F]\leq_H[F]+\sum_tQ_t$.
@@ -2920,23 +2894,7 @@ multiplication and downward identities generated in Part~1,
 After these rewrites, the difference between the right- and left-hand sides is
 exactly the remainder $r$ from the certificate calculation.  The tactic
 \lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
-the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
-the normalization and the final non-negativity check together verify the
-conceptual equality $[F]+\sum_tQ_t=c\cdot\mathbf{1}-r$ and the last inequality
-$c\cdot\mathbf{1}-r\leq_H c\cdot\mathbf{1}$.
-
-\boldparagraph{The checked artifact.}
-The certificate-specific assembly just described is performed by the tactic's
-elaboration-time code, which resolves each compact graph string to the entry
-of Lean's canonical enumeration whose index selects the corresponding
-\lean{FlagAlgebra\_n\_k\_m\_i} constant.  Because the matching runs against the
-enumeration Lean itself computes, no agreement between an external enumeration
-order and Lean's is assumed.  Certificates change the assembled data and the number of
-SDP blocks, but not the four-part proof structure.  In both frontends, what
-Lean accepts is a proof of the stated theorem, checked from scratch: every
-intermediate proposition and the final bound are carried by proof terms, and
-the certificate can influence the outcome only by making the stated theorem
-provable.  The next subsection makes the resulting trust boundary precise.
+the non-negativity of every basis element to conclude $0\leq_H r$.
 
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
