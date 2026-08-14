@@ -2830,27 +2830,20 @@ Part~1 emitted.
 
 \boldparagraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the
-chain~\eqref{eq:cert-chain}.  In the
-Mantel example there is one $Q_t$, the $Q$ of
-\Cref{sec:flagmatic-background}, and $r=\tfrac13\cdot\fbarPthree$.  The synthesized proof does not
-define $r$ explicitly; it appears as the coefficientwise difference left after
-the two sides are expanded in a common basis.
-
+chain~\eqref{eq:cert-chain}.
 The first step is to prove
-$[F]\leq_H[F]+\sum_tQ_t$.  It uses the following general lemma:
+$[F]\leq_H[F]+\sum_tQ_t$.  It uses the following lemma:
 \begin{lstlisting}
 theorem forbidLEWith_add_QuadraticForm {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin k)}
     {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
     (M : Matrix (Fin n) (Fin n) (*@$\mathbb{R}$@*)) (hM : M.PosSemidef) (v : FlagAlgebraVec (*@$\sigma$@*) n)
     : forbidLEWith C f g -> (*@$\,$@*) forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
 \end{lstlisting}
-Here $C$ is a predicate encoding the forbidden-subgraph set $\mathcal{H}$; for a problem
-forbidding a single graph $H$, it is \lean{forbiddenCondition H}, the
-$H$-freeness condition of \Cref{def:ensemble-semantic-order} used throughout
-this section.  Thus,
-\lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$, and
-the hypothesis \lean{hM} is the positive-semidefiniteness proof generated in
-Part~2.
+Here \lean{v} is the flag vector $v_t$ of \Cref{sec:flagmatic-background} and
+\lean{flagQuadraticForm M v} is its quadratic form $v_t^\top M_t v_t$;
+\lean{forbidLEWith} is the $\leq_H$ of \Cref{sec:forbidden}, instantiated at
+\lean{forbiddenCondition H}, and \lean{hM} is the positive-semidefiniteness
+proof generated in Part~2.
 The proof starts from the reflexive inequality $[F]\leq_H[F]$ and applies this
 lemma once for each SDP block.  After all blocks have been added, its conclusion is precisely
 $[F]\leq_H[F]+\sum_tQ_t$.
@@ -2859,14 +2852,15 @@ It remains to prove $[F]+\sum_tQ_t\leq_H c\cdot\mathbf{1}$.  The compiler checks
 this comparison by rewriting both sides in the basis of $H$-free flags at the
 host size $N$.  When necessary, the Part~3 lemma first expands $[F]$ to that
 basis.
-Expanding each quadratic form produces downward images of products of basis
+Expanding each $Q_t=\bigl\llbracket v_t^\top M_t v_t\bigr\rrbracket_{\sigma_t}$
+produces downward images of products of basis
 elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the
-multiplication and downward identities generated in Part~1,
+multiplication and downward identities generated in Part~1.  Then
 \lean{expand\_one\_hfree\_at} expands $\mathbf{1}$ in the same basis, and
 \lean{flagsum\_ac\_sort\_rhs\_pipeline} collects like basis terms.
 
 After these rewrites, the difference between the right- and left-hand sides is
-exactly the remainder $r$ from the certificate calculation.  The tactic
+exactly the remainder $r$ of~\eqref{eq:cert-chain}.  The tactic
 \lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
 the non-negativity of every basis element to conclude $0\leq_H r$.
 
