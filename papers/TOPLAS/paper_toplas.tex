@@ -2741,48 +2741,27 @@ explain the synthesized proof one part at a time.
 
 \boldparagraph{Generating the flags and their identities (Part~1).}
 This is where the reflection layer of \Cref{sec:reflection} enters the
-compiler, making the finite bookkeeping involving flags and densities
+compiler, making the finite bookkeeping over flags, densities, and products
 executable and checkable.  Part~1 is the scaffolding that lives in the source
 file, and the prerequisite the \lean{flag\_certificate} tactic checks for,
 failing with the exact block of generation commands to add when any are
 missing.  It
 defines the certificate's forbidden graph as a \lean{Sym2Graph} term and
 invokes the \lean{generate\_forbid\_free\_*} commands of
-\Cref{sec:reflection-generation} on it.  The commands choose
-between two enumeration procedures according to the forbidden graph: they use
-size-inductive clique pruning when the forbidden graph is complete, and the
-general ordinary-subgraph filtering procedure otherwise.  During elaboration,
-they enumerate the flags that avoid the forbidden graph, with isomorphic
-flags appearing only once.  For each enumerated flag, the commands emit a concrete
-reflection-layer constant, either a \lean{Sym2EmptyTypedFlag} at the empty flag type
-or a \lean{Sym2Flag} at a nonempty flag type, together with its decoded
-specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.  As in
-\Cref{sec:reflection-generation}, the commands also prove the completeness
-lemma stating that the emitted flags exhaust the flags avoiding the forbidden
-graph.  The tactic matches each of the certificate's compact graph strings
-against this enumeration, selecting the corresponding
-\lean{FlagAlgebra\_n\_k\_m\_i} constant, so no agreement between Flagmatic's
-ordering and Lean's is assumed.
+\Cref{sec:reflection-generation} on it.  The tactic matches each of the certificate's
+compact graph strings against the resulting enumeration, selecting the
+corresponding
+\lean{FlagAlgebra\_n\_k\_m\_i} constant, so Flagmatic's ordering need not
+agree with Lean's.
 
-After emitting these flags, Part 1 generates
-the rewrite theorems, which are used later
-in Parts 3 and 4 of the proof.  Concretely, for each emitted $\sigma$-flag
-$F$, Part~1 evaluates the downward normalizing
-factor~$q_\sigma(F)$ from \Cref{sec:formal-downward}.
-For each relevant pair of $\sigma$-flags $F_1,F_2$ and host $\sigma$-flag $G$, it also
-evaluates the pair density
-\(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
-in the product expansion of $[F_1]\cdot[F_2]$.  When the target must be
-expanded in Part~3, the generated file similarly contains proved evaluations of
-the required single-flag densities.  The adequacy theorems from
-\Cref{sec:reflection-adequacy} turn all these reflection-layer evaluations into
-specification-level statements about the decoded flags.  The multiplication
-generator then combines the pair-density identities with the general
-multiplication theorem and the completeness lemma for the generated flag set
-to derive the required product expansions.
+The same commands prove the identities Parts~3 and~4 consume: a downward
+normalizing factor $q_\sigma(F)$ for each emitted $\sigma$-flag, the product
+expansions of the flag pairs the certificate uses, and, when the target must be
+expanded in Part~3, the required single-flag densities.  The adequacy theorems
+of \Cref{sec:reflection-adequacy} state all of them at the specification level.
 
 \boldparagraph{Certifying the matrices (Part~2).}
-With the flags and their rewrite theorems in place, Part~2 discharges the
+Part~2 discharges the
 positive-semidefiniteness obligations.  For each SDP block, the certificate
 stores rational matrices $Q'_t$ and $R_t$ with
 $M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a smaller
@@ -2810,19 +2789,17 @@ witness: the \lean{psd\_real\_ldlt\_terms} tactic must prove the lemma's two
 hypotheses.  Both are concrete decidable statements about literals, the
 non-negativity of every entry of $d_t$ and an equality of finite matrices
 over $\mathbb{Q}$, so \lean{decide +kernel} evaluates them and has the Lean
-kernel certify the results.  No eigenvalue or floating-point calculation
-enters this check.  Lean does not separately compare $M_t$ with the original
-$Q'_t$ and $R_t$ fields of the certificate; that reconstruction is performed
-by the tactic's unverified elaboration-time code.  An incorrect $LDL^\top$
-witness is therefore rejected, while fidelity to the source certificate is
-discussed in \Cref{sec:flagmatic-trust}.
+kernel certify the results; no eigenvalue or floating-point calculation
+enters.  An $L_t$ or $d_t$ that does not factor $M_t$ is
+therefore rejected.  What Lean does not check is that $M_t$ agrees with
+the certificate's $Q'_t$ and $R_t$ fields: their reconstruction is done by the
+tactic's unverified elaboration-time code, and \Cref{sec:flagmatic-trust}
+takes up fidelity to the source certificate.
 
 \boldparagraph{Expanding the target (Part~3).}
-The first two parts provide the algebraic data used by the certificate.  Part~3
-aligns the target with that data when necessary.  The certificate identities
-are expressed at the host size $N$, so when the target graph $F$ itself has
-$N$ vertices, its basis element $[F]$ already lives in that basis and nothing
-needs to be done.  When $F$ is smaller, the compiler proves an auxiliary
+The certificate identity of \Cref{sec:flagmatic-background} is expressed at the
+host size $N$, so Part~3 has nothing to do when the target graph $F$ already
+has $N$ vertices.  When $F$ is smaller, the compiler proves an auxiliary
 identity that expands $[F]$ over the $N$-vertex $\mathcal{H}$-free
 $\emptyset$-flags,
 \[
@@ -2838,8 +2815,9 @@ generated in Part~1.
 All certificates considered here have a singleton forbidden family
 $\mathcal{H}=\{H\}$.  The generated proof invokes the
 \lean{flag\_expand\_hfree N K} tactic, where $N$ is the host size and $K$ is the
-reflection-layer \lean{Sym2Graph} encoding of $H$.  The qualifier on the
-identity above matters, because our development works in the ambient algebra.  In
+reflection-layer \lean{Sym2Graph} encoding of $H$.  That the identity holds
+only modulo the \(H\)-free condition matters, because our development works in
+the ambient algebra.  In
 the built-in \(H\)-free algebra (\Cref{rem:builtin-hfree}), the restricted sum
 would simply be the expansion identity~\eqref{eq:expansion-identity}, all of
 whose flags are \(H\)-free there.  In the ambient algebra, however, the flags containing
@@ -2847,12 +2825,8 @@ whose flags are \(H\)-free there.  In the ambient algebra, however, the flags co
 literal equality; the auxiliary identity instead says that every empty-type
 positive homomorphism satisfying the \(H\)-freeness condition of
 \Cref{def:ensemble-semantic-order} gives both sides the same value.
-Part~1 selected the $H$-free flags by a concrete
-computation on $K$.  Bridging the two requires proving that the underlying
-graph of every flag that computation discarded contains $H$ as a subgraph; the
-$H$-free condition then forces those flags' terms to vanish, which justifies
-expanding over exactly the flags Part~1 emitted.  From $N$ and $K$ alone, the
-tactic establishes this bridge itself.
+This identity is what lets the rest of the proof expand over only the flags
+Part~1 emitted.
 
 \boldparagraph{Assembling the main theorem (Part~4).}
 Part~4 assembles the outputs of the preceding parts and realizes the
