@@ -2870,7 +2870,7 @@ the non-negativity of every basis element to conclude $0\leq_H r$.
 There are two distinct questions of trust: is the theorem that Lean accepts
 valid, and is it the statement the certificate was meant to yield?
 
-For the first question, neither the SDP solver nor the compiler frontends
+For the first question, neither the certificate nor the compiler frontends
 (the \lean{flag\_certificate} metaprogram and the scaffolding script) are
 trusted for the logical validity of a theorem that Lean accepts.  No example
 file introduces an axiom declaration or a \lean{sorry}
@@ -2881,31 +2881,24 @@ theorem must typecheck.  Subject to Lean's trusted base, erroneous data
 cannot make an invalid proof term valid.
 
 For the second question, the anchor is the theorem statement fixed in the
-source file.  The tactic derives every ingredient of the proof (the flag
-indices, the matrices, the expansion coefficients) from the certificate,
-and it can only close the goal that the statement poses.  A disagreement
-between the two, say a mistranscribed target or forbidden graph, or a stated
-bound below what the certificate supports, therefore surfaces as an
-elaboration failure; no choice of certificate data can make an unsupported
-statement elaborate.  What remains to audit is the statement itself: that
+source file.  The tactic derives every ingredient of the proof from the
+certificate, but it can only close the goal that the statement poses: a
+mistranscribed target or forbidden graph, or a bound stated smaller than the
+one the certificate proves, surfaces as an elaboration
+failure.  What remains to audit is the statement itself: that
 $[F]\leq_{\mathcal H}c\cdot\mathbf 1$, as written, expresses the intended
-extremal claim.  When the statement is written by hand, it is the author's
-declaration of intent; in files emitted by \lean{gen-skeleton}, the script
-writes the statement, so reading it remains the auditability boundary.  In
-the \lean{--materialize} form, the script is additionally trusted to
-transcribe the certificate data into the file, as the certificate is not
-read back at build time.
+extremal claim.  In files emitted by \lean{gen-skeleton} the script writes that
+statement, so reading it remains the auditability boundary.  In
+the \lean{--materialize} form the certificate is not read at build time, so a
+successful build does not say which certificate the file came from; Lean
+still checks that the file's data proves the stated theorem.
 
 The proof obligations also use two evaluation mechanisms.  Five of the seven
-generated files evaluated in \Cref{sec:results}, including the Erd\H{o}s
-pentagon, discharge every finite
-computation, from the exact matrix equalities of the PSD proofs to the
-enumerations and density calculations, by \lean{decide +kernel}; the kernel
-checks all of it, and no compiled-evaluation axiom appears.  In the $K_5$-free
-and $C_5$-free edge-density certificates, kernel reduction of the generated
-computations was too slow to be practical, so those two files use
-\lean{native\_decide} and additionally trust Lean's native compiler and
-runtime.  Finally, the custom
+generated files of \Cref{sec:results}, including the Erd\H{o}s pentagon,
+discharge every finite computation by \lean{decide +kernel}, so no
+compiled-evaluation axiom appears.  The $K_5$-free and $C_5$-free edge-density
+files use \lean{native\_decide} instead and additionally trust Lean's native
+compiler and runtime.  Finally, the custom
 tactics are unverified metaprograms whose dependence on elaborated expression
 shapes affects robustness and portability.  They construct proof terms that
 Lean checks, so a tactic failure leaves the proof incomplete rather than
