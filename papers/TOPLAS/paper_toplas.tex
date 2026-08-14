@@ -2873,8 +2873,7 @@ valid, and is it the statement the certificate was meant to yield?
 For the first question, neither the certificate nor the compiler frontends
 (the \lean{flag\_certificate} metaprogram and the scaffolding script) are
 trusted for the logical validity of a theorem that Lean accepts.  No example
-file introduces an axiom declaration or a \lean{sorry}
-(\Cref{sec:results}), so every claim is carried by a proof term Lean checks: the
+file introduces an axiom declaration or a \lean{sorry}, so every claim is carried by a proof term Lean checks: the
 reconstructed matrices must be proved positive semidefinite, the certificate
 calculation must normalize to non-negative coefficients, and the final
 theorem must typecheck.  Subject to Lean's trusted base, erroneous data
@@ -2893,7 +2892,7 @@ the \lean{--materialize} form the certificate is not read at build time, so a
 successful build does not say which certificate the file came from; Lean
 still checks that the file's data proves the stated theorem.
 
-The proof obligations also use two evaluation mechanisms.  Five of the seven
+The proof obligations also use two evaluation modes.  Five of the seven
 generated files of \Cref{sec:results}, including the Erd\H{o}s pentagon,
 discharge every finite computation by \lean{decide +kernel}, so no
 compiled-evaluation axiom appears.  The $K_5$-free and $C_5$-free edge-density
@@ -2910,64 +2909,56 @@ proving an invalid theorem.
 We evaluated the compiler on seven certificates spanning host sizes
 $N\in\{3,4,5\}$, targets at and below the host size, between one and four SDP
 blocks, and four
-forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  For each certificate,
-\lean{gen-skeleton} produces a complete Lean source file whose main theorem
-is proved by a single \lean{flag\_certificate} call.  All seven files compile
-and contain neither \lean{sorry} nor generated axiom declarations.  No
+forbidden graphs ($K_3$, $K_4$, $K_5$, and $C_5$).  All seven generated files
+compile and contain neither \lean{sorry} nor generated axiom declarations.  No
 certificate coefficient appears in the source at all: the data is consumed at
 elaboration time.
 Table~\ref{tab:flagmatic-scenarios} summarizes the seven cases;
 \Cref{sec:compile-times} reports their compilation times and peak memory
-under both evaluation modes.
+under both \lean{decide +kernel} and \lean{native\_decide}.
 
 \begin{table}
   \centering
-\caption{Certificates carried end-to-end through the compiler.  \(H\) is the
+\caption{Certificates carried through the compiler.  \(H\) is the
   forbidden graph, \(n_F\) the number of vertices of the target graph \(F\),
   \(N\) the host size, and \(T\) the number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lccccc}
     \toprule
-    Case & $H$ & $n_F$ & $N$ & $T$ & Bound \\
+    Target density & $H$ & $n_F$ & $N$ & $T$ & Bound \\
     \midrule
-    Mantel (edge density)               & $K_3$ & 2 & 3 & 1 & $1/2$    \\
+    Edge density (Mantel)               & $K_3$ & 2 & 3 & 1 & $1/2$    \\
     $P_3$ density                       & $K_3$ & 3 & 3 & 1 & $3/4$    \\
     $C_4$ density                       & $K_3$ & 4 & 4 & 2 & $3/8$    \\
     Edge density                        & $K_4$ & 2 & 4 & 2 & $2/3$    \\
-    Erd\H{o}s pentagon ($C_5$ density)  & $K_3$ & 5 & 5 & 3 & $24/625$ \\
+    $C_5$ density (Erd\H{o}s pentagon)  & $K_3$ & 5 & 5 & 3 & $24/625$ \\
     Edge density                        & $K_5$ & 2 & 5 & 4 & $3/4$    \\
     Edge density                        & $C_5$ & 2 & 5 & 4 & $1/2$    \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-The cases play complementary roles.  Mantel is a hand-checkable baseline: its
-single $2\times2$ SDP block is the explicit square from
+The cases play complementary roles.  Mantel is a hand-checkable baseline: the
+quadratic form of its single $2\times2$ SDP block is the explicit square from
 \Cref{sec:flagmatic-background}.  The largest cases, the $K_5$- and $C_5$-free
 edge densities, each use four blocks of $8\times8$
-matrices.  These certificates are Flagmatic's output as
+matrices.  These are Flagmatic's certificates as
 produced, with no attempt to minimize the number of blocks or the matrix
-dimensions; more compact certificates for the same bounds may exist, but the
-unoptimized output already compiles end to end.  Together, these examples
-exercise targets at and below the host size and increasingly large multi-block
-normalizations.
-
-The $C_5$-free edge-density case shows that the forbidden graph need not be
-complete; the generated file proves that graphs containing no $C_5$ subgraph
-have edge density at most $1/2$.
+dimensions; the unoptimized output already compiles end to end.
 
 Each generated file ends by transferring its flag-algebra bound to the
 specification level: an auto-generated theorem restates it as the generalized
 Tur\'an-density bound $\tdensity{F}{\mathcal H}\le c$, through the bridge
 lemma \lean{generalizedTuranDensity\_le\_of\_forbidLE}, with the target graph
 spelled as an explicit edge list; the file's final statement therefore
-mentions no generated constants and can be audited against the
-specification-layer definitions alone.  The certificate argument establishes only this
+mentions none of the generated \lean{FlagAlgebra\_n\_k\_m\_i} constants and can
+be audited against the specification-layer definitions alone.  The certificate argument establishes only this
 upper-bound direction.  For Mantel and the Erd\H{o}s pentagon,
 the matching lower bounds are proved directly in Lean using the underlying
 formalization (\Cref{sec:lowerbounds}), completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
-and~\ref{ex:pentagon}.
+and~\ref{ex:pentagon}; the Erd\H{o}s pentagon case is, to our knowledge, the
+first machine-checked proof of that theorem.
 
 \boldparagraph{Limitations.}
 \label{sec:flagmatic-open}
@@ -2976,24 +2967,20 @@ First, this evaluation establishes coverage of the seven cases above, not
 completeness of the compiler.  Even a certificate within the compiler's
 intended scope may expose a normalization shape not handled by the custom
 tactics.  Such failures are safe: an unsupported or malformed input is
-rejected or yields an explicitly incomplete skeleton containing \lean{sorry},
-and a tactic failure leaves the proof incomplete, so neither case produces an
-unchecked theorem.
+rejected or yields a skeleton containing \lean{sorry}, and neither case
+produces an unchecked theorem.
 Second, fully kernel-checked compilation does not yet scale.  For the
 $K_5$-free and $C_5$-free edge-density certificates, we attempted to check the
 generated files entirely by \lean{decide +kernel}; the runs did not finish in
 an acceptable time and were abandoned, which is why those two files use
 \lean{native\_decide} (\Cref{sec:flagmatic-trust}).
 Third, the statement anchor narrows the fidelity concern of
-\Cref{sec:flagmatic-trust} but does not eliminate it: the theorem statement
-must still be read to confirm that it expresses the intended extremal claim,
-and in generated files that statement is written by the unverified
-scaffolding script.  Two smaller costs of the elaboration-time design are
-also worth recording.  The certificate becomes a build-time input that the
+\Cref{sec:flagmatic-trust} but does not eliminate it: the statement must still
+be read, and in generated files the unverified script writes
+it.  One smaller cost of the elaboration-time design is
+also worth recording: the certificate becomes a build-time input that the
 build system does not track, so editing a certificate does not by itself
-trigger rechecking of the file that reads it; and the certificate data is no
-longer visible in the source file, so recovering it takes either the
-\lean{--materialize} form or one \lean{flag\_certificate?} click.
+trigger rechecking of the Lean file that reads it.
 
 \section{Using the Formalization Beyond Certificate Compilation}
 \label{sec:lowerbounds}
@@ -3852,7 +3839,7 @@ constraints such as a fixed edge density.
 \section{Open Design Questions}
 \label{sec:unsure}
 
-The formalization and end-to-end certificate proofs presented above are fully
+The formalization and certificate proofs presented above are fully
 checked in Lean.  This section instead concerns design questions that the
 present implementation cannot settle on its own.  For each question, we state
 what our implementation establishes and what remains unknown because answering
