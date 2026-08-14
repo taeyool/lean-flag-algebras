@@ -4062,10 +4062,7 @@ Lean~4 (v4.27.0) on an
 Intel Core i7-14700K (20 cores) with 64\,GB of RAM under Windows~11.  Each
 measurement covers the complete source file: flag enumeration, pair-density and
 multiplication lemma generation, PSD certificate checking, the objective
-expansion, and the main theorem.  The measurements were taken on the fully
-materialized form of the files (\lean{--materialize}); the
-\lean{flag\_certificate} form performs the same proof obligations, and in our
-spot checks the two differed by less than run-to-run variance.  The generated
+expansion, and the main theorem.  The generated
 files differ only in how their bridging lemmas are discharged.  Under \lean{decide +kernel} (the
 \lean{flagGen.kernelDecide} option), the file introduces no compiled-evaluation
 axiom; under \lean{native\_decide}, it is faster but additionally depends on the
@@ -4074,12 +4071,14 @@ modes for the five examples where kernel evaluation is tractable; for the two
 largest, the $K_5$- and $C_5$-free edge-density examples, only
 \lean{native\_decide} was measured.
 
-Each figure is the mean over five runs of a single-file compilation against the
-prebuilt library, with the sample standard deviation; memory is the peak
-resident set, taken as the maximum over the five runs.  Wall-clock times are
-highly repeatable (standard deviation below $0.5\%$ of the mean in every
-configuration except the Erd\H{o}s pentagon under kernel evaluation, at
-$3.9\%$).
+Each figure is the mean over five successful runs of a single-file compilation
+against the prebuilt library, with the sample standard deviation; memory is the
+peak resident set, taken as the maximum over the five runs.  One run stalled on
+system contention, showing an anomalous wall clock at an unchanged peak memory;
+it was discarded and replaced by a further run.  Wall-clock times are highly
+repeatable (standard deviation below $1\%$ of the mean in every configuration
+except the $P_3$- and $C_4$-density cases under \lean{native\_decide}, at
+$2.3\%$ and $1.8\%$).
 
 \begin{table}[h]
   \centering
@@ -4099,13 +4098,13 @@ $3.9\%$).
     Case & Forbid & $N$ & Lemmas
       & Time (s) & RAM (GB) & Time (s) & RAM (GB) \\
     \midrule
-    Mantel (edge density)              & $K_3$ & 3 &    15 & $14.1\pm0.3$   &  2.4 & $11.5\pm0.1$  & 2.0 \\
-    $P_3$ density                      & $K_3$ & 3 &    15 & $13.3\pm0.1$   &  2.4 & $11.1\pm0.0$  & 2.0 \\
-    $C_4$ density                      & $K_3$ & 4 &   210 & $74.4\pm0.1$   &  8.2 & $19.8\pm0.2$  & 2.3 \\
-    Edge density                       & $K_4$ & 4 &   390 & $133.3\pm0.3$  & 11.2 & $27.9\pm0.1$  & 2.5 \\
-    Erd\H{o}s pentagon ($C_5$ density) & $K_3$ & 5 &  2832 & $2786\pm108$   & 42.3 & $123.4\pm0.5$ & 4.2 \\
-    Edge density                       & $K_5$ & 5 & 10332 & ---            & ---  & $342.6\pm0.6$ & 8.1 \\
-    Edge density                       & $C_5$ & 5 &  8172 & ---            & ---  & $539.6\pm0.5$ & 8.6 \\
+    Mantel (edge density)              & $K_3$ & 3 &    15 & $15.6\pm0.1$   &  2.4 & $13.4\pm0.1$  & 2.0 \\
+    $P_3$ density                      & $K_3$ & 3 &    15 & $14.9\pm0.0$   &  2.4 & $12.8\pm0.3$  & 1.9 \\
+    $C_4$ density                      & $K_3$ & 4 &   210 & $76.6\pm0.7$   &  8.1 & $21.1\pm0.4$  & 2.1 \\
+    Edge density                       & $K_4$ & 4 &   390 & $135.2\pm0.4$  & 11.2 & $29.0\pm0.0$  & 2.4 \\
+    Erd\H{o}s pentagon ($C_5$ density) & $K_3$ & 5 &  2832 & $2713\pm13$    & 42.3 & $122.6\pm0.8$ & 4.1 \\
+    Edge density                       & $K_5$ & 5 & 10332 & ---            & ---  & $325.0\pm0.6$ & 8.0 \\
+    Edge density                       & $C_5$ & 5 &  8172 & ---            & ---  & $531.9\pm3.0$ & 8.5 \\
     \bottomrule
   \end{tabular}
 \end{table}
