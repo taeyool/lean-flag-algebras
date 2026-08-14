@@ -2640,7 +2640,7 @@ positive homomorphism: evaluating the algebra elements turns it into the ordinar
 quadratic form $x^\top Mx$.  The downward operator then transfers this
 non-negativity from the labeled algebra to the unlabeled one.
 
-Flagmatic finds the matrices by turning this decomposition problem into a
+Flagmatic finds the matrices by turning the search for them into a
 \emph{semidefinite program} (SDP).  It first fixes a host size $N$ and chooses
 the flag types and flags that may occur.  It expands the target, the unit, and
 the downward quadratic forms in the common basis of allowed $N$-vertex graphs,
@@ -2673,14 +2673,12 @@ condition, of the form
 where every $M_t$ is PSD and $r$ is a linear combination of $\mathcal H$-free
 flags with non-negative coefficients, so these data justify the
 chain~\eqref{eq:cert-chain}.  Its equality is now the certificate identity
-checked after all terms have been expanded in the common host-size
-basis.  The certificate records the chosen
-flags, the rational matrices $M_t$, and the target-density data needed to state
-this calculation.  Our compiler does not trust the certificate's derived
-density or multiplication tables: it recomputes them in Lean, proves the
-matrices are PSD, and checks the calculation.  The rest of this section explains
-the four recurring parts of that verification and how the compiler generates
-them.
+checked after all terms have been expanded in the common basis at host
+size~$N$.  The certificate records the bound $c$, the chosen
+flags, and the rational matrices $M_t$.  Our compiler takes none of these
+numbers on trust: it recomputes the
+densities and product expansions in Lean, proves the
+matrices are PSD, and checks the calculation.
 
 \subsection{The Four-Part Compiler}
 \label{sec:flagmatic-shape}
@@ -2706,7 +2704,7 @@ parts are:
   \item \textbf{Lifting the target (when needed).}  If the target graph $F$
     has fewer vertices than the host size $N$ chosen to bound the certificate
     search in \Cref{sec:flagmatic-background}, the proof must lift $[F]$ to the
-    host-size basis, dropping contributions that contain the forbidden graph.
+    size-$N$ basis, dropping contributions that contain the forbidden graph.
   \item \textbf{Assembling the main theorem.}  With
     $Q_t:=\bigl\llbracket v_t^\top M_t v_t\bigr\rrbracket_{\sigma_t}$
     and the non-negative remainder~$r$ the calculation leaves over, the proof
