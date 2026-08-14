@@ -3637,21 +3637,22 @@ is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-Both orders ask that the same continuous function
-\(\chi\mapsto\chi(g-f)\) be non-negative, and differ only in where it is
-tested: almost-sure non-negativity under a measure is non-negativity on its
-support, so the ensemble order tests \(S_\sigma\), while the built-in order
-tests \(Q_\sigma\) by definition.  The implication is then exactly the
-inclusion \(S_\sigma\subseteq Q_\sigma\) of
-Equation~\eqref{eq:S-subset-Q}, and when \(S_\sigma=Q_\sigma\) the two tests
-coincide, so the orders agree on every pair.  Conversely, if
-\(S_\sigma\subsetneq Q_\sigma\), a point of \(Q_\sigma\setminus S_\sigma\)
-can be separated from \(S_\sigma\) by a continuous function, and a
-flag-algebra element approximating it is ensemble-non-negative but not
-built-in non-negative, so some pair disagrees.
-Thus, \Cref{thm:support-closure-summary} is a completeness theorem:
-built-in proofs are always sound for ensemble semantics, and they capture all
-ensemble-valid typed inequalities exactly under root-plantability.
+Read as soundness and completeness, the theorem says that built-in proofs are
+always sound for the ensemble semantics, and that under root-plantability they
+are complete for it as well.  Both halves come from one observation: each
+order asks that the same continuous function \(\chi\mapsto\chi(g-f)\) be
+non-negative, and they differ only in the set of \(\chi\) on which it is
+tested.  The built-in order tests \(Q_\sigma\) by definition.  The ensemble
+order asks for almost-sure non-negativity under each
+\(\Ext_\sigma(\phi_0)\), which is non-negativity on that measure's support;
+and because the function is continuous, testing it on those supports is the
+same as testing it on their closure \(S_\sigma\).  Soundness is therefore
+exactly the inclusion \(S_\sigma\subseteq Q_\sigma\) of
+Equation~\eqref{eq:S-subset-Q}, and \(S_\sigma=Q_\sigma\) makes the two tests
+identical.  When the inclusion is strict, a point of
+\(Q_\sigma\setminus S_\sigma\) can be separated from the closed set
+\(S_\sigma\), and a flag-algebra element realizing that separation is
+non-negative in the ensemble order but not in the built-in one.
 
 \boldparagraph{When root-plantability holds.}
 The criterion in \Cref{thm:support-closure-summary} reduces semantic completeness to a structural problem about the
@@ -3677,18 +3678,23 @@ closure.  Consequently, the two orders agree at every non-degenerate flag type
 for any blow-up-closed class.
 \end{theorem}
 
-The proof takes a target \(\chi\in Q_\sigma\), represented by a sequence of
-finite \(\sigma\)-flags in \(\mathcal K\), and blows up each of them one vertex
-at a time, closure supplying an interior at every step that keeps the graph in
-\(\mathcal K\).  Making the fibers over the labeled vertices large enough
-forces a uniformly chosen embedding of \(\sigma\) to land on them with
-probability bounded away from zero, while a fixed sample lands in distinct
-fibers with probability tending to one, so the interiors do not affect the
-densities it sees.  A positive fraction of the embeddings therefore realizes
-the profile of \(\chi\) to any prescribed accuracy, which places \(\chi\) in
-the support of \(\Ext_\sigma(\phi_0)\) for a limit \(\phi_0\) of the unlabeled
-blow-ups, hence in \(S_\sigma\).  With
-Equation~\eqref{eq:S-subset-Q} this gives \(S_\sigma=Q_\sigma\).
+We sketch the first claim.  Since \(S_\sigma\subseteq Q_\sigma\) always holds
+by Equation~\eqref{eq:S-subset-Q}, root-plantability at \(\sigma\) amounts to
+placing every \(\chi\in Q_\sigma\) in \(S_\sigma\), and the gap to close is
+between a chosen labeling and a random one: \(\chi\) is a limit of
+\(\sigma\)-flags in \(\mathcal K\), whose labelings may be chosen to suit it,
+while \(S_\sigma\) asks that a \emph{uniformly chosen} labeling reproduce its
+density profile with probability bounded away from zero.  Blow-ups close that gap by making the vertices that carry the profile numerous
+enough for a random labeling to find them.  Blow-up closure supplies, inside
+\(\mathcal K\), a large interior to replace the labeled vertex, so a uniformly
+chosen embedding of \(\sigma\) lands on
+one of them with probability bounded away from zero; at the same time, any
+fixed number of randomly sampled vertices land in distinct interiors with
+probability tending to one, so the blow-up leaves the densities they measure
+unchanged.  Iterating this along
+a sequence of flags representing \(\chi\) places \(\chi\) in the support of
+\(\Ext_\sigma(\phi_0)\) for a limit \(\phi_0\) of the unlabeled blow-ups,
+hence in \(S_\sigma\).
 
 Independent blow-ups, in which every replacement graph \(J_v\) is an
 independent set, cover all \(K_r\)-free classes
