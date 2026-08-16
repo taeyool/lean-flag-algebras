@@ -1,10 +1,4 @@
 % !TeX program = pdflatex
-% TOPLAS submission manuscript (acmart).  Converted on 2026-07-30 from the
-% arXiv source (arXiv:2607.23500), which was generated from
-% papers/POPL27/paper_draft.tex.  This file is edited by hand from now on.
-%
-% Per the TOPLAS author guidelines: acmsmall, no "review" option, no manual
-% line numbers (the submission system adds them).
 \documentclass[acmsmall,screen=true,acmthm=false]{acmart}
 % acmthm=false keeps the paper's own amsthm+aliascnt theorem setup below, so
 % that cleveref keeps reporting the right environment names (e.g., Lemma
@@ -24,13 +18,10 @@
   \ifnum\@abspage@last=1 \gdef\@abspage@last{2147483647}\fi\fi}
 \makeatother
 
-%% ---- ACM metadata (placeholders until acceptance) -----------------------
 \setcopyright{none} % TODO(final): CC license under ACM Open Access
 \acmJournal{TOPLAS}
 \acmYear{2026}
 
-%% amsmath, AMS symbols (via newtxmath), xcolor, and hyperref are loaded by
-%% acmart itself; fullpage and authblk from the arXiv version do not apply.
 \usepackage{mathtools}
 \usepackage{amsthm}
 \usepackage{stmaryrd}
@@ -335,39 +326,33 @@
 \begin{document}
 
 \begin{abstract}
-Razborov's flag algebra method proves asymptotic bounds in extremal graph
-theory, such as upper bounds on how often a fixed graph pattern can occur in
-large graphs that avoid other specified patterns.  It turns a claim about
-infinitely many graphs into a finite algebraic verification.  In practice, a
-semidefinite-programming solver searches for a certificate consisting of
-matrices with rational entries and rational coefficients.  If these data
-satisfy certain algebraic identities and positivity conditions, they establish
-the desired bound.  The method has played a central role in proofs of major
-results in extremal graph theory.  The certificates for some of these results,
-however, contain thousands of exact rational values and are generated through
-large toolchains that rely on unverified numerical computation.  They are
-therefore too large to audit by hand and cannot serve as trusted proof
-artifacts without independent checking.  We present a Lean~4 formalization of
-flag algebras for finite simple graphs, together with a certificate-to-proof
-compiler built on the formalization.  Given such a certificate, the compiler
-treats it as untrusted input, independently verifies its algebraic identities
-and positivity conditions against the formal definitions, and constructs a
-complete, machine-checked Lean proof.
+Razborov's flag algebra method reduces asymptotic questions in extremal graph
+theory, including upper bounds on the density of a fixed pattern in large
+graphs avoiding specified patterns, to finite algebraic verification.  In
+practice, semidefinite-programming solvers produce certificates containing
+rational matrices and coefficients whose identities and positivity conditions
+imply the desired bound.  The method has played a central role in extremal graph
+theory, but its certificates may contain thousands of exact rational values and
+arise from toolchains involving unverified numerical computation, making them
+impractical to audit by hand and unsuitable as trusted proof artifacts without
+independent checking.
 
-The development has three layers: a specification layer that formalizes the
-mathematics of the method, a reflection layer that provides verified
-computation and generates thousands of verified identities required by a
-certificate, and an automation layer that drives the compilation.  The compiler
-runs inside Lean during elaboration: the theorem statement is fixed in the
-source file, the certificate serves only as untrusted input, and Lean recomputes
-every fact claimed by the certificate against the mathematical definitions.
+We present a Lean~4 formalization of flag algebras for finite simple graphs and
+a certificate-to-proof compiler built on it.  During Lean elaboration, the
+compiler treats certificates as untrusted input, independently checks their
+algebraic identities and positivity conditions against the formal definitions,
+and constructs complete, machine-checked Lean proofs.  The development has
+three layers: a specification layer formalizing the mathematics, a reflection
+layer providing verified computation and generating thousands of verified
+identities required by a certificate, and an automation layer driving
+compilation.
+
 We evaluate the compiler on seven certificates for Tur\'an-type upper bounds
-and explain how Lean checks each proof obligation in the generated proofs.  Two
-of the compiled upper bounds, for Mantel's theorem and the Erd\H{o}s pentagon
-theorem, are paired with matching lower-bound constructions proved directly in
-Lean, thereby establishing the exact value in both cases.  In particular, this
-gives, to our knowledge, the first machine-checked proof of the Erd\H{o}s
-pentagon theorem, whose known proofs all use flag algebras.
+and describe how Lean checks each proof obligation.  For Mantel's theorem and
+the Erd\H{o}s pentagon theorem, we also prove matching lower-bound constructions
+directly in Lean, establishing the exact values.  In particular, this yields,
+to our knowledge, the first proof-assistant formalization of the asymptotic
+Erd\H{o}s pentagon theorem, all known proofs of which use flag algebras.
 \end{abstract}
 
 \begin{CCSXML}
@@ -394,9 +379,6 @@ pentagon theorem, whose known proofs all use flag algebras.
 </concept>
 </ccs2012>
 \end{CCSXML}
-%% All four concept_ids above were verified against the official CCS tool
-%% at https://dl.acm.org/ccs on 2026-07-30.
-
 \ccsdesc[500]{Theory of computation~Proof theory}
 \ccsdesc[300]{Theory of computation~Logic and verification}
 \ccsdesc[300]{Theory of computation~Type theory}
@@ -580,8 +562,8 @@ We make the following contributions.
 \item \emph{Machine-checked extremal bounds}: seven compiled Tur\'an-type upper
   bounds.  For Mantel's theorem and the Erd\H{o}s pentagon theorem, we also
   prove matching lower-bound constructions in Lean, yielding exact theorems.
-  To our knowledge, this is the first machine-checked proof of the Erd\H{o}s
-  pentagon theorem; all known proofs use flag algebras.
+  To our knowledge, this is the first proof-assistant formalization of the
+  asymptotic Erd\H{o}s pentagon theorem; all known proofs use flag algebras.
 \item \emph{A formalization-driven semantics for forbidden subgraphs.}  The
   ensemble semantics keeps the core formalization independent of the forbidden
   family, and we prove directly that it yields the intended asymptotic bounds.
@@ -1024,7 +1006,7 @@ $\sum_{F \in \mathcal{F}^\sigma_\ell} \phi([F]) = 1$, and non-negativity then
 forces $\phi([F]) \in [0,1]$ for every $\sigma$-flag $F$.  Each
 $\phi \in \poshom{\sigma}$ therefore determines the point
 $F \mapsto \phi([F])$ of $[0,1]^{\mathcal{F}^\sigma}$, identifying
-$\poshom{\sigma}$ with a subset of that space.  %
+$\poshom{\sigma}$ with a subset of that space.
 
 The following theorem makes precise the sense in which positive homomorphisms
 are exactly the limiting density profiles of convergent sequences of
@@ -2959,7 +2941,8 @@ the matching lower bounds are proved directly in Lean using the underlying
 formalization (\Cref{sec:lowerbounds}), completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}; the Erd\H{o}s pentagon case is, to our knowledge, the
-first machine-checked proof of that theorem.
+first proof-assistant formalization of the Tur\'an-density identity
+$\tdensity{C_5}{K_3}=\tfrac{24}{625}$.
 
 \boldparagraph{Limitations.}
 \label{sec:flagmatic-open}
@@ -3050,10 +3033,11 @@ bound
 theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 (*@$\geq$@*) 24/625 := ...
 \end{lstlisting}
 proved by an explicit construction in Lean.  To our knowledge,
-\lean{ErdosPentagon\_Turan} is the first machine-checked proof of the
-Erd\H{o}s pentagon theorem; all known proofs of the theorem use flag
-algebras~\cite{grzesik2012,hatami2012}, so a machine-checked proof
-required a formalization of the method itself.
+\lean{ErdosPentagon\_Turan} is the first proof-assistant formalization of the
+Erd\H{o}s pentagon Tur\'an-density identity
+$\tdensity{C_5}{K_3}=\tfrac{24}{625}$; all known proofs of this asymptotic
+theorem use flag algebras~\cite{grzesik2012,hatami2012}, so a machine-checked
+proof required a formalization of the method itself.
 
 Since, by the convergence theorem
 \lean{tendsto\_\allowbreak generalizedTuranDensity} of \Cref{sec:forbidden},
@@ -3396,20 +3380,6 @@ stores an explicit finite enumeration, or when its cardinality is compared
 with that of another collection.  Once the required counting identity has
 been proved, the subsequent algebraic argument uses that identity without
 referring to the chosen instances.
-
-% The discipline above is what the \lean{Fintype} interface requires; Mathlib's
-% own documentation says that one generally relies on congruence lemmas when
-% rewriting expressions involving \lean{Fintype} instances.  The library also
-% provides a cardinality that removes this class of mismatch at its root:
-% \lean{Nat.card}, with \lean{Set.ncard} for sets, is a function of the type
-% alone, so it carries no instance argument for elaboration paths to disagree
-% about, and \lean{Nat.card\_congr} transports a count along a bijection with no
-% instance management.  The documentation recommends it precisely when
-% finiteness is propositional rather than structural, as it is throughout this
-% layer.  In retrospect, stating the specification-layer counts with
-% \lean{Nat.card} would have avoided the mismatches this subsection manages,
-% leaving a single conversion to \lean{Finset} counts at the reflection
-% boundary, where enumeration is genuinely structural.
 
 \subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
