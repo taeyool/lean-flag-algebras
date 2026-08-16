@@ -240,11 +240,8 @@
 
 \title[A Certificate-to-Proof Compiler for Flag Algebras]{A Certificate-to-Proof Compiler for Flag Algebras in Lean~4}
 
-%% TODO(submission): add \orcid{...} for every author.  ACM requires an ORCID
-%% for the submitting author at submission time and for all authors before
-%% production.
-
 \author{Gyeongwon Jeong}
+\orcid{0009-0003-3817-4962}
 \authornote{These authors are joint first authors of this work.}
 \affiliation{%
   \department{School of Computing}
@@ -259,6 +256,7 @@
 \email{jgyw0910@kaist.ac.kr}
 
 \author{Seonghun Park}
+\orcid{0009-0004-6553-4801}
 \authornotemark[1]
 \affiliation{%
   \department{School of Computing}
@@ -281,6 +279,7 @@
 \email{qawbecrdtey@kaist.ac.kr}
 
 \author{Sang-il Oum}
+\orcid{0000-0002-6889-7286}
 \affiliation{%
   \department{Discrete Mathematics Group}
   \institution{Institute for Basic Science (IBS)}
@@ -294,12 +293,15 @@
 \email{sagil@ibs.re.kr}
 
 \author{Hongseok Yang}
+\orcid{0000-0003-1502-2942}
 \affiliation{%
   \department{School of Computational Sciences}
   \institution{Korea Institute for Advanced Study (KIAS)}
   \city{Seoul}
   \country{Korea}}
 \email{hongseokyang@kias.re.kr}
+
+\renewcommand{\shortauthors}{Jeong, Park, Hyun, Oum, and Yang}
 
 %% Condensed contact block for the submission (one line per author).  ACM
 %% requires authors' addresses in journal articles (acmart guide,
@@ -389,7 +391,6 @@ Erd\H{o}s pentagon theorem, all known proofs of which use flag algebras.
   extremal graph theory, Tur\'an density}
 
 \maketitle
-\renewcommand{\shortauthors}{Jeong, Park, Hyun, Oum, and Yang}
 
 \section{Introduction}
 \label{sec:intro}
@@ -2420,8 +2421,7 @@ variants emit constants and theorems only for flags whose underlying graphs
 avoid \(H\) as a subgraph, and their filtered completeness lemmas state that
 the named flags exhaust precisely this set.
 
-\medskip
-\noindent\textbf{Optimizations.}
+\boldparagraph{Optimizations.}
 The following optimizations reduce the computational cost of elaboration.
 They do not eliminate the inherent combinatorial growth of flag enumeration
 and density computation, but make this paper's nontrivial examples feasible.
@@ -4045,12 +4045,10 @@ largest, the $K_5$- and $C_5$-free edge-density examples, only
 
 Each figure is the mean over five successful runs of a single-file compilation
 against the prebuilt library, with the sample standard deviation; memory is the
-peak resident set, taken as the maximum over the five runs.  One run stalled on
-system contention, showing an anomalous wall clock at an unchanged peak memory;
-it was discarded and replaced by a further run.  Wall-clock times are highly
-repeatable (standard deviation below $1\%$ of the mean in every configuration
-except the $P_3$- and $C_4$-density cases under \lean{native\_decide}, at
-$2.3\%$ and $1.8\%$).
+peak resident set, taken as the maximum over the five runs.  Wall-clock times
+are highly repeatable (standard deviation below $1\%$ of the mean in every
+configuration except the $P_3$- and $C_4$-density cases under
+\lean{native\_decide}, at $2.3\%$ and $1.8\%$).
 
 \begin{table}[h]
   \centering
