@@ -29,6 +29,7 @@
 \usepackage{booktabs}
 \usepackage{microtype}
 \usepackage{aliascnt}
+\usepackage{needspace}
 \usepackage{tikz}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -1486,6 +1487,7 @@ quotient class of the resulting concrete tuple.
 
 The following \lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are
 specializations of \lean{flagListDensity} to singleton and pair lists:
+\Needspace{11\baselineskip}
 \begin{lstlisting}
 variable {U U(*@$_1$@*) U(*@$_2$@*) : Type} [Fintype U] [DecidableEq U]
          [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)] [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
@@ -1547,7 +1549,9 @@ noncomputable def flagExpansion (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@
 
 noncomputable def zeroElement (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
   basisVector F - flagExpansion F (*@$\ell$@*)
-
+\end{lstlisting}
+\Needspace{9\baselineskip}
+\begin{lstlisting}
 noncomputable def zeroSet ((*@$\sigma$@*) : FlagType (Fin k)) : Set (FlagVector (*@$\sigma$@*)) :=
   {z | (*@$\exists$@*) (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)), F.1 (*@$\leq$@*) (*@$\ell$@*) (*@$\wedge$@*) z = zeroElement F (*@$\ell$@*)}
 
@@ -1763,6 +1767,7 @@ isomorphism: isomorphic representatives admit the same label
 placements, and their unlabelings are isomorphic as $\emptyt$-flags.  The two
 then combine in \lean{downwardFlag}, the downward image of an individual
 $\sigma$-flag.
+\Needspace{14\baselineskip}
 \begin{lstlisting}
 variable {k n : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin k)}
 
@@ -1825,6 +1830,7 @@ with its density profile: the sample space \lean{PositiveHomSpace}~$\sigma$ is
 the measurable subspace of \([0,1]^{\mathcal{F}^\sigma}\) consisting of the
 profiles induced by positive homomorphisms.  The formal counterpart is then
 the following existence statement.
+\Needspace{10\baselineskip}
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -2235,6 +2241,7 @@ A computable definition with its adequacy theorem is what we call a
 rewritten into the reflection layer and evaluated there.  For example,
 the density \(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull} = 1/2\) of
 \Cref{ex:typed-edge-nonedge-product} is proved as follows:
+\Needspace{11\baselineskip}
 \begin{lstlisting}
 example : flagDensity(*@$_2$@*)
              Sym2Flag_2_1_0_0.toFlag
@@ -3234,6 +3241,7 @@ entry types are reordered too: the vertex-type family of the result is
 The invariance is proved once, for
 every length and every permutation; the symmetry to be derived from it is the
 pair case:
+\Needspace{12\baselineskip}
 \begin{lstlisting}
 variable {T W U(*@$_0$@*) U(*@$_1$@*) : Type} [Fintype T] [Fintype W] [Fintype U(*@$_0$@*)] [Fintype U(*@$_1$@*)]
          [DecidableEq W] [DecidableEq U(*@$_0$@*)] [DecidableEq U(*@$_1$@*)] {(*@$\sigma$@*) : FlagType T} 
