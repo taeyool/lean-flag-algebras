@@ -1,0 +1,3 @@
+# Keep the TOPLAS manuscript's layout reproducible by always selecting pdfLaTeX.
+$pdf_mode = 1;
+$pdflatex = 'pdflatex %O %S';

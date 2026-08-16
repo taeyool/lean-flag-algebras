@@ -1,3 +1,4 @@
+% !TeX program = pdflatex
 % TOPLAS submission manuscript (acmart).  Converted on 2026-07-30 from the
 % arXiv source (arXiv:2607.23500), which was generated from
 % papers/POPL27/paper_draft.tex.  This file is edited by hand from now on.
@@ -3956,8 +3957,10 @@ rather than by the number of vertices, so that the method still yields
 nontrivial bounds for sparse graphs of small maximum degree, and under this
 normalization no quotient is taken: their algebra is defined directly on
 formal combinations of isomorphism classes.  Their formalization
-machine-certifies the new bounds of both papers, and independently arrives at
-the reflection pattern of \Cref{sec:reflection}: a
+machine-checks the new bounds of both papers, while recording the
+SDP-certificate-bridge and cited-literature steps required by some bounds as
+named assumptions documented on a result-by-result basis.  It also
+independently arrives at the reflection pattern of \Cref{sec:reflection}: a
 noncomputable specification mirrored by a computable representation (Boolean
 adjacency in their case) with adequacy lemmas.  Our development formalizes the classical
 theory instead (the quotient algebra, positive homomorphisms, and the ensemble
@@ -3966,8 +3969,7 @@ compiler on top, so that certificates produced outside Lean become Lean
 proofs.
 The other is Spiegel's \emph{computational flag
 algebras} in Lean~\cite{spiegel2026computational}, ongoing independent work
-aimed at carrying out flag-algebra inequality proofs fully and automatically
-inside Lean, without an external tool or solver.
+aimed at carrying out flag-algebra inequality proofs automatically inside Lean.
 
 \boldparagraph{Graph limits.}
 Graphon theory provides an alternative analytic framework for the asymptotic
