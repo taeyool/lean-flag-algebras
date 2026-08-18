@@ -13,7 +13,7 @@ These continue the mathlib sequence verbatim — each is proved exactly the way
 mathlib proves `Fin.sum_univ_eight` (`rw [Fin.sum_univ_castSucc,
 Fin.sum_univ_<prev>]; rfl`), so the resulting right-hand side is the
 left-associated explicit sum the templates expect. Sizes nine through sixteen
-cover the larger certificates (e.g. the archived `K3forbidC6`, whose blocks are 15 and 10).
+cover the larger certificates (e.g. `K3freeC6`, whose blocks are 15 and 10).
 -/
 
 namespace Fin

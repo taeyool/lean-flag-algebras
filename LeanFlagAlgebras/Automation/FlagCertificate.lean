@@ -60,7 +60,7 @@ downstream `expand_one_hfree_at` / `simp [downward…]` steps then run over an a
 sum too.
 
 Chunking is not free: `norm_num` re-runs once per round, so very small values lose. `32` measured
-best on the examples in this repo (`K5freeEdge` 91.9 s → 61.8 s; the 6-vertex `K3forbidC6`
+best on the examples in this repo (`K5freeEdge` 91.9 s → 61.8 s; the 6-vertex `K3freeC6`
 59 min → 5 min). Set to `0` to recover the single-pass behaviour. -/
 register_option flagCert.sortChunk : Nat := {
   defValue := 32
