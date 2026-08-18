@@ -150,3 +150,42 @@ tactic.  The failure is pre-existing and independent of chunking:
 `K5freeEdge` avoids this because `objN = 2 < hostN = 5` expands the objective into `c • H_i`
 terms.  Fixing it (e.g. letting the pre-simp turn a bare `-x` into `(-1) • x`) is a separate
 change from anything measured here.
+
+---
+
+# Restoring the 6-vertex example as a build target
+
+`K3forbidC6_cert.json` was not lost, only deleted: commit `fe77d05` ("Rename the Flagmatic examples
+to match the paper's Section 5.4 case table") renamed every other certificate to the `…free…`
+convention and dropped this one along with `C5turan_cert.json`.  `git show fe77d05^:…` recovers it
+intact.
+
+Restored as `Certificates/K3freeC6_cert.json` and regenerated in the compact form with
+
+```
+python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+  LeanFlagAlgebras/Flagmatic/Certificates/K3freeC6_cert.json \
+  LeanFlagAlgebras/Flagmatic/K3freeC6.lean --namespace K3freeC6 --native-decide --force
+```
+
+which also yields `K3freeC6_turanDensity` (0.9 s), a statement the materialized `Archive/` version
+never had.
+
+| | archive, materialized | `flag_certificate` form |
+|---|---:|---:|
+| generation (10 commands) | — | 3839 s |
+| main theorem | — | **684 s** |
+| whole file, `lake env lean` | 5961 s | **4619 s** |
+| whole file, `lake build` | not a target | 2882 s |
+
+The materialized script calls `reduce_downward_flagmul` and `flagsum_ac_sort_rhs_pipeline`
+directly, so `flagCert.sortChunk` never reaches it; only the `flag_certificate` form gets the
+chunking.  Generation time varies a lot between runs on this machine (2458 s – 3839 s for the same
+ten commands), so only same-run comparisons are meaningful.
+
+The module lives in `LeanFlagAlgebras/Flagmatic/`, so `lake build` covers it — note that the
+lakefile's `.submodules` glob, not the `LeanFlagAlgebras.lean` manifest, is what decides that
+(`C5freeEdgeReduced`, `K5freeEdgeClean` and `K5freeEdgeReduced` are likewise built without being
+imported by the manifest).  `K3freeC6` is deliberately left out of the manifest.
+
+**It does not compile without `flagNeg_eq_negOne_smul`** — the two must land together.
