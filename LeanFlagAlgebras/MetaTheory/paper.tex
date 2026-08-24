@@ -443,25 +443,28 @@ We will repeatedly use the following elementary consequence.
 Let $P$ be a Borel probability measure on a compact metrizable space $X$, and let
 $h:X\to\R$ be continuous.  Then
 \[
-  P[h(x)\ge0]=1
+  P\bigl(\{y\in X:h(y)\ge0\}\bigr)=1
 \]
 if and only if $h(x)\ge0$ for every $x\in\supp(P)$.
 \end{lemma}
 
 \begin{proof}
-($\Rightarrow$) Suppose $P[h(x)\ge0]=1$, equivalently $P[h(x)<0]=0$, and let
-$x\in\supp(P)$.  If $h(x)<0$, then $\{y:h(y)<0\}$ is an open set (as $h$ is continuous)
-containing $x$, so by the defining property of the support it has positive $P$-measure,
-contradicting $P[h(x)<0]=0$.  Hence $h(x)\ge0$.
+($\Rightarrow$) Suppose $P\bigl(\{y\in X:h(y)\ge0\}\bigr)=1$, equivalently
+$P\bigl(\{y\in X:h(y)<0\}\bigr)=0$, and let $x_0\in\supp(P)$.  If $h(x_0)<0$,
+then $\{y\in X:h(y)<0\}$ is an open set (as $h$ is continuous) containing $x_0$, so
+by the defining property of the support it has positive $P$-measure, contradicting
+$P\bigl(\{y\in X:h(y)<0\}\bigr)=0$.  Hence $h(x_0)\ge0$.
 
 ($\Leftarrow$) Suppose $h\ge0$ on $\supp(P)$.  Then
-$\{y:h(y)\ge0\}\supseteq\supp(P)$, and the support has full measure, so
-$P[h(x)\ge0]\ge P(\supp(P))=1$; that is, $P[h(x)\ge0]=1$.
+$\{y\in X:h(y)\ge0\}\supseteq\supp(P)$, and the support has full measure, so
+$P\bigl(\{y\in X:h(y)\ge0\}\bigr)\ge P(\supp(P))=1$; that is,
+$P\bigl(\{y\in X:h(y)\ge0\}\bigr)=1$.
 \end{proof}
 
-In applications $X$ will be a homomorphism space and $h(\chi)=\chi(f)$; the lemma lets us
-replace almost-sure non-negativity under a random extension by pointwise non-negativity on
-its support.
+In applications, $X$ will be a homomorphism space, $f$ will be a fixed element of the
+corresponding flag algebra, and $h$ will be the continuous evaluation map
+$h_f(\chi):=\chi(f)$.  The lemma lets us replace almost-sure non-negativity under a random
+extension by pointwise non-negativity on its support.
 
 \section{Constrained classes and supported homomorphisms}
 
