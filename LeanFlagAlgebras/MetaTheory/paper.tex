@@ -206,7 +206,7 @@ under random rooting yet cannot be seen in the quotient, and the quotient calcul
 Root-plantability holds whenever the constrained class is closed under
 \emph{independent blow-ups}
 (replacing each vertex by an independent set of clones): blowing one vertex up into a
-\emph{clone class} of positive density---a positive fraction of all the vertices, so that a
+\emph{clone part} of positive density---a positive fraction of all the vertices, so that a
 random vertex lands in it with probability bounded away from zero---lets one realise at
 such a typical vertex what the quotient could show only at an exceptional one.
 This already covers the clique-free classes ($K_r$-free graphs, $r\ge3$), the
@@ -692,21 +692,23 @@ $S_\sigma=Q_\sigma$.
 
 We now give a checkable sufficient condition for root-plantability of graph
 classes, built on an independent blow-up construction.  The idea is that when a class is
-closed under independent blow-ups, a root can be duplicated into a clone class
+closed under independent blow-ups, a root can be duplicated into a clone part
 of positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
 root-plantability requires.  Recall that $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
-all finite simple graphs.  If $\K$ is a hereditary class of finite graphs, we write
-$\T_\K$ for the same class in the constrained-theory notation: equivalently, $\T_\K$
-is the class of graphs avoiding every induced subgraph not in $\K$.  Thus in this
-section $\T_1=\T_\K$ is just $\K$ viewed as the constrained class inside
-$\T_{\mathrm{Graph}}$.
+all finite simple graphs.  Let $\K\subseteq\T_{\mathrm{Graph}}$ be hereditary.  When
+$\K$ plays the role of the restricted subclass $\T_1$, we denote it by $\T_\K$; this is
+only a change of notation, so $\T_\K$ and $\K$ have exactly the same members.  Since
+$\K$ is hereditary, it can equivalently be described by forbidding, as induced
+subgraphs, all graphs in $\T_{\mathrm{Graph}}\setminus\K$.  Throughout this section we
+take $\T_1=\T_\K=\K$.
 
 \begin{definition}[Independent blow-up]\label{def:independent-blow-up}
 Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
 $v\in V(G)$.  The independent blow-up $G^{\mathbf m}$ is obtained by replacing
-each vertex $v$ by an independent clone class $C_v$ of size $m_v$, and by putting
-all edges between $C_v$ and $C_w$ whenever $vw\in E(G)$.
+each vertex $v$ by an independent set $C_v$ of $m_v$ clones.  For distinct vertices
+$v,w\in V(G)$, every vertex of $C_v$ is joined to every vertex of $C_w$ if and only if
+$vw\in E(G)$.  We call $C_v$ the \emph{clone part} over $v$.
 \end{definition}
 
 \begin{definition}[Clone-closed hereditary class]
@@ -716,7 +718,7 @@ blow-up of every graph in $\K$ again belongs to $\K$.
 
 \begin{example}
 For every $r\ge3$, the class of $K_r$-free graphs is clone-closed.  A clique in
-an independent blow-up uses at most one vertex from each clone class, and hence
+an independent blow-up uses at most one vertex from each clone part, and hence
 projects to a clique of the same size in the original graph.  In particular, the
 triangle-free class is clone-closed.
 \end{example}
@@ -742,14 +744,14 @@ If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.
 
 The target weights are ideal limiting fractions, not a finite graph by
 themselves.  To build an actual $N$-vertex blow-up, one must choose integer
-clone-class sizes whose normalised sizes approximate these fractions.  Thus, for
+clone-part sizes whose normalised sizes approximate these fractions.  Thus, for
 an integer $N\ge n$, let
 \[
   \mathbf m=(m_v)_{v\in V(G)}
 \]
 be any vector of positive integers with $\sum_v m_v=N$, and let
 $B_N=G^{\mathbf m}$ be the corresponding independent blow-up.  We write $C_v$
-for the clone class of $v$, so $|C_v|=m_v$.  The graph $B_N$ depends only on
+for the clone part of $v$, so $|C_v|=m_v$.  The graph $B_N$ depends only on
 $G$ and the chosen vector $\mathbf m$; the parameters $\theta$ and $\lambda$
 enter through the target proportions $w_v$ and hence through the error term
 \[
@@ -761,43 +763,35 @@ For fixed $G,\theta,\lambda$, the vectors $\mathbf m$ can be chosen, for
 instance by rounding the numbers $w_vN$, so that
 $\operatorname{err}_N\to0$ as $N\to\infty$.
 
+Call an embedding $\widehat\theta:\sigma\to B_N$ \emph{planted} if
+\[
+  \widehat\theta(i)\in C_{\theta(i)}
+  \qquad(1\le i\le k).
+\]
+
 \begin{lemma}[Planted blow-up approximation]\label{lem:planted-estimate}
-Let $m\ge k$ be fixed.  There is a constant $C_m$, depending only on $m$ and
-on no other data, such that the following holds for every
-$0<\lambda\le 1/2$.  Let $F_0$ be any $\sigma$-flag with at most $m$ vertices,
-let $(G,\theta)$ be a $\sigma$-flag on $n$ vertices with
-$n\ge\max\{m,k+1\}$, and choose any positive clone-class sizes
-$\mathbf m=(m_v)_{v\in V(G)}$ with total size $N\ge n$.  Let
-$B_N=G^{\mathbf m}$ be the resulting independent blow-up, define
-$\operatorname{err}_N$ from this $\mathbf m$ and from the target weights
-defined above using $(G,\theta)$ and $\lambda$, and write $C_v$ for the clone
-class of $v$.
-If
-$\widehat\theta:\sigma\to B_N$ satisfies
-$\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
+For every integer $m\ge k$ there is a constant $L_m$, depending only on $m$,
+such that the following holds.  For every choice of $(G,\theta)$, $\lambda$,
+$N$, and $\mathbf m$ as above with $n\ge m$, every $\sigma$-flag $F_0$ with at
+most $m$ vertices, and every planted embedding
+$\widehat\theta:\sigma\to B_N$,
 \begin{equation}\label{eq:planted-estimate}
   \left|p(F_0,(B_N,\widehat\theta))-p(F_0,(G,\theta))\right|
   \le
-  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
+  L_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
 \end{equation}
-Consequently, if $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ is represented by a finite
-linear combination of $\sigma$-flags with at most $m$ vertices, then there is a
-constant $C_f$ depending only on this chosen finite linear combination
-(in particular, independent of $n$, $G$, $\theta$, $\lambda$, $N$,
-$\mathbf m$, and $\widehat\theta$) such that
-\begin{equation}\label{eq:planted-linear-estimate}
+Consequently, if $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ is represented as
+$f=\sum_r a_rF_r$ with $|F_r|\le m$ for every $r$, then
+\[
   \left|p(f,(B_N,\widehat\theta))-p(f,(G,\theta))\right|
   \le
-  C_f\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
-\end{equation}
+  L_f\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+  \qquad
+  L_f:=L_m\sum_r|a_r|.
+\]
 \end{lemma}
 
 \begin{proof}
-It suffices to prove \eqref{eq:planted-estimate}; the estimate for $f$ follows
-by linearity because $f$ is a finite linear combination of flags.  Indeed, if
-$f=\sum_r a_r F_r$ with each $|F_r|\le m$, one may take
-$C_f=C_m\sum_r |a_r|$.
-
 Before turning to the sampling argument, note that the size assumptions have two
 roles.  First, $|F_0|\le m\le n$, so both
 $p(F_0,(G,\theta))$ and $p(F_0,(B_N,\widehat\theta))$ are defined.  Second, the
@@ -820,13 +814,13 @@ uniform $q$-subset, and all events below depend only on that subset.  Let
   \qquad
   R:=C_{\theta(1)}\cup\cdots\cup C_{\theta(k)} .
 \]
-Thus $R$ is the union of the clone classes attached to the roots
+Thus $R$ is the union of the clone parts attached to the roots
 (and $R=\emptyset$ if $k=0$).
 
 The proof has two parts.  First we show that, with probability
 $O_m(\lambda+1/(n-k)+\operatorname{err}_N)$, the sample is bad: it either meets
-one of the root clone classes in $R$ or chooses two vertices from the same
-unlabelled clone class.  Second, on the complementary good event, projection
+one of the root clone parts in $R$ or chooses two vertices from the same
+unlabelled clone part.  Second, on the complementary good event, projection
 from the blow-up to $G$ preserves the induced $\sigma$-flag.  The only remaining
 question on the good event is whether the projected $q$-set is close to a
 uniform $q$-subset of $U$; this will contribute only
@@ -864,8 +858,8 @@ for a constant $K_m^{(1)}$ depending only on $m$.
 
 Now condition on the sample avoiding $R$.  Under this conditioning, the exposed
 sequence is a uniform ordered sample without replacement from the union of the
-unlabelled clone classes.  For each $v\in U$, write $s_v:=|C_v|$ and
-$S:=\sum_{u\in U}s_u$.  Each exposed position then falls in the clone class
+unlabelled clone parts.  For each $v\in U$, write $s_v:=|C_v|$ and
+$S:=\sum_{u\in U}s_u$.  Each exposed position then falls in the clone part
 $C_v$ with marginal probability $s_v/S$.
 
 Here is the normalisation estimate explicitly.  Put
@@ -919,9 +913,9 @@ $s_v/S\le 1/(n-k)+K_m^{(0)}\operatorname{err}_N$ for a constant
 $K_m^{(0)}$ depending only on $m$.
 
 Now fix two exposed positions $a<b$.  We bound the probability that $X_a$ and
-$X_b$ land in the same unlabelled clone class, still under the conditioning
+$X_b$ land in the same unlabelled clone part, still under the conditioning
 that the whole sample avoids $R$.  If $X_a\in C_v$, then $X_b$ is uniform among
-the remaining $S-1$ vertices in the unlabelled clone classes.  Therefore
+the remaining $S-1$ vertices in the unlabelled clone parts.  Therefore
 \[
   \Prob[X_b\in C_v\mid X_a\in C_v,\ \text{the sample avoids }R]
   =
@@ -929,10 +923,10 @@ the remaining $S-1$ vertices in the unlabelled clone classes.  Therefore
   \le
   \frac{s_v}{S}.
 \]
-Averaging over the possible clone class $C_v$ of $X_a$ gives the explicit bound
+Averaging over the possible clone part $C_v$ of $X_a$ gives the explicit bound
 \[
   \begin{aligned}
-  &\Prob[X_a,X_b\text{ lie in the same unlabelled clone class}
+  &\Prob[X_a,X_b\text{ lie in the same unlabelled clone part}
         \mid \text{the sample avoids }R]  \\
   &\qquad =
   \sum_{v\in U}
@@ -946,9 +940,9 @@ Averaging over the possible clone class $C_v$ of $X_a$ gives the explicit bound
   \end{aligned}
 \]
 Let $E_{\mathrm{coll}}$ be the event that two sampled vertices
-lie in the same unlabelled clone class.  Equivalently, for the ordered
+lie in the same unlabelled clone part.  Equivalently, for the ordered
 exposure, $E_{\mathrm{coll}}$ is the union over pairs $a<b$ of the events that
-$X_a$ and $X_b$ land in the same clone class.  A second union bound over the at
+$X_a$ and $X_b$ land in the same clone part.  A second union bound over the at
 most $\binom q2\le\binom m2$ pairs gives
 \[
   \Prob[E_{\mathrm{coll}}\mid \text{the sample avoids }R]
@@ -958,7 +952,7 @@ most $\binom q2\le\binom m2$ pairs gives
 for a constant $K_m^{(2)}$ depending only on $m$.
 
 Call the sample good if it avoids $R$ and no two sampled vertices lie in the same
-unlabelled clone class.  Combining the two bounds above,
+unlabelled clone part.  Combining the two bounds above,
 \[
   \Prob[\text{bad}]
   \le
@@ -971,7 +965,7 @@ $\sigma$-flag density in the base flag $(G,\theta)$.  Let
 \[
   \pi:B_N\to G
 \]
-be the projection sending each clone class $C_v$ to its base vertex $v$.  On the
+be the projection sending each clone part $C_v$ to its base vertex $v$.  On the
 good event, the vertices $\pi(X_1),\ldots,\pi(X_q)$ are distinct elements of
 $U$.
 
@@ -996,7 +990,7 @@ probability
 \]
 for $(v_1,\ldots,v_q)\in D$.  Indeed, the numerator is proportional to the
 number $s_{v_1}\cdots s_{v_q}$ of ways to choose one vertex from each prescribed
-clone class, and $Z_\mu$ is the normalising constant after restricting to
+clone part, and $Z_\mu$ is the normalising constant after restricting to
 distinct base vertices.  The uniform ordered distinct tuple has the analogous law
 \[
   P_\nu(v_1,\ldots,v_q)
@@ -1133,7 +1127,7 @@ uniformly chosen $q$-subset of $U$.
 Finally, on the good event the induced $\sigma$-flag is preserved by projection.
 The planted roots $\widehat\theta(i)\in C_{\theta(i)}$ have exactly the same
 adjacencies to a sampled vertex in $C_v$ as $\theta(i)$ has to $v$ in $G$, and
-two sampled unlabelled vertices lie in distinct clone classes, so their adjacency
+two sampled unlabelled vertices lie in distinct clone parts, so their adjacency
 is exactly the adjacency of their two base vertices.  Therefore the $\sigma$-flag
 seen in $(B_N,\widehat\theta)$ is the same as the $\sigma$-flag seen in
 $(G,\theta)$ on the projected $q$-set.
@@ -1171,13 +1165,14 @@ Subtracting these two expressions gives
   K_m^{(3)}\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
 \end{aligned}
 \]
-Taking the lemma's constant $C_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
-\eqref{eq:planted-estimate}.
+Taking the lemma's constant $L_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
+\eqref{eq:planted-estimate}.  The final assertion follows by applying this
+estimate to each $F_r$ and using linearity and the triangle inequality.
 \end{proof}
 
 \begin{lemma}[Positive probability of the planted root]\label{lem:planted-mass}
 Keep the blow-up notation introduced above: $B_N=G^{\mathbf m}$, with clone
-classes $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
+parts $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
 $\operatorname{err}_N$; write $k:=|\sigma|$.  Consider the following finite
 random-rooting experiment on the unlabelled graph $B_N$: choose uniformly from
 all embeddings $\widehat\theta:\sigma\to B_N$, where the roots of
@@ -1191,8 +1186,7 @@ probability at least
     \left(\dfrac{\lambda}{2k}\right)^k, & k>0,
   \end{cases}
 \]
-to the event that the chosen embedding satisfies
-$\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
+to the event that the chosen embedding is planted.
 \end{lemma}
 
 \begin{proof}
@@ -1203,7 +1197,7 @@ $B_N$.  Every choice of vertices
 $\widehat\theta(i)\in C_{\theta(i)}$ is an embedding of $\sigma$,
 because $\theta$ is an embedding into $G$ and the blow-up preserves the
 adjacencies between distinct base vertices.  Since
-$\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
+$\operatorname{err}_N\le\lambda/(2k)$, each planted clone part satisfies
 \[
   \frac{|C_{\theta(i)}|}{N}
   \ge
@@ -1213,7 +1207,7 @@ $\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
   \ge
   \frac{\lambda}{2k}.
 \]
-The clone classes $C_{\theta(1)},\ldots,C_{\theta(k)}$ are distinct, since
+The clone parts $C_{\theta(1)},\ldots,C_{\theta(k)}$ are distinct, since
 $\theta$ is injective.  Thus the choices of the $k$ roots may be made
 independently: there are $|C_{\theta(i)}|$ choices for the image of the
 $i$th root, and every resulting choice is one of the planted embeddings counted above.
@@ -1276,7 +1270,7 @@ convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
 $p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m\ge k$ be an integer bounding the sizes
 of all the flags $F_i$; if the list is empty, take $m=k$.
-Choose $0<\lambda\le 1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
+Choose $0<\lambda\le 1/2$ so small that $L_m\lambda<\eps/10$, where $L_m$ is the
 constant from \cref{lem:planted-estimate}.  Then fix one $t$ large enough that
 \[
   |G_t|\ge\max\{m,k+1\},
@@ -1284,7 +1278,7 @@ constant from \cref{lem:planted-estimate}.  Then fix one $t$ large enough that
   |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10
   \quad\text{for all }i,
   \qquad
-  \frac{C_m}{|G_t|-|\sigma|}<\eps/10.
+  \frac{L_m}{|G_t|-|\sigma|}<\eps/10.
 \]
 Finally take a sequence of clone-size vectors
 $\mathbf m^{(j)}=(m^{(j)}_v)_{v\in V(G_t)}$ with total sizes $N_j\to\infty$
@@ -1292,7 +1286,7 @@ and with $\operatorname{err}_{N_j}\to0$, where the error is computed from
 $\mathbf m^{(j)}$ and the target weights attached to $(G_t,\theta_t)$ and
 $\lambda$; for all large $j$, require
 \[
-  C_m\operatorname{err}_{N_j}<\eps/10
+  L_m\operatorname{err}_{N_j}<\eps/10
   \qquad
   \text{and}
   \qquad 
@@ -1339,7 +1333,7 @@ Consider the closed cylinder in the ambient product space
     |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
 \]
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
-large $j$, write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j$, and
+large $j$, write $C_v^{(j)}$ for the clone part of $v\in V(G_t)$ in $B_j$, and
 call an embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
 $\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each root $a$ of
 $\sigma$.  We now explain what \cref{lem:planted-estimate} gives for a planted
@@ -1349,7 +1343,7 @@ $\mathbf m^{(j)}$.  Hence
 \[
   |p(F_i,(B_j,\widehat\theta))-p(F_i,(G_t,\theta_t))|
   \le
-  C_m\left(\lambda+\frac1{|G_t|-|\sigma|}+\operatorname{err}_{N_j}\right)
+  L_m\left(\lambda+\frac1{|G_t|-|\sigma|}+\operatorname{err}_{N_j}\right)
   <\frac{3\eps}{10}
 \]
 for every $i$, by the choices of $\lambda$, $t$, and $j$.  Also
@@ -1426,7 +1420,7 @@ the pair $\{x,y\}$: for every other vertex $z$, we have $zx\in E$ if and only
 if $zy\in E$.  Duplicating a vertex as a false twin therefore creates a new
 vertex with the same external neighbourhood as the old one, but with no edge
 between the old and new copies.  Repeating this operation replaces each vertex
-by an independent clone class, exactly as in the independent blow-ups of
+by an independent clone part, exactly as in the independent blow-ups of
 \cref{def:independent-blow-up}.  Conversely, each one-vertex false-twin
 duplication is a special independent blow-up.  Thus false-twin closure is
 clone-closure in another language.
@@ -1453,7 +1447,7 @@ blow-up of every graph in $\K$ again belongs to $\K$.
 The estimates of \cref{lem:planted-estimate,lem:planted-mass} remain valid,
 with the same constants and the same hypotheses on $N$ and $\operatorname{err}_N$,
 if the independent blow-up $B_N=G^{\mathbf m}$ is replaced by the complete
-blow-up $B_N^+=G^{\mathbf m,+}$ with the same clone class sizes.
+blow-up $B_N^+=G^{\mathbf m,+}$ with the same clone-part sizes.
 \end{lemma}
 
 \begin{proof}
@@ -1461,11 +1455,11 @@ Work in the notation of
 \cref{lem:planted-estimate,lem:planted-mass}; in particular, write
 $k:=|\sigma|$ and $n:=|G|$.
 We compare the complete blow-up $B_N^+=G^{\mathbf m,+}$ with the independent
-blow-up $B_N=G^{\mathbf m}$ using the same clone classes $C_v$ and the same
+blow-up $B_N=G^{\mathbf m}$ using the same clone parts $C_v$ and the same
 projection map $\pi:C_v\mapsto v$.  The only difference between the two finite
-graphs is internal to the clone classes: in $B_N$ each $C_v$ is independent,
+graphs is internal to the clone parts: in $B_N$ each $C_v$ is independent,
 whereas in $B_N^+$ each $C_v$ is a clique.  All edges between distinct clone
-classes are governed by the same base graph $G$.
+parts are governed by the same base graph $G$.
 
 First consider the approximation estimate for a $\sigma$-flag $F_0$ with
 $|F_0|\le m$.  Fix a planted embedding $\widehat\theta:\sigma\to B_N^+$ with
@@ -1473,9 +1467,9 @@ $\widehat\theta(i)\in C_{\theta(i)}$, and compute
 $p(F_0,(B_N^+,\widehat\theta))$ by sampling the $q=|F_0|-|\sigma|$ additional
 vertices from $B_N^+\setminus\operatorname{im}\widehat\theta$.  Use exactly the
 same bad event as in \cref{lem:planted-estimate}: the sample is bad if it meets
-one of the root clone classes or if two sampled vertices lie in the same
-unlabelled clone class.  The probability of this bad event depends only on the
-sizes of the clone classes and on sampling without replacement.  The two
+one of the root clone parts or if two sampled vertices lie in the same
+unlabelled clone part.  The probability of this bad event depends only on the
+sizes of the clone parts and on sampling without replacement.  The two
 union-bound estimates in the proof of \cref{lem:planted-estimate} therefore
 apply without change and give
 \[
@@ -1486,12 +1480,12 @@ apply without change and give
 with the same constant $K_m^{(3)}$ used there.
 
 On the complementary good event, the extra edges inside the complete clone
-classes are never observed.  Indeed, no sampled vertex lies in a root clone
-class, and no two sampled vertices lie in the same unlabelled clone class.
+parts are never observed.  Indeed, no sampled vertex lies in a root clone
+part, and no two sampled vertices lie in the same unlabelled clone part.
 Thus every adjacency involving a sampled vertex is an adjacency between two
-distinct clone classes, hence is exactly the adjacency of the corresponding base
+distinct clone parts, hence is exactly the adjacency of the corresponding base
 vertices in $G$.  The planted roots also lie in distinct clone
-classes, because $\theta$ is injective; since $\theta$ is an embedding of
+parts, because $\theta$ is injective; since $\theta$ is an embedding of
 the type $\sigma$ into $G$, their mutual adjacencies are the same as in the base
 type.
 Consequently, on the good event, the induced $\sigma$-flag seen in
@@ -1500,7 +1494,7 @@ $(G,\theta)$ after projecting the sampled vertices to $G$.
 
 It remains only to compare the projected good sample with a uniform sample in
 $V(G)\setminus\operatorname{im}\theta$.  This comparison uses only the numbers
-$|C_v|$ and not the edge relation inside any clone class.  The normalisation
+$|C_v|$ and not the edge relation inside any clone part.  The normalisation
 estimate for the vector $(|C_v|/S)_{v\notin\operatorname{im}\theta}$, the
 collision estimate, and the total-variation comparison of the projected good
 sample with a uniform sample are therefore exactly the estimates already proved
@@ -1509,18 +1503,18 @@ good-event preservation just described gives
 \[
   \left|p(F_0,(B_N^+,\widehat\theta))-p(F_0,(G,\theta))\right|
   \le
-  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+  L_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
 \]
-with the same constant $C_m$.  The extension from a single flag $F_0$ to a
+with the same constant $L_m$.  The extension from a single flag $F_0$ to a
 finite linear combination is by linearity: if $f=\sum_r a_rF_r$ with
 $|F_r|\le m$, then the same argument gives the bound with
-$C_f=C_m\sum_r|a_r|$.
+$L_f=L_m\sum_r|a_r|$.
 
 Now consider the planted-mass estimate.  Choose a uniformly random embedding of
-$\sigma$ into $B_N^+$.  Every choice of one vertex from each root clone class
-$C_{\theta(i)}$ gives an embedding of $\sigma$: the root clone classes are
+$\sigma$ into $B_N^+$.  Every choice of one vertex from each root clone part
+$C_{\theta(i)}$ gives an embedding of $\sigma$: the root clone parts are
 distinct, and all adjacencies between them are inherited from the base flag
-$(G,\theta)$.  Since the clone classes are distinct, these choices are independent:
+$(G,\theta)$.  Since the clone parts are distinct, these choices are independent:
 for the $i$th root there are $|C_{\theta(i)}|$ possible images, and the product counts
 these choices of embeddings.  The
 hypothesis $\operatorname{err}_N\le\lambda/(2k)$ gives, as in
@@ -1576,7 +1570,7 @@ $\T_\K$ gives a convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
 $p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m\ge|\sigma|$ bound the sizes of the
 finitely many flags $F_i$; if the list is empty, take $m=|\sigma|$.  Choose
-$0<\lambda\le1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
+$0<\lambda\le1/2$ so small that $L_m\lambda<\eps/10$, where $L_m$ is the
 constant from \cref{lem:true-planted-estimate}.  Then choose $t$ large enough
 that
 \[
@@ -1585,7 +1579,7 @@ that
 \]
 and
 \[
-  \frac{C_m}{|G_t|-|\sigma|}<\eps/10 .
+  \frac{L_m}{|G_t|-|\sigma|}<\eps/10 .
 \]
 
 For this fixed base flag $(G_t,\theta_t)$, choose clone-size vectors
@@ -1594,7 +1588,7 @@ with errors $\operatorname{err}_{N_j}\to0$, computed using the same target
 weights determined by $(G_t,\theta_t)$ and $\lambda$.  Discarding finitely many
 initial terms, assume that for every $j$,
 \[
-  C_m\operatorname{err}_{N_j}<\eps/10
+  L_m\operatorname{err}_{N_j}<\eps/10
   \qquad\text{and}\qquad
   \text{if }|\sigma|>0,\text{ then }
   \operatorname{err}_{N_j}\le\lambda/(2|\sigma|).
@@ -1603,7 +1597,7 @@ Put
 \[
   B_j^+:=G_t^{\mathbf m^{(j)},+}.
 \]
-Write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j^+$.  An embedding
+Write $C_v^{(j)}$ for the clone part of $v\in V(G_t)$ in $B_j^+$.  An embedding
 $\widehat\theta:\sigma\to B_j^+$ will be called \emph{planted} if
 $\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for every root $a$ of
 $\sigma$.
@@ -1652,7 +1646,7 @@ $\widehat\theta$ is a planted embedding into $B_j^+$, the approximation part of
 \[
   |p(F_i,(B_j^+,\widehat\theta))-p(F_i,(G_t,\theta_t))|
   \le
-  C_m\left(\lambda+\frac1{|G_t|-|\sigma|}
+  L_m\left(\lambda+\frac1{|G_t|-|\sigma|}
       +\operatorname{err}_{N_j}\right)
   < \frac{3\eps}{10}.
 \]
@@ -1702,15 +1696,15 @@ again gives a disjoint union of cliques.
 We first check true-clone-closure.  Let $G\in\K$, and write its connected
 components as cliques $D_1,\ldots,D_r$.  In the complete blow-up
 $G^{\mathbf m,+}$, the union $\bigcup_{v\in D_a} C_v$ is a clique: each
-individual clone class is a clique, and all edges between clone classes over
+individual clone part is a clique, and all edges between clone parts over
 adjacent vertices of $D_a$ are present.  No edges are added between clone
-classes lying over different components.  Thus $G^{\mathbf m,+}$ is again a
+parts lying over different components.  Thus $G^{\mathbf m,+}$ is again a
 disjoint union of cliques.  Hence $\K$ is true-clone-closed, so
 \cref{thm:true-clone-root-plantable} gives root-plantability at every
 non-degenerate type.
 
 It remains to show that $\K$ is not clone-closed.  The graph $K_2$ belongs to
-$\K$, but its independent blow-up with both clone classes of size $2$ is
+$\K$, but its independent blow-up with both clone parts of size $2$ is
 $K_{2,2}$, the complete bipartite graph with two vertices on each side.  This
 graph contains an induced $P_3$, the path on three vertices, obtained by taking
 two vertices from one side and one from the other.  Since $P_3$ is not a
@@ -1722,10 +1716,10 @@ clone-closed.
 \section{A common generalisation: blow-up-closed classes}\label{sec:blowup-closed}
 
 The proofs of \cref{thm:clone-root-plantable,thm:true-clone-root-plantable} differ only
-in what is put inside each clone class.  Inspecting the estimates shows that this
+in what is put inside each clone part.  Inspecting the estimates shows that this
 interior is never observed.  On the good sampling event, the sampled vertices lie in
-distinct clone classes, so every adjacency that matters is a between-class adjacency
-and is governed by the base graph $G$ alone
+distinct clone parts, so every adjacency that matters is between distinct parts and is
+governed by the base graph $G$ alone
 (\cref{lem:planted-estimate,lem:true-planted-estimate}).  Independent blow-ups and
 complete blow-ups therefore differ only in data the sampling argument ignores.  The same
 proof works for any graph placed inside each blown-up vertex.  This section isolates the
@@ -1802,11 +1796,11 @@ vertex $i$), and every test $\sigma$-flag $F_0$ with at most $m$ vertices,
 \[
   \left|p(F_0,(B,\widehat\theta))-p(F_0,(G,\theta))\right|
   \le
-  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+  L_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
 \]
 and, if $k=0$ or $\operatorname{err}_N\le\lambda/(2k)$, the planted embeddings have
 probability at least $c_{k,\lambda}$ under a uniformly random embedding of
-$\sigma$ into $B$.  Here $C_m$ and $c_{k,\lambda}$ are the constants from
+$\sigma$ into $B$.  Here $L_m$ and $c_{k,\lambda}$ are the constants from
 \cref{lem:planted-estimate,lem:planted-mass}.
 \end{lemma}
 
@@ -1814,9 +1808,9 @@ $\sigma$ into $B$.  Here $C_m$ and $c_{k,\lambda}$ are the constants from
 This is the proof of \cref{lem:true-planted-estimate} with ``complete'' replaced by
 ``arbitrary''.  For the approximation estimate, fix a test flag $F_0$, sample the
 $q=|F_0|-k$ extra vertices, and condition on the good event that no sampled vertex lies in
-a root clone class and that no two sampled vertices lie in the same clone class.  On
-this event every sampled vertex lies in a distinct clone class, so every adjacency
-involving a sampled vertex is an adjacency between two \emph{distinct} clone classes and
+a root clone part and that no two sampled vertices lie in the same clone part.  On
+this event every sampled vertex lies in a distinct clone part, so every adjacency
+involving a sampled vertex is an adjacency between two \emph{distinct} clone parts and
 therefore equals the corresponding base adjacency in $G$, whatever the interiors $H_v$
 are.  Hence the induced $\sigma$-flag seen in $B$ is exactly the one seen in $(G,\theta)$
 after projecting to $G$, and an interior edge is never observed.  The probability of the
@@ -1824,11 +1818,11 @@ bad event and the total-variation comparison with a uniform sample depend only o
 sizes $s_v$ and on sampling without replacement, exactly as in
 \cref{lem:planted-estimate}.
 
-For the planted-mass bound, every choice of one vertex from each root clone class
-$H_{\theta(i)}$ gives an embedding of $\sigma$: the root clone classes are distinct
+For the planted-mass bound, every choice of one vertex from each root clone part
+$H_{\theta(i)}$ gives an embedding of $\sigma$: the root clone parts are distinct
 and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted count
 $\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
-embedding of $\sigma$ already arises from any transversal of $k$ root clone classes
+embedding of $\sigma$ already arises from any transversal of $k$ root clone parts
 whose projected vertices form an embedding of $\sigma$ in $G$, so the positive lower
 bound on the $\sigma$-type density of $B$ also carries over.
 \end{proof}
@@ -1858,12 +1852,12 @@ $(G_t,\theta_t)$, and write $n=|G_t|$, so that
   |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10
   \quad(1\le i\le s),
   \qquad
-  \frac{C_m}{n-k}<\eps/10.
+  \frac{L_m}{n-k}<\eps/10.
 \]
-If $k>0$, also choose $t$ so large that $k/n\le1/2$ and $C_m k/n<\eps/10$, and set
+If $k>0$, also choose $t$ so large that $k/n\le1/2$ and $L_m k/n<\eps/10$, and set
 $\lambda:=k/n$.  If $k=0$, choose any $0<\lambda\le1/2$ with
-$C_m\lambda<\eps/10$.  This is the small point hidden by the phrase ``uniform blow-up'':
-for $k>0$, uniform clone classes have normalised weight $1/n$ at every vertex, exactly
+$L_m\lambda<\eps/10$.  This is the small point hidden by the phrase ``uniform blow-up'':
+for $k>0$, uniform clone parts have normalised weight $1/n$ at every vertex, exactly
 matching the target weights for $\lambda=k/n$.
 
 For each $j\ge1$, \cref{lem:blowup-iterate} gives a simultaneous blow-up
@@ -1871,12 +1865,12 @@ For each $j\ge1$, \cref{lem:blowup-iterate} gives a simultaneous blow-up
   B_j=G_t[H_v^{(j)}:v\in V(G_t)]\in\K,
   \qquad |H_v^{(j)}|=j\text{ for every }v.
 \]
-Thus the normalised clone-class sizes are all $1/n$.  With the choice of $\lambda$ above,
+Thus the normalised clone-part sizes are all $1/n$.  With the choice of $\lambda$ above,
 the error term in \cref{lem:general-planting-estimate} is $0$ when $k>0$; when $k=0$ it is
 also $0$, since the target weights are uniform.  Passing to a subsequence, the unlabelled
 graphs $B_j$ converge to some constrained limit $\phi_0\in Q_0$.  Moreover, there are
 many embeddings of the type in $B_j$: for $k>0$, choosing one vertex from each labelled
-clone class gives $j^k=(1/n)^k|V(B_j)|^k$ embeddings of $\sigma$, and for $k=0$ the
+clone part gives $j^k=(1/n)^k|V(B_j)|^k$ embeddings of $\sigma$, and for $k=0$ the
 empty type has density $1$.  Thus the $\sigma$-density of $B_j$ is
 bounded below by a positive constant independent of $j$, so
 $\phi_0(\brak\sigma)>0$.  The planted-mass estimate also gives a positive lower bound,
@@ -1899,7 +1893,7 @@ with the limit measure concentrated on $X_\sigma$.  Define the closed cylinder
 For a planted embedding $\widehat\theta$, \cref{lem:general-planting-estimate} gives
 \[
   |p(F_i,(B_j,\widehat\theta))-p(F_i,(G_t,\theta_t))|
-  \le C_m\left(\lambda+\frac1{n-k}\right)<\frac{2\eps}{10}
+  \le L_m\left(\lambda+\frac1{n-k}\right)<\frac{2\eps}{10}
 \]
 for every $i$.  Together with the choice of $(G_t,\theta_t)$, this puts every planted
 embedding in $\widetilde C$.  Since planted embeddings have probability bounded below by a
@@ -2011,8 +2005,8 @@ To \emph{plant} such a finite witness means to build a larger graph $H$ in the c
 many embeddings $\widehat\theta:\sigma\to H$ whose $\sigma$-flag densities are close to
 those of $(G,\theta)$.  In the proof of \cref{thm:blowup-root-plantable}, this was done
 by a global operation: blow up the vertices of $G$ while staying inside the class.  The
-roots then have large clone classes, and choosing one vertex from each such
-class gives a positive-density set of embeddings $\sigma\to H$.  For these embeddings, the
+roots then have large clone parts, and choosing one vertex from each such
+part gives a positive-density set of embeddings $\sigma\to H$.  For these embeddings, the
 densities of flags of any fixed size still look almost like they did in $(G,\theta)$.
 In other words, a view that was visible only by hand-picking the roots has been made
 visible to random roots.
@@ -2145,7 +2139,7 @@ $\psi\in S_\sigma$.
 The clone-based root-plantability theorems above
 (\cref{thm:clone-root-plantable,thm:true-clone-root-plantable}) verify the finite
 planting property by taking $\Theta$ to be the embeddings obtained by choosing one vertex
-from each root clone class.  The one-root and two-root non-edge $C_5$-free constructions
+from each root clone part.  The one-root and two-root non-edge $C_5$-free constructions
 below prove it differently: they first blow up the roots and then delete a sparse set of
 dangerous neighbourhood edges.  This is why the criterion is useful beyond closure
 properties.
@@ -2207,10 +2201,10 @@ set; conditions (i) and (ii) are then immediate vertex counts and (iii) a two-ev
 sampling estimate.  We may therefore fix all constants in advance and only afterwards
 introduce $(G,\theta)$.
 
-Fix the constants first.  Set $C_m:=4m^2$.  Choose
+Fix the constants first.  Set $D_m:=4m^2$.  Choose
 $0<\lambda\le1$ and $\rho>0$ so small that
 \[
-  C_m(\lambda+\rho)<\eps ,
+  D_m(\lambda+\rho)<\eps ,
 \]
 and set
 \[
@@ -2321,8 +2315,8 @@ together.  Thus $A_H$ and $A_G$ differ only within $B_1\cup B_2$, and
   \le 2mk\lambda+4m^2\rho .
 \end{aligned}
 \]
-Since $C_m=4m^2$ bounds both $2mk$ (as $k\le m$) and $4m^2$, the right-hand side is at most
-$C_m(\lambda+\rho)$, which by the choice of $\lambda$ and $\rho$ is $<\eps$.  This is (iii).
+Since $D_m=4m^2$ bounds both $2mk$ (as $k\le m$) and $4m^2$, the right-hand side is at most
+$D_m(\lambda+\rho)$, which by the choice of $\lambda$ and $\rho$ is $<\eps$.  This is (iii).
 
 This is the finite planting property at $\sigma$.
 \end{proof}
@@ -2685,7 +2679,7 @@ Let
 This is hereditary; in the induced-subgraph language of flag algebras it is
 axiomatised by forbidding the three four-vertex graphs that contain a $C_4$ as a
 subgraph: $C_4$, $K_4$ minus an edge, and $K_4$.  It is not clone-closed: the
-independent blow-up of $K_2$ into two clone classes of size $2$ is $K_{2,2}=C_4$.
+independent blow-up of $K_2$ into two clone parts of size $2$ is $K_{2,2}=C_4$.
 
 \begin{lemma}[Dense \texorpdfstring{$C_4$}{C4}-free limits have edge density zero]\label{lem:c4-edge-zero}
 $\K_{C_4}$ is edge-degenerate: if $\phi_0\in Q_0$ for the $C_4$-free class, then
