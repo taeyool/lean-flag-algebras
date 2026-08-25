@@ -657,47 +657,35 @@ function
 \[
   X_\sigma\longrightarrow\R,\qquad \chi\longmapsto \chi(f).
 \]
-In this sense, ``$f\ge0$ on $S_\sigma$'' means $\chi(f)\ge0$ for every
-$\chi\in S_\sigma$, and similarly for $Q_\sigma$.
-
-By \cref{lem:support-passes-general}, every support appearing in the definition
-of $S_\sigma$ is contained in $Q_\sigma$.  Hence non-negativity on $Q_\sigma$
-implies non-negativity on all those supports, and by \cref{lem:support-as} this
-is precisely the implication from quotient semantics to ensemble semantics.
-
-For the converse direction, note first that ensemble semantics for a fixed $f$
-is equivalent, again by \cref{lem:support-as}, to non-negativity of $f$ on the
-union of the supports in \cref{def:root-planting}.  Since $f$ is continuous on
-$X_\sigma$, this is equivalent to non-negativity on $S_\sigma$.
-Thus the comparison is simply
+By \cref{lem:support-as}, ensemble semantics for $f$ is equivalent to
+non-negativity of $f$ on every support in the union whose closure defines
+$S_\sigma$.  Since $f$ is continuous, this is equivalent to
 \[
-  f\ge0\text{ on }S_\sigma
-  \qquad\text{versus}\qquad
-  f\ge0\text{ on }Q_\sigma.
+  f\ge0\qquad\text{on }S_\sigma.
 \]
-If $S_\sigma=Q_\sigma$, the two conditions are equivalent for every $f$.
+Quotient semantics is exactly
+\[
+  f\ge0\qquad\text{on }Q_\sigma.
+\]
 
-Conversely suppose $S_\sigma\ne Q_\sigma$.  Choose
-$\psi\in Q_\sigma\setminus S_\sigma$.  The compact space $X_\sigma$ is a closed subspace of the product
-$[0,1]^{\F^\sigma}$, hence is metrizable; so its subspace $Q_\sigma$ is metrizable as
-well, and therefore normal in the topological sense: disjoint closed subsets can be
-separated by a continuous function.  The sets
-$S_\sigma$ and $\{\psi\}$ are disjoint closed subsets of $Q_\sigma$.
-By Urysohn's lemma, followed by an affine rescaling, there is a continuous function
-$h\in C(Q_\sigma)$ such that $h=1$ on $S_\sigma$ and $h(\psi)=-1$.
-Also, $Q_\sigma$ is closed in $X_\sigma$ by \cref{prop:constrained-intrinsic}; more
-explicitly, it is cut out by the equations $\chi(F)=0$ for forbidden flags $F$.  Hence
-Tietze's extension theorem applies, and
-$h$ extends to a continuous function $H\in C(X_\sigma)$.  Finally, the evaluation
-functions coming from $\A^\sigma[\T_0]$ form a unital real subalgebra of
+Since $S_\sigma\subseteq Q_\sigma$, quotient semantics always implies ensemble
+semantics.  If $S_\sigma=Q_\sigma$, the two conditions are equivalent for every $f$.
+
+Now suppose $S_\sigma\ne Q_\sigma$, and choose
+$\psi\in Q_\sigma\setminus S_\sigma$.  The sets $S_\sigma$ and $\{\psi\}$ are disjoint
+closed subsets of the compact metrizable space $X_\sigma$.  By Urysohn's lemma, followed
+by an affine rescaling, there is a continuous function $h\in C(X_\sigma)$ such that
+$h=1$ on $S_\sigma$ and $h(\psi)=-1$.
+
+The evaluation functions coming from $\A^\sigma[\T_0]$ form a unital real subalgebra of
 $C(X_\sigma)$ and separate points of $X_\sigma$, since distinct positive homomorphisms
 disagree on some flag-algebra element.  Therefore Stone--Weierstrass, in the form used
 by Razborov \cite[Proposition 3.7]{Razborov2007}, says that every continuous function on
 $X_\sigma$ can be approximated arbitrarily well in sup norm by elements of
-$\A^\sigma[\T_0]$.  Choose
-$f\in\A^\sigma[\T_0]$ with $\|f-H\|_\infty<1/3$.  Then $f>0$ on
-$S_\sigma$, so ensemble semantics holds for $f$, while $f(\psi)<0$, so quotient
-semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
+$\A^\sigma[\T_0]$.  Choose $f\in\A^\sigma[\T_0]$ with
+$\|f-h\|_\infty<1/2$.  Then $f>0$ on $S_\sigma$, so ensemble semantics holds for $f$,
+while $f(\psi)<0$, so quotient semantics fails.  Thus equivalence for every $f$ implies
+$S_\sigma=Q_\sigma$.
 \end{proof}
 
 \section{Clone-closed graph classes are root-plantable}
