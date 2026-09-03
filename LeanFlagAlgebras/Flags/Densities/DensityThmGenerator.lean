@@ -2,6 +2,8 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import LeanFlagAlgebras.Flags.ForbidFreePruned
 import LeanFlagAlgebras.Flags.GeneratorOptions
+import LeanFlagAlgebras.BitMask.RootedAccept
+import LeanFlagAlgebras.BitMask.RootedMatrix
 import Mathlib.Tactic
 
 /-! # Density theorem generators
@@ -191,6 +193,29 @@ unsafe def evalBoolListImpl (type value : Lean.Expr) : Lean.Meta.MetaM (List Boo
 
 @[implemented_by evalBoolListImpl]
 opaque evalBoolList (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool)
+
+/-- Compiler-backed evaluation of a closed `Expr` of type
+`Multiset (ℕ × ℕ)` as its underlying key list. A `Multiset` is
+a `Quot` over `List`, so its runtime representation *is* the list the
+computation built — the unsafe cast just reads it off (compare
+`Quot.unquot`). The list order is the deterministic evaluation order of
+the same pure enumeration the kernel reduces, so a kernel `decide` of
+`multiset = ↑literal` hits the linear same-order fast path of the
+permutation check. -/
+unsafe def evalKeyMultisetImpl (type value : Lean.Expr) :
+    Lean.Meta.MetaM (List (Nat × Nat)) :=
+  Lean.Meta.evalExpr (List (Nat × Nat)) type value
+
+@[implemented_by evalKeyMultisetImpl]
+opaque evalKeyMultiset (type value : Lean.Expr) :
+  Lean.Meta.MetaM (List (Nat × Nat))
+
+/-- Build the list-literal syntax for a key list. -/
+def keyListToTerm (keys : List (Nat × Nat)) :
+    CommandElabM (TSyntax `term) := do
+  let elems ← keys.mapM (fun k =>
+    `((($(Quote.quote k.1), $(Quote.quote k.2)) : ℕ × ℕ)))
+  `([ $(elems.toArray),* ])
 
 /-- The induced forbid-free mask aligned with the flag-index order: entry `i` is `true` iff the
 `i`-th canonical `n`-vertex graph (`genSym2Graphs n`) does **not** contain an induced `F`. -/
@@ -507,6 +532,7 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
   let mut sym2Terms : Array (TSyntax `term) := #[]
   let mut valueTerms : Array (TSyntax `term) := #[]
   let mut pairs : Array (Ident × Ident × Ident × Ident × TSyntax `term) := #[]
+  let mut maskMeta : Array (Nat × Ident × Ident × Ident × Ident × Ident × Ident) := #[]
   for p1 in patternFree do
     for p2 in patternFree do
       if p1 ≤ p2 then
@@ -533,6 +559,106 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
             (← `(FlagAlgebras.Compute.sym2FlagDensity₂ $s1Name $s2Name $sgName))
           valueTerms := valueTerms.push rhsTerm
           pairs := pairs.push (thmName, f1Name, f2Name, gName, rhsTerm)
+          maskMeta := maskMeta.push (h, s1Name, s2Name, sgName,
+            mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{patternTag}_{p1}"),
+            mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{patternTag}_{p2}"),
+            mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{hostTag}_{h}"))
+
+  -- BitMask route (Task 5c): when `flagGen.maskPairDensity` is set and the
+  -- `(k, patN)` combination has a rooted canonicalization sweep, prove each
+  -- value theorem through `sym2FlagDensity₂_eq_rmaskCount₂` by kernel
+  -- computation — no `native_decide` anywhere in the density layer.
+  let useMask := flagGen.maskPairDensity.get (← getOptions)
+  let comboSupported : Bool := (k == 1 && (patN == 2 || patN == 3))
+    || (k == 2 && (patN == 3 || patN == 4))
+    || (k == 3 && patN == 4)
+  let raccName : Name := `FlagAlgebras.Compute.BitMask
+    ++ Name.mkSimple s!"RCanon{k}_{patN}" ++ `racc_spec
+  let maskOK := useMask && comboSupported
+    && decide (2 ≤ hostN) && decide (hostN ≤ 7)
+    && (← getEnv).contains raccName
+  if useMask && !maskOK then
+    logWarning s!"flagGen.maskPairDensity: unsupported combination \
+(k={k}, patN={patN}, hostN={hostN}) or missing BitMask apparatus \
+(import LeanFlagAlgebras.BitMask.RootedAccept); falling back to the \
+batched native route."
+  if maskOK then
+    let bitNs : Name := `FlagAlgebras.Compute.BitMask
+    let hostInjId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{hostN}"
+      ++ Name.mkSimple s!"finPairs{hostN}_rank_inj")
+    let patInjId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{patN}"
+      ++ Name.mkSimple s!"finPairs{patN}_rank_inj")
+    let patLtId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{patN}"
+      ++ Name.mkSimple s!"finPairs{patN}_rank_lt")
+    let raccId := mkIdent raccName
+    -- Shared-pass mode: one kernel key-multiset theorem per host, then each
+    -- pair-density value is a cheap `Multiset.count` over the host's literal.
+    let useShared := flagGen.maskPairDensityShared.get (← getOptions)
+    let canonId := mkIdent (bitNs ++ Name.mkSimple s!"RCanon{k}_{patN}"
+      ++ `canonImage)
+    let keysNameOf : Nat → Ident := fun h =>
+      mkIdent (Name.mkSimple s!"pairKeys_{patternTag}_{hostTag}_{h}")
+    if useShared then
+      for h in hostFree do
+        let lgGName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{hostTag}_{h}")
+        let keysName := keysNameOf h
+        if ¬ (← isDeclaredInScope keysName.getId) then
+          let keysStx ← `(FlagAlgebras.Compute.BitMask.rootedPairKeys $lgGName
+              $(Quote.quote patN) $(Quote.quote patN) $canonId $canonId
+              (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                (FlagAlgebras.Compute.BitMask.underlyingGraph $lgGName)))
+          let keys ← liftTermElabM do
+            let valExpr ← Lean.Elab.Term.elabTermAndSynthesize keysStx none
+            let valExpr ← instantiateMVars valExpr
+            let typeExpr ← Lean.Meta.inferType valExpr
+            evalKeyMultiset typeExpr valExpr
+          let litTerm ← keyListToTerm keys
+          elabCommand (← `(
+            set_option maxRecDepth 4000000 in
+            theorem $keysName :
+                FlagAlgebras.Compute.BitMask.rootedPairKeys $lgGName
+                  $(Quote.quote patN) $(Quote.quote patN) $canonId $canonId
+                  (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                    (FlagAlgebras.Compute.BitMask.underlyingGraph $lgGName))
+                  = (($litTerm : List (ℕ × ℕ))
+                      : Multiset (ℕ × ℕ)) := by
+              decide +kernel))
+    for pi in [0:pairs.size] do
+      let (thmName, f1Name, f2Name, gName, rhsTerm) := pairs[pi]!
+      let (hIdx, s1Name, s2Name, sgName, lg1Name, lg2Name, lgGName) := maskMeta[pi]!
+      if ¬ (← isDeclaredInScope thmName.getId) then
+        if useShared then
+          let keysName := keysNameOf hIdx
+          elabCommand (← `(
+            set_option maxRecDepth 65536 in
+            @[simp]
+            theorem $thmName : flagDensity₂ $f1Name $f2Name $gName = $rhsTerm := by
+              first | delta $f1Name $f2Name $gName | skip
+              rw [flagDensity₂_eq_sym2FlagDensity₂]
+              first | delta $s1Name $s2Name $sgName | skip
+              rw [FlagAlgebras.Compute.BitMask.sym2FlagDensity₂_eq_rmaskCount₂
+                (by omega) (by omega) $hostInjId $patInjId $patInjId
+                $patLtId $patLtId $lg1Name $lg2Name
+                ($raccId $lg1Name) ($raccId $lg2Name)]
+              rw [FlagAlgebras.Compute.BitMask.rmaskCount₂_eq_keyCount $keysName]
+              decide +kernel))
+        else
+          elabCommand (← `(
+            set_option maxRecDepth 65536 in
+            @[simp]
+            theorem $thmName : flagDensity₂ $f1Name $f2Name $gName = $rhsTerm := by
+              first | delta $f1Name $f2Name $gName | skip
+              rw [flagDensity₂_eq_sym2FlagDensity₂]
+              first | delta $s1Name $s2Name $sgName | skip
+              rw [FlagAlgebras.Compute.BitMask.sym2FlagDensity₂_eq_rmaskCount₂
+                (by omega) (by omega) $hostInjId $patInjId $patInjId
+                $patLtId $patLtId $lg1Name $lg2Name
+                ($raccId $lg1Name) ($raccId $lg2Name)]
+              decide +kernel))
+    logInfo s!"Generated {pairs.size} pair-density theorem(s) via the kernel \
+BitMask route{if useShared then " (shared subset-pair pass)" else ""} \
+(no native_decide): pattern {patternTag}, host {hostTag}"
+    return
 
   -- Batch in chunks (one `native_decide` per chunk), so each per-pair projection's `List.getD`
   -- reduction stays shallow: a single big batch (e.g. 1800 pairs) overflows `maxRecDepth` when the

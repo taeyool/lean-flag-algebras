@@ -1,6 +1,8 @@
 import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
 import «LeanFlagAlgebras».FlagAlgebra.Compute.FlagEnumeration
 import «LeanFlagAlgebras».Flags.GeneratorOptions
+import «LeanFlagAlgebras».BitMask.RootedAccept
+import «LeanFlagAlgebras».BitMask.RootedHfree
 import Mathlib.Tactic
 
 /-! # Flag generation macros
@@ -153,6 +155,56 @@ def elabUnlessDefined (name : Name) (cmd : Syntax) : CommandElabM Unit := do
   let ns ← getCurrNamespace
   if ¬ (← getEnv).contains (ns ++ name) then
     elabCommand cmd
+
+
+/-- Emit `name : ([lhs,*] : List ℚ) = [rhs,*]`, **chunked**: above the
+threshold, per-chunk equalities are separate declarations (so the kernel's
+evaluation cache is released between them — one 245-entry
+`downwardFactors` batch under `flagGen.kernelDecide` exhausts memory) and
+the full equality is glued by `congrArg₂ (· ++ ·)` over the append
+decomposition, which is definitional on list literals. -/
+def emitChunkedQListEq (name : Ident)
+    (lhs rhs : Array (TSyntax `term)) (chunk : Nat := 48) :
+    CommandElabM Unit := do
+  let ns ← getCurrNamespace
+  if (← getEnv).contains (ns ++ name.getId) then return
+  if lhs.size ≤ chunk then
+    elabCommand (← `(
+      theorem $name : ([ $lhs,* ] : List ℚ) = [ $rhs,* ] := by
+        flag_bridge_decide))
+    return
+  let mut lchunks : Array (Array (TSyntax `term)) := #[]
+  let mut rchunks : Array (Array (TSyntax `term)) := #[]
+  let mut i := 0
+  while i < lhs.size do
+    lchunks := lchunks.push (lhs.extract i (min (i + chunk) lhs.size))
+    rchunks := rchunks.push (rhs.extract i (min (i + chunk) rhs.size))
+    i := i + chunk
+  let mut pieceNames : Array Ident := #[]
+  for ci in [0:lchunks.size] do
+    let pname := mkIdent (Name.mkSimple s!"{name.getId}_c{ci}")
+    pieceNames := pieceNames.push pname
+    unless (← getEnv).contains (ns ++ pname.getId) do
+      elabCommand (← `(
+        theorem $pname :
+            ([ $(lchunks[ci]!),* ] : List ℚ) = [ $(rchunks[ci]!),* ] := by
+          flag_bridge_decide))
+  let last := lchunks.size - 1
+  let mut lApp : TSyntax `term ← `(([ $(lchunks[last]!),* ] : List ℚ))
+  let mut rApp : TSyntax `term ← `(([ $(rchunks[last]!),* ] : List ℚ))
+  let mut proof : TSyntax `term := pieceNames[last]!
+  for j in [1:lchunks.size] do
+    let idx := last - j
+    let cl ← `(([ $(lchunks[idx]!),* ] : List ℚ))
+    let cr ← `(([ $(rchunks[idx]!),* ] : List ℚ))
+    lApp ← `($cl ++ $lApp)
+    rApp ← `($cr ++ $rApp)
+    proof ← `(congrArg₂ (· ++ ·) $(pieceNames[idx]!) $proof)
+  elabCommand (← `(
+    theorem $name : ([ $lhs,* ] : List ℚ) = [ $rhs,* ] :=
+      (show ([ $lhs,* ] : List ℚ) = $lApp from rfl).trans
+        (($proof).trans (show $rApp = ([ $rhs,* ] : List ℚ) from rfl))))
+
 
 /-- Emit the three declarations that bridge a finset of `Sym2*Flag`s to the
 corresponding finset of `Flag`s, shared verbatim by both generator macros:
@@ -464,11 +516,7 @@ Add `generate_empty_typed_flags {n}` before this command."
           ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
     coeffTerms := coeffTerms.push (← coeffQTerm coeffNum coeffDen)
 
-  elabUnlessDefined downwardFactorsEqName.getId (← `(
-      theorem $downwardFactorsEqName :
-          ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        flag_bridge_decide
-    ))
+  emitChunkedQListEq downwardFactorsEqName dnfTerms coeffTerms
 
   for i in [0:count] do
     let entry := flagData[i]!
@@ -515,6 +563,48 @@ Add `generate_empty_typed_flags {n}` before this command."
         ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
     ))
 
+  -- BitMask route (σ-typed generation layer): when `flagGen.maskFlagSets` is
+  -- set and the `(k, n)` combination has a rooted canonicalization sweep,
+  -- prove completeness (`= univ`) and distinctness (the `Nodup` feeding
+  -- `flagSet_…_val_eq`) by kernel computation over rooted canonical masks:
+  -- every labeled class normalizes to the decoding of its canonical mask, so
+  -- a kernel check that the emitted flags' canonical masks (a) hit every
+  -- roots-matching representative and (b) are pairwise distinct suffices.
+  -- The `native_decide` list bridge `Sym2FlagList_…_eq` is then not emitted.
+  let useMask := flagGen.maskFlagSets.get (← getOptions)
+  let maskComboSupported : Bool := (k == 1 && (n == 2 || n == 3 || n == 5))
+    || (k == 2 && (n == 3 || n == 4 || n == 6))
+    || (k == 3 && (n == 4 || n == 5))
+  let bitNs : Name := `FlagAlgebras.Compute.BitMask
+  let rcNs : Name := bitNs ++ Name.mkSimple s!"RCanon{k}_{n}"
+  let maskOK := useMask && maskComboSupported
+    && (← getEnv).contains (rcNs ++ `rleaf_reflect)
+  if useMask && !maskOK then
+    logWarning s!"flagGen.maskFlagSets: unsupported combination (k={k}, n={n}) \
+or missing BitMask apparatus (import LeanFlagAlgebras.BitMask.RootedAccept; \
+for (2,6) also LeanFlagAlgebras.BitMask.RCanon2_6); \
+falling back to the native list bridge."
+
+  let labeledTerms : Array (TSyntax `term) :=
+    (List.range count).toArray.map (fun i =>
+      (mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}") : TSyntax `term))
+  let rrepsId := mkIdent (rcNs ++ Name.mkSimple s!"rreps{k}_{n}")
+  let canonImageId := mkIdent (rcNs ++ `canonImage)
+  let rreflectId := mkIdent (rcNs ++ `rleaf_reflect)
+  let maskInjId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{n}"
+    ++ Name.mkSimple s!"finPairs{n}_rank_inj")
+  let maskLtId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{n}"
+    ++ Name.mkSimple s!"finPairs{n}_rank_lt")
+  let unrootedCanonId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{n}"
+    ++ `canonImage)
+  let canonInvId := mkIdent (bitNs ++ Name.mkSimple s!"Canon{n}"
+    ++ `rmaskCanonInv)
+  let rootedMaskOfId := mkIdent (bitNs ++ `rootedMaskOf)
+  let maskMapEqName := mkIdent (Name.mkSimple s!"Sym2FlagMaskMap_{n}_{k}_{m}_eq")
+  let maskCoverName := mkIdent (Name.mkSimple s!"Sym2FlagMaskCover_{n}_{k}_{m}")
+  let maskNodupName := mkIdent (Name.mkSimple s!"Sym2FlagMaskNodup_{n}_{k}_{m}")
+  let maskDistinctName := mkIdent (Name.mkSimple s!"Sym2FlagMaskDistinct_{n}_{k}_{m}")
+
   -- Positional list bridge: the named flag list equals `genFlagsOrdered σ n` (the
   -- dedup reps re-sorted into `genFlagData`'s JSON order). Deciding this *list*
   -- equality costs O(g) isomorphism checks (one per position), versus the O(g²) the
@@ -524,24 +614,97 @@ Add `generate_empty_typed_flags {n}` before this command."
   -- `Finset`-equality `= univ` bridge and the separate `Nodup` check). Both lemmas
   -- below rewrite through it, then close via the math theorems on `genFlags`.
   let flagListEqName := mkIdent (Name.mkSimple s!"Sym2FlagList_{n}_{k}_{m}_eq")
-  elabUnlessDefined flagListEqName.getId (← `(
-      theorem $flagListEqName :
-          ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
-            = FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n) := by
-        flag_bridge_decide
-    ))
 
-  elabUnlessDefined setEqUnivName.getId (← `(
-      theorem $setEqUnivName : $setName = Finset.univ := by
-        have h : $setName = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n) := by
-          have hfl := $flagListEqName
-          show (([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset)
-              = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n)
+  if maskOK then
+    elabUnlessDefined maskMapEqName.getId (← `(
+        theorem $maskMapEqName :
+            ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
+              = ([ $labeledTerms,* ]
+                  : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                  (fun L => (⟦L⟧ : Sym2Flag $typeTerm $(Quote.quote n))) := rfl
+      ))
+    elabUnlessDefined maskCoverName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $maskCoverName : ∀ h ∈ $rrepsId,
+            FlagAlgebras.Compute.BitMask.RootsMatch $typeTerm $(Quote.quote n) h →
+            h ∈ ([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => $canonImageId ($rootedMaskOfId L)) := by
+          decide +kernel
+      ))
+    elabUnlessDefined maskNodupName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $maskNodupName :
+            (([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => $rootedMaskOfId L)).Nodup := by
+          decide +kernel
+      ))
+    elabUnlessDefined maskDistinctName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $maskDistinctName :
+            ((([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => $rootedMaskOfId L)).all (fun p =>
+              (([ $labeledTerms,* ]
+                  : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                  (fun L => $rootedMaskOfId L)).all (fun q =>
+                p == q
+                  || !($unrootedCanonId p == $unrootedCanonId q)
+                  || !(decide (∃ g : Fin $(Quote.quote (n - k)) → Fin $(Quote.quote n),
+                      Function.Injective
+                        (FlagAlgebras.Compute.BitMask.rootExtend
+                          (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g)
+                      ∧ ∀ a b : Fin $(Quote.quote n), a < b →
+                          p.testBit (FlagAlgebras.Compute.BitMask.pairIdx
+                              $(Quote.quote n) a.val b.val)
+                            = q.testBit (FlagAlgebras.Compute.BitMask.pairIdx
+                                $(Quote.quote n)
+                                (FlagAlgebras.Compute.BitMask.sort2
+                                  (FlagAlgebras.Compute.BitMask.rootExtend
+                                    (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g a)
+                                  (FlagAlgebras.Compute.BitMask.rootExtend
+                                    (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g b)).1.val
+                                (FlagAlgebras.Compute.BitMask.sort2
+                                  (FlagAlgebras.Compute.BitMask.rootExtend
+                                    (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g a)
+                                  (FlagAlgebras.Compute.BitMask.rootExtend
+                                    (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g b)).2.val))))))
+              = true := by
+          decide +kernel
+      ))
+    elabUnlessDefined setEqUnivName.getId (← `(
+        theorem $setEqUnivName : $setName = Finset.univ := by
+          show ([ $flagTerms,* ]
+              : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset = Finset.univ
+          refine FlagAlgebras.Compute.BitMask.toFinset_eq_univ_of_forall_mem ?_
+          intro S
+          have hfl := $maskMapEqName
           rw [hfl]
-          exact FlagAlgebras.Compute.genFlagsOrdered_toFinset $typeTerm $(Quote.quote n)
-        rw [h]
-        exact FlagAlgebras.Compute.genFlagSet_eq_univ $typeTerm $(Quote.quote n)
-    ))
+          exact FlagAlgebras.Compute.BitMask.labeledEmitted_complete
+            (by omega) $maskInjId $maskLtId
+            (fun x hx' hx => $rreflectId hx' hx)
+            _ $maskCoverName S
+      ))
+  else
+    elabUnlessDefined flagListEqName.getId (← `(
+        theorem $flagListEqName :
+            ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
+              = FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n) := by
+          flag_bridge_decide
+      ))
+
+    elabUnlessDefined setEqUnivName.getId (← `(
+        theorem $setEqUnivName : $setName = Finset.univ := by
+          have h : $setName = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n) := by
+            have hfl := $flagListEqName
+            show (([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset)
+                = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n)
+            rw [hfl]
+            exact FlagAlgebras.Compute.genFlagsOrdered_toFinset $typeTerm $(Quote.quote n)
+          rw [h]
+          exact FlagAlgebras.Compute.genFlagSet_eq_univ $typeTerm $(Quote.quote n)
+      ))
 
   let flagSetName := mkIdent (Name.mkSimple s!"flagSet_{n}_{k}_{m}")
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSet_{n}_{k}_{m}_val_eq")
@@ -549,6 +712,20 @@ Add `generate_empty_typed_flags {n}` before this command."
   let flagBridgeTerms : Array (TSyntax `term) :=
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}") : TSyntax `term))
+
+  let nodupProof ←
+    if maskOK then
+      `(by
+        have hfl := $maskMapEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.BitMask.labeledEmitted_nodup_inv
+          (by omega) $maskInjId $maskLtId $unrootedCanonId $canonInvId
+          _ $maskDistinctName $maskNodupName)
+    else
+      `(by
+        have hfl := $flagListEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.genFlagsOrdered_nodup $typeTerm $(Quote.quote n))
 
   emitFlagSetMachinery n
     (← `($flagTypeName))
@@ -558,10 +735,7 @@ Add `generate_empty_typed_flags {n}` before this command."
     (← `(by
         intro F
         exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩))
-    (← `(by
-        have hfl := $flagListEqName
-        rw [hfl]
-        exact FlagAlgebras.Compute.genFlagsOrdered_nodup $typeTerm $(Quote.quote n)))
+    nodupProof
     flagTerms flagBridgeTerms
     setName setEqUnivName flagSetName flagSetValEqName flagSetEqUnivName
 

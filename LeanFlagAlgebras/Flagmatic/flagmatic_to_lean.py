@@ -1240,7 +1240,9 @@ LEAN_OPENS: list[str] = [
 ]
 
 
-def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
+def render_pruned_commands(cert: dict, kernel_decide: bool = True,
+                           mask_density: bool = False,
+                           mask_flagsets: bool = False) -> str:
     """Emit the `def K{r}` forbid graph + the edge-based pruned generation /
     density / multiplication commands this certificate needs.
 
@@ -1305,6 +1307,21 @@ def render_pruned_commands(cert: dict, kernel_decide: bool = True) -> str:
             "-- below lists only Lean's own three.",
             "set_option flagGen.kernelDecide true",
         ]
+        if mask_density:
+            option_lines += [
+                "-- The pair densities route through the BitMask rooted sweeps (shared",
+                "-- subset-pair pass), keeping each kernel check a small declaration -- the",
+                "-- batched `decide +kernel` alternative balloons the kernel's evaluation cache.",
+                "set_option flagGen.maskPairDensity true",
+                "set_option flagGen.maskPairDensityShared true",
+            ]
+        if mask_flagsets:
+            option_lines += [
+                "-- The flag-set completeness layers route through the BitMask",
+                "-- canonicalization sweeps (triangle forbids at swept combinations).",
+                "set_option flagGen.maskCompleteness true",
+                "set_option flagGen.maskFlagSets true",
+            ]
     else:
         option_lines += [
             "-- Generated bridging lemmas are proved by `native_decide`, so the main theorem below",
@@ -1423,6 +1440,8 @@ def render_skeleton(
     regen_cmd: str | None = None,
     materialize: bool = False,
     cert_path: str | None = None,
+    mask_density: bool = False,
+    mask_flagsets: bool = False,
 ) -> str:
     """Render a complete starter Lean API file for the edge-based pruned pipeline.
 
@@ -1447,7 +1466,9 @@ def render_skeleton(
     emitted there unconditionally (see `render_pruned_commands`).
     """
     opens = "\n".join(LEAN_OPENS)
-    commands = render_pruned_commands(cert, kernel_decide=kernel_decide)
+    commands = render_pruned_commands(cert, kernel_decide=kernel_decide,
+                                      mask_density=mask_density,
+                                      mask_flagsets=mask_flagsets)
 
     # The certificate-tactic form needs a parseable objective and forbid clause
     # (they fix the statement); otherwise fall back to the materialized skeleton,
@@ -1497,6 +1518,7 @@ def render_skeleton(
         return (
             f"{header}\n"
             f"import LeanFlagAlgebras.Automation.FlagCertificate\n"
+            + ("import LeanFlagAlgebras.BitMask.RCanon2_6\n" if mask_flagsets else "") +
             f"\n"
             f"{opens}\n"
             f"\n"
@@ -1655,12 +1677,16 @@ def _cmd_gen_skeleton(args: argparse.Namespace) -> int:
         f"  {args.certificate.as_posix()} \\\n"
         f"  {args.target.as_posix()} --namespace {namespace}"
         f"{'' if args.kernel_decide else ' --native-decide'}"
+        f"{' --mask-density' if args.mask_density else ''}"
+        f"{' --mask-flagsets' if args.mask_flagsets else ''}"
         f"{' --materialize' if args.materialize else ''} --force"
     )
     text = render_skeleton(cert, namespace, theorem_name,
                            kernel_decide=args.kernel_decide, regen_cmd=regen_cmd,
                            materialize=args.materialize,
-                           cert_path=args.certificate.as_posix())
+                           cert_path=args.certificate.as_posix(),
+                           mask_density=args.mask_density,
+                           mask_flagsets=args.mask_flagsets)
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(text, encoding="utf-8")
     kd_note = " [kernel-decide mode]" if args.kernel_decide else " [native-decide mode]"
@@ -1834,6 +1860,25 @@ def main(argv: list[str] | None = None) -> None:
             "call. The file is then self-contained: it does not read the certificate "
             "at build time. Default: the compact `flag_certificate` form (switch the "
             "call to `flag_certificate?` for a one-click materialization)."
+        ),
+    )
+    p_skel.add_argument(
+        "--mask-density", action="store_true",
+        help=(
+            "With kernel-decide mode: route the pair densities through the BitMask "
+            "rooted sweeps (emits `set_option flagGen.maskPairDensity/…Shared true`). "
+            "Required in practice for the larger kernel examples — the batched "
+            "`decide +kernel` pair densities balloon the kernel's evaluation cache."
+        ),
+    )
+    p_skel.add_argument(
+        "--mask-flagsets", action="store_true",
+        help=(
+            "With kernel-decide mode: route the flag-set completeness layers through "
+            "the BitMask canonicalization sweeps (emits `set_option "
+            "flagGen.maskCompleteness/maskFlagSets true` and imports "
+            "LeanFlagAlgebras.BitMask.RCanon2_6). Triangle forbids at swept "
+            "combinations only; other shapes fall back with a warning."
         ),
     )
     p_skel.set_defaults(func=_cmd_gen_skeleton)

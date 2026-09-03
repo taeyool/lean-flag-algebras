@@ -1,5 +1,8 @@
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.Flags.ForbidFreePruned
+import LeanFlagAlgebras.BitMask.MaskBridge
+import LeanFlagAlgebras.BitMask.RootedHfree
+import LeanFlagAlgebras.BitMask.SubHfree
 
 /-! # Forbid-free flag generation
 
@@ -303,11 +306,63 @@ private def runForbidFreeEmptyTypedClique (nStx : TSyntax `num) (fStx : TSyntax 
         ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
     ))
 
+  -- Mask route (BitMask Task 4b): when `flagGen.maskCompleteness` is set and the forbid is a
+  -- triangle at a swept vertex count, prove completeness through the kernel canonicalization
+  -- sweep — the emitted free set is matched against the swept representatives by two Bool-level
+  -- bit checks (`decide +kernel`), closed by `emittedFreeFlags_toFinset_eq`. No `native_decide`
+  -- anywhere in the completeness proof, so it adds no compiled-evaluation axioms.
+  let bitNs : Name := (`FlagAlgebras.Compute.BitMask).append (Name.mkSimple s!"Canon{n}")
+  let maskRequested := flagGen.maskCompleteness.get (← getOptions)
+  let maskOK := maskRequested && completeR? == some 3 && (n == 5 || n == 6 || n == 7)
+    && (← getEnv).contains (bitNs ++ `canonOf)
+  if maskRequested && !maskOK then
+    logWarning s!"flagGen.maskCompleteness: supported only for triangle forbids \
+(completeSym2Graph 3) at n = 5, 6, or 7 with the BitMask modules imported \
+(LeanFlagAlgebras.BitMask.MaskBridge; also ….Canon7 for n = 7). Falling back to the \
+pruned `native_decide` route."
   -- Completeness via genuine pruning (Task 5a): the named free set equals the pruned generation
   -- (one `native_decide` over the *pruned* generator — never builds an `F`-containing graph), closed
   -- by `prunedFreeFlags_toFinset_eq`. No full enumeration, no canonical forbidden flag. For a
   -- complete-graph forbid the `native_decide` runs over the cheap *clique*-pruned generator (8a).
-  let sym2SetEqProof : TSyntax `term ← match completeR? with
+  let graphListTerms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Sym2Graph_{n}_0_0_{i}"))
+  let sym2SetEqProof : TSyntax `term ←
+    if maskOK then
+      let canonOfId := mkIdent (bitNs ++ `canonOf)
+      let canonSpecId := mkIdent (bitNs ++ `canonOf_spec)
+      let repsId := mkIdent (bitNs ++ Name.mkSimple s!"reps{n}")
+      let coverId := mkIdent (bitNs ++ Name.mkSimple s!"triTable{n}_cover")
+      let soundId := mkIdent (bitNs ++ Name.mkSimple s!"triTable{n}_sound")
+      let rinjId := mkIdent (bitNs ++ Name.mkSimple s!"finPairs{n}_rank_inj")
+      `(by
+          have hbitfree : List.all
+              ([ $graphListTerms,* ] : List (Sym2Graph $(Quote.quote n)))
+              (fun G => FlagAlgebras.Compute.BitMask.triFreeMask
+                (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n))
+                (FlagAlgebras.Compute.BitMask.maskOfGraph₂ G)) = true := by
+            decide +kernel
+          have hbitcover : List.all $repsId
+              (fun h' => !FlagAlgebras.Compute.BitMask.triFreeMask
+                  (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n)) h'
+                || decide (h' ∈ List.map $canonOfId
+                    ([ $graphListTerms,* ] : List (Sym2Graph $(Quote.quote n))))) = true := by
+            decide +kernel
+          have hmain := FlagAlgebras.Compute.BitMask.emittedFreeFlags_toFinset_eq $fStx
+            $canonOfId $canonSpecId [ $graphListTerms,* ]
+            (FlagAlgebras.Compute.BitMask.hfree_of_triFreeMask
+              (FlagAlgebras.Compute.completeSym2Graph_edges_iff 3)
+              $rinjId $coverId $soundId hbitfree)
+            (FlagAlgebras.Compute.BitMask.hcover_of_triFreeMask
+              (FlagAlgebras.Compute.completeSym2Graph_edges_iff 3)
+              $coverId $soundId hbitcover)
+          have hsets : $sym2SetName
+              = (FlagAlgebras.Compute.BitMask.emittedFlags
+                  ([ $graphListTerms,* ] : List (Sym2Graph $(Quote.quote n)))).toFinset := rfl
+          rw [hsets, hmain]
+          ext S
+          simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and,
+            decide_eq_true_eq])
+    else match completeR? with
     | some r => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedCliqueFreeFlags $(Quote.quote r) $(Quote.quote n)).toFinset := by
@@ -452,9 +507,52 @@ private def runForbidFreeEmptyTypedSubgraph (nStx : TSyntax `num) (fStx : TSynta
         ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
     ))
 
+  -- Mask route (subgraph forbids): the completeness through the kernel
+  -- canonicalization sweep — the direct `flag_bridge_decide` alternative decides
+  -- a Finset equality over the whole quotient `Fintype`, which under
+  -- `flagGen.kernelDecide` exhausts memory already at `n = 5`.
+  let bitCanonNs : Name := (`FlagAlgebras.Compute.BitMask).append
+    (Name.mkSimple s!"Canon{n}")
+  let maskRequested := flagGen.maskCompleteness.get (← getOptions)
+  let maskOK := maskRequested && (2 ≤ n && n ≤ 7)
+    && (← getEnv).contains (bitCanonNs ++ `canonOf)
+  if maskRequested && !maskOK then
+    logWarning s!"flagGen.maskCompleteness: subgraph-forbid kernel route needs 2 ≤ n ≤ 7 with the BitMask modules imported (LeanFlagAlgebras.BitMask.SubHfree; also ….BitMask.Canon7 for n = 7); falling back to the direct `flag_bridge_decide` route."
+  let subGraphListTerms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    (mkIdent (Name.mkSimple s!"Sym2Graph_{n}_0_0_{i}") : TSyntax `term))
+  let sym2SetEqProof : TSyntax `term ←
+    if maskOK then
+      let canonOfId := mkIdent (bitCanonNs ++ `canonOf)
+      let canonSpecId := mkIdent (bitCanonNs ++ `canonOf_spec)
+      let repsId := mkIdent (bitCanonNs ++ Name.mkSimple s!"reps{n}")
+      `(by
+          have hfree : ∀ G ∈ ([ $subGraphListTerms,* ]
+              : List (FlagAlgebras.Compute.Sym2Graph $(Quote.quote n))),
+              ¬ FlagAlgebras.Compute.subgraphContains $fStx G := by
+            decide +kernel
+          have hcover : ∀ h ∈ $repsId,
+              ¬ FlagAlgebras.Compute.subgraphContains $fStx
+                  (FlagAlgebras.Compute.BitMask.graphOfMask₂ $(Quote.quote n) h) →
+              h ∈ ([ $subGraphListTerms,* ]
+                  : List (FlagAlgebras.Compute.Sym2Graph $(Quote.quote n))).map
+                  $canonOfId := by
+            decide +kernel
+          have hmain := FlagAlgebras.Compute.BitMask.emittedSubFreeFlags_toFinset_eq
+            $fStx $canonOfId $canonSpecId [ $subGraphListTerms,* ] hfree hcover
+          have hsets : $sym2SetName
+              = (FlagAlgebras.Compute.BitMask.emittedFlags
+                  ([ $subGraphListTerms,* ]
+                    : List (FlagAlgebras.Compute.Sym2Graph $(Quote.quote n)))).toFinset := rfl
+          rw [hsets, hmain]
+          ext S
+          simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ,
+            true_and, decide_eq_true_eq])
+    else
+      `(by flag_bridge_decide)
+
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := $sym2SetEqProof
     ))
 
   elabUnlessDefined flagSetName.getId (← `(
@@ -527,6 +625,123 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => d
   match ← detectCompleteR fStx with
   | some _ => runForbidFreeEmptyTypedClique nStx fStx
   | none => runForbidFreeEmptyTypedSubgraph nStx fStx
+
+/-- Emit the forbid-independent kernel side-condition lemmas of the typed
+mask route — the flag-list/labeled-list `map` bridge, the representative
+bound, and the emitted rooted masks' `Nodup` + invariant-guarded
+distinctness (chunked into per-24-row declarations so the kernel's
+evaluation cache is released between them). Shared by the clique and
+subgraph typed routes; the forbid-specific soundness/cover/completeness
+lemmas stay with each caller. -/
+private def emitHfreeMaskCommon (n k m : Nat) (tag : String)
+    (typeTerm : TSyntax `term)
+    (freeSym2Terms labeledTerms : Array (TSyntax `term)) :
+    CommandElabM Unit := do
+  let bitNs : Name := `FlagAlgebras.Compute.BitMask
+  let rcNs : Name := bitNs ++ Name.mkSimple s!"RCanon{k}_{n}"
+  let canonNs : Name := bitNs ++ Name.mkSimple s!"Canon{n}"
+  let rrepsId := mkIdent (rcNs ++ Name.mkSimple s!"rreps{k}_{n}")
+  let unrootedCanonId := mkIdent (canonNs ++ `canonImage)
+  let rootedMaskOfId := mkIdent (bitNs ++ `rootedMaskOf)
+  let pbits := n * (n - 1) / 2
+  let hfMapEqName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskMap_{n}_{k}_{m}_{tag}_eq")
+  let hfRepsLtName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskRepsLt_{n}_{k}_{m}_{tag}")
+  let hfNodupName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskNodup_{n}_{k}_{m}_{tag}")
+  let hfDistinctName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskDistinct_{n}_{k}_{m}_{tag}")
+  elabUnlessDefined hfMapEqName.getId (← `(
+      theorem $hfMapEqName :
+          ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
+            = ([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => (⟦L⟧ : Sym2Flag $typeTerm $(Quote.quote n))) := rfl
+    ))
+  elabUnlessDefined hfRepsLtName.getId (← `(
+      set_option maxRecDepth 65536 in
+      theorem $hfRepsLtName : ∀ h ∈ $rrepsId, h < 2 ^ $(Quote.quote pbits) := by
+        decide +kernel
+    ))
+  elabUnlessDefined hfNodupName.getId (← `(
+      set_option maxRecDepth 65536 in
+      theorem $hfNodupName :
+          (([ $labeledTerms,* ]
+              : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+              (fun L => $rootedMaskOfId L)).Nodup := by
+        decide +kernel
+    ))
+  let innerListStx ← `(([ $labeledTerms,* ]
+      : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))))
+  let chkBody ← `(fun (p q : ℕ) =>
+    p == q
+      || !($unrootedCanonId p == $unrootedCanonId q)
+      || !(decide (∃ g : Fin $(Quote.quote (n - k)) → Fin $(Quote.quote n),
+          Function.Injective
+            (FlagAlgebras.Compute.BitMask.rootExtend
+              (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g)
+          ∧ ∀ a b : Fin $(Quote.quote n), a < b →
+              p.testBit (FlagAlgebras.Compute.BitMask.pairIdx
+                  $(Quote.quote n) a.val b.val)
+                = q.testBit (FlagAlgebras.Compute.BitMask.pairIdx
+                    $(Quote.quote n)
+                    (FlagAlgebras.Compute.BitMask.sort2
+                      (FlagAlgebras.Compute.BitMask.rootExtend
+                        (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g a)
+                      (FlagAlgebras.Compute.BitMask.rootExtend
+                        (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g b)).1.val
+                    (FlagAlgebras.Compute.BitMask.sort2
+                      (FlagAlgebras.Compute.BitMask.rootExtend
+                        (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g a)
+                      (FlagAlgebras.Compute.BitMask.rootExtend
+                        (kr := $(Quote.quote k)) (mr := $(Quote.quote n)) (by omega) g b)).2.val))))
+  let chunkSize : Nat := 24
+  if labeledTerms.size ≤ chunkSize then
+    elabUnlessDefined hfDistinctName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $hfDistinctName :
+            ((($innerListStx).map (fun L => $rootedMaskOfId L)).all (fun p =>
+              (($innerListStx).map (fun L => $rootedMaskOfId L)).all (fun q =>
+                ($chkBody) p q))) = true := by
+          decide +kernel
+      ))
+  else do
+    let mut chunks : Array (Array (TSyntax `term)) := #[]
+    let mut i := 0
+    while i < labeledTerms.size do
+      chunks := chunks.push
+        (labeledTerms.extract i (min (i + chunkSize) labeledTerms.size))
+      i := i + chunkSize
+    let mut chunkNames : Array Ident := #[]
+    for ci in [0:chunks.size] do
+      let cTerms := chunks[ci]!
+      let cname := mkIdent (Name.mkSimple
+        s!"Sym2FlagHfreeMaskDistinct_{n}_{k}_{m}_{tag}_c{ci}")
+      chunkNames := chunkNames.push cname
+      elabUnlessDefined cname.getId (← `(
+          set_option maxRecDepth 65536 in
+          theorem $cname :
+              ((([ $cTerms,* ]
+                  : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                  (fun L => $rootedMaskOfId L)).all (fun p =>
+                (($innerListStx).map (fun L => $rootedMaskOfId L)).all (fun q =>
+                  ($chkBody) p q))) = true := by
+            decide +kernel
+        ))
+    let mut appendStx : TSyntax `term ← `(([ $(chunks[0]!),* ]
+        : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))))
+    for ci in [1:chunks.size] do
+      let cl ← `(([ $(chunks[ci]!),* ]
+          : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))))
+      appendStx ← `($appendStx ++ $cl)
+    let mut foldStx : TSyntax `term := chunkNames[0]!
+    for ci in [1:chunkNames.size] do
+      foldStx ← `(⟨$foldStx, $(chunkNames[ci]!)⟩)
+    elabUnlessDefined hfDistinctName.getId (← `(
+        theorem $hfDistinctName :
+            ((($appendStx).map (fun L => $rootedMaskOfId L)).all (fun p =>
+              (($innerListStx).map (fun L => $rootedMaskOfId L)).all (fun q =>
+                ($chkBody) p q))) = true := by
+            simp only [List.map_append, List.all_append, Bool.and_eq_true]
+            exact $foldStx
+      ))
 
 /-- Clique-route implementation of `generate_forbid_free_flags` (see the dispatching command
 at the end of this file); only reached for a complete forbid `F`, where the induced and
@@ -621,9 +836,7 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
       `(FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag
           ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
-  elabUnlessDefined downwardFactorsEqName.getId (← `(
-      theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        flag_bridge_decide))
+  emitChunkedQListEq downwardFactorsEqName dnfTerms coeffTerms
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -673,26 +886,127 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
       def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
 
-  -- Genuine-pruning σ-typed completeness (Task 8b): the named free set equals the labeled flags built
-  -- over the *pruned* graph reps `augRepsFreeB (qFree F)` — no forbidden graph is materialized, and the
-  -- `native_decide` runs the cheap combinatorial `qFree` over the pruned reps rather than the density
-  -- filter over the full `genSym2GraphsDedup`. Closed by `genFlagsHfreePruned_toFinset_eq`; `hcompat`
-  -- matches the density-based `isHfree` to `qFree` via the Task-4 bridge (`qFree_eq_density_decide`).
-  elabUnlessDefined sym2SetEqName.getId (← `(
-      theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
-        have hpruned : $sym2SetName
-            = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
-                (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
-          flag_bridge_decide
-        rw [hpruned]
-        exact FlagAlgebras.Compute.genFlagsHfreePruned_toFinset_eq (FlagAlgebras.Compute.qFree $fStx)
-          $isHfreeName
-          (fun {_ _ _} h => FlagAlgebras.Compute.qFree_iso $fStx h)
-          (fun {_ _} h => FlagAlgebras.Compute.qFree_restrict $fStx h)
-          (FlagAlgebras.Compute.qFree_hq0 $fStx (by decide))
-          (fun Glab => by
-            rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl)))
+  -- BitMask route (forbid-typed ②): when `flagGen.maskFlagSets` is set, the
+  -- forbid is a triangle, and the `(k, n)` combination has a rooted
+  -- canonicalization sweep, prove the forbid-filtered completeness and the
+  -- `Nodup` feeding `…_val_eq` by kernel computation — the emitted flags'
+  -- underlying masks pass the bit-level triangle test (soundness), the
+  -- triangle-free roots-matching representatives are all covered, and no two
+  -- distinct emitted rooted masks are related by a root-fixing
+  -- bit-correspondence (distinctness). No `native_decide` in either lemma.
+  let useMask := flagGen.maskFlagSets.get (← getOptions)
+  let maskComboSupported : Bool := (k == 1 && (n == 2 || n == 3 || n == 5))
+    || (k == 2 && (n == 3 || n == 4 || n == 6))
+    || (k == 3 && (n == 4 || n == 5))
+  let completeR? ← detectCompleteR fStx
+  let bitNs : Name := `FlagAlgebras.Compute.BitMask
+  let rcNs : Name := bitNs ++ Name.mkSimple s!"RCanon{k}_{n}"
+  let canonNs : Name := bitNs ++ Name.mkSimple s!"Canon{n}"
+  let maskOK := useMask && maskComboSupported && completeR? == some 3
+    && (← getEnv).contains (rcNs ++ `rleaf_reflect)
+    && (← getEnv).contains (canonNs ++ Name.mkSimple s!"triTable{n}_cover")
+  if useMask && !maskOK then
+    logWarning s!"flagGen.maskFlagSets: typed forbid-free kernel route needs a \
+triangle forbid, a swept combination (k={k}, n={n}), and the BitMask modules \
+(import LeanFlagAlgebras.BitMask.RootedHfree; for (2,6) also \
+….BitMask.RCanon2_6); falling back to the pruned native route."
+
+  let labeledTerms : Array (TSyntax `term) := freeArr.map (fun i =>
+    (mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}") : TSyntax `term))
+  let rrepsId := mkIdent (rcNs ++ Name.mkSimple s!"rreps{k}_{n}")
+  let canonImageId := mkIdent (rcNs ++ `canonImage)
+  let rreflectId := mkIdent (rcNs ++ `rleaf_reflect)
+  let injId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_inj")
+  let ltId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_lt")
+  let coverId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_cover")
+  let triCoverId := mkIdent (canonNs ++ Name.mkSimple s!"triTable{n}_cover")
+  let triSoundId := mkIdent (canonNs ++ Name.mkSimple s!"triTable{n}_sound")
+  let unrootedCanonId := mkIdent (canonNs ++ `canonImage)
+  let canonInvId := mkIdent (canonNs ++ `rmaskCanonInv)
+  let rootedMaskOfId := mkIdent (bitNs ++ `rootedMaskOf)
+  let pbits := n * (n - 1) / 2
+  let hfMapEqName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskMap_{n}_{k}_{m}_{tag}_eq")
+  let hfSoundName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskSound_{n}_{k}_{m}_{tag}")
+  let hfCoverName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskCover_{n}_{k}_{m}_{tag}")
+  let hfRepsLtName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskRepsLt_{n}_{k}_{m}_{tag}")
+  let hfNodupName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskNodup_{n}_{k}_{m}_{tag}")
+  let hfDistinctName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskDistinct_{n}_{k}_{m}_{tag}")
+
+  if maskOK then
+    emitHfreeMaskCommon n k m tag typeTerm freeSym2Terms labeledTerms
+    elabUnlessDefined hfSoundName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $hfSoundName :
+            (([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).all
+              (fun L => FlagAlgebras.Compute.BitMask.triFreeMask
+                (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n))
+                (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                  (FlagAlgebras.Compute.BitMask.underlyingGraph L)))) = true := by
+          decide +kernel
+      ))
+    elabUnlessDefined hfCoverName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $hfCoverName : ∀ h ∈ $rrepsId,
+            FlagAlgebras.Compute.BitMask.RootsMatch $typeTerm $(Quote.quote n) h →
+            FlagAlgebras.Compute.BitMask.triFreeMask
+                (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n)) h = true →
+            h ∈ ([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => $canonImageId ($rootedMaskOfId L)) := by
+          decide +kernel
+      ))
+    elabUnlessDefined sym2SetEqName.getId (← `(
+        theorem $sym2SetEqName :
+            $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+          show ([ $freeSym2Terms,* ]
+              : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
+            = Finset.univ.filter (fun S => $isHfreeName S = true)
+          have hfl := $hfMapEqName
+          rw [hfl]
+          refine FlagAlgebras.Compute.BitMask.toFinset_eq_filter_of_mem_iff ?_
+          intro S
+          have hpq : ∀ L : Sym2LabeledGraph $typeTerm $(Quote.quote n),
+              ($isHfreeName ⟦L⟧ = true)
+                ↔ FlagAlgebras.Compute.BitMask.triFreeMask
+                    (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n))
+                    (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                      (FlagAlgebras.Compute.BitMask.underlyingGraph L)) = true := by
+            intro L
+            rw [$isHfreeName:ident, decide_eq_true_eq]
+            exact FlagAlgebras.Compute.BitMask.density_zero_iff_triFreeMask
+              (FlagAlgebras.Compute.completeSym2Graph_edges_iff 3)
+              $injId $triCoverId $triSoundId
+              (FlagAlgebras.Compute.BitMask.underlyingGraph L)
+          exact FlagAlgebras.Compute.BitMask.labeledEmittedHfree_mem_iff
+            (p := fun S => $isHfreeName S = true)
+            (q := FlagAlgebras.Compute.BitMask.triFreeMask
+              (FlagAlgebras.Compute.BitMask.triTable $(Quote.quote n)))
+            (by omega) $injId $ltId $coverId
+            (fun x hx' hx => $rreflectId hx' hx)
+            $hfRepsLtName hpq _ $hfSoundName $hfCoverName S
+      ))
+  else
+    -- Genuine-pruning σ-typed completeness (Task 8b): the named free set equals the labeled flags built
+    -- over the *pruned* graph reps `augRepsFreeB (qFree F)` — no forbidden graph is materialized, and the
+    -- `native_decide` runs the cheap combinatorial `qFree` over the pruned reps rather than the density
+    -- filter over the full `genSym2GraphsDedup`. Closed by `genFlagsHfreePruned_toFinset_eq`; `hcompat`
+    -- matches the density-based `isHfree` to `qFree` via the Task-4 bridge (`qFree_eq_density_decide`).
+    elabUnlessDefined sym2SetEqName.getId (← `(
+        theorem $sym2SetEqName :
+            $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+          have hpruned : $sym2SetName
+              = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
+                  (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
+            flag_bridge_decide
+          rw [hpruned]
+          exact FlagAlgebras.Compute.genFlagsHfreePruned_toFinset_eq (FlagAlgebras.Compute.qFree $fStx)
+            $isHfreeName
+            (fun {_ _ _} h => FlagAlgebras.Compute.qFree_iso $fStx h)
+            (fun {_ _} h => FlagAlgebras.Compute.qFree_restrict $fStx h)
+            (FlagAlgebras.Compute.qFree_hq0 $fStx (by decide))
+            (fun Glab => by
+              rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl)))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
@@ -723,13 +1037,23 @@ private def runForbidFreeTypedClique (nStx kStx mStx : TSyntax `num) (fStx : TSy
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_val_eq")
   let freeBridgeTerms : Array (TSyntax `term) := freeArr.map (fun i =>
     mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}"))
+  let hnodupProof : TSyntax `term ←
+    if maskOK then
+      `(by
+        have hfl := $hfMapEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.BitMask.labeledEmitted_nodup_inv
+          (by omega) $injId $ltId $unrootedCanonId $canonInvId
+          _ $hfDistinctName $hfNodupName)
+    else
+      `(by flag_bridge_decide)
   elabUnlessDefined flagSetValEqName.getId (← `(
       theorem $flagSetValEqName :
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
-        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          flag_bridge_decide
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup :=
+          $hnodupProof
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
@@ -840,9 +1164,7 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
       `(FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag
           ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
     coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
-  elabUnlessDefined downwardFactorsEqName.getId (← `(
-      theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
-        flag_bridge_decide))
+  emitChunkedQListEq downwardFactorsEqName dnfTerms coeffTerms
 
   for pos in [0:freeArr.size] do
     let i := freeArr[pos]!
@@ -886,9 +1208,97 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
       def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
 
-  elabUnlessDefined sym2SetEqName.getId (← `(
-      theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide))
+  -- BitMask route (subgraph forbids): completeness + `Nodup` through the rooted
+  -- sweeps, with the decidable `subgraphContains` as the mask predicate (pivot:
+  -- `supergraph_densities_iff_not_subgraphContains`). The direct
+  -- `flag_bridge_decide` alternative decides a Finset equality over the whole
+  -- typed quotient `Fintype`, which under `flagGen.kernelDecide` exhausts
+  -- memory already at `n = 5`.
+  let useMask := flagGen.maskFlagSets.get (← getOptions)
+  let maskComboSupported : Bool := (k == 1 && (n == 2 || n == 3 || n == 5))
+    || (k == 2 && (n == 3 || n == 4 || n == 6))
+    || (k == 3 && (n == 4 || n == 5))
+  let bitNs : Name := `FlagAlgebras.Compute.BitMask
+  let rcNs : Name := bitNs ++ Name.mkSimple s!"RCanon{k}_{n}"
+  let canonNs : Name := bitNs ++ Name.mkSimple s!"Canon{n}"
+  let maskOK := useMask && maskComboSupported
+    && (← getEnv).contains (rcNs ++ `rleaf_reflect)
+  if useMask && !maskOK then
+    logWarning s!"flagGen.maskFlagSets: typed subgraph-forbid kernel route needs a swept combination (k={k}, n={n}) with the BitMask modules imported (LeanFlagAlgebras.BitMask.SubHfree); falling back to the direct `flag_bridge_decide` route."
+  let labeledTerms : Array (TSyntax `term) := freeArr.map (fun i =>
+    (mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}") : TSyntax `term))
+  let rrepsId := mkIdent (rcNs ++ Name.mkSimple s!"rreps{k}_{n}")
+  let canonImageId := mkIdent (rcNs ++ `canonImage)
+  let rreflectId := mkIdent (rcNs ++ `rleaf_reflect)
+  let injId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_inj")
+  let ltId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_lt")
+  let coverId := mkIdent (canonNs ++ Name.mkSimple s!"finPairs{n}_rank_cover")
+  let unrootedCanonId := mkIdent (canonNs ++ `canonImage)
+  let canonInvId := mkIdent (canonNs ++ `rmaskCanonInv)
+  let rootedMaskOfId := mkIdent (bitNs ++ `rootedMaskOf)
+  let hfMapEqName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskMap_{n}_{k}_{m}_{tag}_eq")
+  let hfSoundName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskSound_{n}_{k}_{m}_{tag}")
+  let hfCoverName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskCover_{n}_{k}_{m}_{tag}")
+  let hfRepsLtName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskRepsLt_{n}_{k}_{m}_{tag}")
+  let hfNodupName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskNodup_{n}_{k}_{m}_{tag}")
+  let hfDistinctName := mkIdent (Name.mkSimple s!"Sym2FlagHfreeMaskDistinct_{n}_{k}_{m}_{tag}")
+
+  if maskOK then
+    emitHfreeMaskCommon n k m tag typeTerm freeSym2Terms labeledTerms
+    elabUnlessDefined hfSoundName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $hfSoundName :
+            (([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).all
+              (fun L => !decide (FlagAlgebras.Compute.subgraphContains $fStx
+                (FlagAlgebras.Compute.BitMask.graphOfMask₂ $(Quote.quote n)
+                  (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                    (FlagAlgebras.Compute.BitMask.underlyingGraph L)))))) = true := by
+          decide +kernel
+      ))
+    elabUnlessDefined hfCoverName.getId (← `(
+        set_option maxRecDepth 65536 in
+        theorem $hfCoverName : ∀ h ∈ $rrepsId,
+            FlagAlgebras.Compute.BitMask.RootsMatch $typeTerm $(Quote.quote n) h →
+            (!decide (FlagAlgebras.Compute.subgraphContains $fStx
+                (FlagAlgebras.Compute.BitMask.graphOfMask₂ $(Quote.quote n) h))) = true →
+            h ∈ ([ $labeledTerms,* ]
+                : List (Sym2LabeledGraph $typeTerm $(Quote.quote n))).map
+                (fun L => $canonImageId ($rootedMaskOfId L)) := by
+          decide +kernel
+      ))
+    elabUnlessDefined sym2SetEqName.getId (← `(
+        theorem $sym2SetEqName :
+            $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+          show ([ $freeSym2Terms,* ]
+              : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
+            = Finset.univ.filter (fun S => $isHfreeName S = true)
+          have hfl := $hfMapEqName
+          rw [hfl]
+          refine FlagAlgebras.Compute.BitMask.toFinset_eq_filter_of_mem_iff ?_
+          intro S
+          have hpq : ∀ L : Sym2LabeledGraph $typeTerm $(Quote.quote n),
+              ($isHfreeName ⟦L⟧ = true)
+                ↔ (!decide (FlagAlgebras.Compute.subgraphContains $fStx
+                    (FlagAlgebras.Compute.BitMask.graphOfMask₂ $(Quote.quote n)
+                      (FlagAlgebras.Compute.BitMask.maskOfGraph₂
+                        (FlagAlgebras.Compute.BitMask.underlyingGraph L))))) = true := by
+            intro L
+            rw [$isHfreeName:ident, decide_eq_true_eq]
+            exact FlagAlgebras.Compute.BitMask.supergraph_densities_iff_maskTest
+              $fStx $injId (FlagAlgebras.Compute.BitMask.underlyingGraph L)
+          exact FlagAlgebras.Compute.BitMask.labeledEmittedHfree_mem_iff
+            (p := fun S => $isHfreeName S = true)
+            (q := fun h => !decide (FlagAlgebras.Compute.subgraphContains $fStx
+              (FlagAlgebras.Compute.BitMask.graphOfMask₂ $(Quote.quote n) h)))
+            (by omega) $injId $ltId $coverId
+            (fun x hx' hx => $rreflectId hx' hx)
+            $hfRepsLtName hpq _ $hfSoundName $hfCoverName S
+      ))
+  else
+    elabUnlessDefined sym2SetEqName.getId (← `(
+        theorem $sym2SetEqName :
+            $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by flag_bridge_decide))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
@@ -918,13 +1328,23 @@ subgraph-{tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_fla
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_val_eq")
   let freeBridgeTerms : Array (TSyntax `term) := freeArr.map (fun i =>
     mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}"))
+  let hnodupProof : TSyntax `term ←
+    if maskOK then
+      `(by
+        have hfl := $hfMapEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.BitMask.labeledEmitted_nodup_inv
+          (by omega) $injId $ltId $unrootedCanonId $canonInvId
+          _ $hfDistinctName $hfNodupName)
+    else
+      `(by flag_bridge_decide)
   elabUnlessDefined flagSetValEqName.getId (← `(
       theorem $flagSetValEqName :
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
-        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          flag_bridge_decide
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup :=
+          $hnodupProof
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=

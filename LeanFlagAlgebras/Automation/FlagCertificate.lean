@@ -523,17 +523,22 @@ def requiredCommands (cert : CertData) (tag : String)
   for (n, k, m) in triples.mergeSort tripleLE do
     out := out ++ [(s!"generate_forbid_free_flags {n} {k} {m} {tag}",
       Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}")]
-  -- Pair densities + products, per block in certificate order.
+  -- Pair densities + products, per block in certificate order. The pair-density
+  -- sentinel is the FIRST per-pair value theorem (first forbid-free pattern
+  -- index against the first forbid-free typed host index): both the batched
+  -- native route and the BitMask kernel route (`flagGen.maskPairDensity`) emit
+  -- it, whereas `pairDensityBatch_…_0` exists only on the batched route.
   let mut seen : List (Nat × Nat × Nat) := []
   for b in cert.blocks do
     let key := (b.patN, b.typeK, b.typeIdx)
     unless seen.contains key do
       seen := seen ++ [key]
       let i0 := patternFree0 b.patN b.typeK b.typeIdx
+      let h0 := patternFree0 cert.hostN b.typeK b.typeIdx
       out := out ++
         [(s!"generate_forbid_free_flag_pair_density_theorems {b.patN} {cert.hostN} {b.typeK} {b.typeIdx} {tag}",
           Name.mkSimple
-            s!"pairDensityBatch_{b.patN}_{b.typeK}_{b.typeIdx}_{cert.hostN}_{b.typeK}_{b.typeIdx}_0"),
+            s!"flagDensity₂_Flag_{b.patN}_{b.typeK}_{b.typeIdx}_{i0}_Flag_{b.patN}_{b.typeK}_{b.typeIdx}_{i0}_Flag_{cert.hostN}_{b.typeK}_{b.typeIdx}_{h0}"),
          (s!"generate_forbid_free_mul_theorems {b.patN} {cert.hostN} {b.typeK} {b.typeIdx} {tag}",
           Name.mkSimple
             s!"flagMul_FlagAlgebra_{b.patN}_{b.typeK}_{b.typeIdx}_{i0}_FlagAlgebra_{b.patN}_{b.typeK}_{b.typeIdx}_{i0}")]
@@ -578,13 +583,14 @@ def runFlagCertificate (pathStx : TSyntax `str) (fStx : TSyntax `ident)
 
   let mut patternFree0Map : List ((Nat × Nat × Nat) × Nat) := []
   for b in cert.blocks do
-    let key := (b.patN, b.typeK, b.typeIdx)
-    unless patternFree0Map.any (·.1 == key) do
-      let rows ← evalFlagRows b.typeK b.typeIdx b.patN
-      let free := (List.range rows.length).filter fun i =>
-        ¬ subgraphContainsL cert.forbidN cert.forbidEdges b.patN
-          ((rows.getD i (0, [], [], 0, 0)).2.1)
-      patternFree0Map := patternFree0Map ++ [(key, free.headD 0)]
+    for nn in [b.patN, cert.hostN] do
+      let key := (nn, b.typeK, b.typeIdx)
+      unless patternFree0Map.any (·.1 == key) do
+        let rows ← evalFlagRows b.typeK b.typeIdx nn
+        let free := (List.range rows.length).filter fun i =>
+          ¬ subgraphContainsL cert.forbidN cert.forbidEdges nn
+            ((rows.getD i (0, [], [], 0, 0)).2.1)
+        patternFree0Map := patternFree0Map ++ [(key, free.headD 0)]
   let patternFree0 : Nat → Nat → Nat → Nat := fun n k m =>
     (patternFree0Map.find? (·.1 == (n, k, m))).map (·.2) |>.getD 0
 
