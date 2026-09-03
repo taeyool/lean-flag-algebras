@@ -83,6 +83,33 @@ import LeanFlagAlgebras.Flagmatic.ErdosPentagon
 import LeanFlagAlgebras.Flagmatic.K5freeEdge
 import LeanFlagAlgebras.Flagmatic.C5freeEdge
 
+-- BitMask (2-graph bitmask pipeline, ported from the order-7 tetrahedron
+-- machinery): kernel-checked (`decide +kernel`, no `native_decide`)
+-- canonicalization sweeps — every 5-/6-vertex graph is `∼sf` to a listed
+-- representative mask.
+import LeanFlagAlgebras.BitMask.Mask2
+import LeanFlagAlgebras.BitMask.Canon5
+import LeanFlagAlgebras.BitMask.Canon6
+import LeanFlagAlgebras.BitMask.MaskBridge
+import LeanFlagAlgebras.BitMask.Canon7
+import LeanFlagAlgebras.BitMask.MaskWiringTest
+import LeanFlagAlgebras.BitMask.Density
+import LeanFlagAlgebras.BitMask.CanonSmall
+import LeanFlagAlgebras.BitMask.Density6
+import LeanFlagAlgebras.BitMask.DensityTest
+import LeanFlagAlgebras.BitMask.RootedMask
+import LeanFlagAlgebras.BitMask.RootedDensity
+import LeanFlagAlgebras.BitMask.RootedCanon
+import LeanFlagAlgebras.BitMask.RootedCount
+import LeanFlagAlgebras.BitMask.RootedCountTest
+import LeanFlagAlgebras.BitMask.RootedPairTest
+import LeanFlagAlgebras.BitMask.RootedAccept
+import LeanFlagAlgebras.BitMask.RootedMatrix
+import LeanFlagAlgebras.BitMask.RCanon2_6
+import LeanFlagAlgebras.BitMask.RootedHfree
+import LeanFlagAlgebras.BitMask.HfreeTypedTest
+import LeanFlagAlgebras.BitMask.MaskPairDensityTest
+
 -- MetaTheory (paper.tex §1–8, plus §9 pinning obstruction): complete and sorry-free
 import LeanFlagAlgebras.MetaTheory
 
