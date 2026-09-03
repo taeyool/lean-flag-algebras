@@ -2,12 +2,13 @@
 -- Do not edit by hand; regenerate with
 --   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
 --     LeanFlagAlgebras/Flagmatic/Certificates/K3freeC6_cert.json \
---     LeanFlagAlgebras/Flagmatic/K3freeC6.lean --namespace K3freeC6 --native-decide --force
+--     LeanFlagAlgebras/Flagmatic/K3freeC6.lean --namespace K3freeC6 --mask-density --mask-flagsets --force
 -- The main theorem is proved by `flag_certificate`, which reads the
 -- certificate file at elaboration time; pass --materialize to emit the
 -- fully expanded proof instead (no build-time certificate dependence).
 
 import LeanFlagAlgebras.Automation.FlagCertificate
+import LeanFlagAlgebras.BitMask.RCanon2_6
 
 open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
@@ -21,11 +22,19 @@ namespace K3freeC6
 -- enumerated, and they emit the K3-free flags, the completeness lemma for that set, and
 -- the pair-density / multiplication theorems the proof consumes.
 def K3 : Sym2Graph 3 := completeSym2Graph 3
--- Generated bridging lemmas are proved by `native_decide`, so the main theorem below
--- additionally depends on the `Lean.ofReduceBool` and `Lean.trustCompiler` axioms,
--- which trust Lean's compiler and runtime for the evaluated decision procedures.
--- Regenerating without `--native-decide` proves the same lemmas by `decide +kernel`
--- and removes both, at a higher build cost.
+-- Every generated bridging lemma is proved by `decide +kernel`, so this file
+-- introduces no compiled-evaluation axiom: `#print axioms` on the main theorem
+-- below lists only Lean's own three.
+set_option flagGen.kernelDecide true
+-- The pair densities route through the BitMask rooted sweeps (shared
+-- subset-pair pass), keeping each kernel check a small declaration -- the
+-- batched `decide +kernel` alternative balloons the kernel's evaluation cache.
+set_option flagGen.maskPairDensity true
+set_option flagGen.maskPairDensityShared true
+-- The flag-set completeness layers route through the BitMask
+-- canonicalization sweeps (triangle forbids at swept combinations).
+set_option flagGen.maskCompleteness true
+set_option flagGen.maskFlagSets true
 -- The generation commands run large decision procedures during elaboration, and the
 -- closing normalization recurses over a long flag sum; both limits are lifted for the
 -- rest of the file.
