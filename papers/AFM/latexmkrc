@@ -1,0 +1,3 @@
+# Always build with pdfLaTeX.
+$pdf_mode = 1;
+$pdflatex = 'pdflatex %O %S';
