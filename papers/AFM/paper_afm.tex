@@ -262,37 +262,33 @@ H.~Yang \texttt{0000-0003-1502-2942}}
 Razborov's flag algebra method is one of the most successful tools for proving
 asymptotic density inequalities in extremal graph theory.  It reduces an
 inequality about all large graphs avoiding a forbidden pattern to finitely many
-algebraic conditions, and in practice a semidefinite-programming solver finds a
-certificate satisfying them.  We formalize the method for finite simple graphs
+algebraic conditions, and a certificate satisfying them can be found by
+semidefinite programming.  We formalize the method for finite simple graphs
 in Lean~4, building on Mathlib.  The formalization covers flags and their
-densities, the flag algebra as a quotient of formal density expressions,
-positive homomorphisms and their correspondence with limits of convergent graph
-sequences, Razborov's random extensions, and the downward operator that
-averages out labels.  On top of this theory we build verified computation of
-flag densities and a tactic that turns certificates produced by the Flagmatic
-software into Lean proofs.  The certificate serves only as candidate data:
-Lean checks every density, product, and positive-semidefiniteness fact that the
-proof uses.
+densities, the flag algebra as a quotient vector space, positive
+homomorphisms as limits of graph sequences, Razborov's random extensions, and
+the downward operator that averages out labels.  On top of this theory we build
+verified computation of flag densities and a tactic that turns certificates
+found by semidefinite programming into Lean proofs.  The certificate serves
+only as candidate data; Lean checks every fact the proof uses.
 
 With this development we verify seven Tur\'an-type upper bounds.  Adding
 lower-bound constructions proved in Lean yields the asymptotic form of Mantel's
 theorem and the asymptotic Erd\H{o}s pentagon theorem
 $\tdensity{C_5}{K_3}=24/625$; to our knowledge, the latter has not previously
-been formalized in a proof assistant.  We also derive two inequalities of
-Goodman directly from the formalized theory.  All density theorems reported
-here depend only on the standard axioms of Lean's logic.
+been formalized in a proof assistant.  We also prove two inequalities of
+Goodman.  All density theorems reported here depend only on the standard
+axioms of Lean's logic.
 % TODO(phase 4): confirm the axiom claim with #print axioms on every theorem
 % in the statement-to-declaration table.
 
-Formalization also changed how we treat forbidden subgraphs.  Instead of
-building a separate flag algebra for each forbidden family, we keep a single
-algebra of all graphs and impose the constraint only when interpreting an
-inequality, through randomly labeled limits of graphs in the class.  We prove
-that this ensemble semantics yields the intended density bounds, and that it
-validates the same inequalities between labeled expressions as the standard
-semantics exactly when the constrained class satisfies a condition we call
-root-plantability.  Root-plantability holds for every blow-up-closed class,
-including all $K_r$-free classes, but fails for the $C_4$-free graphs.
+Formalization also led us to treat forbidden subgraphs with a different
+semantics.  Instead of building a separate flag algebra for each forbidden
+family, we keep a single algebra of all graphs and impose the constraint only
+when interpreting an inequality, through randomly labeled limits of graphs
+satisfying it.  We prove that this ensemble semantics yields the intended density
+bounds, and that a condition we call root-plantability characterizes when it
+agrees with the standard semantics.
 \end{abstract}
 
 \medskip
