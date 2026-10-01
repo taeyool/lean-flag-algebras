@@ -2363,44 +2363,48 @@ carried out determines both what must be trusted and how far it scales.
 Evaluation by \lean{decide +kernel} happens inside Lean's kernel and adds
 nothing to what must be trusted, but it is slow.  The faster alternative,
 \lean{native\_decide}, compiles the computation to native code and therefore
-also trusts Lean's compiler and runtime.  For the five smaller certificates of
+also trusts Lean's compiler.  For the five smaller certificates of
 \Cref{sec:results}, the edge-set representation of
 \Cref{sec:reflection-concrete} is fast enough for kernel evaluation.  For the
-two largest, which need \(10{,}332\) and \(8{,}172\) pair-density identities, it
-is not, and a second, lower-level encoding carries the computation.
+two largest, which need \(10{,}332\) and \(8{,}172\) pair-density identities,
+kernel evaluation with this representation did not finish in acceptable time,
+so these certificates could at first be checked only with
+\lean{native\_decide}.  To check them in the kernel as well, we introduce a
+more efficient bit-mask encoding.
 
-In this encoding a graph on \(n\) vertices is a single natural number, whose bit
-at position \(\iota(a,b)\) records whether \(\{a,b\}\) is an edge; here \(\iota\)
-ranks the pairs \(a<b\) lexicographically.  A decoding map with a proved inverse
-sends each mask to an edge-set graph, so the encoding sits beneath the
-reflection layer rather than replacing it.  Two masks describe isomorphic
-graphs whenever some permutation of the vertices carries the edge bits of one
-onto those of the other, a condition that is checked bit by bit.  On top of
-this, a \emph{canonicalization sweep} proves by exhaustive kernel evaluation
-over all \(2^{\binom n2}\) masks that every graph on \(n\) vertices is
-isomorphic to one of a given list of representatives, for example the \(34\)
-graphs on five vertices and the \(156\) on six.  The permutations witnessing
-these isomorphisms are produced outside Lean by an unverified script and only
-checked by the kernel, the same division of labor as for certificates in
-\Cref{sec:flagmatic}.  Flags of a nonempty type are encoded in the same way
-with the labeled vertices first, so that a single sweep over the permutations
-of the unlabeled vertices serves every flag type of a given size.
+The idea is to represent a graph by a single natural number, on which the
+kernel computes much faster than on finite sets of edges.  List the pairs
+\(a<b\) of vertices in lexicographic order, and let the \(i\)-th bit of the
+number record whether the \(i\)-th pair is an edge.  On three vertices, for
+instance, the pairs \(\{0,1\}\), \(\{0,2\}\), \(\{1,2\}\) correspond to bits
+\(0\), \(1\), \(2\), so the path with edges \(\{0,1\}\) and \(\{0,2\}\) is the
+number \(2^0+2^1=3\).  We call such a number a \emph{mask}; flags of a nonempty
+type are encoded in the same way, with their labeled vertices listed first.  A
+decoding map
+turns each mask into an edge-set graph of \Cref{sec:reflection-concrete}, and
+every such graph arises from some mask.  Facts proved about masks therefore
+carry over to edge-set graphs, and from there to the specification layer, so
+the new encoding adds a layer below the existing one rather than replacing it.
+Isomorphism is also cheap to check on masks: given a permutation of the
+vertices (for flags, one fixing the labeled vertices), one compares the bits of
+one mask with the permuted bits of the other.
 
-Density identities then become counting statements about masks, with proved
-bridges to \lean{sym2FlagDensity}$_1$ and \lean{sym2FlagDensity}$_2$ and hence,
-through the adequacy theorems, to the specification-level densities.  The
-decisive saving concerns the pair densities \(\den{F_1,F_2}{G}\).  Instead of
+Masks serve two purposes.  The first is to prove that a list of graphs is
+complete, that is, that every graph on \(n\) vertices is isomorphic to one on
+the list, which the generated identities of \Cref{sec:reflection-generation}
+rely on.  With masks this can be proved by brute force: a
+\emph{canonicalization sweep} runs through all \(2^{\binom n2}\) masks on \(n\)
+vertices and checks, for each, a permutation carrying it to a listed
+representative.  The permutations are found outside Lean by an unverified
+script and only checked by the kernel.
+
+The second purpose is to compute densities, which become counting statements
+about masks.  The decisive saving concerns the pair densities \(\den{F_1,F_2}{G}\).  Instead of
 enumerating the pairs of vertex subsets of a host \(G\) once for every pattern
 pair, a single kernel-checked theorem per host records the multiset of
 canonical pattern pairs that all admissible subset pairs realize, and each pair
-density is then read off as a multiplicity.  Forbidden graphs are handled by
-filtering the lists of representatives.  For a general forbidden graph \(H\), a
-graph is \(H\)-free exactly when every graph containing \(H\) as a subgraph has
-density zero in it; this equivalence, proved once, lets a decidable containment
-test stand in for the density condition.  The \(K_5\)-free certificate uses the
-shared pass for its pair densities, and the \(C_5\)-free certificate also
-obtains its lists of flags from the sweeps.  With these routes, both are checked
-entirely by the kernel.
+density is then read off as a multiplicity.  With this encoding, the two
+largest certificates are checked entirely by the kernel.
 
 \section{Verifying Flag-Algebra Certificates}
 \label{sec:flagmatic}
