@@ -405,59 +405,32 @@ certificate serves only as candidate data: Lean checks every fact the proof
 uses, so an erroneous certificate makes the proof fail instead of yielding a
 false theorem.
 
-\paragraph{A formalization-driven view of forbidden subgraphs.}
-Formalization did more than add assurance to the method: it suggested a
-different organization of the mathematics.  Every bound verified in this paper
-concerns graphs that avoid a specified subgraph $H$.  Razborov's standard
-presentation builds this constraint into the flag algebra from the outset,
-constructing a separate algebra for each forbidden family.  To let one formal
-development serve all such problems, we instead keep a single ambient algebra
-of all finite graphs and impose $H$-freeness only when interpreting an
-inequality, by testing it on randomly labeled limits of $H$-free graphs.  We
-call this the \emph{ensemble semantics}.  It keeps the core definitions and
-lemmas independent of the forbidden family, and we prove directly that ensemble
-inequalities yield the corresponding asymptotic density bounds, so the standard
-semantics plays no role in justifying our results.
-
-The alternative semantics nevertheless raises a natural mathematical question:
-when do the two semantics validate the same inequalities?  They always agree
-for unlabeled inequalities, which is why the choice never affects a density
-bound, but they can differ for inequalities between labeled expressions.
-\Cref{sec:metatheory} shows that validity in the standard semantics always
-implies validity in the ensemble semantics, and that the converse holds for all
-inequalities at a given flag type exactly when the constrained graph class
-satisfies a structural condition that we call \emph{root-plantability}.  Every
-blow-up-closed class, including every $K_r$-free class, is root-plantable,
-whereas the class of $C_4$-free graphs is not.  In this way the formalization
-led to new mathematics in addition to checking existing arguments; a companion
-paper develops the theory in full.
+\paragraph{Forbidden subgraphs and the ensemble semantics.}
+Every bound verified in this paper concerns graphs that avoid a specified
+subgraph $H$.  Razborov's standard presentation builds this constraint into
+the flag algebra, constructing a separate algebra for each forbidden family.
+To reuse a single development across problems, we instead keep one algebra of
+all finite graphs and impose $H$-freeness only when interpreting an
+inequality, through randomly labeled limits of $H$-free graphs.  We call this
+the \emph{ensemble semantics} and prove that it yields the intended density
+bounds.  \Cref{sec:metatheory} shows that every inequality valid in the
+standard semantics is valid in the ensemble semantics, and characterizes,
+through a condition we call \emph{root-plantability}, when the converse holds.
 
 \paragraph{Contributions.}
 We make the following contributions.
 \begin{itemize}
-\item \emph{A formalization of the classical theory of flag algebras} for
-  finite simple graphs in Lean~4 and Mathlib, including Razborov's
-  correspondence between positive homomorphisms and convergent graph
-  sequences, the random-extension theorem, and the positivity of the downward
-  operator (\Cref{sec:abstract}).
-\item \emph{Formally verified density theorems.}  Seven Tur\'an-type upper
-  bounds verified from Flagmatic certificates (\Cref{sec:flagmatic}); the
-  asymptotic form of Mantel's theorem and the asymptotic Erd\H{o}s pentagon
-  theorem $\tdensity{C_5}{K_3}=24/625$, obtained by adding lower-bound
-  constructions proved in Lean; and two inequalities of Goodman
-  (\Cref{sec:lowerbounds}).  To our knowledge, this is the first
-  proof-assistant formalization of the asymptotic density statement
-  $\tdensity{C_5}{K_3}=24/625$.
-\item \emph{Ensemble semantics and root-plantability.}  A way of imposing
-  forbidden subgraphs that keeps the flag algebra independent of the
-  constraint, a proof that it yields the intended density bounds, and a
-  characterization of when it agrees with the standard semantics
-  (\Cref{sec:forbidden,sec:metatheory}), all formalized in Lean.
-\item \emph{Lessons for formalizing quotient-heavy combinatorics}
-  (\Cref{sec:obstacles}): keeping a quotient-based specification separate
-  from a computable representation joined to it by adequacy theorems, proving
-  counting identities through explicit bijections, and handling type-level
-  indexing and the coherence of inferred finite enumerations in Lean.
+\item A formalization of the theory of flag algebras for finite simple graphs,
+  and a tactic built on it that uses verified computation to turn flag-algebra
+  certificates into machine-checked proofs.
+\item Seven Tur\'an-type upper bounds verified from Flagmatic certificates.
+  For Mantel's theorem and the Erd\H{o}s pentagon theorem, we also prove
+  matching lower-bound constructions in Lean, which yields the asymptotic
+  forms $\tdensity{K_2}{K_3}=1/2$ and $\tdensity{C_5}{K_3}=24/625$; to our
+  knowledge, the latter is formalized here for the first time.
+\item The ensemble semantics for forbidden subgraphs and the root-plantability
+  criterion comparing it with the standard semantics, which we autoformalized
+  in Lean.
 \end{itemize}
 The complete Lean development is publicly available:
 \begin{center}
@@ -3358,9 +3331,11 @@ its own right: when does this \emph{ensemble semantics} validate exactly the
 same typed inequalities as the standard semantics, in which the constraint is
 built into the algebra from the beginning?  This section gives the definitions
 and main results needed to state the answer.  The proofs are only sketched;
-the companion paper~\cite{metatheory2026} presents the full theory and its
+a companion paper, in preparation, presents the full theory and its
 applications, and the results reported here are machine-checked in the
 released development.
+% TODO: cite the companion paper here and at the end of this section once it
+% is posted.
 
 \paragraph{The constrained positive-homomorphism space.}
 Let \(\mathcal G\) be the class of all finite simple graphs, let
@@ -3681,8 +3656,8 @@ quotient, had to be built.
 This section isolates the core consequences of \lean{forbidLE}: inequalities
 valid in the quotient order are always valid in the ensemble order,
 root-plantability characterizes when the converse holds, and blow-up closure is
-a broad sufficient condition for it.  The companion
-paper~\cite{metatheory2026} gives the complete account and goes further, with
+a broad sufficient condition for it.  The companion paper gives the complete
+account and goes further, with
 a finite criterion implying root-plantability, further classes on either side
 of the boundary, and a relative ensemble semantics that admits non-hereditary
 constraints such as a fixed edge density.
