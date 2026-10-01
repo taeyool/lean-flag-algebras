@@ -1,10 +1,12 @@
-import LeanFlagAlgebras.ErdosPentagon.Lemmas
+import LeanFlagAlgebras.ErdosPentagon.FlagDef
+import LeanFlagAlgebras.Flagmatic.ErdosPentagon
 
 /-! # The Erdős pentagon problem
 
 The headline file: the maximum 5-cycle density among triangle-free graphs.
-Combines the flag-algebra upper bound from `Lemmas.lean` with an explicit
-blow-up lower-bound construction to prove:
+Combines the kernel-checked Flagmatic certificate of
+`Flagmatic/ErdosPentagon.lean` with an explicit blow-up lower-bound
+construction to prove:
 
 * `ErdosPentagon_Turan_upperBound` — `generalizedTuranDensity K3 C5 ≤ 24/625`;
 * `ErdosPentagon_Turan_lowerBound` — `generalizedTuranDensity K3 C5 ≥ 24/625`,
@@ -17,14 +19,39 @@ open Filter Topology SimpleGraph
 
 namespace ErdosPentagonAPI
 
+/-- The pentagon `C5` and the target graph of the Flagmatic certificate are
+isomorphic 5-cycles, so they define the same flag-algebra element. The target
+`Sym2Graph_5_0_0_19` has edges `01,02,13,24,34`, and
+`0 ↦ 0, 1 ↦ 1, 2 ↦ 3, 3 ↦ 4, 4 ↦ 2` carries `C5` onto it. -/
+lemma C5_toFlagAlgebra_eq_certificate
+    : C5.toFlagAlgebra = ErdosPentagon.FlagAlgebra_5_0_0_19
+  := by
+  simp [toFlagAlgebra, C5, toFinFlag]
+  congr 3
+  apply Quotient.sound
+  refine Nonempty.intro { graph_iso := ?_, type_preserve := List.ofFn_inj.mp rfl }
+  exact {
+    toFun i := match i with
+      | 0 => 0 | 1 => 1 | 2 => 3 | 3 => 4 | 4 => 2
+    invFun i := match i with
+      | 0 => 0 | 1 => 1 | 2 => 4 | 3 => 2 | 4 => 3
+    left_inv i := by fin_cases i <;> simp
+    right_inv i := by fin_cases i <;> simp
+    map_rel_iff' := by
+      intro i j
+      fin_cases i <;> fin_cases j <;>
+        simp [ErdosPentagon.Sym2Graph_5_0_0_19, mkEdgeFinset, Compute.Sym2Graph.toLabeledGraph]
+  }
+
 /-- Upper bound: the `K₃`-free generalized Turán density of the pentagon is at
-most `24/625`, transferred from the flag-algebra bound
-`ErdosPentagon_flagAlgebra`. -/
+most `24/625`, transferred from the kernel-checked Flagmatic certificate
+`ErdosPentagon.ErdosPentagon_flagAlgebra` (`K3` is `completeGraph (Fin 3)`). -/
 theorem ErdosPentagon_Turan_upperBound
     : generalizedTuranDensity K3 C5 ≤ 24 / 625
-  :=
-  generalizedTuranDensity_le_of_forbidLE (by norm_num)
-    (inducedForbidLE_toFinFlag_imp_forbidLE K3 ErdosPentagon_flagAlgebra)
+  := by
+  apply generalizedTuranDensity_le_of_forbidLE (by norm_num)
+  rw [C5_toFlagAlgebra_eq_certificate]
+  exact ErdosPentagon.ErdosPentagon_flagAlgebra
 
 /-- The `n`-fold blow-up of `G`: each vertex is replaced by an independent set
 of `n` copies, with edges inherited from `G` on the first coordinate. -/
