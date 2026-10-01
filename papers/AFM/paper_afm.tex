@@ -300,47 +300,64 @@ density, graph limits, semidefinite programming, formalized mathematics, Lean.
 \section{Introduction}
 \label{sec:intro}
 
-Many central questions in extremal combinatorics ask how often one small
-pattern can occur in a large graph when another pattern is forbidden.  The
-oldest example concerns finite simple graphs\footnote{By a finite simple graph,
-we mean an undirected graph with a finite vertex set, no self-loops, and at
-most one edge between any two distinct vertices.  Formally, it is a pair
-$G=(V,E)$, where $V$ is finite and $E\subseteq\binom{V}{2}$; here
-$\binom{V}{2}$ denotes the set of two-element subsets of $V$.  We write $V(G)$
-and $E(G)$ for the vertex set $V$ and the edge set $E$, respectively.} without
-triangles: what is the largest fraction of vertex pairs that can be edges?
-Mantel's theorem~\cite{mantel} answers this question, and asymptotically it
-states that
+Many central questions in extremal combinatorics ask how often one finite
+pattern can occur in a large graph when another pattern is forbidden.  Let $F$
+be a finite simple graph and $\mathcal{H}$ a finite collection of finite simple
+graphs.  We write
 \[
+  \mathrm{ex}(n,\,F;\,\mathcal{H})
+  :=
+  \max\bigl\{
+    \text{number of induced copies of }F\text{ in }G
+    \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
+  \bigr\},
+\]
+where an \emph{induced copy} of $F$ in $G$ is a vertex subset
+$S\subseteq V(G)$ with $|S|=|V(F)|$ whose induced subgraph $G[S]$ is
+isomorphic to $F$, and \emph{\(\mathcal{H}\)-free} means that $G$ contains no
+copy of any member of $\mathcal{H}$ as a (not necessarily induced) subgraph.
+Normalizing by the number $\binom{n}{|V(F)|}$ of $|V(F)|$-vertex subsets and
+letting $n$ grow gives the \emph{Tur\'an density} of $F$ with respect to
+$\mathcal{H}$:
+\[
+  \tdensity{F}{\mathcal{H}}
+  :=
   \lim_{n\to\infty}
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
+\]
+Whenever $\mathcal{H}=\{H\}$ is a singleton, we write $H$ in place of
+$\mathcal{H}$.
+
+The oldest example concerns graphs without triangles: what is the largest
+fraction of vertex pairs that can be edges?  Since the induced copies of $K_2$
+in a graph are exactly its edges, the answer is the Tur\'an density
+$\tdensity{K_2}{K_3}$, and Mantel's theorem~\cite{mantel} states that
+\[
+  \tdensity{K_2}{K_3}
+  = \lim_{n\to\infty}
   \max_{\substack{|V(G)|=n\\G\text{ triangle-free}}}
   \frac{|E(G)|}{\binom{n}{2}}
   = \frac{1}{2}.
 \]
-The expression on the left is the \emph{Tur\'an density} of edges in
-triangle-free graphs; \Cref{sec:background} defines Tur\'an densities for
-arbitrary target graphs and forbidden families.  The two directions of the
-equality have very different proof burdens.  For the lower bound, one explicit
-construction suffices: balanced complete bipartite graphs contain no triangles
-and have edge densities approaching $1/2$.  The upper bound is the universal
-part: it must show that no sequence of increasingly large triangle-free graphs
-can asymptotically exceed $1/2$.  No finite collection of examples establishes
-such a claim, and the extremal graphs may change unpredictably as the number
-of vertices grows.
 
-Razborov's flag algebra method~\cite{razborov2007flag} is a systematic
-technique for such universal claims.  It reduces an asymptotic density bound to
-a finite algebraic calculation over small, partially labeled graphs, called
-\emph{flags}, that encode the relevant local configurations.  A
-\emph{certificate} for a bound selects finitely many flags, supplies matrices
-with rational entries, and gives rational coefficients that weight the
-resulting algebraic terms.  It asserts that these data satisfy specified
-algebraic identities and that the matrices are positive semidefinite.  Once
-these finite claims are verified, the theory of flag algebras lifts them to the
-desired asymptotic upper bound.  Finding such data is a semidefinite
-programming (SDP) problem: software such as
-Flagmatic~\cite{vaughan2013flagmatic} solves it numerically and rounds the
-solution to exact rational form.
+The two directions of such an equality have very different proof burdens.  For
+the lower bound, one explicit construction suffices: for Mantel's theorem,
+balanced complete bipartite graphs contain no triangles and have edge densities
+approaching $1/2$.  The upper bound is the
+universal part: it must show that no sequence of increasingly large
+\(\mathcal{H}\)-free graphs can asymptotically exceed the claimed value.  No
+finite collection of examples establishes such a claim, and the extremal
+graphs may change unpredictably as the number of vertices grows.
+
+Razborov's flag algebra method~\cite{razborov2007flag} provides a proof
+technique for such universal claims: it reduces the task of proving an
+asymptotic upper bound for an infinite class of graphs to checking finitely many
+algebraic conditions on small, partially labeled graphs, called
+\emph{flags}.  A semidefinite programming (SDP) solver, run through software
+such as Flagmatic~\cite{vaughan2013flagmatic}, proposes a finite package of
+data intended to satisfy these conditions, consisting of flags, rational
+matrices, and coefficients; we call this package a \emph{certificate}.  The
+flag algebra framework explains why a certificate that passes the checks establishes the desired bound for the whole class.
 
 This combination of abstraction and computer search has been unusually
 effective.  It proved the Erd\H{o}s pentagon theorem on the maximum asymptotic
@@ -351,29 +368,25 @@ density~\cite{balogh2016induced5}, and settled the rainbow-triangle
 problem~\cite{balogh2017rainbow}.  It has also given upper bounds for
 Tur\'an's tetrahedron problem~\cite{razborov2010tetrahedron} and determined
 several Tur\'an densities of 3-uniform hypergraphs~\cite{baber2012turan}.
+% TODO: add our own paper bounding Turan's tetrahedron problem with flag
+% algebras as a citation here, once its arXiv version has been updated.
 
 The certificates behind such results are finite but not small.  A nontrivial
-certificate combines many flags and depends on large tables of exact counting
-results for small graphs, each entry recording the fraction of vertex
-selections in one small labeled graph that induce another pattern.  For the
-Erd\H{o}s pentagon problem these tables contain thousands of entries, and the
-matrices must be proved positive semidefinite in exact rational arithmetic.
-Such data are beyond realistic human audit, and they are produced by an
-unverified numerical toolchain.  A formal proof can neither take them on trust
-nor afford to prove thousands of entries by hand.  It must also rest on a
-formal account of the theory that gives the certificates their meaning, from
-the quotient algebra of density expressions to Razborov's correspondence
-between its positive homomorphisms and limits of graph sequences.
+certificate combines many flags and relies on large tables of density values
+for small graphs; for the Erd\H{o}s pentagon problem, these tables contain
+thousands of entries.  Such computer-generated certificates are impractical to
+check by hand, which makes flag-algebra results natural candidates for formal
+verification.
 
-\paragraph{This paper.}
+\paragraph{A Lean formalization of flag algebras.}
 We formalize the flag algebra method for finite simple graphs in
 Lean~4~\cite{moura2021lean}, building on Mathlib~\cite{mathlib2020}, and use
-the formalization both to verify certificates and to prove density theorems
-directly.  The development has three parts.
+it to turn flag-algebra certificates into machine-checked proofs of asymptotic
+density bounds.  The development has three parts.
 
 The \emph{specification layer} (\Cref{sec:abstract}) formalizes the theory as
 it appears on paper: flags as isomorphism classes of partially labeled graphs,
-their densities, the flag algebra as a quotient of formal density expressions,
+their densities, the flag algebra as a quotient vector space,
 positive homomorphisms together with Razborov's theorem identifying them with
 limits of convergent graph sequences, random extensions, and the downward
 operator.  Flag-algebra arguments can therefore be stated in Lean much as they
@@ -387,12 +400,10 @@ Each of the thousands of finite identities that a certificate needs is then
 proved by evaluation rather than by hand.
 
 On top of these two layers, a tactic (\Cref{sec:flagmatic}) turns a Flagmatic
-certificate into a Lean proof of a density bound stated in the source file.
-The certificate serves only as candidate data: Lean proves positive
-semidefiniteness through exact rational $LDL^\top$ factorizations, obtains the
-density and product identities from the reflection layer, and checks the final
-algebraic calculation.  An erroneous certificate therefore makes the proof fail
-instead of yielding a false theorem.
+certificate into a Lean proof of the density bound it certifies.  The
+certificate serves only as candidate data: Lean checks every fact the proof
+uses, so an erroneous certificate makes the proof fail instead of yielding a
+false theorem.
 
 \paragraph{A formalization-driven view of forbidden subgraphs.}
 Formalization did more than add assurance to the method: it suggested a
@@ -931,26 +942,17 @@ And since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
 closed under addition and under multiplication by non-negative reals.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
-For a finite simple graph $F$ and a finite collection $\mathcal{H}$ of finite
-simple graphs, write $\mathrm{ex}(n,\,F;\,\mathcal{H})$ for the maximum number
-of induced copies of $F$ in an $n$-vertex graph that contains no member of
-$\mathcal{H}$ as a (not necessarily induced) subgraph.  Thus an induced copy
-of $F$ preserves both edges and nonedges, whereas a subgraph copy of a member
-of $\mathcal{H}$ need preserve only its edges; additional edges between the
-corresponding vertices are allowed.  The associated
-\emph{Tur\'an density} is
-\[
-  \tdensity{F}{\mathcal{H}}
-  :=
-  \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
-\]
-It records the asymptotic proportion of $|V(F)|$-vertex subsets that induce a
-copy of $F$.  The limit exists: averaging the density of $F$ over the
-$(n-1)$-vertex induced subgraphs of an extremal $n$-vertex graph, which are
+Recall from \Cref{sec:intro} the extremal number
+$\mathrm{ex}(n,\,F;\,\mathcal{H})$ and the Tur\'an density
+$\tdensity{F}{\mathcal{H}}$, the asymptotic maximum proportion of
+$|V(F)|$-vertex subsets that induce a copy of $F$ in an \(\mathcal{H}\)-free
+graph.  An induced copy of $F$ preserves both edges and nonedges, whereas a
+subgraph copy of a member of $\mathcal{H}$ need preserve only its edges;
+additional edges between the corresponding vertices are allowed.  The limit
+defining $\tdensity{F}{\mathcal{H}}$ exists: averaging the density of $F$ over
+the $(n-1)$-vertex induced subgraphs of an extremal $n$-vertex graph, which are
 again $\mathcal{H}$-free, shows that the normalized sequence is
-non-increasing once $n\geq|V(F)|$, and it is bounded below by zero.  Whenever
-$\mathcal{H}=\{H\}$ is a singleton, we write $H$ in place of $\mathcal{H}$.
+non-increasing once $n\geq|V(F)|$, and it is bounded below by zero.
 
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
