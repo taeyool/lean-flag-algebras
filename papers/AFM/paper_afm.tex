@@ -323,8 +323,11 @@ $\mathcal{H}$:
   \tdensity{F}{\mathcal{H}}
   :=
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}},
 \]
+where the limit exists because a standard averaging argument shows that the
+sequence $\mathrm{ex}(n,\,F;\,\mathcal{H})/\binom{n}{|V(F)|}$ is
+non-increasing for $n\geq|V(F)|$.
 Whenever $\mathcal{H}=\{H\}$ is a singleton, we write $H$ in place of
 $\mathcal{H}$.
 
@@ -915,18 +918,6 @@ And since every $\phi \in \poshom{\sigma}$ is linear, $\mathcal{C}^\sigma$ is
 closed under addition and under multiplication by non-negative reals.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
-Recall from \Cref{sec:intro} the extremal number
-$\mathrm{ex}(n,\,F;\,\mathcal{H})$ and the Tur\'an density
-$\tdensity{F}{\mathcal{H}}$, the asymptotic maximum proportion of
-$|V(F)|$-vertex subsets that induce a copy of $F$ in an \(\mathcal{H}\)-free
-graph.  An induced copy of $F$ preserves both edges and nonedges, whereas a
-subgraph copy of a member of $\mathcal{H}$ need preserve only its edges;
-additional edges between the corresponding vertices are allowed.  The limit
-defining $\tdensity{F}{\mathcal{H}}$ exists: averaging the density of $F$ over
-the $(n-1)$-vertex induced subgraphs of an extremal $n$-vertex graph, which are
-again $\mathcal{H}$-free, shows that the normalized sequence is
-non-increasing once $n\geq|V(F)|$, and it is bounded below by zero.
-
 The problem of bounding the Tur\'an density $\tdensity{F}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
@@ -967,11 +958,7 @@ Two classical examples illustrate this.
   The Erd\H{o}s pentagon problem asks for the maximum density of $C_5$ in
   triangle-free graphs; the asymptotic answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$.  The upper bound corresponds to the flag algebra inequality
   $[C_5] \leq_{K_3} \tfrac{24}{625}\cdot\mathbf{1}$; an explicit \(K_3\)-free construction
-  (the balanced blow-up of $C_5$) witnesses the lower bound.  Lidick\'y and
-  Pfender~\cite{lidicky2018pentagons} later showed that for every $n\geq9$
-  the balanced blow-ups of $C_5$ are the only triangle-free $n$-vertex graphs
-  maximizing the number of five-cycles; this paper concerns only the
-  asymptotic statement.
+  (the balanced blow-up of $C_5$) witnesses the lower bound.
 \end{example}
 
 \subsection{The Downward Operator}
@@ -1087,70 +1074,44 @@ nonempty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 then, one adds $\llbracket f \rrbracket_\sigma$ to $[F]$ or an expansion of $[F]$
 at an appropriate size, and uses non-negativity of flag basis elements and
 Equation~\eqref{eq:sum-to-one} to conclude $[F] \leq_{\mathcal{H}} c\cdot\mathbf{1}$.
-The following example carries out this pattern for Mantel's theorem;
-\Cref{sec:flagmatic-background} shows that every certificate verified in this
-paper has the same shape.
+The following example carries out this pattern for Mantel's theorem.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
-  We prove $K_2\leq_{K_3}\tfrac12\cdot\mathbf{1}$ in the triangle-free flag
-  algebra, abbreviating the basis element $[K_2]$ by $K_2$.  Let $\sigma$ be
-  the one-vertex flag type, with its two size-$2$ flags $\fKtwobull$ and
-  $\fbarKtwobull$ from \Cref{fig:flag-examples}, and set
-  \[
-    f := \tfrac12\bigl((\fKtwobull)-(\fbarKtwobull)\bigr)^2,
-    \qquad
-    Q := \llbracket f \rrbracket_\sigma.
-  \]
-  Every $\phi\in\poshom{\sigma}$ preserves scalar multiplication and products,
-  so $\phi(f)=\tfrac12\bigl(\phi((\fKtwobull)-(\fbarKtwobull))\bigr)^2\geq0$.
-  Hence $0\leq_{K_3,\sigma}f$, and \Cref{thm:downward-nonneg} gives
-  $0\leq_{K_3}Q$.
-
-  To compute $Q$, expand the square at size three (the cross term is
-  \Cref{ex:typed-edge-nonedge-product}) and apply the downward operator:
-  \begin{align*}
-    Q
-    &=
-    \Bigl\llbracket
-      \tfrac12\bigl(
-         \fbarKthreebull+\fEthreebull
-         -\fbarPthreebull-\fPthreebull
-         +\fKonetwobull
-       \bigr)
-    \Bigr\rrbracket_\sigma\\
-    &= \tfrac12\bigl(
-         \fbarKthree
-         + \tfrac13\cdot\fbarPthree
-         - \tfrac23\cdot\fbarPthree
-         - \tfrac23\cdot\fPthree
-         + \tfrac13\cdot\fPthree
-       \bigr)
-    \;=\; \tfrac12\cdot\fbarKthree
-       -\tfrac16\cdot\fbarPthree
-       -\tfrac16\cdot\fPthree.
-  \end{align*}
-  The coefficients $1$, $\tfrac13$, and $\tfrac23$ are the normalizing
-  factors $q_\sigma$: all three, one, or two of the choices of the labeled
-  vertex recover the displayed $\sigma$-flag.  Combining $Q$ with the
-  expansion~\eqref{eq:k2-expansion} of $K_2$ and with the instance
-  $\mathbf{1}=\fbarKthree+\fbarPthree+\fPthree$ of
-  Equation~\eqref{eq:sum-to-one} gives
-  \begin{align}
-    K_2
-    &\leq_{K_3} K_2+Q
-    = \bigl(\tfrac13\cdot\fbarPthree + \tfrac23\cdot\fPthree\bigr)
-      + \bigl(\tfrac12\cdot\fbarKthree
-      -\tfrac16\cdot\fbarPthree
-      -\tfrac16\cdot\fPthree\bigr)
-      \notag\\
-    &= \tfrac12\cdot
-       \bigl(\fbarKthree+\fbarPthree+\fPthree\bigr)
-       - \tfrac13\cdot\fbarPthree
-    = \tfrac12\cdot\mathbf{1} - \tfrac13\cdot\fbarPthree
-    \;\leq_{K_3}\; \tfrac12\cdot\mathbf{1},
-    \label{eq:mantel-chain}
-  \end{align}
-  where the last step uses $0\leq_{K_3}\fbarPthree$.
+We prove $K_2 \leq_{K_3} \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag
+algebra.  Let $\sigma$ be the one-vertex flag type.  Squares are
+non-negative, so $0 \leq_{K_3,\sigma} ((\fKtwobull) - (\fbarKtwobull))^2$, and
+\Cref{thm:downward-nonneg} carries this inequality to the unlabeled algebra.
+Expanding the square, computing each product at size~$3$ (the cross term is
+\Cref{ex:typed-edge-nonedge-product}), and then applying the downward operator
+gives the following inequality in $\mathcal{A}^{\emptyset}$:
+\begin{align}
+  0 \leq_{K_3} \llbracket((\fKtwobull) - (\fbarKtwobull))^2\rrbracket_\sigma
+  &= \llbracket(\fKtwobull)\cdot(\fKtwobull)
+     - 2\cdot(\fKtwobull)\cdot(\fbarKtwobull)
+     + (\fbarKtwobull)\cdot(\fbarKtwobull)\rrbracket_\sigma\notag\\
+  &= \left\llbracket\fbarKthreebull + \fEthreebull
+    - \fbarPthreebull - \fPthreebull
+    + \fKonetwobull\right\rrbracket_\sigma\notag\\
+  &= \fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree.
+  \label{eq:mantel-key}
+\end{align}
+In the last step, the downward operator multiplies each flag by its
+normalizing factor $1$, $\tfrac13$, or $\tfrac23$, according as all three, one,
+or two of the choices of the labeled vertex recover that $\sigma$-flag.
+Starting from the expansion~\eqref{eq:k2-expansion} of $K_2$, we now add two
+non-negative terms and simplify using Equation~\eqref{eq:sum-to-one}:
+\begin{align*}
+  K_2
+  &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
+  &&\text{by Equation~\eqref{eq:k2-expansion}}\\
+  &\leq_{K_3} \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
+    \frac{1}{2}\left(\fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree\right) +
+    \frac{1}{3}\,\fbarPthree
+  &&\text{by Equation~\eqref{eq:mantel-key} and $0 \leq_{K_3} \fbarPthree$}\\
+  &= \frac{1}{2}\cdot\left(\fbarKthree + \fbarPthree + \fPthree\right)
+  \;=\; \frac{1}{2}\cdot\mathbf{1}
+  &&\text{by Equation~\eqref{eq:sum-to-one}.}
+\end{align*}
 \end{example}
 
 \section{Formalizing Flag Algebras in Lean~4}
@@ -2544,8 +2505,8 @@ finite calculation recorded by the certificate, and the final inequality uses
 the non-negativity of $r$.  The proof of Mantel's theorem in
 \Cref{ex:mantel-fa} is a certificate of exactly this shape, with a single term
 $Q=\bigl\llbracket\tfrac12((\fKtwobull)-(\fbarKtwobull))^2\bigr\rrbracket_\sigma$
-and remainder $r=\tfrac13\cdot\fbarPthree$; compare
-Equation~\eqref{eq:mantel-chain}.
+and remainder $r=\tfrac13\cdot\fbarPthree$, the two non-negative terms added to
+$K_2$ in that example.
 
 The same idea scales when the single square is replaced by a positive
 semidefinite quadratic form.  Choose $\sigma$-flags $E_1,\ldots,E_r$, let
