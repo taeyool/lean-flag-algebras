@@ -2,22 +2,32 @@
 
 Drafted 2026-09-29. Working file: `papers/AFM/paper_afm.tex`.
 
-## Status (2026-09-29, end of session)
+## Status (2026-10-01, phase 4 done except the paragraphs noted below)
 
 - Phases 1-3 are done (skeleton, framing, body). See Section 11 for details.
   The paper builds cleanly (48 pages).
-- **Next: phase 4, to be run on the desktop machine.** It needs heavy Lean
-  builds, which this laptop session did not attempt:
-  - `#print axioms` on the seven `*_turanDensity` theorems, `Mantel_Turan`,
-    `ErdosPentagon_Turan`, and the Goodman theorems;
-  - re-measuring Appendix A.
-  The TOPLAS measurements for scale: the pentagon took about 2,700 s and
-  42 GB under `decide +kernel`; the K5/C5 kernel builds peak at tens of GB.
-- Open decision for phase 4: either first do the axiom check plus a single
-  timing run per case (and the five-run protocol later), or run the full
-  five-run protocol in the background from the start.
+- Phase 4 decisions (2026-09-29): full five-run protocol from the start;
+  drop the `native_decide` columns; report median and range over five clean
+  successes. A run is repeated if it fails, times out, or takes more than
+  2.5 times the case median (stall). Stalls are reported to the authors and
+  are not described in the appendix.
+- Axiom audit (Section 5): `ErdosPentagon_Turan` depended on
+  `native_decide` through an older certificate. It is now re-routed through
+  the Flagmatic certificate (decision 2026-09-30), and every checked
+  declaration prints only the three standard axioms. This code change in
+  `ErdosPentagon/ErdosPentagon.lean` is not committed yet.
+- Appendix A re-measured (five runs x seven cases, 2026-09-30 20:29 to
+  2026-10-01 04:12, on the paper worktree at 17e87ff8; i7-14700K, 64 GB,
+  Windows 11, Lean 4.27.0). All 35 runs succeeded with no stalls and no
+  contention. The appendix text and table are rewritten.
 - Still deferred: whether to include the 6-vertex `K3freeC6` case.
 - Build the paper with `latexmk -pdf paper_afm.tex` in `papers/AFM/`.
+- Building from a clean `.lake`: several BitMask modules each peak at
+  26-37 GB (`RCanon2_6Sweep0`-`3`, `RootedAccept`, `Density6`). A plain
+  parallel `lake build` runs them side by side and thrashes a 64 GB machine
+  (one attempt ran 20 h and froze the machine). Build them one module at a
+  time first. Case builds (single process): pentagon 2,669 s / 43.3 GB,
+  K5 1,627 s / 30.2 GB, C5 1,096 s / 27.3 GB.
 
 ## 1. Background
 
@@ -372,22 +382,58 @@ Current state of the seven reported files (`LeanFlagAlgebras/Flagmatic/`):
 | C5freeEdge | yes | yes | none |
 
 To do:
-- [ ] Run `#print axioms` on all seven `*_turanDensity` theorems plus
+- [x] Run `#print axioms` on all seven `*_turanDensity` theorems plus
       `Mantel_Turan`, `ErdosPentagon_Turan`, the Goodman theorems and the
       MetaTheory headline theorems. Record the output for Appendix B.
-- [ ] Re-measure Appendix A: all seven cases under the committed
+      Done 2026-09-30 on 17e87ff8, covering every entry of the table in
+      Section 6.1 plus the seven `*_flagAlgebra` theorems. All print
+      `[propext, Classical.choice, Quot.sound]` except:
+  - `ErdosPentagonAPI.ErdosPentagon_Turan` (and its upper bound) also
+    depend on `Lean.ofReduceBool` and `Lean.trustCompiler`. Its upper bound
+    uses `ErdosPentagonAPI.ErdosPentagon_flagAlgebra`, the older
+    hand-assembled certificate in `ErdosPentagon/Lemmas.lean`. The
+    generation commands in `ErdosPentagon/FlagDef.lean` and `FlagMul.lean`
+    run without `flagGen.kernelDecide`, so their bridges use
+    `native_decide`. The paper says the theorem combines the Flagmatic upper
+    bound with the lower bound, so code and text disagree.
+  - Fixed 2026-10-01: `ErdosPentagon/ErdosPentagon.lean` now imports
+    `ErdosPentagon.FlagDef` and `Flagmatic.ErdosPentagon` (no longer
+    `ErdosPentagon.Lemmas`). `ErdosPentagon_Turan_upperBound` comes from the
+    kernel-checked `ErdosPentagon.ErdosPentagon_flagAlgebra` through the new
+    `C5_toFlagAlgebra_eq_certificate`. That lemma is an explicit isomorphism
+    from `C5` (cycle 01234) to the certificate target (cycle 01342). API `K3`
+    is `completeGraph (Fin 3)` by definition. Re-check: all 41 declarations
+    print `[propext, Classical.choice, Quot.sound]`. Sec. 6 gained one
+    sentence on the relabeling.
+  - The old certificate (`ErdosPentagon/Lemmas.lean`, `FlagMul.lean`,
+    `MatrixDef.lean`) is now reached only from the root import and still
+    uses `native_decide`. Decide before the release whether to delete it or
+    leave it as a documented legacy file.
+  - Generated-lemma counts, recounted from the environment: `flagDensity₂`
+    theorems 15, 15, 210, 390, 2832, 10332, 8172; `pairKeys_*` 287 (K5)
+    and 227 (C5).
+- [x] Re-measure Appendix A: all seven cases under the committed
       configuration, five runs each, same machine description.
+      Done 2026-10-01. Median seconds (range; peak GB): Mantel 16.0
+      (15.9-16.5; 2.4), P3 15.9 (15.8-16.0; 2.4), C4 75.9 (75.1-76.8; 8.1),
+      K4 133.4 (132.8-135.1; 11.2), pentagon 2659 (2655-2680; 42.3),
+      K5 1583 (1579-1585; 29.5), C5 1062 (1058-1067; 26.7). The `native_decide`
+      columns are dropped, and the exclusion rule is not described in the
+      paper. The harness and raw CSV were kept outside the repository
+      (session scratchpad).
   - Drop the `native_decide` columns, or keep them as a comparison for the
     five cases that previously had both.
   - Recount the "Lemmas" column: the mask pair-density route generates
     different declarations.
   - Report median and range, and state the exclusion rule in advance
     (audit 3.6).
-- [ ] Rewrite every passage that mentions `native_decide`, trusting the
+- [x] Rewrite every passage that mentions `native_decide`, trusting the
       native compiler, or kernel checking not scaling. Locations include
       the abstract, T 2885-2894, T 2963-2967, T 3799-3826, T 3993-3995 and
-      the Appendix A text.
-- [ ] Add the BitMask description to Sec. 4, as in Section 4 above.
+      the Appendix A text. Done; the remaining mentions are deliberate
+      (Sec. 4.3 contrasts the two evaluation modes, and the acknowledgments).
+- [x] Add the BitMask description to Sec. 4, as in Section 4 above
+      (`sec:reflection-bitmask`, phase 3).
 
 ## 6. AFM-specific additions
 
@@ -414,8 +460,9 @@ context links in the final version.
 | Adding a downward quadratic form | `forbidLEWith_add_QuadraticForm` | `Automation/Basic.lean:128` |
 | Density permutation invariance | `flagDensity_permute` | `FlagAlgebra/SubflagListDensity.lean:649` |
 | Asymptotic Mantel | `Mantel_Turan` | `MantelTheorem/MantelTheorem.lean:191` |
-| Asymptotic Erdős pentagon | `ErdosPentagon_Turan` | `ErdosPentagon/ErdosPentagon.lean:286` |
-| Pentagon lower bound | `ErdosPentagon_Turan_lowerBound` | `ErdosPentagon/ErdosPentagon.lean:264` |
+| Asymptotic Erdős pentagon | `ErdosPentagon_Turan` | `ErdosPentagon/ErdosPentagon.lean:313` |
+| Pentagon: `C5` vs certificate target | `C5_toFlagAlgebra_eq_certificate` | `ErdosPentagon/ErdosPentagon.lean:26` |
+| Pentagon lower bound | `ErdosPentagon_Turan_lowerBound` | `ErdosPentagon/ErdosPentagon.lean:291` |
 | Goodman triangle bound | `Goodman_bound_on_triangle_density` | `MantelTheorem/GoodmanBound.lean:15` |
 | Goodman Ramsey multiplicity | `Goodman_theorem_on_Ramsey_multiplicity` | `MantelTheorem/GoodmanRamsey.lean:16` |
 | Seven certificate bounds | `<Case>_turanDensity` | `Flagmatic/<Case>.lean` |
@@ -618,8 +665,10 @@ declaration name.
      - Pair-density counts are route-independent (15, 15, 210, 390, 2832,
        10332, 8172). K5 and C5 additionally have 287 and 227 `pairKeys_*`
        theorems.
-4. [ ] **Code-state updates.** Section 5: axioms audit, re-measurement,
-   BitMask paragraph.
+4. [x] **Code-state updates.** Section 5: axioms audit, re-measurement,
+   BitMask paragraph. Done 2026-10-01, including the `ErdosPentagon_Turan`
+   re-routing. The paper builds cleanly (48 pages; the same two overfull
+   boxes as before).
 5. [ ] **AFM additions.** Section 6: correspondence table, artifact
    appendix, size table.
 6. [ ] **Audit items and bibliography.** Sections 8 and 9.

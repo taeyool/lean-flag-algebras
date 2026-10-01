@@ -279,8 +279,10 @@ $\tdensity{C_5}{K_3}=24/625$; to our knowledge, the latter has not previously
 been formalized in a proof assistant.  We also prove two inequalities of
 Goodman.  All density theorems reported here depend only on the standard
 axioms of Lean's logic.
-% TODO(phase 4): confirm the axiom claim with #print axioms on every theorem
-% in the statement-to-declaration table.
+% Checked 2026-10-01 with collectAxioms on every entry of the
+% statement-to-declaration table and the seven *_flagAlgebra/*_turanDensity
+% theorems, after ErdosPentagon_Turan was re-routed through the Flagmatic
+% certificate (its old hand-assembled upper bound used native_decide).
 
 Formalization also led us to treat forbidden subgraphs with a different
 semantics.  Instead of building a separate flag algebra for each forbidden
@@ -2780,7 +2782,6 @@ inside the kernel by \lean{decide +kernel}; the two largest certificates reach
 this through the bit-mask encoding of \Cref{sec:reflection-bitmask}.  The
 final theorems therefore depend only on the three standard axioms of Lean's
 logic, \lean{propext}, \lean{Classical.choice}, and \lean{Quot.sound}.
-% TODO(phase 4): confirm with #print axioms on all seven *_turanDensity theorems.
 What remains for a reader to check is that each final statement expresses the
 intended mathematical claim; as \Cref{sec:results} explains, these statements
 mention only specification-level definitions.
@@ -2924,7 +2925,11 @@ bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 (*@$\geq$@*) 24/625 := ...
 \end{lstlisting}
-proved by an explicit construction in Lean.  To our knowledge,
+proved by an explicit construction in Lean.  Here \lean{C5} is the cycle
+$0\,1\,2\,3\,4$, while the certificate states its bound for the target graph
+in Flagmatic's labeling, the cycle $0\,1\,3\,4\,2$; the lemma
+\lean{C5\_toFlagAlgebra\_eq\_certificate} identifies the two flag-algebra
+elements through an explicit isomorphism.  To our knowledge,
 \lean{ErdosPentagon\_Turan} is the first proof-assistant formalization of the
 asymptotic density statement $\tdensity{C_5}{K_3}=\tfrac{24}{625}$.  The
 published proofs of this statement~\cite{grzesik2012,hatami2012} use flag
@@ -3895,58 +3900,51 @@ Institute for Basic Science (IBS-R029-C1).
 
 \appendix
 \section{Compilation Times}
-% TODO(phase 4): re-measure all seven cases on the committed files (all now
-% under decide +kernel, K5/C5 via the bit-mask routes) and rewrite this
-% appendix; the text and table below are still the TOPLAS measurements.
 \label{sec:compile-times}
+% Measured 2026-09-30/10-01 on commit 17e87ff8 of the development repository.
+% TODO(phase 5): cite the release commit once the artifact is synced (the seven
+% case files are unchanged), and give the clean-build time and memory in the
+% artifact appendix: several bit-mask library modules each peak at 26-37 GB
+% and must be built one at a time on a 64 GB machine.
 
-Table~\ref{tab:compile-times} reports end-to-end compilation time and peak
-memory for all seven compiler examples of \Cref{sec:results}, compiled with
-Lean~4 (v4.27.0) on an
-Intel Core i7-14700K (20 cores) with 64\,GB of RAM under Windows~11.  Each
-measurement covers the complete source file: flag enumeration, pair-density and
-multiplication lemma generation, PSD certificate checking, the objective
-expansion, and the main theorem.  The generated
-files differ only in how their bridging lemmas are discharged.  Under \lean{decide +kernel} (the
-\lean{flagGen.kernelDecide} option), the file introduces no compiled-evaluation
-axiom; under \lean{native\_decide}, it is faster but additionally depends on the
-\lean{Lean.ofReduceBool} and \lean{Lean.trustCompiler} axioms.  We report both
-modes for the five examples where kernel evaluation is tractable; for the two
-largest, the $K_5$- and $C_5$-free edge-density examples, only
-\lean{native\_decide} was measured.
+Table~\ref{tab:compile-times} reports compilation time and peak memory for the
+seven certificate files of \Cref{sec:results}, compiled with Lean~4 (v4.27.0)
+on an Intel Core i7-14700K (20 cores) with 64\,GB of RAM under Windows~11.
+Each measurement covers the complete source file: flag enumeration,
+generation of the pair-density and multiplication lemmas, the PSD checks of
+the certificate, the objective expansion, and the main theorem.  Every
+generated lemma is proved by \lean{decide +kernel}; the $K_5$- and $C_5$-free
+files use the bit-mask routes of \Cref{sec:reflection-bitmask}.
 
-Each figure is the mean over five successful runs of a single-file compilation
-against the prebuilt library, with the sample standard deviation; memory is the
-peak resident set, taken as the maximum over the five runs.  Wall-clock times
-are highly repeatable (standard deviation below $1\%$ of the mean in every
-configuration except the $P_3$- and $C_4$-density cases under
-\lean{native\_decide}, at $2.3\%$ and $1.8\%$).
+Each file was compiled five times on its own against the prebuilt library
+(\lean{lake env lean}), in five rounds that each compile all seven files once.
+Time is wall-clock time, and memory is the peak working set of the Lean
+process, taken as the maximum over the five runs.  All 35 runs succeeded.  The
+table reports the median time and the range of the five runs.  The range is
+within $4.1\%$ of the median in every case (at most $0.6$\,s for the two
+smallest files) and within $1\%$ for the three largest.
 
 \begin{table}[h]
   \centering
-  \caption{End-to-end Lean compilation time (mean of five runs, $\pm$ sample
-    standard deviation) and peak resident memory (maximum over five runs) for
-    all seven examples, under \lean{decide +kernel} and \lean{native\_decide}.
-    ``Lemmas'' is the total count of generated \lean{flagDensity}$_2$
-    lemmas.  A dash marks a configuration not measured under kernel evaluation.}
+  \caption{Lean compilation time (median and range of five runs) and peak
+    memory (maximum over five runs) for the seven certificate files, all
+    checked by \lean{decide +kernel}.  ``Lemmas'' is the number of generated
+    \lean{flagDensity}$_2$ lemmas; the shared subset-pair pass of the
+    $K_5$- and $C_5$-free files additionally generates $287$ and $227$
+    per-host key theorems.}
   \label{tab:compile-times}
   \small
-  \setlength{\tabcolsep}{4.5pt}
-  \begin{tabular}{lccr rr rr}
+  \begin{tabular}{lccr rr r}
     \toprule
-    & & & & \multicolumn{2}{c}{\lean{decide +kernel}}
-        & \multicolumn{2}{c}{\lean{native\_decide}} \\
-    \cmidrule(lr){5-6}\cmidrule(lr){7-8}
-    Case & Forbid & $N$ & Lemmas
-      & Time (s) & RAM (GB) & Time (s) & RAM (GB) \\
+    Case & Forbid & $N$ & Lemmas & Time (s) & Range (s) & RAM (GB) \\
     \midrule
-    Mantel (edge density)              & $K_3$ & 3 &    15 & $15.6\pm0.1$   &  2.4 & $13.4\pm0.1$  & 2.0 \\
-    $P_3$ density                      & $K_3$ & 3 &    15 & $14.9\pm0.0$   &  2.4 & $12.8\pm0.3$  & 1.9 \\
-    $C_4$ density                      & $K_3$ & 4 &   210 & $76.6\pm0.7$   &  8.1 & $21.1\pm0.4$  & 2.1 \\
-    Edge density                       & $K_4$ & 4 &   390 & $135.2\pm0.4$  & 11.2 & $29.0\pm0.0$  & 2.4 \\
-    Erd\H{o}s pentagon ($C_5$ density) & $K_3$ & 5 &  2832 & $2713\pm13$    & 42.3 & $122.6\pm0.8$ & 4.1 \\
-    Edge density                       & $K_5$ & 5 & 10332 & ---            & ---  & $325.0\pm0.6$ & 8.0 \\
-    Edge density                       & $C_5$ & 5 &  8172 & ---            & ---  & $531.9\pm3.0$ & 8.5 \\
+    Mantel (edge density)              & $K_3$ & 3 &    15 & 16.0  & 15.9--16.5   &  2.4 \\
+    $P_3$ density                      & $K_3$ & 3 &    15 & 15.9  & 15.8--16.0   &  2.4 \\
+    $C_4$ density                      & $K_3$ & 4 &   210 & 75.9  & 75.1--76.8   &  8.1 \\
+    Edge density                       & $K_4$ & 4 &   390 & 133.4 & 132.8--135.1 & 11.2 \\
+    Erd\H{o}s pentagon ($C_5$ density) & $K_3$ & 5 &  2832 & 2659  & 2655--2680   & 42.3 \\
+    Edge density                       & $K_5$ & 5 & 10332 & 1583  & 1579--1585   & 29.5 \\
+    Edge density                       & $C_5$ & 5 &  8172 & 1062  & 1058--1067   & 26.7 \\
     \bottomrule
   \end{tabular}
 \end{table}
