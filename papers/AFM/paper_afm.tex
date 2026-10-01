@@ -2609,8 +2609,8 @@ that expands $[F]$ over the $N$-vertex $H$-free $\emptyset$-flags,
   \qquad\text{modulo the \(H\)-free condition,}
 \]
 with coefficients $\den{F}{G}$ given by the single-flag densities generated in
-Part~1.  The qualifier matters because our development works in the ambient
-algebra.  In the standard \(H\)-free algebra (\Cref{rem:builtin-hfree}), the
+Part~1.  The restriction to the \(H\)-free condition matters because our
+development works in the ambient algebra.  In the standard \(H\)-free algebra (\Cref{rem:builtin-hfree}), the
 restricted sum would simply be the expansion
 identity~\eqref{eq:expansion-identity}, all of whose flags are \(H\)-free
 there.  In the ambient algebra, however, the flags containing \(H\) are nonzero
@@ -2663,8 +2663,7 @@ unverified programs, and their dependence on the shape of elaborated
 expressions affects robustness, but a tactic failure only leaves the proof
 incomplete.
 
-Every finite computation in the seven files of \Cref{sec:results}, from the
-matrix equalities of Part~2 to the density identities of Part~1, is evaluated
+Every finite computation in the seven files of \Cref{sec:results} is evaluated
 inside the kernel by \lean{decide +kernel}; the two largest certificates reach
 this through the bit-mask encoding of \Cref{sec:reflection-bitmask}.  The
 final theorems therefore depend only on the three standard axioms of Lean's
@@ -2711,12 +2710,10 @@ single $2\times2$ SDP block is the square of \Cref{ex:mantel-fa}.  The
 Erd\H{o}s pentagon certificate has three blocks, of dimensions $8$, $6$, and
 $5$, and the $K_5$- and $C_5$-free edge-density certificates each use four
 blocks of $8\times8$ matrices.  The $C_5$-free case shows that the forbidden
-graph need not be complete: graphs with no $C_5$ subgraph have edge density at
-most $1/2$ asymptotically.  All seven are Flagmatic's certificates as
+graph need not be complete.  All seven are Flagmatic's certificates as
 produced, with no attempt to minimize the number of blocks or the matrix
 dimensions.  Most of these bounds also have classical proofs; the clique-free
-edge densities, for example, follow from Tur\'an's theorem
-(\Cref{sec:related}).  Here they serve as tests of increasing size, while the
+edge densities, for example, follow from Tur\'an's theorem.  Here they serve as tests of increasing size, while the
 Erd\H{o}s pentagon bound is the one whose published proofs rely on flag
 algebras.
 
@@ -2730,7 +2727,9 @@ definitions of \Cref{sec:abstract} alone.  The certificate establishes only
 the upper bound.  For Mantel's theorem and the Erd\H{o}s pentagon theorem, the
 matching lower bounds are proved directly in Lean (\Cref{sec:lowerbounds}),
 completing the Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of
-\Cref{ex:mantel,ex:pentagon}.
+\Cref{ex:mantel,ex:pentagon}; the Erd\H{o}s pentagon case is, to our
+knowledge, the first proof-assistant formalization of the Tur\'an-density
+identity $\tdensity{C_5}{K_3}=\tfrac{24}{625}$.
 
 \paragraph{Scope.}
 \label{sec:flagmatic-open}
