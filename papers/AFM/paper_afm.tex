@@ -1152,10 +1152,11 @@ dependencies are visible without the surrounding source context; we gather
 those shared by a group of definitions into a \lean{variable} block, which
 applies to the definitions after it in the same subsection, leaving
 each definition to show only its own arguments.  Declaration names are those
-of the development; \Cref{sec:informal-formal} collects the places where the
-formal statements depart from the informal ones of \Cref{sec:background}.
-% TODO(phase 5/7): check every displayed name against the release commit and
-% list any shortened names in the statement-to-declaration table.
+of the development, except for three expository definitions in
+\Cref{sec:reflection-concrete}, which are marked as such.
+% TODO(phase 5): displayed names were checked against the development repo
+% (main) on 2026-10-01 with papers/AFM/name_audit.py; re-run it against the
+% release commit after the release repo has been synced.
 Following the development itself, we write the empty flag type as
 \(\emptyt\), rather than the \(\emptyset\) of \Cref{sec:background-flags}, to
 distinguish it from ordinary empty sets.
@@ -1330,11 +1331,11 @@ variable {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
          {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
          {(*@$\sigma$@*) : FlagType T}
 
-def labeledGraphListEqv (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
+def flagListEqv (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
   (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
 
 def QuotLabeledGraphList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
-  Quotient (labeledGraphListSetoid (*@$\sigma$@*) t Vl) -- the setoid of labeledGraphListEqv
+  Quotient (labeledGraphListSetoid (*@$\sigma$@*) t Vl) -- the setoid of flagListEqv
 
 abbrev FlagList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
   (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
@@ -1357,7 +1358,7 @@ noncomputable def flagListDensity
     : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   fun Fl => quotLabeledGraphListDensity (FlagList.coe Fl)
 \end{lstlisting}
-Here \lean{labeledGraphListEqv} is the entrywise isomorphism relation whose
+Here \lean{flagListEqv} is the entrywise isomorphism relation whose
 setoid, formed as in \Cref{sec:flagtypes}, defines
 \lean{QuotLabeledGraphList}.  The three density definitions carry out the
 three steps above, the last one through \lean{FlagList.coe}, which chooses a
@@ -1593,19 +1594,12 @@ induces.
 Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a \(\sigma\)-flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
-leave implicit.  Part~(b) goes the other way, and its proof is probabilistic.
-For each size \(\ell\), the values \(\phi([G])\) with
-\(G\in\mathcal{F}^\sigma_\ell\) form a probability distribution on the
-\(\sigma\)-flags of size \(\ell\): they are non-negative, and
-\(\sum_{G\in\mathcal{F}^\sigma_\ell}\phi([G])=\phi(\mathbf{1}_\sigma)=1\) by
-Equation~\eqref{eq:sum-to-one}.  Sample independently, for each \(n\), a
-\(\sigma\)-flag \(X_n\) of size \(n^2+k\) from this distribution.  For each fixed
-test flag \(F\), the density \(\den{F}{X_n}\) is very likely to be close to
-\(\phi([F])\) once \(n\) is large, so almost every sampled sequence has \(\phi\)
-as its limiting density profile, and any such realization is the required
-sequence.  Formalizing this argument means constructing the product measure on
-flag sequences, proving that the coordinatewise convergence event has
-probability one, and selecting a realization from that event.
+leave implicit.  Part~(b) goes the other way, and its proof is probabilistic:
+a sequence of \(\sigma\)-flags sampled using the values of \(\phi\) as weights
+almost surely has \(\phi\) as its limiting density profile.  Formalizing it
+means constructing the product measure on flag sequences, proving that the
+coordinatewise convergence event has probability one, and selecting a
+realization from that event.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
@@ -1646,7 +1640,7 @@ ratio: the numerator \lean{isomorphismCount G} counts the injections
 $[k]\hookrightarrow V(G)$ that produce a typed labeled graph isomorphic
 to~$G$, and the denominator $n!/(n-k)!$ counts all possible injections.  The
 other ingredient, $F|_\emptyset$, is computed by
-\lean{unlabel\_labeledGraph}, which forgets the type embedding.  Lifting these
+\lean{unlabeledGraph}, which forgets the type embedding.  Lifting these
 two operations to flags takes the \lean{Quotient.lift} pattern of
 \Cref{sec:formal-subflag-densities}, so each needs a proof of invariance under
 isomorphism: isomorphic representatives admit the same label
@@ -1661,7 +1655,7 @@ noncomputable def downwardNormalizingFactor : Flag (*@$\sigma$@*) (Fin n) (*@$\t
   Quotient.lift (fun G => isomorphismCount G / (n.factorial / (n - k).factorial)) (...)
 
 noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
-  Quotient.lift (fun G => (*@$\llbracket$@*)unlabel_labeledGraph G(*@$\rrbracket$@*)) (...)
+  Quotient.lift (fun G => (*@$\llbracket$@*)unlabeledGraph G(*@$\rrbracket$@*)) (...)
 
 noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
@@ -1869,53 +1863,6 @@ would have no asymptotic meaning.  We therefore prove
 \lean{tendsto\_\allowbreak generalizedTuranDensity}: once \(n\geq |V(F)|\) the
 sequence is non-increasing and bounded below by zero, so it converges, and its
 limit is \lean{generalizedTuranDensity H F}.
-
-\subsection{Where the Formal Statements Differ from the Informal Ones}
-\label{sec:informal-formal}
-
-The definitions above follow \Cref{sec:background} closely but not literally.
-We collect the differences that a reader comparing a result of this paper with
-its Lean statement should keep in mind.
-% TODO(phase 5): point to the statement-to-declaration table in the appendix.
-\begin{itemize}
-\item \emph{Ambient algebra and ensemble order.}  \Cref{sec:background}
-  builds flags, algebras, and positive homomorphisms from
-  \(\mathcal{H}\)-free graphs and compares elements by
-  \(\leq_{\mathcal{H},\sigma}\).  The formalization builds them from all
-  finite graphs and compares elements by the ensemble order \lean{forbidLE}
-  of \Cref{def:ensemble-semantic-order}.  The two orders agree at the empty
-  type, which is all that the density theorems use; at a nonempty type the
-  ensemble order may validate inequalities that the standard order does not
-  (\Cref{sec:metatheory}).
-\item \emph{Vertex types and sizes.}  A flag type of size \(k\) is a graph on
-  \lean{Fin k}, the \(\sigma\)-flags of size \(n\) form the quotient type
-  \lean{Flag \(\sigma\) (Fin n)}, and \lean{FinFlag \(\sigma\)} packages all
-  sizes into one type.  The size of a flag is therefore part of its type, a
-  point that matters in \Cref{sec:reordered-flag-tuples}.
-\item \emph{Densities as rational ratios.}  Densities are defined as ratios
-  of counts with values in \(\mathbb{Q}\), rather than as sampling
-  probabilities, and are cast to \(\mathbb{R}\) where they become coefficients
-  in the flag algebra.
-\item \emph{Positive homomorphisms as density profiles.}  Measure-theoretic
-  statements, such as the random-extension identity and the ensemble order,
-  are made on \lean{PositiveHomSpace \(\sigma\)}, the measurable subspace of
-  \([0,1]^{\mathcal{F}^\sigma}\) consisting of the profiles induced by
-  positive homomorphisms, rather than on \(\poshom{\sigma}\) itself.
-\item \emph{Tur\'an densities.}  The density \(\tdensity{F}{H}\) is
-  \lean{generalizedTuranDensity H F}, with the forbidden graph first.  It is
-  defined with Mathlib's \lean{limUnder}, which returns a value even for a
-  divergent sequence, so its meaning rests on the separate convergence theorem
-  \lean{tendsto\_generalizedTuranDensity}.  For edge densities, the
-  development also uses Mathlib's own \lean{extremalNumber} and
-  \lean{turanDensity}, and Mantel's theorem is stated in those terms
-  (\Cref{sec:lowerbounds}).
-\item \emph{Induced counts.}  As in \Cref{sec:background}, extremal numbers
-  count \emph{induced} copies of the target graph, while \(H\)-freeness,
-  Mathlib's \lean{H.Free G}, excludes every copy of \(H\) as a not
-  necessarily induced subgraph.  The helper \lean{subgraphCount F G} that
-  \lean{generalizedExtremalNumber} maximizes counts induced subgraphs of
-  \(G\) isomorphic to \(F\), despite its name.
-\end{itemize}
 
 \section{The Reflection Layer}
 \label{sec:reflection}
