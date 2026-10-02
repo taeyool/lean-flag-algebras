@@ -6,8 +6,9 @@ import LeanFlagAlgebras.BitMask.RootedCanon
 Per-mask verdict of the rooted sweep for six-vertex flags with two
 roots (`K3freeC6`'s typed host layer): 2^15 masks, 24 root-fixing
 permutations, 1992 representatives. The sweep itself is split into
-four subrange files (`RCanon2_6Sweep0`–`RCanon2_6Sweep3`, so they
-build in parallel) and assembled in `RCanon2_6`. -/
+four subrange files (`RCanon2_6Sweep0`–`RCanon2_6Sweep3`) and assembled
+in `RCanon2_6`. Each piece peaks at 26–37 GB, so the pieces import one
+another in sequence and Lake builds them one at a time. -/
 
 namespace FlagAlgebras.Compute.BitMask.RCanon2_6
 

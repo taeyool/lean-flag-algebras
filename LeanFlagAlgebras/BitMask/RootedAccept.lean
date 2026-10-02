@@ -1,5 +1,10 @@
 import LeanFlagAlgebras.BitMask.RootedCount
 import LeanFlagAlgebras.BitMask.CanonSmall
+-- Build-order import: the six heavy kernel modules (Density6, RootedAccept,
+-- RCanon2_6Sweep0-3) each peak at 26-37 GB. Chaining them makes `lake build`
+-- compile them one at a time. Lake cannot limit its parallelism, so without
+-- the chain a clean build runs them side by side and exhausts a 64 GB machine.
+import LeanFlagAlgebras.BitMask.Density6
 
 /-! # Per-combination accept apparatus
 
