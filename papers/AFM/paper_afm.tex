@@ -419,6 +419,8 @@ the \emph{ensemble semantics} and prove that it yields the intended density
 bounds.  \Cref{sec:metatheory} shows that every inequality valid in the
 standard semantics is valid in the ensemble semantics, and characterizes,
 through a condition we call \emph{root-plantability}, when the converse holds.
+A companion paper, in preparation, develops this comparison in full.
+% TODO: cite the companion paper here once it is posted (see also Section 8).
 
 \paragraph{Contributions.}
 We make the following contributions.
@@ -431,9 +433,9 @@ We make the following contributions.
   matching lower-bound constructions in Lean, which yields the asymptotic
   forms $\tdensity{K_2}{K_3}=1/2$ and $\tdensity{C_5}{K_3}=24/625$; to our
   knowledge, the latter is formalized here for the first time.
-\item The ensemble semantics for forbidden subgraphs and the root-plantability
-  criterion comparing it with the standard semantics, which we autoformalized
-  in Lean.
+\item The ensemble semantics for forbidden subgraphs, and the root-plantability
+  criterion comparing it with the standard semantics, whose Lean development
+  was autoformalized.
 \end{itemize}
 The complete Lean development is publicly available:
 \begin{center}
@@ -3517,9 +3519,8 @@ quotient, had to be built.
 This section isolates the core consequences of \lean{forbidLE}: inequalities
 valid in the quotient order are always valid in the ensemble order,
 root-plantability characterizes when the converse holds, and blow-up closure is
-a broad sufficient condition for it.  The companion paper gives the complete
-account and goes further, with
-a finite criterion implying root-plantability, further classes on either side
+a broad sufficient condition for it.  The companion paper goes further, with a
+finite criterion implying root-plantability, further classes on either side
 of the boundary, and a relative ensemble semantics that admits non-hereditary
 constraints such as a fixed edge density.
 
