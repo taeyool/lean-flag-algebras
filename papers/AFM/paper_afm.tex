@@ -3571,8 +3571,10 @@ grows quickly with the host size.  The number of flags, the generated
 identities, and the expressions that the final normalization must handle all
 increase, and so do the time and memory of kernel evaluation
 (\Cref{sec:compile-times}).  The bit-mask sweeps are designed to push this
-frontier, and the canonicalization sweep of \Cref{sec:reflection-bitmask}
-already covers all graphs on seven vertices.  This paper reports certificates
+frontier, and in our development repository the canonicalization sweep of
+\Cref{sec:reflection-bitmask} already covers all graphs on seven vertices;
+the artifact contains the sweeps up to six vertices, which the seven
+certificates use.  This paper reports certificates
 with hosts of at most five vertices, and extending the evaluation to larger
 hosts is ongoing work.  Certificate generation faces the same combinatorial
 growth: the Flagmatic user guide documents support for bases of up to eight

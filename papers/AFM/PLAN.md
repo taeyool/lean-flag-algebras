@@ -485,7 +485,36 @@ declaration name.
 ### 6.2 Artifact appendix (Appendix B)
 
 - Release repository `taeyool/lean-flag-algebras-release`:
-  - sync it with the BitMask commits;
+  - sync it with the BitMask commits. **Done 2026-10-03** (base: dev
+    `c0836ea` / release `06423a2`).
+    - Copied: the twelve files dev changed since then (`Automation/FlagSumSort`,
+      `FlagMulReduce`, `FlagCertificate`, `FinSumUniv`; `Flags/GeneratorOptions`,
+      `FlagGenerator`, `ForbidFreeGenerator`, `Densities/DensityThmGenerator`;
+      `Flagmatic/K5freeEdge`, `C5freeEdge`, `flagmatic_to_lean.py`;
+      `ErdosPentagon/ErdosPentagon`).
+    - Added: the 39 `BitMask` modules the release needs, plus `gen_canon.py`
+      and `gen_sweep6.py`. Left out: `Canon7*`, the BitMask tests, `Demo`,
+      `gen_sweep7.py`, and `K3freeC6`.
+    - Deleted from the release (release-only divergence): the old certificate
+      (`ErdosPentagon/Lemmas.lean`, `FlagMul.lean`, `MatrixDef.lean`).
+      `ErdosPentagon/FlagDef.lean` was trimmed to the empty-typed flags,
+      `K3` and `C5`.
+    - Root manifest: new BitMask section. README and Flagmatic README updated
+      (K5/C5 kernel, axiom paragraph, BitMask row, memory-aware build steps,
+      `--mask-*` options).
+  - Build-order chain (dev and release): `Density6 -> RootedAccept ->
+    RCanon2_6Sweep0 -> 1 -> 2 -> 3` via extra imports.
+  - Verified 2026-10-03.
+    - Dev: the chained modules were built by one `lake build`, with at most
+      one heavy Lean process at a time (peak 36.4 GB, minimum 15.9 GB
+      available). The seven cases were rebuilt, and all 41 checked
+      declarations print the standard three axioms.
+    - Release: clean build of our library (Mathlib prebuilt) following the
+      README order: pentagon 58.6 min, K5 27.3 min, C5 65.5 min (including
+      the sweeps), then `lake build` 5.3 min. Total 157 min, 8,083 jobs, no
+      errors; peak single process 43.3 GB, minimum 9.6 GB available. All 44
+      checked declarations (including the README's MetaTheory headline
+      theorems) print only the standard three axioms.
   - keep the axiom-free `CompleteGraphFreeP4.lean` noted in audit 2.2;
   - create a tag and cite the commit SHA and SWHID.
 - Lean and Mathlib versions, and build commands:
