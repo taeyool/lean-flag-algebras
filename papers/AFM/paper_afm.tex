@@ -450,8 +450,8 @@ computable.  \Cref{sec:flagmatic} explains how a certificate proves a density
 bound and how Lean checks one, and reports the seven verified bounds.
 \Cref{sec:lowerbounds} proves the matching lower bounds that make the Mantel
 and Erd\H{o}s pentagon bounds exact, together with two inequalities of Goodman.
-\Cref{sec:obstacles} discusses what the formalization taught us about
-representing this mathematics in Lean, and \Cref{sec:metatheory} compares the
+\Cref{sec:obstacles} discusses the obstacles we met in representing this
+mathematics in Lean, and \Cref{sec:metatheory} compares the
 ensemble and standard semantics.  \Cref{sec:unsure} discusses design questions,
 \Cref{sec:related} surveys related work, and \Cref{sec:conclusion} concludes.
 
@@ -2885,16 +2885,14 @@ the number of monochromatic triangles; the proof reuses the downward square of
 \Cref{ex:mantel-fa}.  It is formalized as
 \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity}.
 
-\section{Lessons from the Formalization}
+\section{Engineering Obstacles}
 \label{sec:obstacles}
 
 The specification layer of \Cref{sec:abstract} turns several steps that
 ordinary combinatorial notation leaves implicit into explicit proof
 obligations.  These obligations do not change the underlying mathematics, but
-they recur often enough to shape the formalization, and the ways we found to
-discharge them are the main lessons we would pass on to other formalizations
-of similar mathematics.  This section examines three recurring sources of
-effort.  First, because
+discharging them repeatedly requires substantial proof-engineering effort.
+This section examines three recurring sources of that effort.  First, because
 flags are represented as isomorphism classes, every construction defined on
 concrete graphs must be shown to be independent of the chosen representatives.
 Second, some graph data, including flag sizes and the vertex types of tuple
@@ -2905,9 +2903,10 @@ directly in the new order.  Third, typeclass inference may construct different
 terms representing the same finite enumeration, causing otherwise
 straightforward rewrites to fail unless the relevant instances are controlled
 explicitly.  The first three subsections examine these obstacles in turn.  The
-fourth describes a proof pattern that became common in the specification
-layer, proving finite counting identities by constructing explicit
-bijections, and the last asks which of these lessons are specific to Lean.
+fourth describes a separate proof pattern that became common in the
+specification layer, proving finite counting identities by constructing
+explicit bijections, and the last asks which of these obstacles are specific
+to Lean.
 
 \subsection{Computing with Graphs up to Isomorphism}
 \label{sec:iso-quotient}
@@ -2932,17 +2931,6 @@ equivalent concrete representations decode to the same abstract flag.  Once
 this compatibility has been established, \lean{Quotient.lift} yields a
 well-defined decoding map that the subsequent adequacy theorems can reuse
 without exposing concrete representatives.
-
-One could avoid these compatibility proofs by choosing a canonical
-representative for every isomorphism class.  That choice would make the
-representation easier to compute with, but it would bring canonicalization
-details into the statements and proofs of the algebraic lemmas.  We instead
-kept the quotient specification close to Razborov's mathematics and
-concentrated the representation-specific work at the few places where a
-construction is lifted to equivalence classes, and at the adequacy theorems of
-\Cref{sec:reflection}.  The adequacy proofs are themselves substantial, so this
-is a trade-off rather than a free abstraction, but it leaves every later
-algebraic statement independent of the chosen representation.
 
 \subsection{Comparing Reordered Flag Tuples}
 \label{sec:reordered-flag-tuples}
@@ -3178,7 +3166,7 @@ handles the resulting cardinalities.  We do not claim bijections are the only
 approach, but their effectiveness across these obligations made them our
 default method.
 
-\subsection{Which Lessons Are Specific to Lean?}
+\subsection{Which Obstacles Are Specific to Lean?}
 \label{sec:lean-specific}
 
 The obligations above depend on Lean to different degrees.  The
@@ -3189,14 +3177,9 @@ particular \lean{Fintype} instance is needed because Lean's elaborator may
 synthesize different instance terms for different occurrences of the same
 type, and the use of heterogeneous equality reflects Lean's dependent type
 theory, in which pointwise-equal type families need not be definitionally
-equal.  Evaluation inside the kernel (\Cref{sec:reflection-bitmask}) taught
-lessons of its own: decidable statements phrased as Boolean computations are
-evaluated much faster than the corresponding propositions, and a large
-computation must be split into many small declarations, because the kernel
-releases its intermediate results only between declarations.  Other proof
-assistants handle finite enumeration, implicit arguments, dependent equality,
-and evaluation differently, so we do not know which of these techniques a port
-to Rocq, Agda, or Isabelle/HOL would need.  The combinatorial identities and
+equal.  Other proof assistants handle finite enumeration, implicit arguments,
+and dependent equality differently, so we do not know which of these
+techniques a port to Rocq, Agda, or Isabelle/HOL would need.  The combinatorial identities and
 the well-definedness obligations created by quotients would remain, but their
 formal expression and cost could differ.
 
