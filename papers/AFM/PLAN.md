@@ -150,10 +150,14 @@ Line numbers refer to `papers/TOPLAS/paper_toplas.tex` (T) and
   - `\Description{...}` inside figures;
   - `\boldparagraph` (replace with `\paragraph`);
   - the `acks` environment (replace with `\section*{Acknowledgments}`).
-- Authors: use the TOPLAS author data, with ORCIDs and the corrected email
+- Authors: use the TOPLAS author data, with the corrected email
   `sangil@ibs.re.kr`. arXiv v1 has the typo `sagil@`, which v2 fixes.
-- Keywords: drop "tactic metaprogramming" and "proof by reflection". Use
-  mathematical and formalization keywords instead.
+- ORCIDs and keywords: removed from the submission draft (2026-10-02). AFM's
+  instructions require neither, and published AFM papers show no ORCIDs. The
+  journal-styled final version (after acceptance) carries "MSC 2020" and
+  "Keywords" lines; candidates: MSC 68V20, 05C35; keywords flag algebras,
+  extremal graph theory, Turán density, graph limits, semidefinite
+  programming, formalized mathematics, Lean.
 
 ### Abstract (T 331-359)
 
