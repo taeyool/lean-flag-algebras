@@ -3514,45 +3514,48 @@ ambient algebra, the positive-homomorphism spaces, the random extensions, and
 the downward operator; only the constrained layer, the forbidden ideal and its
 quotient, had to be built.
 
-\section{Discussion}
+\section{Open Design Questions}
 \label{sec:unsure}
 
-The formalization and the certificate proofs presented above are fully checked
-in Lean.  This section concerns questions that the present development cannot
-settle on its own, because answering them would require a competing
-development or substantially larger examples.
+The formalization and certificate proofs presented above are fully
+checked in Lean.  This section instead concerns design questions that the
+present development cannot settle on its own.  For each question, we state
+what our development establishes and what remains unknown because answering
+it would require either building a competing development or running
+substantially larger examples.
 
 \paragraph{When should a forbidden-graph constraint enter the formalization?}
-In the ensemble semantics (\Cref{sec:forbidden}), the constraint is deferred
-until elements are compared.  Consequently, the seven certificates of
+In our ensemble semantics (\Cref{sec:forbidden}), we defer the constraint until
+elements are compared.  Consequently, the seven certificates of
 \Cref{sec:results}, involving four different forbidden graphs, share a single
 ambient algebra and a common library of algebraic lemmas.  This choice does not
-affect the validity of the density bounds, which the ensemble semantics yields
-directly.  It does change the meaning of intermediate statements about labeled
-flags, as \Cref{sec:metatheory} shows, so moving a constraint across an
-abstraction boundary is not a semantics-preserving refactoring: a formalization
-that does so should define the resulting comparison explicitly and prove the
-relationship it needs.  Whether deferring the constraint is also the more
-economical design overall remains open.  Building the constraint in from the
-outset may streamline arguments for a fixed extremal problem, but we have not
-formalized comparable certificate proofs in that design, and even when
-root-plantability guarantees that the two semantics validate the same
-inequalities, the two formalizations may differ in effort and computational
-cost.
+affect the validity of the density bounds: the ensemble semantics yields the
+asymptotic bounds directly.  How it compares with Razborov's standard semantics
+is a separate mathematical question, studied in \Cref{sec:metatheory}, and the
+bounds do not depend on its answer.
+
+This does not determine which design is more economical overall.  Building the
+constraint in from the outset may streamline arguments for a fixed extremal
+problem, but we have not formalized comparable certificate proofs using that
+design.  Even when root-plantability ensures that the two semantics validate
+the same inequalities, their formalizations may differ in effort and
+computational cost.
 
 \paragraph{Should specification and computation use separate representations?}
-Separate representations kept the abstract development close to standard
-mathematics while making the finite calculations executable.  In all seven
+Using separate representations for specification and computation kept the
+abstract development close to standard mathematics while making finite
+calculations executable.  In all seven
 cases, the density facts were obtained by evaluation and transferred to the
 specification layer by adequacy theorems, and the multiplication facts were
 derived from them; for the two largest cases, the bit-mask encoding of
 \Cref{sec:reflection-bitmask} adds a third representation joined to the
 second by further proved bridges.  Maintaining these bridges required
-substantial work.  Formulating the theory directly in a concrete, canonical
-representation could reduce it, but choices about representation and
-canonicalization would then appear in the statements and proofs of the
-theory, and deciding which approach costs less would require a second
-development of comparable scope.  Our separation follows the refinement
+substantial work.  An alternative would be to formulate the theory directly
+using a concrete, canonical representation.  This could reduce the bridging
+work, but choices about representation and canonicalization would then appear
+in the statements and proofs of the mathematical theory.  Determining which
+approach is less costly would require a second development of comparable
+scope.  Our separation follows the refinement
 methodology of Cohen et al.~\cite{cohen2013refinements}, and it appears
 independently in the concurrent formalization of local flag
 algebras~\cite{davey2026local}, which likewise separates a noncomputable
@@ -3569,15 +3572,15 @@ grows quickly with the host size.  The number of flags, the generated
 identities, and the expressions that the final normalization must handle all
 increase, and so do the time and memory of kernel evaluation
 (\Cref{sec:compile-times}).  The bit-mask sweeps are designed to push this
-frontier, and in our development repository the canonicalization sweep of
-\Cref{sec:reflection-bitmask} already covers all graphs on seven vertices;
-the artifact contains the sweeps up to six vertices, which the seven
-certificates use.  This paper reports certificates
-with hosts of at most five vertices, and extending the evaluation to larger
-hosts is ongoing work.  Certificate generation faces the same combinatorial
+frontier; in the released development, the canonicalization sweep of
+\Cref{sec:reflection-bitmask} already covers all graphs on six vertices, one
+more than the seven certificates need.  Certificate generation faces the same combinatorial
 growth: the Flagmatic user guide documents support for bases of up to eight
 vertices for ordinary graphs and seven for
-3-graphs~\cite{vaughan2012flagmaticguide}.
+3-graphs~\cite{vaughan2012flagmaticguide}.  Certificates of these sizes are
+the natural target for verification, whereas this paper reports certificates
+with hosts of at most five vertices; extending the evaluation to larger hosts
+is ongoing work.
 
 \section{Related Work}
 \label{sec:related}
