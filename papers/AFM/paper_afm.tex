@@ -3585,25 +3585,20 @@ is ongoing work.
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Formalizations of combinatorics.}
-Substantial combinatorial arguments have already been formalized in Lean.
-Dahmen, H\"olzl, and Lewis formalized the Ellenberg--Gijswijt solution of the
-cap set problem~\cite{dahmen2019capset}, Dillies and Mehta Szemer\'edi's
-regularity lemma and the qualitative form of Roth's
+\paragraph{Formalizations of extremal combinatorics.}
+Mathlib~\cite{mathlib2020} contains Tur\'an's theorem, together with the
+definitions of extremal numbers and Tur\'an densities that our statement of
+Mantel's theorem uses.  Tur\'an's theorem implies the finite form of Mantel's
+theorem and the $K_4$-free and $K_5$-free edge-density bounds of
+\Cref{sec:results}; for these cases our certificates test the flag-algebra
+machinery rather than add new formal results.  Other central results of
+extremal combinatorics have also been formalized in Lean: Dillies and Mehta
+formalized Szemer\'edi's regularity lemma and the qualitative form of Roth's
 theorem~\cite{dillies2022szemeredi}, and Mehta the Kruskal--Katona
-theorem~\cite{mehta2022kruskal}.  The collaborative PFR
-project~\cite{pfr2023} formalized the Gowers--Green--Manners--Tao
-proof~\cite{gowers2025marton} of the polynomial Freiman--Ruzsa conjecture in
-characteristic two.  Those formalizations are each organized around a headline
-theorem, contributing reusable infrastructure along the way; ours is aimed at
-a method, formalizing the flag algebra, its semantics, and the finite
-machinery its certificates need.  Closer to our results, Mathlib~\cite{mathlib2020}
-contains Tur\'an's theorem, together with the definitions of extremal numbers
-and Tur\'an densities that our statement of Mantel's theorem uses.  Tur\'an's
-theorem implies the finite form of Mantel's theorem and the $K_4$-free and
-$K_5$-free edge-density bounds of \Cref{sec:results}; for these cases our
-certificates test the flag-algebra machinery rather than add new formal
-results.
+theorem~\cite{mehta2022kruskal}.  Those formalizations are each organized
+around a headline theorem, contributing reusable infrastructure along the way;
+ours is aimed at a method, formalizing the flag algebra, its semantics, and the
+finite machinery its certificates need.
 
 \paragraph{Concurrent flag-algebra work in Lean.}
 Two Lean developments run concurrently with, and independently of, ours.
@@ -3635,23 +3630,23 @@ the method.  The seven certificates verified here are Flagmatic's output as
 produced.
 
 \paragraph{Formal verification of computer-found evidence.}
-Our use of certificates follows a pattern familiar from other formalizations of
-computer-assisted mathematics, in which an unverified search produces evidence
-that the proof assistant then checks.  Prominent examples are the four-colour
-theorem~\cite{gonthier2008fourcolour}, the Kepler
-conjecture~\cite{hales2017kepler}, and the empty-hexagon
+Many formalizations of computer-assisted mathematics follow a common pattern:
+an unverified search produces evidence that the proof assistant then checks.
+Prominent examples are the four-colour theorem~\cite{gonthier2008fourcolour},
+the Kepler conjecture~\cite{hales2017kepler}, and the empty-hexagon
 number~\cite{heule2024hexagon,subercaseaux2024hexagon}.  Closest to our setting
 are sums-of-squares certificates for polynomial inequalities, which Harrison
-checks in HOL Light~\cite{harrison2007verifying}.  Morrison's \lean{sos} tactic
-in Lean~4~\cite{morrison2026sos} finds a Gram matrix with an external
-semidefinite solver, rounds it to rational data, and verifies it through a
-rational $LDL^\top$ factorization, as we do for the matrices of a flag-algebra
-certificate.  The difference is that a flag-algebra certificate refers to flags
-and host graphs up to isomorphism, so the finite combinatorial identities it
-relies on must be generated and proved before the certificate itself can be
-checked.  For that step, our reflection layer follows the tradition of proof by
-reflection~\cite{chlipala2013cpdt} and the refinement methodology of Cohen et
-al.~\cite{cohen2013refinements}.
+checks in HOL Light~\cite{harrison2007verifying}.  Morrison's \lean{sos}
+tactic in Lean~4~\cite{morrison2026sos} uses an external semidefinite solver
+to find a floating-point Gram matrix, rounds it to rational data, and verifies
+the resulting sums-of-squares decomposition through a rational $LDL^\top$
+factorization, the same check that we apply to the matrices of a flag-algebra
+certificate.  Proof by reflection, which we use for the finite combinatorial
+identities, has a long history, from Boutin~\cite{boutin1997reflection} to the
+treatment by Chlipala~\cite{chlipala2013cpdt}, and Cohen et
+al.~\cite{cohen2013refinements} develop a refinement methodology relating
+representations suited to mathematical reasoning to more efficient
+representations suited to computation.
 
 \paragraph{Graph limits.}
 Graphon theory provides an alternative analytic framework for the asymptotic
@@ -3659,8 +3654,8 @@ graph-density phenomena studied by flag algebras; see Lov\'asz and Szegedy and
 Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.  Freer has formalized a
 substantial graphon theory in Lean~4, covering cut distance, weak regularity,
 counting lemmas, and compactness~\cite{freer2026graphon}.  Our development
-formalizes the flag-algebra side of this relationship rather than graphons;
-formally connecting our positive-homomorphism semantics to Freer's graphon
+formalizes the flag-algebra side of this relationship rather than graphons.
+Formally connecting our positive-homomorphism semantics to Freer's graphon
 formalization remains future work.
 
 \section{Conclusion}
