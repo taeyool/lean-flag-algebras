@@ -3682,17 +3682,14 @@ semantics led to mathematics of its own: validity in the standard semantics
 always implies validity in the ensemble semantics, and the converse holds for
 all inequalities at a flag type exactly when the class is root-plantable there.
 
-We do not claim that the approach presented here is the right way to formalize
-flag algebras.  Our aim has been to make the design choices and their
-consequences explicit: the obligations they create, the layers needed to
-discharge them, and the questions left open.
-
-Several directions remain for future work.  One is to extend the development to
+Several directions remain for future work.  The most immediate is to verify
+larger certificates, up to the hosts on eight vertices that Flagmatic supports
+for graphs.  Another is to extend the development to
 further parts of Razborov's calculus, especially the differential structure
 developed in Section~4.3 of his original paper~\cite{razborov2007flag}, which
 would exercise the quotient-level semantics well beyond the certificate
-arguments considered here.  Another is to adapt the formalization to richer
-combinatorial structures such as hypergraphs and directed graphs.  A third is
+arguments considered here.  A third is to adapt the formalization to richer
+combinatorial structures such as hypergraphs and directed graphs.  A fourth is
 to build a formal bridge between our positive-homomorphism semantics and
 graphon theory, connecting the development to Lov\'asz's graph-limit
 theory~\cite{lovasz2012large} and the existing Lean formalization of
@@ -3746,10 +3743,9 @@ generated lemma is proved by \lean{decide +kernel}; the $K_5$- and $C_5$-free
 files use the bit-mask routes of \Cref{sec:reflection-bitmask}.
 
 Each file was compiled five times on its own against the prebuilt library
-(\lean{lake env lean}), in five rounds that each compile all seven files once.
+(\lean{lake env lean}).
 Time is wall-clock time, and memory is the peak working set of the Lean
-process, taken as the maximum over the five runs.  All 35 runs succeeded.  The
-table reports the median time and the range of the five runs.  The range is
+process, taken as the maximum over the five runs.  The table reports the median time and the range of the five runs.  The range is
 within $4.1\%$ of the median in every case (at most $0.6$\,s for the two
 smallest files) and within $1\%$ for the three largest.
 
