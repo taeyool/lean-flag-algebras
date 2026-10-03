@@ -411,7 +411,7 @@ the \emph{ensemble semantics} and prove that it yields the intended density
 bounds.  \Cref{sec:metatheory} shows that every inequality valid in the
 standard semantics is valid in the ensemble semantics, and characterizes,
 through a condition we call \emph{root-plantability}, when the converse holds.
-A companion paper, in preparation, develops this comparison in full.
+A companion paper, in preparation, will develop this comparison in full.
 % TODO: cite the companion paper here once it is posted (see also Section 8).
 
 \paragraph{Contributions.}
@@ -3186,7 +3186,7 @@ its own right: when does this \emph{ensemble semantics} validate exactly the
 same typed inequalities as the standard semantics, in which the constraint is
 built into the algebra from the beginning?  This section gives the definitions
 and main results needed to state the answer.  The proofs are only sketched;
-a companion paper, in preparation, presents the full theory and its
+a companion paper, in preparation, will present the full theory and its
 applications, and the results reported here have been autoformalized in Lean.
 % TODO: cite the companion paper here and in the summary paragraph before
 % "Formalization and scope" once it is posted.
@@ -3287,7 +3287,15 @@ the closure of the union of the supports of all admissible random extensions;
 it is empty when \(\sigma\) is degenerate.
 
 The support of each random-extension measure is contained in the constrained
-space.  Indeed, for a \(\sigma\)-flag \(F\) outside \(\mathcal K\), the
+space:
+\[
+  \operatorname{supp}\bigl(\Ext_\sigma(\phi_0)\bigr)
+  \subseteq Q_\sigma
+  \qquad
+  \bigl(\phi_0\in Q_0,\
+        \phi_0(\langle\sigma\rangle_0)>0\bigr).
+\]
+Indeed, for a \(\sigma\)-flag \(F\) outside \(\mathcal K\), the
 downward image of \([F]\) is a non-negative multiple of \([F|_\emptyset]\),
 which every \(\phi_0\in Q_0\) evaluates to zero, so the random-extension
 identity~\eqref{eq:ensemble} forces \(\mathbb{E}[\phi([F])]=0\) and hence
@@ -3360,12 +3368,7 @@ class is root-plantable at \(\sigma\):
 \]
 \end{theorem}
 
-When \(\sigma\) is degenerate, \(S_\sigma\) is empty and the ensemble order
-relates every pair, so the second statement says that the orders agree exactly
-when \(Q_\sigma\) is empty.  Read as soundness and completeness, the theorem
-says that proofs in the quotient order are always valid in the ensemble order,
-and that under root-plantability every ensemble-valid inequality is also valid
-in the quotient order.  Both halves come from one observation: each order asks
+Both statements of the theorem come from one observation: each order asks
 that the same continuous function \(\chi\mapsto\chi(g-f)\) be non-negative, and
 they differ only in the set of \(\chi\) on which it is tested.  The quotient
 order tests \(Q_\sigma\) by definition.  The ensemble order asks for
@@ -3379,11 +3382,13 @@ strict, a point of \(Q_\sigma\setminus S_\sigma\) can be separated from the
 closed set \(S_\sigma\) by a continuous function, and the Stone--Weierstrass
 theorem approximates that function by the evaluation of a flag-algebra
 element.  This element is non-negative in the ensemble order but not in the
-quotient order.
+quotient order.  The same reading covers a degenerate type \(\sigma\): there
+\(S_\sigma\) is empty, so the ensemble order relates every pair, and the two
+orders agree exactly when \(Q_\sigma\) is empty.
 
 \paragraph{When root-plantability holds.}
-The criterion in \Cref{thm:support-closure-summary} reduces semantic
-completeness to a structural problem about the graph class.  Our main positive
+The criterion in \Cref{thm:support-closure-summary} reduces the agreement of
+the two orders to a structural problem about the graph class.  Our main positive
 result gives a broad answer.  Given \(G\in\mathcal K\), a vertex~\(v\in V(G)\),
 and a graph \(J\), write \(G[v\mapsto J]\) for the graph obtained by replacing
 \(v\) by \(J\), keeping the edges inside \(J\), and joining every vertex of
@@ -3405,15 +3410,17 @@ class, independently of blow-up closure.  Consequently, for a blow-up-closed
 class the quotient and ensemble orders agree at every flag type.
 \end{theorem}
 
-No non-degeneracy assumption is needed: for a blow-up-closed class, a
-degenerate type has \(Q_\sigma=\emptyset\).  We sketch the first claim.  Since
+We sketch the first claim.  If \(\sigma\) is degenerate, its underlying graph
+lies outside \(\mathcal K\), since blowing it up inside \(\mathcal K\) would
+give it positive density; then \(Q_\sigma\) and \(S_\sigma\) are both empty.
+It therefore suffices to treat a non-degenerate \(\sigma\).  Since
 \(S_\sigma\subseteq Q_\sigma\) always holds, root-plantability amounts to
 placing every \(\chi\in Q_\sigma\) in \(S_\sigma\), and the gap to close is
 between a chosen labeling and a random one: \(\chi\) is a limit of
 \(\sigma\)-flags in \(\mathcal K\), whose labels may be placed to suit it,
 while \(S_\sigma\) asks that a \emph{uniformly chosen} labeling reproduce its
 density profile with probability bounded away from zero.  Blow-ups close that
-gap.  Blow-up closure lets us replace every vertex of a \(\sigma\)-flag in
+gap: blow-up closure lets us replace every vertex of a \(\sigma\)-flag in
 \(\mathcal K\) by a large interior while staying inside \(\mathcal K\).  A
 uniformly chosen embedding of \(\sigma\) into the blow-up then places each root
 in the interior of the corresponding labeled vertex with probability bounded
@@ -3421,8 +3428,9 @@ below independently of the size of the blow-up, while any fixed number of
 sampled vertices land in distinct interiors with probability tending to one,
 so the blow-up leaves the sampled densities unchanged.  Given a basic open
 neighborhood \(U\) of \(\chi\), choose a \(\sigma\)-flag far enough along a
-sequence representing \(\chi\) and blow it up; the limit \(\phi_0\) of these
-blow-ups satisfies \(\Ext_\sigma(\phi_0)(U)>0\).  Every neighborhood of
+sequence representing \(\chi\) and blow it up with growing interiors; a limit
+\(\phi_0\) of the resulting unlabeled graphs satisfies
+\(\Ext_\sigma(\phi_0)(U)>0\).  Every neighborhood of
 \(\chi\) therefore meets the support of some admissible random extension, so
 \(\chi\in S_\sigma\).
 
@@ -3435,10 +3443,8 @@ instances of \Cref{thm:blowup-root-plantability-summary}.
 \paragraph{Why the criterion is nontrivial.}
 Heredity alone does not imply root-plantability.  Let \(\mathcal K\) be the
 class of \(C_4\)-free graphs and let \(\sigma_1\) be the one-vertex type.
-Every \(n\)-vertex \(C_4\)-free graph with \(e\) edges satisfies
-\((2e)^2\leq 2n^3\), an elementary form of the K\H{o}v\'ari--S\'os--Tur\'an
-bound~\cite{kovari1954zarankiewicz}, so every \(\phi_0\in Q_0\) assigns edge
-density zero.  Let \(d:=\fKtwobull\in\FlagAlg{\sigma_1}[\mathcal G]\), so that
+Every large \(C_4\)-free graph has \(o(n^2)\) edges, so a vertex chosen
+uniformly at random has normalized degree tending to zero.  Let \(d:=\fKtwobull\in\FlagAlg{\sigma_1}[\mathcal G]\), so that
 the density of \(d\) in a finite \(\sigma_1\)-flag is the normalized degree of
 its labeled vertex.  Its downward image is \(K_2\), so the random-extension
 identity gives \(\mathbb{E}[\chi(d)]=\phi_0(K_2)=0\) for
@@ -3448,8 +3454,7 @@ satisfies \(\chi(d)=0\), and \(-d\) is non-negative in the ensemble order.  But
 arbitrarily large stars are \(C_4\)-free: the star \(K_{1,t}\) consists of one
 vertex, its \emph{center}, adjacent to \(t\) pairwise non-adjacent leaves.
 Label the center to obtain a \(\sigma_1\)-flag, and let
-\(\chi_*\in Q_{\sigma_1}\) be the limit of a convergent subsequence of these
-flags.  Every leaf is adjacent to the center, so \(\chi_*(d)=1\) and
+\(\chi_*\in Q_{\sigma_1}\) be the limit of that sequence.  Every leaf is adjacent to the center, so \(\chi_*(d)=1\) and
 \(\chi_*\notin S_{\sigma_1}\), hence \(S_{\sigma_1}\subsetneq Q_{\sigma_1}\).
 Moreover, \(\chi_*(-d)=-1<0\), so \(-d\) is not non-negative in the quotient
 order.  The example exhibits a genuine gap between the two typed orders: the
@@ -3463,7 +3468,8 @@ homomorphism, hence in the ensemble order, and the random-extension
 identity~\eqref{eq:ensemble} carries ensemble non-negativity to the empty
 type, as in the proof of \Cref{thm:downward-nonneg}.  At the empty type the
 two orders agree, since the empty type is root-plantable for every hereditary
-class, so \Cref{lem:semantic-bound} turns the conclusions into statements about
+class by \Cref{thm:blowup-root-plantability-summary}, so
+\Cref{lem:semantic-bound} turns the conclusions into statements about
 Tur\'an densities.  Root-plantability is therefore not a hypothesis of any
 density theorem in this paper.  It concerns only whether the intermediate
 ensemble calculus proves exactly the typed inequalities of the constrained
@@ -3472,7 +3478,7 @@ algebra.
 This section has isolated the core consequences of the ensemble semantics:
 inequalities valid in the quotient order are always valid in the ensemble
 order, root-plantability characterizes when the converse holds, and blow-up
-closure is a broad sufficient condition for it.  The companion paper goes
+closure is a broad sufficient condition for it.  The companion paper will go
 further, with a finite criterion implying root-plantability, further classes on
 either side of the boundary, and a relative ensemble semantics that admits
 non-hereditary constraints such as a fixed edge density.
@@ -3498,18 +3504,6 @@ proofs reach the empty type through \lean{downward\_forbidLEWith\_nonneg},
 which \lean{forbidLEWith\_add\_QuadraticForm} of \Cref{sec:flagmatic-shape}
 packages, and conclude with \lean{generalizedTuranDensity\_le\_of\_forbidLE}
 of \Cref{sec:forbidden}.
-
-The formal statements differ from the informal ones in three respects.  The
-constrained algebra is the quotient by the ideal generated by the forbidden
-flags.  That this ideal is the linear span of those flags is formalized, as
-\lean{forbiddenIdeal\_eq\_span}, under an algebraic form of heredity, namely
-that the span is closed under multiplication; the isomorphism with the algebra
-built from \(\mathcal K\)-flags is not formalized.  Neither fact is needed for
-the results.  The two halves of
-\Cref{thm:support-closure-summary} are proved for an arbitrary constraint, with
-no heredity or non-degeneracy assumption.  Finally, the identification of
-\lean{EnsembleNonneg} with the order \lean{forbidLE} of \Cref{sec:forbidden} is
-a comparison of definitions rather than a formal theorem.
 
 These files were generated by Claude Code from an already-developed
 mathematical account and its theorem targets, and Lean checks the resulting
