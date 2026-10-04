@@ -356,7 +356,7 @@ flag algebra framework explains why a certificate that passes the checks establi
 
 This combination of abstraction and computer search has been unusually
 effective.  It proved the Erd\H{o}s pentagon theorem on the maximum asymptotic
-density of five-cycles in triangle-free graphs~\cite{hatami2012,grzesik2012},
+density of five-cycles in triangle-free graphs~\cite{grzesik2012,hatami2012},
 determined the minimum asymptotic triangle density of graphs with a given edge
 density~\cite{razborov2008triangles} and the maximum induced $C_5$
 density~\cite{balogh2016induced5}, and settled the rainbow-triangle
@@ -866,7 +866,7 @@ The following theorem makes precise the sense in which positive homomorphisms
 are exactly the limiting density profiles of convergent sequences of
 $\sigma$-flags~\cite{razborov2007flag}.
 
-\begin{theorem}[Razborov]\label{thm:convergent-hom}
+\begin{theorem}[Lov\'asz--Szegedy~\cite{lovasz2006limits}; see~{\cite[Theorem~3.3]{razborov2007flag}}]\label{thm:convergent-hom}
   Let $\sigma$ be a flag type.
   \begin{enumerate}
   \item[\textup{(a)}] If $\{G_n\}_{n\in\mathbb{N}}$ is a convergent sequence of
@@ -1013,7 +1013,7 @@ labels.  Razborov's random-extension theorem describes the limiting
 distribution of the resulting $\sigma$-flag densities.
 Whenever $\phi_0(\langle\sigma\rangle_0) > 0$, meaning that the underlying
 unlabeled graph of $\sigma$ has positive limiting density, the following
-holds~\cite{razborov2007flag}:
+holds~\cite[Theorem~3.5]{razborov2007flag}:
 there exists a unique probability measure on $\poshom{\sigma}$,
 which we denote $\Ext_\sigma(\phi_0)$,
 such that for every~$f \in \mathcal{A}^\sigma$, the random positive
@@ -1032,7 +1032,7 @@ $\phi_0\bigl(\llbracket \mathbf{1}_\sigma \rrbracket_\sigma\bigr)
 
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
-\begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:downward-nonneg}
+\begin{theorem}[Razborov~{\cite[Theorem~3.1(a)]{razborov2007flag}}]\label{thm:downward-nonneg}
   For any flag type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_{\mathcal{H},\sigma} f$,
   \[
     0 \;\leq_{\mathcal{H}}\; \llbracket f \rrbracket_\sigma.
@@ -2214,7 +2214,7 @@ namely \(\fbarPthreebull\), and \lean{FlagAlgebra\_3\_1\_0\_1} is its
 flag-algebra basis element.
 
 We automate this repetition with custom command elaborators written in Lean's
-metaprogramming framework~\cite{ebner2017structured}.  During elaboration,
+metaprogramming framework~\cite{moura2021lean}.  During elaboration,
 these commands run the finite enumerators and generate proofs of the
 specialized facts.  A generation block has the following form:
 \begin{lstlisting}[emph={generate_empty_typed_flags,generate_flags,generate_flag_pair_density_theorems_no_forbid,generate_mul_theorems},emphstyle=\color{blue!70!black}\bfseries]
@@ -2863,7 +2863,7 @@ $\llbracket f\,g\rrbracket_\sigma^{\,2}\leq
 \llbracket f^2\rrbracket_\sigma\cdot\llbracket g^2\rrbracket_\sigma$ for the
 downward operator, applied to the edge flag labeled at one endpoint.  That
 inequality is a separate theorem in Razborov's
-paper~\cite{razborov2007flag}, proved in the development in this general form
+paper~\cite[Theorem~3.14]{razborov2007flag}, proved in the development in this general form
 as \lean{Cauchy\_Schwarz\_inequality}.  The resulting inequality is formalized
 as \lean{Goodman\_bound\_on\_triangle\_density}.
 
@@ -3650,8 +3650,8 @@ representations suited to computation.
 
 \paragraph{Graph limits.}
 Graphon theory provides an alternative analytic framework for the asymptotic
-graph-density phenomena studied by flag algebras; see Lov\'asz and Szegedy and
-Lov\'asz~\cite{lovasz2006limits,lovasz2012large}.  Freer has formalized a
+graph-density phenomena studied by flag algebras; see Lov\'asz and Szegedy~\cite{lovasz2006limits} and
+Lov\'asz~\cite{lovasz2012large}.  Freer has formalized a
 substantial graphon theory in Lean~4, covering cut distance, weak regularity,
 counting lemmas, and compactness~\cite{freer2026graphon}.  Our development
 formalizes the flag-algebra side of this relationship rather than graphons.
