@@ -1,0 +1,8 @@
+MODDECLS LeanFlagAlgebras.Flagmatic.Mantel 127
+MODDECLS LeanFlagAlgebras.Flagmatic.K3freeP3 124
+MODDECLS LeanFlagAlgebras.Flagmatic.K3freeC4 533
+MODDECLS LeanFlagAlgebras.Flagmatic.K4freeEdge 852
+MODDECLS LeanFlagAlgebras.Flagmatic.ErdosPentagon 3894
+MODDECLS LeanFlagAlgebras.Flagmatic.K5freeEdge 13130
+MODDECLS LeanFlagAlgebras.Flagmatic.C5freeEdge 10565
+PREFIXDECLS LeanFlagAlgebras 35114
