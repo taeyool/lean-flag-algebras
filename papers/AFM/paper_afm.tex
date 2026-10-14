@@ -22,6 +22,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{placeins}
 \usepackage{microtype}
 \usepackage{fullpage}
 \usepackage{authblk}
@@ -1585,8 +1586,8 @@ theorem flagSeq_limit_mem_positiveHom (s : FlagSeq (*@$\sigma$@*))
 theorem positiveHom_as_flagSeq_limit ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (fun F => (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*)) := ...
 \end{lstlisting}
-Part~(a) assumes \lean{ConvergesTo\,\,\,s\,\,\,a} and produces a positive
-homomorphism \(\phi\) satisfying
+Part~(a) assumes \lean{ConvergesTo s a} and produces a positive
+homomorphism \(\phi\) with
 \(\phi(\llbracket\lean{basisVector F}\rrbracket)=a(F)\) for every finite
 \(\sigma\)-flag \(F\).  Thus, the limiting density profile of every convergent
 \(\sigma\)-flag sequence is induced by a positive homomorphism.  Conversely,
@@ -2059,7 +2060,8 @@ cardinality cannot be isomorphic to \(F\), so it is rejected before the
 isomorphism search runs.
 
 Once the matching predicate is decidable, the density is ordinary finite
-evaluation: \lean{sym2LabeledGraphDensity}$_1$ filters the candidates by it,
+evaluation.  The function \lean{sym2LabeledGraphDensity}$_1$ filters the candidates by
+it,
 counts the survivors, and divides by the number of ways to choose the non-type
 vertices.  The multi-flag density \(\den{F_1,\ldots,F_t}{G}\) of
 \Cref{sec:formal-subflag-densities} follows the same pattern, with the
@@ -3756,7 +3758,7 @@ process, taken as the maximum over the five runs.  The table reports the median 
 within $4.1\%$ of the median in every case (at most $0.6$\,s for the two
 smallest files) and within $1\%$ for the three largest.
 
-\begin{table}[h]
+\begin{table}[ht]
   \centering
   \caption{Lean compilation time (median and range of five runs) and peak
     memory (maximum over five runs) for the seven certificate files, all
@@ -3781,6 +3783,8 @@ smallest files) and within $1\%$ for the three largest.
   \end{tabular}
 \end{table}
 
+% Flush Table 3 so that it stays in Appendix A.
+\FloatBarrier
 \section{The Artifact}
 \label{sec:artifact}
 

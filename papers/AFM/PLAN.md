@@ -770,18 +770,43 @@ generated at `v1.0`); the inline references were dropped by decision.**
    `v1.0`: no displayed name is declared in one repository but not the
    other. The paper is 48 pages, with the same two overfull boxes.
 6. [ ] **Audit items and bibliography.** Sections 8 and 9.
-7. [ ] **Final pass.**
-   - Terminology grep (Section 3.1).
-   - No em-dashes.
-   - No undefined references or citations, and no overfull boxes.
-   - Consistency with `papers/MetaTheory/paper.tex`.
+7. [x] **Final pass.** Done 2026-10-14 except the open item below.
+   - Terminology grep (Section 3.1). Every remaining hit is deliberate:
+     - `compil*`: Lean compilation times and `native_decide`;
+     - `trust`: kernel vs native evaluation;
+     - `metaprogram*`: Lean's framework and the AI paragraph.
+     No "compiler", "frontend", "translation fidelity" or "soundness"
+     framing is left.
+   - No em-dashes (none in prose).
+   - No undefined references or citations, and no overfull boxes. Fixed the
+     two remaining overfull boxes by rewording:
+     - `ConvergesTo s a` with normal spaces, and "with" instead of
+       "satisfying";
+     - "evaluation.  The function sym2LabeledGraphDensity_1 ...".
+     Four underfull boxes inside the generated declaration table are
+     cosmetic (long paths in narrow cells).
+   - Consistency with `papers/MetaTheory/paper.tex`. The terms "ensemble
+     semantics", $Q_\sigma$/$S_\sigma$, "root-plantable", "blow-up-closed"
+     and "support closure" agree.
+     - **Open:** the AFM paper says "standard semantics" (abstract, intro,
+       contributions) and "quotient order" (Sec. 8), while the companion
+       says "quotient semantics". Decide when the companion is posted and
+       cited.
    - Every declaration name in the text exists at the release commit.
-   - Page breaking. `article` uses `\raggedbottom`, and a break before a
-     `\paragraph` heading gets the `\@secpenalty` bonus, so pages can end
-     early with large gaps. Seen first on page 3 before "Organization". Try
-     `\@secpenalty=0` (or `\flushbottom`) and re-check the `\Needspace` calls
-     inherited from the acmsmall layout.
+     `name_audit.py` was re-run against `v1.0`: no name is declared in one
+     repository but not the other. The flagged `no_forbid` is a
+     tokenization artifact of `generate_flag_pair_density_theorems_no_forbid`,
+     which exists. All nine commands of the generation table exist at `v1.0`.
+   - Page breaking:
+     - Table 3 used to float into Appendix B. `placeins` and a
+       `\FloatBarrier` before Appendix B now keep it in Appendix A, and
+       its `[h]` became `[ht]`.
+     - Per-page fill was measured with a diagnostic copy. The remaining
+       short pages hold floats (pp. 4, 25, 30) or end at forced breaks.
+     - Setting `\@secpenalty=0` brought no improvement, so the default
+       stays. The page-3 gap before "Organization" no longer occurs.
+     - The paper is 48 pages.
 8. [ ] **Submission.**
-   - Release tag and SWHID.
+   - Release tag and SWHID. **Done in phase 5 (`v1.0`).**
    - arXiv v2 of 2607.23500.
    - Episciences submission (PDF not inside a zip).
