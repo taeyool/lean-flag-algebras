@@ -43,3 +43,6 @@ papers/POPL27/referee_feedback_paper_draft.md
 # Benchmark scratch (harness, logs, prebuilt oleans) — keep only the writeup
 bench/*
 !bench/RESULTS.md
+
+# arXiv bundle of the AFM paper: output of papers/AFM/make_arxiv.py, rebuilt on every run
+papers/AFM/arxiv/

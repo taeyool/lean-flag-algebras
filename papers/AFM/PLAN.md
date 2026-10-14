@@ -808,5 +808,15 @@ generated at `v1.0`); the inline references were dropped by decision.**
      - The paper is 48 pages.
 8. [ ] **Submission.**
    - Release tag and SWHID. **Done in phase 5 (`v1.0`).**
-   - arXiv v2 of 2607.23500.
+   - arXiv v2 of 2607.23500. Source bundle ready (2026-10-14):
+     - `python papers/AFM/make_arxiv.py` writes `papers/AFM/arxiv/`:
+       `paper_afm_arxiv.tar.gz` (comment-stripped `paper_afm.tex` with
+       `\pdfoutput=1`, plus `paper_afm.bbl`), `arxiv_metadata.txt` (form
+       fields; the abstract in arXiv form is 1829 characters), and a
+       `latexmkrc` for local pdfLaTeX previews with BibTeX disabled.
+     - The script checks the bundle with a stand-alone build: 48 pages,
+       `.aux` identical to the main build, no TODO left.
+     - `arxiv/` is git-ignored output. Re-run the script after any text change.
+     - Not yet in the bundle: A5 and A7.
+     - The upload itself (Replace on arXiv) is the authors' step.
    - Episciences submission (PDF not inside a zip).
