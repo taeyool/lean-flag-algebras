@@ -243,7 +243,7 @@
 \author[1,4]{Seonghun Park\protect\footnotemark[1]}
 \author[1]{Jihoon Hyun}
 \author[2,3]{Sang-il Oum}
-\author[4]{Hongseok~Yang}
+\author[1,4]{Hongseok~Yang}
 \affil[1]{\small School of Computing, KAIST, Daejeon, Korea}
 \affil[2]{\small Discrete Mathematics Group, Institute for Basic Science (IBS), Daejeon, Korea}
 \affil[3]{\small Department of Mathematical Sciences, KAIST, Daejeon, Korea}
@@ -444,18 +444,17 @@ the paper, the Lean declaration that formalizes it.
 
 \paragraph{Organization.}
 \Cref{sec:background} reviews flag algebras and fixes notation.
-\Cref{sec:abstract} formalizes the theory, including the ensemble treatment of
-forbidden subgraphs, and \Cref{sec:reflection} makes its finite parts
-computable.  \Cref{sec:flagmatic} explains how a certificate proves a density
-bound and how Lean checks one, and reports the seven verified bounds.
-\Cref{sec:lowerbounds} proves the matching lower bounds that make the Mantel
-and Erd\H{o}s pentagon bounds exact, together with two inequalities of Goodman.
-\Cref{sec:obstacles} discusses the obstacles we met in representing this
-mathematics in Lean, and \Cref{sec:metatheory} compares the
-ensemble and standard semantics.  \Cref{sec:unsure} discusses design questions,
+\Cref{sec:abstract,sec:reflection} present the specification and reflection
+layers, respectively.  \Cref{sec:flagmatic} presents the certificate-checking
+tactic and the seven verified upper bounds.
+\Cref{sec:lowerbounds} proves matching lower bounds for Mantel's and the
+Erd\H{o}s pentagon theorems, and Goodman's inequalities.
+\Cref{sec:obstacles} discusses engineering obstacles, and
+\Cref{sec:metatheory} compares the ensemble and standard semantics.
+\Cref{sec:unsure} discusses open design questions,
 \Cref{sec:related} surveys related work, and \Cref{sec:conclusion} concludes.
-\Cref{sec:compile-times} reports compilation times, and \Cref{sec:artifact}
-describes the artifact.
+\Cref{sec:compile-times,sec:artifact} report compilation times and describe the
+artifact, respectively.
 
 \section{Background: Flag Algebras}
 \label{sec:background}
