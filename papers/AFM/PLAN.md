@@ -614,25 +614,37 @@ generated at `v1.0`); the inline references were dropped by decision.**
 - Software entries are pinned to a commit with an access date:
   - `sos` `fb7ae4176090` (`main` is two commits past `v0.2.4`);
   - graphon `9f7be59fa754`.
-  - The Flagmatic entry is left as it was (see Open below).
+  - Flagmatic: resolved the same day (see below).
 - DOIs and URLs were added after checking Crossref, arXiv and ams.org:
   - Lovász book `10.1090/coll/060`;
   - Chlipala `10.7551/mitpress/9153.001.0001`;
   - arXiv URLs for the two Davey et al. papers (titles and authors match);
   - the Notices PDF for Gonthier.
 - Open:
-  - Flagmatic citation (decision pending). The paper cites Flagmatic 2.0
-    (`jsliacan/flagmatic-2.0`), but the certificates were produced by
-    Flagmatic 3.0 (`jsliacan/flagmatic`, `setup.py` version 3.0). That repo
-    is the Python 3 port for Sage 9.x (commit `b91469e`, 2022-09-20;
-    HEAD `a6d348f45796`). Checked 2026-10-14:
-    - Flagmatic 2.0 is Python 2 only: `print` statements and `xrange`.
-    - Our certificate JSON shows Python 3 `json.dump(indent=4)` output: no
-      space after line-final commas, and keys in insertion order.
-    - Both versions have identical `write_certificate` and `describe`.
-    - The release README already links `jsliacan/flagmatic`.
-    - Proposed entry: Vaughan and Sliačan, "Flagmatic, version 3.0",
-      pinned to `a6d348f45796`. Not applied yet.
+  - Flagmatic citation: **resolved 2026-10-14.**
+    - The certificates come from the WSL install: Flagmatic 3.0 (`setup.py`
+      version 3.0) in the `sage9` conda env (Python 3.10), built from
+      `shanhaiying/flagmatic-1` at `3510ead67c03` (Z. Jiang's Python 3 /
+      Sage 9 port, 2020-04-10). The per-case work folders are in
+      `~/flagmatic-work`. The pentagon files there date from 2026-05-27,
+      the same day as `ErdosPentagon_cert.json`.
+    - This is not `jsliacan/flagmatic` (`a6d348f45796`, Bartek's 2022 port),
+      as assumed earlier. The two repos share no git history, but their core
+      code differs by only a few lines, and `write_certificate` is identical.
+    - `vaughan2013flagmatic` (Flagmatic 2.0) is replaced by
+      `vaughan2020flagmatic`: Vaughan and Sliačan, "Flagmatic, version 3.0",
+      pinned to `3510ead67c03`, with Jiang's port credited in the note.
+    - The user's guide entry stays at version 1.5 (29 January 2012).
+      - Its Sec. 8 and Sec. 10.8 give Q = R Q' R^T with Q' positive definite.
+      - Its Sec. 9 gives the `--n` range: 3-8 for graphs, 4-7 for 3-graphs.
+      - The 2.0 guide shipped with the code says neither.
+      - The URL now points to the 1.5 PDF (lidicky.name). The old archive
+        link pointed to flagmatic.org, which was the 2.0 site.
+    - The three sentences that rely on the guide now say "Flagmatic 1.5":
+      Part 2 in Sec. 5.2, the scaling question in Sec. 9, and the
+      conclusion.
+      Version 3.0 has no 8/7-vertex limit (`MAX_NUMBER_OF_VERTICES = 35`).
+    - Still open: the release README links `jsliacan/flagmatic`.
   - A7 (Spiegel title).
 
 - Start from a copy of `papers/TOPLAS/refs.bib`.

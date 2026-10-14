@@ -351,7 +351,7 @@ technique for such universal claims: it reduces the task of proving an
 asymptotic upper bound for an infinite class of graphs to checking finitely many
 algebraic conditions on small, partially labeled graphs, called
 \emph{flags}.  A semidefinite programming (SDP) solver, run through software
-such as Flagmatic~\cite{vaughan2013flagmatic}, proposes a finite package of
+such as Flagmatic~\cite{vaughan2020flagmatic}, proposes a finite package of
 data intended to satisfy these conditions, consisting of flags, rational
 matrices, and coefficients; we call this package a \emph{certificate}.  The
 flag algebra framework explains why a certificate that passes the checks establishes the desired bound for the whole class.
@@ -2424,7 +2424,7 @@ inequality into the Tur\'an-density bound.  A \emph{flag-algebra certificate}
 is a finite witness for this inequality: it specifies flags, rational
 matrices, and coefficients that purport to express the gap
 \(c\cdot\mathbf{1}-[F]\) as a sum of terms that are non-negative under the
-\(H\)-free condition.  Flagmatic~\cite{vaughan2013flagmatic} searches for such
+\(H\)-free condition.  Flagmatic~\cite{vaughan2020flagmatic} searches for such
 witnesses by semidefinite programming.
 
 Our concern is verification rather than search.  The theorem to be proved is
@@ -2570,9 +2570,10 @@ of \Cref{sec:reflection-adequacy} state all of them at the specification level.
 \paragraph{Certifying the matrices (Part~2).}
 For each SDP block, the certificate stores rational matrices $Q'_t$ and $R_t$
 with $M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a
-smaller symmetric matrix.  As Flagmatic's user
-guide~\cite{vaughan2012flagmaticguide} explains, $Q'_t$ is chosen to be
-positive definite, which implies the positive semidefiniteness of $M_t$.
+smaller symmetric matrix.  The user's guide for
+Flagmatic~1.5~\cite{vaughan2012flagmaticguide}, which documents this
+certificate format, explains that $Q'_t$ is chosen to be positive definite,
+which implies the positive semidefiniteness of $M_t$.
 
 Our verification uses a different, equally elementary witness.  Every PSD
 obligation is discharged through one library lemma, based on an exact rational
@@ -3583,8 +3584,8 @@ increase, and so do the time and memory of kernel evaluation
 frontier; in the released development, the canonicalization sweep of
 \Cref{sec:reflection-bitmask} already covers all graphs on six vertices, one
 more than the seven certificates need.  Certificate generation faces the same combinatorial
-growth: the Flagmatic user guide documents support for bases of up to eight
-vertices for ordinary graphs and seven for
+growth: the user's guide for Flagmatic~1.5 documents support for bases of up
+to eight vertices for ordinary graphs and seven for
 3-graphs~\cite{vaughan2012flagmaticguide}.  Certificates of these sizes are
 the natural target for verification, whereas this paper reports certificates
 with hosts of at most five vertices; extending the evaluation to larger hosts
@@ -3631,7 +3632,7 @@ Lean~\cite{spiegel2026computational}, ongoing independent work aimed at
 carrying out flag-algebra inequality proofs automatically inside Lean.
 
 \paragraph{Computer-assisted flag-algebra arguments.}
-Flagmatic~\cite{vaughan2013flagmatic} automates the computation of exact and
+Flagmatic~\cite{vaughan2020flagmatic} automates the computation of exact and
 approximate flag-algebra bounds but does not produce proof-assistant proofs;
 Razborov's survey~\cite{razborov2013flag} organizes many early applications of
 the method.  The seven certificates verified here are Flagmatic's output as
@@ -3691,8 +3692,8 @@ always implies validity in the ensemble semantics, and the converse holds for
 all inequalities at a flag type exactly when the class is root-plantable there.
 
 Several directions remain for future work.  The most immediate is to verify
-larger certificates, up to the hosts on eight vertices that Flagmatic supports
-for graphs.  Another is to extend the development to
+larger certificates, up to hosts on eight vertices, the largest that
+Flagmatic~1.5 supported for graphs.  Another is to extend the development to
 further parts of Razborov's calculus, especially the differential structure
 developed in Section~4.3 of his original paper~\cite{razborov2007flag}, which
 would exercise the quotient-level semantics well beyond the certificate
