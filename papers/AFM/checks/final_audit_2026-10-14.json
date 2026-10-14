@@ -1,0 +1,1652 @@
+{
+  "date": "2026-10-14",
+  "release": "v1.0",
+  "commit": "439d3e64e02ff044a5e8b2b01937f8d7f36c84b6",
+  "source_checks": {
+    "release_lean_files": 197,
+    "release_vs_development_code_differences": [
+      "LeanFlagAlgebras\\Automation\\CompleteGraphFreeP4.lean",
+      "LeanFlagAlgebras\\ErdosPentagon\\FlagDef.lean"
+    ],
+    "sorry_admit_axiom_hits": [],
+    "table4_rows": 33,
+    "table4_declarations": 39,
+    "table4_source_links": [
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+        "line": 2999,
+        "source": "theorem flagDensity_eq_sum_density_prods"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+        "line": 542,
+        "source": "theorem flagMulWithSize_indep_on_size"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/FlagSequence.lean",
+        "line": 656,
+        "source": "theorem flagSeq_limit_mem_positiveHom"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/FlagSequence.lean",
+        "line": 1019,
+        "source": "theorem positiveHom_as_flagSeq_limit"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/RandomHom.lean",
+        "line": 1096,
+        "source": "theorem exists_probMeasure_extend_emptyType_positiveHom"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/RandomHom.lean",
+        "line": 1229,
+        "source": "theorem downward_preserve_semanticCone"
+      },
+      {
+        "file": "LeanFlagAlgebras/Forbid/Basic.lean",
+        "line": 1505,
+        "source": "theorem downward_forbidLEWith_nonneg"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/RandomHom.lean",
+        "line": 1419,
+        "source": "alias Cauchy_Schwarz_inequality := square_downward_mul_ge_mul_downward_square"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/RandomHom.lean",
+        "line": 1430,
+        "source": "alias Cauchy_Schwarz_inequality_unit := square_downward_mul_one_downward_ge_downward_square"
+      },
+      {
+        "file": "LeanFlagAlgebras/Turan/GeneralizedTuran.lean",
+        "line": 253,
+        "source": "theorem tendsto_generalizedTuranDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Forbid/TuranDensity.lean",
+        "line": 250,
+        "source": "theorem generalizedTuranDensity_le_of_forbidLE"
+      },
+      {
+        "file": "LeanFlagAlgebras/Forbid/Basic.lean",
+        "line": 101,
+        "source": "noncomputable def forbidLE {m : ℕ}"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+        "line": 1140,
+        "source": "theorem flagDensity₁_eq_sym2FlagDensity₁"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+        "line": 1213,
+        "source": "theorem flagDensity₂_eq_sym2FlagDensity₂"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/Compute/Downward.lean",
+        "line": 170,
+        "source": "theorem downwardNormalizingFactor_eq"
+      },
+      {
+        "file": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+        "line": 649,
+        "source": "theorem flagDensity_permute"
+      },
+      {
+        "file": "LeanFlagAlgebras/Automation/Matrix/PosSemiDef.lean",
+        "line": 73,
+        "source": "theorem posSemidef_real_of_LDLt"
+      },
+      {
+        "file": "LeanFlagAlgebras/Automation/Basic.lean",
+        "line": 128,
+        "source": "theorem forbidLEWith_add_QuadraticForm"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/Mantel.lean",
+        "line": 72,
+        "source": "theorem Mantel_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/K3freeP3.lean",
+        "line": 71,
+        "source": "theorem K3freeP3_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/K3freeC4.lean",
+        "line": 75,
+        "source": "theorem K3freeC4_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/K4freeEdge.lean",
+        "line": 77,
+        "source": "theorem K4freeEdge_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/ErdosPentagon.lean",
+        "line": 79,
+        "source": "theorem ErdosPentagon_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/K5freeEdge.lean",
+        "line": 90,
+        "source": "theorem K5freeEdge_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/Flagmatic/C5freeEdge.lean",
+        "line": 97,
+        "source": "theorem C5freeEdge_turanDensity"
+      },
+      {
+        "file": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+        "line": 191,
+        "source": "theorem Mantel_Turan"
+      },
+      {
+        "file": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+        "line": 313,
+        "source": "theorem ErdosPentagon_Turan"
+      },
+      {
+        "file": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+        "line": 291,
+        "source": "theorem ErdosPentagon_Turan_lowerBound"
+      },
+      {
+        "file": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+        "line": 26,
+        "source": "lemma C5_toFlagAlgebra_eq_certificate"
+      },
+      {
+        "file": "LeanFlagAlgebras/MantelTheorem/GoodmanBound.lean",
+        "line": 15,
+        "source": "theorem Goodman_bound_on_triangle_density"
+      },
+      {
+        "file": "LeanFlagAlgebras/MantelTheorem/GoodmanRamsey.lean",
+        "line": 16,
+        "source": "theorem Goodman_theorem_on_Ramsey_multiplicity"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/SupportClosure.lean",
+        "line": 120,
+        "source": "def QuotientNonneg (T : Constraint σ) (f : FlagAlgebra σ) : Prop :="
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/SupportClosure.lean",
+        "line": 125,
+        "source": "def EnsembleNonneg (T : Constraint σ) (f : FlagAlgebra σ) : Prop :="
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/SupportClosure.lean",
+        "line": 130,
+        "source": "theorem quotient_implies_ensemble (T : Constraint σ) (f : FlagAlgebra σ)"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/SupportClosure.lean",
+        "line": 139,
+        "source": "theorem support_criterion (T : Constraint σ) :"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/BlowupClosed.lean",
+        "line": 530,
+        "source": "theorem blowupClosed_root_plantable {hc : HeredClass} (hbc : BlowupClosed hc)"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/EmptyTypeCollapse.lean",
+        "line": 180,
+        "source": "theorem heredClass_emptyType_rootPlantable (hc : HeredClass) :"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/C4Free.lean",
+        "line": 455,
+        "source": "theorem c4free_not_rootPlantable :"
+      },
+      {
+        "file": "LeanFlagAlgebras/MetaTheory/SupportClosure.lean",
+        "line": 114,
+        "source": "theorem Sσ_subset_Qσ (T : Constraint σ) : Sσ T ⊆ Qσ T.forbσ := by"
+      }
+    ],
+    "table4_link_errors": [],
+    "table4_declarations_missing_from_saved_axiom_audit": [
+      "C5_toFlagAlgebra_eq_certificate",
+      "EnsembleNonneg",
+      "QuotientNonneg",
+      "Sσ_subset_Qσ",
+      "forbidLE"
+    ],
+    "certificates": [
+      {
+        "file": "C5freeEdge_cert.json",
+        "bound": "1/2",
+        "host_size": 5,
+        "description": "2-graph; maximize 2:12 density; forbid 5:1223344551",
+        "blocks": 4,
+        "matrix_dimensions": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "ErdosPentagon_cert.json",
+        "bound": "24/625",
+        "host_size": 5,
+        "description": "2-graph; maximize 5:1213243545 density; forbid 3:121323",
+        "blocks": 3,
+        "matrix_dimensions": [
+          8,
+          6,
+          5
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "K3freeC4_cert.json",
+        "bound": "3/8",
+        "host_size": 4,
+        "description": "2-graph; maximize 4:12132434 density; forbid 3:121323",
+        "blocks": 2,
+        "matrix_dimensions": [
+          4,
+          3
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "K3freeP3_cert.json",
+        "bound": "3/4",
+        "host_size": 3,
+        "description": "2-graph; maximize 3:1213 density; forbid 3:121323",
+        "blocks": 1,
+        "matrix_dimensions": [
+          2
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "K4freeEdge_cert.json",
+        "bound": "2/3",
+        "host_size": 4,
+        "description": "2-graph; maximize 2:12 density; forbid 4:121314232434",
+        "blocks": 2,
+        "matrix_dimensions": [
+          4,
+          4
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "K5freeEdge_cert.json",
+        "bound": "3/4",
+        "host_size": 5,
+        "description": "2-graph; maximize 2:12 density; forbid 5:12131415232425343545",
+        "blocks": 4,
+        "matrix_dimensions": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "matches_development_bytes": true
+      },
+      {
+        "file": "Mantel_cert.json",
+        "bound": "1/2",
+        "host_size": 3,
+        "description": "2-graph; maximize 2:12 density; forbid 3:121323",
+        "blocks": 1,
+        "matrix_dimensions": [
+          2
+        ],
+        "matches_development_bytes": true
+      }
+    ],
+    "undefined_labels": [],
+    "duplicate_labels": [],
+    "citations": 33,
+    "bibliography_entries": 33,
+    "undefined_citations": [],
+    "uncited_bibliography_entries": []
+  },
+  "package_checks": {
+    "pdf_pages": 47,
+    "standalone_bundle_pages": 47,
+    "abstract_characters": 1829,
+    "arxiv_abstract_limit": 1920,
+    "archive_members": [
+      "paper_afm.tex",
+      "paper_afm.bbl"
+    ],
+    "archive_contents_match_output": true,
+    "bbl_matches_main": true,
+    "pdf_table4_distinct_links": 39,
+    "main_log_errors_undefined_overfull": [],
+    "python_scripts_parse": true,
+    "post_revert_build_pages": 47,
+    "post_revert_archive_contents_match_output": true,
+    "funding_citation_update_archive_matches_output": true
+  },
+  "archives": [
+    {
+      "url": "https://archive.softwareheritage.org/api/1/revision/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/",
+      "status": 200,
+      "summary": {
+        "id": "439d3e64e02ff044a5e8b2b01937f8d7f36c84b6",
+        "date": "2026-10-03T07:11:13+09:00"
+      }
+    },
+    {
+      "url": "https://archive.softwareheritage.org/api/1/release/599f924360e59565847c957d5f7562d88ef949d1/",
+      "status": 200,
+      "summary": {
+        "id": "599f924360e59565847c957d5f7562d88ef949d1",
+        "target": "439d3e64e02ff044a5e8b2b01937f8d7f36c84b6",
+        "date": "2026-10-03T23:56:08+09:00"
+      }
+    },
+    {
+      "url": "https://archive.softwareheritage.org/api/1/origin/https://github.com/taeyool/lean-flag-algebras-release/visits/",
+      "status": 200,
+      "summary": [
+        {
+          "date": "2026-10-03T14:56:39.852000+00:00",
+          "status": "full",
+          "snapshot": "a0efc6e179478d14afd324ef503adbbdf4dd771e"
+        }
+      ]
+    },
+    {
+      "url": "https://api.github.com/repos/taeyool/lean-flag-algebras-release/git/ref/tags/v1.0",
+      "status": 200,
+      "summary": {
+        "object": {
+          "sha": "599f924360e59565847c957d5f7562d88ef949d1",
+          "type": "tag",
+          "url": "https://api.github.com/repos/taeyool/lean-flag-algebras-release/git/tags/599f924360e59565847c957d5f7562d88ef949d1"
+        }
+      }
+    }
+  ],
+  "reference_metadata": [
+    {
+      "key": "razborov2007flag",
+      "url": "https://api.crossref.org/works/10.2178%2Fjsl%2F1203350785",
+      "status": 429
+    },
+    {
+      "key": "razborov2013flag",
+      "url": "https://api.crossref.org/works/10.1007%2F978-1-4614-7254-4_16",
+      "status": 200,
+      "title": [
+        "Flag Algebras: An Interim Report"
+      ],
+      "authors": [
+        {
+          "given": "Alexander A.",
+          "family": "Razborov",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "publication": [
+        "The Mathematics of Paul Erdős II"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "207-232"
+    },
+    {
+      "key": "grzesik2012",
+      "url": "https://api.crossref.org/works/10.1016%2Fj.jctb.2012.04.001",
+      "status": 200,
+      "title": [
+        "On the maximum number of five-cycles in a triangle-free graph"
+      ],
+      "authors": [
+        {
+          "given": "Andrzej",
+          "family": "Grzesik",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2012,
+            9
+          ]
+        ]
+      },
+      "publication": [
+        "Journal of Combinatorial Theory, Series B"
+      ],
+      "volume": "102",
+      "issue": "5",
+      "pages": "1061-1066"
+    },
+    {
+      "key": "hatami2012",
+      "url": "https://api.crossref.org/works/10.1016%2Fj.jcta.2012.12.008",
+      "status": 200,
+      "title": [
+        "On the number of pentagons in triangle-free graphs"
+      ],
+      "authors": [
+        {
+          "given": "Hamed",
+          "family": "Hatami",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Jan",
+          "family": "Hladký",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Daniel",
+          "family": "Králʼ",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Serguei",
+          "family": "Norine",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Alexander",
+          "family": "Razborov",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2013,
+            4
+          ]
+        ]
+      },
+      "publication": [
+        "Journal of Combinatorial Theory, Series A"
+      ],
+      "volume": "120",
+      "issue": "3",
+      "pages": "722-732"
+    },
+    {
+      "key": "balogh2016induced5",
+      "url": "https://api.crossref.org/works/10.1016%2Fj.ejc.2015.08.006",
+      "status": 200,
+      "title": [
+        "Maximum density of induced 5-cycle is achieved by an iterated blow-up of 5-cycle"
+      ],
+      "authors": [
+        {
+          "given": "József",
+          "family": "Balogh",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Ping",
+          "family": "Hu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0001-8612-3594",
+          "authenticated-orcid": false,
+          "given": "Bernard",
+          "family": "Lidický",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Florian",
+          "family": "Pfender",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2016,
+            2
+          ]
+        ]
+      },
+      "publication": [
+        "European Journal of Combinatorics"
+      ],
+      "volume": "52",
+      "issue": null,
+      "pages": "47-58"
+    },
+    {
+      "key": "dillies2022szemeredi",
+      "url": "https://api.crossref.org/works/10.4230%2FLIPIcs.ITP.2022.9",
+      "status": 404
+    },
+    {
+      "key": "goodman1959",
+      "url": "https://api.crossref.org/works/10.2307%2F2310464",
+      "status": 200,
+      "title": [
+        "On Sets of Acquaintances and Strangers at any Party"
+      ],
+      "authors": [
+        {
+          "given": "A. W.",
+          "family": "Goodman",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "University of Kentucky"
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            1959,
+            11
+          ]
+        ]
+      },
+      "publication": [
+        "The American Mathematical Monthly"
+      ],
+      "volume": "66",
+      "issue": "9",
+      "pages": "778-783"
+    },
+    {
+      "key": "mehta2022kruskal",
+      "url": "https://api.crossref.org/works/10.1007%2F978-3-031-16681-5_5",
+      "status": 200,
+      "title": [
+        "Formalising the Kruskal-Katona Theorem in Lean"
+      ],
+      "authors": [
+        {
+          "ORCID": "https://orcid.org/0000-0001-7892-7891",
+          "authenticated-orcid": false,
+          "given": "Bhavik",
+          "family": "Mehta",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2022
+          ]
+        ]
+      },
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Intelligent Computer Mathematics"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "75-91"
+    },
+    {
+      "key": "heule2024hexagon",
+      "url": "https://api.crossref.org/works/10.1007%2F978-3-031-57246-3_5",
+      "status": 200,
+      "title": [
+        "Happy Ending: An Empty Hexagon in Every Set of 30 Points"
+      ],
+      "authors": [
+        {
+          "ORCID": "https://orcid.org/0000-0002-5587-8801",
+          "authenticated-orcid": false,
+          "given": "Marijn J. H.",
+          "family": "Heule",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-1657-9796",
+          "authenticated-orcid": false,
+          "given": "Manfred",
+          "family": "Scheucher",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2024
+          ]
+        ]
+      },
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Tools and Algorithms for the Construction and Analysis of Systems"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "61-80"
+    },
+    {
+      "key": "subercaseaux2024hexagon",
+      "url": "https://api.crossref.org/works/10.4230%2FLIPIcs.ITP.2024.35",
+      "status": 404
+    },
+    {
+      "key": "chlipala2013cpdt",
+      "url": "https://api.crossref.org/works/10.7551%2Fmitpress%2F9153.001.0001",
+      "status": 200,
+      "title": [
+        "Certified Programming with Dependent Types"
+      ],
+      "authors": [
+        {
+          "given": "Adam",
+          "family": "Chlipala",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2013,
+            12,
+            6
+          ]
+        ]
+      },
+      "publication": [],
+      "volume": null,
+      "issue": null,
+      "pages": null
+    },
+    {
+      "key": "cohen2013refinements",
+      "url": "https://api.crossref.org/works/10.1007%2F978-3-319-03545-1_10",
+      "status": 200,
+      "title": [
+        "Refinements for Free!"
+      ],
+      "authors": [
+        {
+          "given": "Cyril",
+          "family": "Cohen",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Maxime",
+          "family": "Dénès",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Anders",
+          "family": "Mörtberg",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2013
+          ]
+        ]
+      },
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Certified Programs and Proofs"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "147-162"
+    },
+    {
+      "key": "harrison2007verifying",
+      "url": "https://api.crossref.org/works/10.1007%2F978-3-540-74591-4_9",
+      "status": 200,
+      "title": [
+        "Verifying Nonlinear Real Formulas Via Sums of Squares"
+      ],
+      "authors": [
+        {
+          "given": "John",
+          "family": "Harrison",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": null,
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Theorem Proving in Higher Order Logics"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "102-118"
+    },
+    {
+      "key": "lovasz2012large",
+      "url": "https://api.crossref.org/works/10.1090%2Fcoll%2F060",
+      "status": 200,
+      "title": [
+        "Large Networks and Graph Limits"
+      ],
+      "authors": [
+        {
+          "given": "László",
+          "family": "Lovász",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2012,
+            12,
+            12
+          ]
+        ]
+      },
+      "publication": [
+        "Colloquium Publications"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": null
+    },
+    {
+      "key": "lovasz2006limits",
+      "url": "https://api.crossref.org/works/10.1016%2Fj.jctb.2006.05.002",
+      "status": 200,
+      "title": [
+        "Limits of dense graph sequences"
+      ],
+      "authors": [
+        {
+          "given": "László",
+          "family": "Lovász",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "Balázs",
+          "family": "Szegedy",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2006,
+            11
+          ]
+        ]
+      },
+      "publication": [
+        "Journal of Combinatorial Theory, Series B"
+      ],
+      "volume": "96",
+      "issue": "6",
+      "pages": "933-957"
+    },
+    {
+      "key": "hales2017kepler",
+      "url": "https://api.crossref.org/works/10.1017%2Ffmp.2017.1",
+      "status": 200,
+      "title": [
+        "A FORMAL PROOF OF THE KEPLER CONJECTURE"
+      ],
+      "authors": [
+        {
+          "given": "THOMAS",
+          "family": "HALES",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "MARK",
+          "family": "ADAMS",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "GERTRUD",
+          "family": "BAUER",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "TAT DAT",
+          "family": "DANG",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "JOHN",
+          "family": "HARRISON",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "LE TRUONG",
+          "family": "HOANG",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "CEZARY",
+          "family": "KALISZYK",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "VICTOR",
+          "family": "MAGRON",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "SEAN",
+          "family": "MCLAUGHLIN",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "TAT THANG",
+          "family": "NGUYEN",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "QUANG TRUONG",
+          "family": "NGUYEN",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "TOBIAS",
+          "family": "NIPKOW",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "STEVEN",
+          "family": "OBUA",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "JOSEPH",
+          "family": "PLESO",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "JASON",
+          "family": "RUTE",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "ALEXEY",
+          "family": "SOLOVYEV",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "THI HOAI AN",
+          "family": "TA",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "NAM TRUNG",
+          "family": "TRAN",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "THI DIEP",
+          "family": "TRIEU",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "JOSEF",
+          "family": "URBAN",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "KY",
+          "family": "VU",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "given": "ROLAND",
+          "family": "ZUMKELLER",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2017
+          ]
+        ]
+      },
+      "publication": [
+        "Forum of Mathematics, Pi"
+      ],
+      "volume": "5",
+      "issue": null,
+      "pages": null
+    },
+    {
+      "key": "moura2021lean",
+      "url": "https://api.crossref.org/works/10.1007%2F978-3-030-79876-5_37",
+      "status": 200,
+      "title": [
+        "The Lean 4 Theorem Prover and Programming Language"
+      ],
+      "authors": [
+        {
+          "ORCID": "https://orcid.org/0000-0002-5158-4726",
+          "authenticated-orcid": false,
+          "given": "Leonardo de",
+          "family": "Moura",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-2777-8117",
+          "authenticated-orcid": false,
+          "given": "Sebastian",
+          "family": "Ullrich",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2021
+          ]
+        ]
+      },
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Automated Deduction – CADE 28"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "625-635"
+    },
+    {
+      "key": "boutin1997reflection",
+      "url": "https://api.crossref.org/works/10.1007%2FBFb0014565",
+      "status": 200,
+      "title": [
+        "Using reflection to build efficient and certified decision procedures"
+      ],
+      "authors": [
+        {
+          "given": "Samuel",
+          "family": "Boutin",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            1997
+          ]
+        ]
+      },
+      "publication": [
+        "Lecture Notes in Computer Science",
+        "Theoretical Aspects of Computer Software"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "515-529"
+    },
+    {
+      "key": "razborov2008triangles",
+      "url": "https://api.crossref.org/works/10.1017%2FS0963548308009085",
+      "status": 200,
+      "title": [
+        "On the Minimal Density of Triangles in Graphs"
+      ],
+      "authors": [
+        {
+          "given": "ALEXANDER A.",
+          "family": "RAZBOROV",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2008,
+            7
+          ]
+        ]
+      },
+      "publication": [
+        "Combinatorics, Probability and Computing"
+      ],
+      "volume": "17",
+      "issue": "4",
+      "pages": "603-618"
+    },
+    {
+      "key": "razborov2010tetrahedron",
+      "url": "https://api.crossref.org/works/10.1137%2F090747476",
+      "status": 200,
+      "title": [
+        "On 3-Hypergraphs with Forbidden 4-Vertex Configurations"
+      ],
+      "authors": [
+        {
+          "given": "Alexander A.",
+          "family": "Razborov",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2010,
+            1
+          ]
+        ]
+      },
+      "publication": [
+        "SIAM Journal on Discrete Mathematics"
+      ],
+      "volume": "24",
+      "issue": "3",
+      "pages": "946-963"
+    },
+    {
+      "key": "baber2012turan",
+      "url": "https://api.crossref.org/works/10.37236%2F2360",
+      "status": 200,
+      "title": [
+        "New Turán Densities for 3-Graphs"
+      ],
+      "authors": [
+        {
+          "given": "Rahil",
+          "family": "Baber",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "John",
+          "family": "Talbot",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2012,
+            5,
+            31
+          ]
+        ]
+      },
+      "publication": [
+        "The Electronic Journal of Combinatorics"
+      ],
+      "volume": "19",
+      "issue": "2",
+      "pages": null
+    },
+    {
+      "key": "balogh2017rainbow",
+      "url": "https://api.crossref.org/works/10.1016%2Fj.jctb.2017.04.002",
+      "status": 200,
+      "title": [
+        "Rainbow triangles in three-colored graphs"
+      ],
+      "authors": [
+        {
+          "given": "József",
+          "family": "Balogh",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Ping",
+          "family": "Hu",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Bernard",
+          "family": "Lidický",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "ORCID": "https://orcid.org/0000-0002-0124-3421",
+          "authenticated-orcid": false,
+          "given": "Florian",
+          "family": "Pfender",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Jan",
+          "family": "Volec",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Michael",
+          "family": "Young",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2017,
+            9
+          ]
+        ]
+      },
+      "publication": [
+        "Journal of Combinatorial Theory, Series B"
+      ],
+      "volume": "126",
+      "issue": null,
+      "pages": "83-113"
+    },
+    {
+      "key": "mathlib2020",
+      "url": "https://api.crossref.org/works/10.1145%2F3372885.3373824",
+      "status": 200,
+      "title": [
+        "The lean mathematical library"
+      ],
+      "authors": [
+        {
+          "family": "The mathlib Community",
+          "sequence": "first",
+          "affiliation": [
+            {
+              "name": "n.n., n.n."
+            }
+          ],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "year": {
+        "date-parts": [
+          [
+            2020,
+            1,
+            20
+          ]
+        ]
+      },
+      "publication": [
+        "Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs"
+      ],
+      "volume": null,
+      "issue": null,
+      "pages": "367-381"
+    },
+    {
+      "key": "morrison2026sos",
+      "url": "https://api.github.com/repos/leanprover/sos/commits/fb7ae4176090",
+      "status": 200,
+      "sha": "fb7ae417609093f04cf0608dc92e9343550c2ae4",
+      "date": "2026-08-26T15:48:22Z",
+      "message": "chore: bump the nested downstream test to v4.33.1 (#94)"
+    },
+    {
+      "key": "freer2026graphon",
+      "url": "https://api.github.com/repos/cameronfreer/graphon/commits/9f7be59fa754",
+      "status": 200,
+      "sha": "9f7be59fa754d260a544b4cfd83d6a5b94f7552e",
+      "date": "2026-09-06T11:40:18Z",
+      "message": "Merge pull request #208 from cameronfreer/ci/docbuild-cache"
+    },
+    {
+      "key": "vaughan2020flagmatic",
+      "url": "https://api.github.com/repos/shanhaiying/flagmatic-1/commits/3510ead67c03",
+      "status": 200,
+      "sha": "3510ead67c0326cd7635baef0960301f5b959ec6",
+      "date": "2020-04-10T04:41:00Z",
+      "message": "covert sage matrix to numpy matrix"
+    }
+  ],
+  "name_audit_summary": [
+    "identifiers: 362  ours: 145  Mathlib/core: 64  undeclared: 153",
+    "in dev but not release: []",
+    "in release but not dev: []"
+  ],
+  "certificate_inspection": "\n\n=== C5freeEdge_cert.json ===\n\ndescription: 2-graph; maximize 2:12 density; forbid 5:1223344551\n\nbound: 1/2\n\nforbid graph: 5:1223344551  ->  def ForbidGraph : Sym2Graph 5 where edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}   (Route B: subgraph)\n\n              bound stated as  d\"[ForbidGraph.toLabeledGraph.graph]  (subgraph forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '5:'  ->  FlagAlgebra_5_0_0_0     density=0\n\n                '5:12'  ->  FlagAlgebra_5_0_0_1     density='1/10'\n\n              '5:1213'  ->  FlagAlgebra_5_0_0_2     density='1/5'\n\n            '5:121314'  ->  FlagAlgebra_5_0_0_4     density='3/10'\n\n          '5:12131415'  ->  FlagAlgebra_5_0_0_8     density='2/5'\n\n              '5:1234'  ->  FlagAlgebra_5_0_0_3     density='1/5'\n\n            '5:121323'  ->  FlagAlgebra_5_0_0_5     density='3/10'\n\n            '5:121324'  ->  FlagAlgebra_5_0_0_6     density='3/10'\n\n            '5:121345'  ->  FlagAlgebra_5_0_0_7     density='3/10'\n\n          '5:12131423'  ->  FlagAlgebra_5_0_0_9     density='2/5'\n\n          '5:12131425'  ->  FlagAlgebra_5_0_0_10    density='2/5'\n\n        '5:1213141523'  ->  FlagAlgebra_5_0_0_14    density='1/2'\n\n          '5:12132434'  ->  FlagAlgebra_5_0_0_12    density='2/5'\n\n          '5:12132435'  ->  FlagAlgebra_5_0_0_13    density='2/5'\n\n        '5:1213142324'  ->  FlagAlgebra_5_0_0_15    density='1/2'\n\n        '5:1213142325'  ->  FlagAlgebra_5_0_0_16    density='1/2'\n\n        '5:1213142535'  ->  FlagAlgebra_5_0_0_18    density='1/2'\n\n      '5:121314152324'  ->  FlagAlgebra_5_0_0_20    density='3/5'\n\n      '5:121314253545'  ->  FlagAlgebra_5_0_0_25    density='3/5'\n\n    '5:12131415232425'  ->  FlagAlgebra_5_0_0_26    density='7/10'\n\n          '5:12132345'  ->  FlagAlgebra_5_0_0_11    density='2/5'\n\n        '5:1213142345'  ->  FlagAlgebra_5_0_0_17    density='1/2'\n\n      '5:121314152345'  ->  FlagAlgebra_5_0_0_21    density='3/5'\n\n      '5:121314232434'  ->  FlagAlgebra_5_0_0_22    density='3/5'\n\n      '5:121314232435'  ->  FlagAlgebra_5_0_0_23    density='3/5'\n\n    '5:12131415232434'  ->  FlagAlgebra_5_0_0_27    density='7/10'\n\n\n\ntypes:\n\n        '3:'  ->  FlagType_3_0\n\n      '3:12'  ->  FlagType_3_1\n\n    '3:1213'  ->  FlagType_3_2\n\n  '3:121323'  ->  FlagType_3_3\n\n\n\nsigma-flags per type:\n\n  type 0 ('3:'):\n\n                 '4:(3)'  ->  FlagAlgebra_4_3_0_0\n\n               '4:14(3)'  ->  FlagAlgebra_4_3_0_1\n\n               '4:24(3)'  ->  FlagAlgebra_4_3_0_2\n\n               '4:34(3)'  ->  FlagAlgebra_4_3_0_3\n\n             '4:1424(3)'  ->  FlagAlgebra_4_3_0_4\n\n             '4:1434(3)'  ->  FlagAlgebra_4_3_0_5\n\n             '4:2434(3)'  ->  FlagAlgebra_4_3_0_6\n\n           '4:142434(3)'  ->  FlagAlgebra_4_3_0_7\n\n  type 1 ('3:12'):\n\n               '4:12(3)'  ->  FlagAlgebra_4_3_1_0\n\n             '4:1214(3)'  ->  FlagAlgebra_4_3_1_1\n\n             '4:1224(3)'  ->  FlagAlgebra_4_3_1_2\n\n             '4:1234(3)'  ->  FlagAlgebra_4_3_1_3\n\n           '4:121424(3)'  ->  FlagAlgebra_4_3_1_4\n\n           '4:121434(3)'  ->  FlagAlgebra_4_3_1_5\n\n           '4:122434(3)'  ->  FlagAlgebra_4_3_1_6\n\n         '4:12142434(3)'  ->  FlagAlgebra_4_3_1_7\n\n  type 2 ('3:1213'):\n\n             '4:1213(3)'  ->  FlagAlgebra_4_3_2_0\n\n           '4:121314(3)'  ->  FlagAlgebra_4_3_2_1\n\n           '4:121324(3)'  ->  FlagAlgebra_4_3_2_2\n\n           '4:121334(3)'  ->  FlagAlgebra_4_3_2_3\n\n         '4:12131424(3)'  ->  FlagAlgebra_4_3_2_4\n\n         '4:12131434(3)'  ->  FlagAlgebra_4_3_2_5\n\n         '4:12132434(3)'  ->  FlagAlgebra_4_3_2_6\n\n       '4:1213142434(3)'  ->  FlagAlgebra_4_3_2_7\n\n  type 3 ('3:121323'):\n\n           '4:121323(3)'  ->  FlagAlgebra_4_3_3_0\n\n         '4:12131423(3)'  ->  FlagAlgebra_4_3_3_1\n\n         '4:12132324(3)'  ->  FlagAlgebra_4_3_3_2\n\n         '4:12132334(3)'  ->  FlagAlgebra_4_3_3_3\n\n       '4:1213142324(3)'  ->  FlagAlgebra_4_3_3_4\n\n       '4:1213142334(3)'  ->  FlagAlgebra_4_3_3_5\n\n       '4:1213232434(3)'  ->  FlagAlgebra_4_3_3_6\n\n     '4:121314232434(3)'  ->  FlagAlgebra_4_3_3_7\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def ForbidGraph : Sym2Graph 5 where\n\n    edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}\n\n    edges_valid := by decide\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 2 ForbidGraph\n\n  generate_forbid_free_empty_typed_flags 4 ForbidGraph\n\n  generate_forbid_free_empty_typed_flags 5 ForbidGraph\n\n  generate_forbid_free_flags 4 3 0 ForbidGraph\n\n  generate_forbid_free_flags 4 3 1 ForbidGraph\n\n  generate_forbid_free_flags 4 3 2 ForbidGraph\n\n  generate_forbid_free_flags 4 3 3 ForbidGraph\n\n  generate_forbid_free_flags 5 3 0 ForbidGraph\n\n  generate_forbid_free_flags 5 3 1 ForbidGraph\n\n  generate_forbid_free_flags 5 3 2 ForbidGraph\n\n  generate_forbid_free_flags 5 3 3 ForbidGraph\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 0 ForbidGraph\n\n  generate_forbid_free_mul_theorems 4 5 3 0 ForbidGraph\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 1 ForbidGraph\n\n  generate_forbid_free_mul_theorems 4 5 3 1 ForbidGraph\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 2 ForbidGraph\n\n  generate_forbid_free_mul_theorems 4 5 3 2 ForbidGraph\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 3 ForbidGraph\n\n  generate_forbid_free_mul_theorems 4 5 3 3 ForbidGraph\n\n  generate_forbid_free_flag_density_theorems 2 1 5 ForbidGraph\n\n=== ErdosPentagon_cert.json ===\n\ndescription: 2-graph; maximize 5:1213243545 density; forbid 3:121323\n\nbound: 24/625\n\nforbid graph: 3:121323 = K_3  ->  def K3 : Sym2Graph 3 := completeSym2Graph 3   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 3)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '5:'  ->  FlagAlgebra_5_0_0_0     density=0\n\n                '5:12'  ->  FlagAlgebra_5_0_0_1     density=0\n\n              '5:1213'  ->  FlagAlgebra_5_0_0_2     density=0\n\n            '5:121314'  ->  FlagAlgebra_5_0_0_4     density=0\n\n          '5:12131415'  ->  FlagAlgebra_5_0_0_8     density=0\n\n              '5:1234'  ->  FlagAlgebra_5_0_0_3     density=0\n\n            '5:121324'  ->  FlagAlgebra_5_0_0_6     density=0\n\n            '5:121345'  ->  FlagAlgebra_5_0_0_7     density=0\n\n          '5:12131425'  ->  FlagAlgebra_5_0_0_10    density=0\n\n          '5:12132434'  ->  FlagAlgebra_5_0_0_12    density=0\n\n          '5:12132435'  ->  FlagAlgebra_5_0_0_13    density=0\n\n        '5:1213142535'  ->  FlagAlgebra_5_0_0_18    density=0\n\n      '5:121314253545'  ->  FlagAlgebra_5_0_0_25    density=0\n\n        '5:1213243545'  ->  FlagAlgebra_5_0_0_19    density=1\n\n\n\ntypes:\n\n        '3:'  ->  FlagType_3_0\n\n      '3:12'  ->  FlagType_3_1\n\n    '3:1213'  ->  FlagType_3_2\n\n\n\nsigma-flags per type:\n\n  type 0 ('3:'):\n\n                 '4:(3)'  ->  FlagAlgebra_4_3_0_0\n\n               '4:14(3)'  ->  FlagAlgebra_4_3_0_1\n\n               '4:24(3)'  ->  FlagAlgebra_4_3_0_2\n\n               '4:34(3)'  ->  FlagAlgebra_4_3_0_3\n\n             '4:1424(3)'  ->  FlagAlgebra_4_3_0_4\n\n             '4:1434(3)'  ->  FlagAlgebra_4_3_0_5\n\n             '4:2434(3)'  ->  FlagAlgebra_4_3_0_6\n\n           '4:142434(3)'  ->  FlagAlgebra_4_3_0_7\n\n  type 1 ('3:12'):\n\n               '4:12(3)'  ->  FlagAlgebra_4_3_1_0\n\n             '4:1214(3)'  ->  FlagAlgebra_4_3_1_1\n\n             '4:1224(3)'  ->  FlagAlgebra_4_3_1_2\n\n             '4:1234(3)'  ->  FlagAlgebra_4_3_1_3\n\n           '4:121434(3)'  ->  FlagAlgebra_4_3_1_5\n\n           '4:122434(3)'  ->  FlagAlgebra_4_3_1_6\n\n  type 2 ('3:1213'):\n\n             '4:1213(3)'  ->  FlagAlgebra_4_3_2_0\n\n           '4:121314(3)'  ->  FlagAlgebra_4_3_2_1\n\n           '4:121324(3)'  ->  FlagAlgebra_4_3_2_2\n\n           '4:121334(3)'  ->  FlagAlgebra_4_3_2_3\n\n         '4:12132434(3)'  ->  FlagAlgebra_4_3_2_6\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K3 : Sym2Graph 3 := completeSym2Graph 3\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 4 K3\n\n  generate_forbid_free_empty_typed_flags 5 K3\n\n  generate_forbid_free_flags 4 3 0 K3\n\n  generate_forbid_free_flags 4 3 1 K3\n\n  generate_forbid_free_flags 4 3 2 K3\n\n  generate_forbid_free_flags 5 3 0 K3\n\n  generate_forbid_free_flags 5 3 1 K3\n\n  generate_forbid_free_flags 5 3 2 K3\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 0 K3\n\n  generate_forbid_free_mul_theorems 4 5 3 0 K3\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 1 K3\n\n  generate_forbid_free_mul_theorems 4 5 3 1 K3\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 2 K3\n\n  generate_forbid_free_mul_theorems 4 5 3 2 K3\n\n=== K3freeC4_cert.json ===\n\ndescription: 2-graph; maximize 4:12132434 density; forbid 3:121323\n\nbound: 3/8\n\nforbid graph: 3:121323 = K_3  ->  def K3 : Sym2Graph 3 := completeSym2Graph 3   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 3)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '4:'  ->  FlagAlgebra_4_0_0_0     density=0\n\n                '4:12'  ->  FlagAlgebra_4_0_0_1     density=0\n\n              '4:1213'  ->  FlagAlgebra_4_0_0_2     density=0\n\n            '4:121314'  ->  FlagAlgebra_4_0_0_4     density=0\n\n              '4:1234'  ->  FlagAlgebra_4_0_0_3     density=0\n\n            '4:121324'  ->  FlagAlgebra_4_0_0_6     density=0\n\n          '4:12132434'  ->  FlagAlgebra_4_0_0_8     density=1\n\n\n\ntypes:\n\n        '2:'  ->  FlagType_2_0\n\n      '2:12'  ->  FlagType_2_1\n\n\n\nsigma-flags per type:\n\n  type 0 ('2:'):\n\n                 '3:(2)'  ->  FlagAlgebra_3_2_0_0\n\n               '3:13(2)'  ->  FlagAlgebra_3_2_0_1\n\n               '3:23(2)'  ->  FlagAlgebra_3_2_0_2\n\n             '3:1323(2)'  ->  FlagAlgebra_3_2_0_3\n\n  type 1 ('2:12'):\n\n               '3:12(2)'  ->  FlagAlgebra_3_2_1_0\n\n             '3:1213(2)'  ->  FlagAlgebra_3_2_1_1\n\n             '3:1223(2)'  ->  FlagAlgebra_3_2_1_2\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K3 : Sym2Graph 3 := completeSym2Graph 3\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 3 K3\n\n  generate_forbid_free_empty_typed_flags 4 K3\n\n  generate_forbid_free_flags 3 2 0 K3\n\n  generate_forbid_free_flags 3 2 1 K3\n\n  generate_forbid_free_flags 4 2 0 K3\n\n  generate_forbid_free_flags 4 2 1 K3\n\n  generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K3\n\n  generate_forbid_free_mul_theorems 3 4 2 0 K3\n\n  generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K3\n\n  generate_forbid_free_mul_theorems 3 4 2 1 K3\n\n=== K3freeP3_cert.json ===\n\ndescription: 2-graph; maximize 3:1213 density; forbid 3:121323\n\nbound: 3/4\n\nforbid graph: 3:121323 = K_3  ->  def K3 : Sym2Graph 3 := completeSym2Graph 3   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 3)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '3:'  ->  FlagAlgebra_3_0_0_0     density=0\n\n                '3:12'  ->  FlagAlgebra_3_0_0_1     density=0\n\n              '3:1213'  ->  FlagAlgebra_3_0_0_2     density=1\n\n\n\ntypes:\n\n        '1:'  ->  FlagType_1_0\n\n\n\nsigma-flags per type:\n\n  type 0 ('1:'):\n\n                 '2:(1)'  ->  FlagAlgebra_2_1_0_0\n\n               '2:12(1)'  ->  FlagAlgebra_2_1_0_1\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K3 : Sym2Graph 3 := completeSym2Graph 3\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 2 K3\n\n  generate_forbid_free_empty_typed_flags 3 K3\n\n  generate_forbid_free_flags 2 1 0 K3\n\n  generate_forbid_free_flags 3 1 0 K3\n\n  generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3\n\n  generate_forbid_free_mul_theorems 2 3 1 0 K3\n\n=== K4freeEdge_cert.json ===\n\ndescription: 2-graph; maximize 2:12 density; forbid 4:121314232434\n\nbound: 2/3\n\nforbid graph: 4:121314232434 = K_4  ->  def K4 : Sym2Graph 4 := completeSym2Graph 4   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 4)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '4:'  ->  FlagAlgebra_4_0_0_0     density=0\n\n                '4:12'  ->  FlagAlgebra_4_0_0_1     density='1/6'\n\n              '4:1213'  ->  FlagAlgebra_4_0_0_2     density='1/3'\n\n            '4:121314'  ->  FlagAlgebra_4_0_0_4     density='1/2'\n\n              '4:1234'  ->  FlagAlgebra_4_0_0_3     density='1/3'\n\n            '4:121323'  ->  FlagAlgebra_4_0_0_5     density='1/2'\n\n            '4:121324'  ->  FlagAlgebra_4_0_0_6     density='1/2'\n\n          '4:12131423'  ->  FlagAlgebra_4_0_0_7     density='2/3'\n\n          '4:12132434'  ->  FlagAlgebra_4_0_0_8     density='2/3'\n\n        '4:1213142324'  ->  FlagAlgebra_4_0_0_9     density='5/6'\n\n\n\ntypes:\n\n        '2:'  ->  FlagType_2_0\n\n      '2:12'  ->  FlagType_2_1\n\n\n\nsigma-flags per type:\n\n  type 0 ('2:'):\n\n                 '3:(2)'  ->  FlagAlgebra_3_2_0_0\n\n               '3:13(2)'  ->  FlagAlgebra_3_2_0_1\n\n               '3:23(2)'  ->  FlagAlgebra_3_2_0_2\n\n             '3:1323(2)'  ->  FlagAlgebra_3_2_0_3\n\n  type 1 ('2:12'):\n\n               '3:12(2)'  ->  FlagAlgebra_3_2_1_0\n\n             '3:1213(2)'  ->  FlagAlgebra_3_2_1_1\n\n             '3:1223(2)'  ->  FlagAlgebra_3_2_1_2\n\n           '3:121323(2)'  ->  FlagAlgebra_3_2_1_3\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K4 : Sym2Graph 4 := completeSym2Graph 4\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 2 K4\n\n  generate_forbid_free_empty_typed_flags 3 K4\n\n  generate_forbid_free_empty_typed_flags 4 K4\n\n  generate_forbid_free_flags 3 2 0 K4\n\n  generate_forbid_free_flags 3 2 1 K4\n\n  generate_forbid_free_flags 4 2 0 K4\n\n  generate_forbid_free_flags 4 2 1 K4\n\n  generate_forbid_free_flag_pair_density_theorems 3 4 2 0 K4\n\n  generate_forbid_free_mul_theorems 3 4 2 0 K4\n\n  generate_forbid_free_flag_pair_density_theorems 3 4 2 1 K4\n\n  generate_forbid_free_mul_theorems 3 4 2 1 K4\n\n  generate_forbid_free_flag_density_theorems 2 1 4 K4\n\n=== K5freeEdge_cert.json ===\n\ndescription: 2-graph; maximize 2:12 density; forbid 5:12131415232425343545\n\nbound: 3/4\n\nforbid graph: 5:12131415232425343545 = K_5  ->  def K5 : Sym2Graph 5 := completeSym2Graph 5   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 5)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '5:'  ->  FlagAlgebra_5_0_0_0     density=0\n\n                '5:12'  ->  FlagAlgebra_5_0_0_1     density='1/10'\n\n              '5:1213'  ->  FlagAlgebra_5_0_0_2     density='1/5'\n\n            '5:121314'  ->  FlagAlgebra_5_0_0_4     density='3/10'\n\n          '5:12131415'  ->  FlagAlgebra_5_0_0_8     density='2/5'\n\n              '5:1234'  ->  FlagAlgebra_5_0_0_3     density='1/5'\n\n            '5:121323'  ->  FlagAlgebra_5_0_0_5     density='3/10'\n\n            '5:121324'  ->  FlagAlgebra_5_0_0_6     density='3/10'\n\n            '5:121345'  ->  FlagAlgebra_5_0_0_7     density='3/10'\n\n          '5:12131423'  ->  FlagAlgebra_5_0_0_9     density='2/5'\n\n          '5:12131425'  ->  FlagAlgebra_5_0_0_10    density='2/5'\n\n        '5:1213141523'  ->  FlagAlgebra_5_0_0_14    density='1/2'\n\n          '5:12132434'  ->  FlagAlgebra_5_0_0_12    density='2/5'\n\n          '5:12132435'  ->  FlagAlgebra_5_0_0_13    density='2/5'\n\n        '5:1213142324'  ->  FlagAlgebra_5_0_0_15    density='1/2'\n\n        '5:1213142325'  ->  FlagAlgebra_5_0_0_16    density='1/2'\n\n        '5:1213142535'  ->  FlagAlgebra_5_0_0_18    density='1/2'\n\n      '5:121314152324'  ->  FlagAlgebra_5_0_0_20    density='3/5'\n\n      '5:121314253545'  ->  FlagAlgebra_5_0_0_25    density='3/5'\n\n    '5:12131415232425'  ->  FlagAlgebra_5_0_0_26    density='7/10'\n\n          '5:12132345'  ->  FlagAlgebra_5_0_0_11    density='2/5'\n\n        '5:1213142345'  ->  FlagAlgebra_5_0_0_17    density='1/2'\n\n      '5:121314152345'  ->  FlagAlgebra_5_0_0_21    density='3/5'\n\n      '5:121314232434'  ->  FlagAlgebra_5_0_0_22    density='3/5'\n\n      '5:121314232435'  ->  FlagAlgebra_5_0_0_23    density='3/5'\n\n    '5:12131415232434'  ->  FlagAlgebra_5_0_0_27    density='7/10'\n\n        '5:1213243545'  ->  FlagAlgebra_5_0_0_19    density='1/2'\n\n      '5:121314232545'  ->  FlagAlgebra_5_0_0_24    density='3/5'\n\n    '5:12131415232435'  ->  FlagAlgebra_5_0_0_28    density='7/10'\n\n    '5:12131423243545'  ->  FlagAlgebra_5_0_0_29    density='7/10'\n\n  '5:1213141523242534'  ->  FlagAlgebra_5_0_0_30    density='4/5'\n\n  '5:1213141523243545'  ->  FlagAlgebra_5_0_0_31    density='4/5'\n\n  '5:121314152324253435'  ->  FlagAlgebra_5_0_0_32    density='9/10'\n\n\n\ntypes:\n\n        '3:'  ->  FlagType_3_0\n\n      '3:12'  ->  FlagType_3_1\n\n    '3:1213'  ->  FlagType_3_2\n\n  '3:121323'  ->  FlagType_3_3\n\n\n\nsigma-flags per type:\n\n  type 0 ('3:'):\n\n                 '4:(3)'  ->  FlagAlgebra_4_3_0_0\n\n               '4:14(3)'  ->  FlagAlgebra_4_3_0_1\n\n               '4:24(3)'  ->  FlagAlgebra_4_3_0_2\n\n               '4:34(3)'  ->  FlagAlgebra_4_3_0_3\n\n             '4:1424(3)'  ->  FlagAlgebra_4_3_0_4\n\n             '4:1434(3)'  ->  FlagAlgebra_4_3_0_5\n\n             '4:2434(3)'  ->  FlagAlgebra_4_3_0_6\n\n           '4:142434(3)'  ->  FlagAlgebra_4_3_0_7\n\n  type 1 ('3:12'):\n\n               '4:12(3)'  ->  FlagAlgebra_4_3_1_0\n\n             '4:1214(3)'  ->  FlagAlgebra_4_3_1_1\n\n             '4:1224(3)'  ->  FlagAlgebra_4_3_1_2\n\n             '4:1234(3)'  ->  FlagAlgebra_4_3_1_3\n\n           '4:121424(3)'  ->  FlagAlgebra_4_3_1_4\n\n           '4:121434(3)'  ->  FlagAlgebra_4_3_1_5\n\n           '4:122434(3)'  ->  FlagAlgebra_4_3_1_6\n\n         '4:12142434(3)'  ->  FlagAlgebra_4_3_1_7\n\n  type 2 ('3:1213'):\n\n             '4:1213(3)'  ->  FlagAlgebra_4_3_2_0\n\n           '4:121314(3)'  ->  FlagAlgebra_4_3_2_1\n\n           '4:121324(3)'  ->  FlagAlgebra_4_3_2_2\n\n           '4:121334(3)'  ->  FlagAlgebra_4_3_2_3\n\n         '4:12131424(3)'  ->  FlagAlgebra_4_3_2_4\n\n         '4:12131434(3)'  ->  FlagAlgebra_4_3_2_5\n\n         '4:12132434(3)'  ->  FlagAlgebra_4_3_2_6\n\n       '4:1213142434(3)'  ->  FlagAlgebra_4_3_2_7\n\n  type 3 ('3:121323'):\n\n           '4:121323(3)'  ->  FlagAlgebra_4_3_3_0\n\n         '4:12131423(3)'  ->  FlagAlgebra_4_3_3_1\n\n         '4:12132324(3)'  ->  FlagAlgebra_4_3_3_2\n\n         '4:12132334(3)'  ->  FlagAlgebra_4_3_3_3\n\n       '4:1213142324(3)'  ->  FlagAlgebra_4_3_3_4\n\n       '4:1213142334(3)'  ->  FlagAlgebra_4_3_3_5\n\n       '4:1213232434(3)'  ->  FlagAlgebra_4_3_3_6\n\n     '4:121314232434(3)'  ->  FlagAlgebra_4_3_3_7\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K5 : Sym2Graph 5 := completeSym2Graph 5\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 2 K5\n\n  generate_forbid_free_empty_typed_flags 4 K5\n\n  generate_forbid_free_empty_typed_flags 5 K5\n\n  generate_forbid_free_flags 4 3 0 K5\n\n  generate_forbid_free_flags 4 3 1 K5\n\n  generate_forbid_free_flags 4 3 2 K5\n\n  generate_forbid_free_flags 4 3 3 K5\n\n  generate_forbid_free_flags 5 3 0 K5\n\n  generate_forbid_free_flags 5 3 1 K5\n\n  generate_forbid_free_flags 5 3 2 K5\n\n  generate_forbid_free_flags 5 3 3 K5\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 0 K5\n\n  generate_forbid_free_mul_theorems 4 5 3 0 K5\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 1 K5\n\n  generate_forbid_free_mul_theorems 4 5 3 1 K5\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 2 K5\n\n  generate_forbid_free_mul_theorems 4 5 3 2 K5\n\n  generate_forbid_free_flag_pair_density_theorems 4 5 3 3 K5\n\n  generate_forbid_free_mul_theorems 4 5 3 3 K5\n\n  generate_forbid_free_flag_density_theorems 2 1 5 K5\n\n=== Mantel_cert.json ===\n\ndescription: 2-graph; maximize 2:12 density; forbid 3:121323\n\nbound: 1/2\n\nforbid graph: 3:121323 = K_3  ->  def K3 : Sym2Graph 3 := completeSym2Graph 3   (Route A: complete)\n\n              bound stated as  d\"[completeGraph (Fin 3)]  (ordinary forbid)\n\n\n\nadmissible graphs (host-size):\n\n                  '3:'  ->  FlagAlgebra_3_0_0_0     density=0\n\n                '3:12'  ->  FlagAlgebra_3_0_0_1     density='1/3'\n\n              '3:1213'  ->  FlagAlgebra_3_0_0_2     density='2/3'\n\n\n\ntypes:\n\n        '1:'  ->  FlagType_1_0\n\n\n\nsigma-flags per type:\n\n  type 0 ('1:'):\n\n                 '2:(1)'  ->  FlagAlgebra_2_1_0_0\n\n               '2:12(1)'  ->  FlagAlgebra_2_1_0_1\n\n\n\ngeneration commands (what gen-skeleton emits; no JSON on disk):\n\n  def K3 : Sym2Graph 3 := completeSym2Graph 3\n\n  set_option flagGen.kernelDecide true\n\n  set_option maxHeartbeats 0\n\n  set_option maxRecDepth 1000000\n\n  generate_forbid_free_empty_typed_flags 2 K3\n\n  generate_forbid_free_empty_typed_flags 3 K3\n\n  generate_forbid_free_flags 2 1 0 K3\n\n  generate_forbid_free_flags 3 1 0 K3\n\n  generate_forbid_free_flag_pair_density_theorems 2 3 1 0 K3\n\n  generate_forbid_free_mul_theorems 2 3 1 0 K3\n\n  generate_forbid_free_flag_density_theorems 2 1 3 K3\n\n",
+  "visual_review": "All 47 final pages, with full-page inspection of Tables 4 and 5; no clipping/overlap found.",
+  "documentation_patch_check": "git apply --check against public v1.0 passed; not applied or published",
+  "fresh_full_lean_build_performed": false,
+  "expanded_axiom_check_performed": false,
+  "subsequent_user_requested_reverts": [
+    "intro maximum",
+    "Section 5.2 matrix",
+    "Section 5.3",
+    "Section 8 blow-up",
+    "Section 10",
+    "AI assistance"
+  ],
+  "reverted_passages_match_original_source": true,
+  "subsequent_funding_and_citation_changes": {
+    "KIAS_grant": "CG109601",
+    "recipient": "H. Yang",
+    "previous_NRF_and_IBS_acknowledgments_preserved": true,
+    "new_reference": "https://arxiv.org/abs/2609.27495",
+    "metadata_verified_from_arxiv": true,
+    "citation_location": "Introduction, flag-algebra successes / tetrahedron upper bounds"
+  },
+  "subsequent_cover_letter_revert": "Restored the original sentence at the user request; no remaining cover-letter diff.",
+  "subsequent_remote_acknowledgment_resolution": {
+    "selected": "origin/main",
+    "remote_commit": "1c9e865",
+    "acknowledgment_matches_remote_exactly": true,
+    "local_separate_H_Yang_sentence_removed": true
+  }
+}

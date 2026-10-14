@@ -10,9 +10,9 @@ Steps:
      - `lstlisting` / `verbatim` bodies and escaped `\\%` are protected;
      - runs of blank lines are collapsed;
      `\\pdfoutput=1` is added as the first line, as arXiv recommends;
-  3. write arxiv/paper_afm.tex and copy arxiv/paper_afm.bbl (arXiv does not
-     run BibTeX, so the .bbl must be uploaded);
-  4. compile those two files alone in a temporary directory (pdflatex twice)
+  3. write arxiv/paper_afm.tex and copy arxiv/paper_afm.bbl (arXiv uses the
+     supplied .bbl, so the bundle does not need refs.bib);
+  4. compile those two files alone in a temporary directory (pdflatex three times)
      and check for errors, undefined references/citations, and the page count
      of the main build;
   5. pack them into arxiv/paper_afm_arxiv.tar.gz;
@@ -146,21 +146,23 @@ def main() -> None:
     if not ok:
         raise SystemExit("arXiv test build FAILED; bundle not written")
 
+    abstract = arxiv_abstract(text)
+    if len(abstract) > 1920:
+        raise SystemExit(f"arXiv abstract is too long: {len(abstract)} characters (limit 1920)")
+
     tarball = OUT / "paper_afm_arxiv.tar.gz"
     with tarfile.open(tarball, "w:gz") as tar:
         for f in ("paper_afm.tex", "paper_afm.bbl"):
             tar.add(OUT / f, arcname=f)
 
-    abstract = arxiv_abstract(text)
     meta = OUT / "arxiv_metadata.txt"
     meta.write_text(
         "arXiv replacement of 2607.23500 (v2) -- form fields\n"
         "====================================================\n\n"
         "Title: Formalizing Flag Algebras in Lean\n\n"
         "Authors: Gyeongwon Jeong, Seonghun Park, Jihoon Hyun, Sang-il Oum, Hongseok Yang\n\n"
-        f"Comments: {main_pages} pages. Lean development: "
-        "https://github.com/taeyool/lean-flag-algebras-release (release v1.0, "
-        "swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6)\n\n"
+        f"Comments: {main_pages} pages, 1 figure. Lean development: "
+        "https://github.com/taeyool/lean-flag-algebras-release (release v1.0)\n\n"
         "MSC classes (suggestion from PLAN.md): 68V20 (primary), 05C35\n\n"
         f"Abstract ({len(abstract)} characters; arXiv limit 1920):\n\n{abstract}\n\n"
         "Upload: paper_afm_arxiv.tar.gz (paper_afm.tex + paper_afm.bbl). arXiv compiles\n"

@@ -1,30 +1,25 @@
 """Generate the artifact tables of Appendix B from a pinned release commit.
 
-Writes three LaTeX tables into paper_afm.tex, between the markers
+Writes two LaTeX tables into paper_afm.tex, between the markers
 
     %% BEGIN GENERATED: artifact tables (papers/AFM/artifact_appendix.py)
     %% END GENERATED: artifact tables
 
   * the statement-to-declaration table: every row links to the declaration's
     file and line at the pinned commit on GitHub;
-  * the SHA-256 digests of the seven certificate files;
-  * the size of each component (files, lines, source declarations) and the
-    number of declarations each certificate file elaborates to.
+  * the size of each component (files, lines, source declarations).
 
 Everything is read from the release repository at the given ref with
-`git show`, so the working tree does not matter.  The elaborated-declaration
-counts come from `checks/artifact_counts.txt`, the output of
-`lake env lean papers/AFM/checks/CountGen.lean` run in the release checkout.
+`git show`, so the working tree does not matter.
 
 Usage (from the repository root):
 
     PYTHONUTF8=1 python papers/AFM/artifact_appendix.py
         [--release ../lean-flag-algebras-release] [--ref v1.0]
 
-Re-run it whenever the release tag moves.
+Re-run it whenever a different release is selected; keep existing tags immutable.
 """
 import argparse
-import hashlib
 import os
 import re
 import subprocess
@@ -32,7 +27,6 @@ import subprocess
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 PAPER = os.path.join(HERE, "paper_afm.tex")
-COUNTS = os.path.join(HERE, "checks", "artifact_counts.txt")
 URL = "https://github.com/taeyool/lean-flag-algebras-release"
 BEGIN = "%% BEGIN GENERATED: artifact tables (papers/AFM/artifact_appendix.py)"
 END = "%% END GENERATED: artifact tables"
@@ -54,7 +48,7 @@ ROWS = [
     (r"\Cref{thm:downward-nonneg}", "The same in the $H$-free order used by certificates",
      ["downward_forbidLEWith_nonneg"], None),
     (r"\Cref{sec:lowerbounds}", "Cauchy--Schwarz for the downward operator",
-     ["Cauchy_Schwarz_inequality_unit"], None),
+     ["Cauchy_Schwarz_inequality", "Cauchy_Schwarz_inequality_unit"], None),
     (r"\Cref{sec:forbidden}", "The Tur\\'an density is a limit", ["tendsto_generalizedTuranDensity"], None),
     (r"\Cref{lem:semantic-bound}", "A semantic inequality bounds the Tur\\'an density",
      ["generalizedTuranDensity_le_of_forbidLE"], None),
@@ -94,11 +88,6 @@ ROWS = [
      ["c4free_not_rootPlantable", "Sσ_subset_Qσ"], None),
 ]
 
-CERTS = [("Mantel", "Mantel_cert.json"), ("$P_3$, $K_3$-free", "K3freeP3_cert.json"),
-         ("$C_4$, $K_3$-free", "K3freeC4_cert.json"), ("Edge, $K_4$-free", "K4freeEdge_cert.json"),
-         ("Erd\\H{o}s pentagon", "ErdosPentagon_cert.json"), ("Edge, $K_5$-free", "K5freeEdge_cert.json"),
-         ("Edge, $C_5$-free", "C5freeEdge_cert.json")]
-
 # component label, directory prefixes (relative to LeanFlagAlgebras/), excluded prefixes
 COMPONENTS = [
     ("Specification (flags, densities, flag algebras)", ["FlagAlgebra/", "GraphAlgebra/", "Utils/"],
@@ -110,7 +99,6 @@ COMPONENTS = [
     ("Mantel, pentagon, and Goodman theorems", ["MantelTheorem/", "ErdosPentagon/"], []),
     ("Meta-theory", ["MetaTheory/", "MetaTheory.lean"], []),
 ]
-CASE_MODULES = ["Mantel", "K3freeP3", "K3freeC4", "K4freeEdge", "ErdosPentagon", "K5freeEdge", "C5freeEdge"]
 
 DECL = re.compile(
     r"^(?:@\[[^\]]*\]\s*)?(?:(?:private|protected|noncomputable|partial|unsafe|nonrec|scoped)\s+)*"
@@ -118,9 +106,9 @@ DECL = re.compile(
     re.M)
 
 
-def git(release, *args, binary=False):
+def git(release, *args):
     out = subprocess.run(["git", "-C", release, *args], capture_output=True, check=True)
-    return out.stdout if binary else out.stdout.decode("utf-8")
+    return out.stdout.decode("utf-8")
 
 
 def tex_name(name):
@@ -171,15 +159,6 @@ def main():
         nl = " " + BS + "newline "
         rows.append(f"    {ref} & {stmt} & {nl.join(decls)} & {nl.join(locs)} " + BS + BS)
 
-    # ---- certificates
-    cert_rows = []
-    for label, fn in CERTS:
-        path = f"LeanFlagAlgebras/Flagmatic/Certificates/{fn}"
-        digest = hashlib.sha256(git(rel, "show", f"{sha}:{path}", binary=True)).hexdigest()
-        cert_rows.append(f"    {label} & " + BS + "texttt{" + tex_path(fn) + "} & "
-                         + BS + "texttt{" + digest[:32] + "}" + BS + BS + "[-2pt]"
-                         + " & & " + BS + "texttt{" + digest[32:] + "} " + BS + BS)
-
     # ---- sizes
     def in_comp(f, incl, excl):
         rel_f = f[len("LeanFlagAlgebras/"):]
@@ -202,21 +181,6 @@ def main():
     size_rows.append(BS + "midrule")
     size_rows.append(f"    Total & {tot[0]} & {tot[1]:,} & {tot[2]:,} & {tot[3]:,} " + BS + BS)
 
-    counts = {}
-    if os.path.exists(COUNTS):
-        for line in open(COUNTS, encoding="utf-8"):
-            m = re.match(r"MODDECLS LeanFlagAlgebras\.Flagmatic\.(\w+) (\d+)", line.strip())
-            if m:
-                counts[m.group(1)] = int(m.group(2))
-            m = re.match(r"PREFIXDECLS LeanFlagAlgebras (\d+)", line.strip())
-            if m:
-                counts["__all__"] = int(m.group(1))
-    gen_cells = []
-    for c in CASE_MODULES:
-        f = f"LeanFlagAlgebras/Flagmatic/{c}.lean"
-        src_decls = len(DECL.findall(lean[f]))
-        gen_cells.append((c, lean[f].count("\n"), src_decls, counts.get(c)))
-
     out = [BEGIN, "% Generated from " + URL + " at " + args.ref + " = " + sha + "; do not edit by hand.",
            "{" + BS + "small" + BS + "setlength{" + BS + "LTcapwidth}{" + BS + "linewidth}",
            BS + "begin{longtable}{@{}p{0.15" + BS + "linewidth}p{0.25" + BS + "linewidth}"
@@ -230,30 +194,13 @@ def main():
            BS + "midrule", BS + "endhead", BS + "bottomrule", BS + "endfoot",
            *rows, BS + "end{longtable}", "}", "",
            BS + "begin{table}[ht]", BS + "centering", BS + "small",
-           BS + "caption{SHA-256 digests of the seven certificate files in "
-           + BS + "texttt{LeanFlagAlgebras/Flagmatic/Certificates/} at " + BS + "texttt{" + args.ref + "}.}",
-           BS + "label{tab:certificates}", BS + "begin{tabular}{@{}lll@{}}", BS + "toprule",
-           "Case & File & SHA-256 " + BS + BS, BS + "midrule", *cert_rows, BS + "bottomrule",
-           BS + "end{tabular}", BS + "end{table}", "",
-           BS + "begin{table}[ht]", BS + "centering", BS + "small",
            BS + "caption{Size of the development at " + BS + "texttt{" + args.ref + "}, by component: "
            "Lean files, lines, and source declarations (theorems and lemmas; definitions, "
            "abbreviations, instances, structures and classes). Declarations emitted by the "
-           "generation commands are not counted here; see " + BS + "Cref{tab:generated}.}",
+           "generation commands are not counted here.}",
            BS + "label{tab:size}", BS + "begin{tabular}{@{}lrrrr@{}}", BS + "toprule",
            "Component & Files & Lines & Theorems & Definitions " + BS + BS, BS + "midrule",
            *size_rows, BS + "bottomrule", BS + "end{tabular}"]
-    if all(c[3] is not None for c in gen_cells):
-        out += [BS + "bigskip",
-                BS + "caption{Source size of each certificate file and the number of constants it "
-                "adds to the Lean environment (non-internal names), including everything the "
-                "generation commands emit"
-                + (f"; the whole library adds {counts['__all__']:,}" if "__all__" in counts else "")
-                + ".}", BS + "label{tab:generated}", BS + "begin{tabular}{@{}lrrr@{}}", BS + "toprule",
-                "File & Lines & Source declarations & Constants " + BS + BS, BS + "midrule"]
-        for c, nl, sd, ed in gen_cells:
-            out.append("    " + BS + "texttt{" + c + ".lean} & " + f"{nl} & {sd} & {ed:,} " + BS + BS)
-        out += [BS + "bottomrule", BS + "end{tabular}"]
     out += [BS + "end{table}", END]
     block = "\n".join(out)
 
@@ -265,7 +212,7 @@ def main():
     else:
         raise SystemExit("markers not found in paper_afm.tex; add them where the tables belong")
     open(PAPER, "w", encoding="utf-8").write(text)
-    print(f"wrote {len(rows)} statement rows, {len(cert_rows)} certificates, "
+    print(f"wrote {len(rows)} statement rows, "
           f"{len(COMPONENTS)} components at {args.ref} = {sha}")
 
 

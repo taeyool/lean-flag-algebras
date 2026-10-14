@@ -364,10 +364,9 @@ determined the minimum asymptotic triangle density of graphs with a given edge
 density~\cite{razborov2008triangles} and the maximum induced $C_5$
 density~\cite{balogh2016induced5}, and settled the rainbow-triangle
 problem~\cite{balogh2017rainbow}.  It has also given upper bounds for
-Tur\'an's tetrahedron problem~\cite{razborov2010tetrahedron} and determined
+Tur\'an's tetrahedron
+problem~\cite{razborov2010tetrahedron,jeong2026tetrahedron} and determined
 several Tur\'an densities of 3-uniform hypergraphs~\cite{baber2012turan}.
-% TODO: add our own paper bounding Turan's tetrahedron problem with flag
-% algebras as a citation here, once its arXiv version has been updated.
 
 The certificates behind such results are finite but not small.  A nontrivial
 certificate combines many flags and relies on large tables of density values
@@ -433,14 +432,12 @@ We make the following contributions.
   was autoformalized.
 \end{itemize}
 The complete Lean development is publicly available as release
-\texttt{v1.0} of
+\texttt{v1.0} of the following repository:
 \begin{center}
   \url{https://github.com/taeyool/lean-flag-algebras-release}
 \end{center}
-(commit \texttt{439d3e6}, Software Heritage identifier
-\href{https://archive.softwareheritage.org/swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6;origin=https://github.com/taeyool/lean-flag-algebras-release}{\nolinkurl{swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6}}).
-\Cref{sec:artifact} explains how to build it and lists, for each statement of
-the paper, the Lean declaration that formalizes it.
+\Cref{sec:artifact} gives build instructions and a correspondence between
+the paper's mathematical statements and Lean declarations.
 
 \paragraph{Organization.}
 \Cref{sec:background} reviews flag algebras and fixes notation.
@@ -924,7 +921,7 @@ reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  Let $F \in \mathcal{F}^\emptyset$ and $c \in \mathbb{R}$.  If
+  Let $F \in \mathcal{F}^\emptyset$ and $c \in \mathbb{R}$ with $c\geq0$.  If
   $[F] \leq_{\mathcal{H}} c \cdot \mathbf{1}$, then
   $\tdensity{F}{\mathcal{H}} \leq c$.
 \end{lemma}
@@ -3793,8 +3790,8 @@ The artifact is the tag \texttt{v1.0} of
 \url{https://github.com/taeyool/lean-flag-algebras-release}, at commit
 \texttt{439d3e64e02ff044a5e8b2b01937f8d7f36c84b6}, distributed under the Apache
 License~2.0.  Software Heritage archived it on 3 October 2026; its identifiers
-are \nolinkurl{swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6} for the commit
-and \nolinkurl{swh:1:rel:599f924360e59565847c957d5f7562d88ef949d1} for the tag.
+are \href{https://archive.softwareheritage.org/swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6;origin=https://github.com/taeyool/lean-flag-algebras-release}{\nolinkurl{swh:1:rev:439d3e64e02ff044a5e8b2b01937f8d7f36c84b6}} for the commit
+and \href{https://archive.softwareheritage.org/swh:1:rel:599f924360e59565847c957d5f7562d88ef949d1;origin=https://github.com/taeyool/lean-flag-algebras-release}{\nolinkurl{swh:1:rel:599f924360e59565847c957d5f7562d88ef949d1}} for the tag.
 
 \paragraph{Building.}
 The artifact pins Lean~4 v4.27.0 in \texttt{lean-toolchain} and Mathlib at
@@ -3822,23 +3819,16 @@ time, and Lake does not track this file; after editing a certificate, run
 \lean{lake clean} or modify the Lean file that reads it before rebuilding.
 
 \paragraph{What is checked.}
-The library contains no \lean{sorry} and declares no axioms.  On the tagged
-commit, \lean{\#print axioms} lists only \lean{propext},
-\lean{Classical.choice} and \lean{Quot.sound} for every declaration in
-\Cref{tab:statement-declaration} and for the seven
-\lean{\_flagAlgebra} theorems behind the certificate bounds.
-\Cref{tab:certificates} records the certificate files, and \Cref{tab:size}
-and \Cref{tab:generated} give the size of the development.
-
-\paragraph{Scope.}
-The claims of this paper are the statements of
-\Cref{tab:statement-declaration}.  The repository contains more: further
-results of the meta-theory, among them \lean{clone\_root\_plantable},
-\lean{relative\_positivstellensatz} and
-\lean{c5free\_edge\_not\_rootPlantable}, which the companion paper
-will present; the certificate infrastructure for the $P_4$-density bounds in
-\texttt{Automation/}; and a proof-of-concept blueprint.  These are not claimed
-here.
+\Cref{tab:statement-declaration} lists the statements of this paper and their
+corresponding Lean declarations.
+The library contains no \lean{sorry} and declares no axioms.  At the pinned
+release, axiom checks on the density theorems and main meta-theory theorems
+reported here list only \lean{propext}, \lean{Classical.choice}, and
+\lean{Quot.sound}.
+The certificates are in \texttt{LeanFlagAlgebras/Flagmatic/Certificates/};
+each has the same basename as its Lean module and the suffix
+\texttt{\_cert.json}.
+\Cref{tab:size} reports the size of the development.
 
 %% BEGIN GENERATED: artifact tables (papers/AFM/artifact_appendix.py)
 % Generated from https://github.com/taeyool/lean-flag-algebras-release at v1.0 = 439d3e64e02ff044a5e8b2b01937f8d7f36c84b6; do not edit by hand.
@@ -3862,7 +3852,7 @@ Paper & Statement & Lean declaration & Location \\
     \Cref{sec:background-downward} & Random extension of an empty-type homomorphism & \lean{exists\_probMeasure\_extend\_emptyType\_positiveHom} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/FlagAlgebra/RandomHom.lean\#L1096}{\nolinkurl{FlagAlgebra/RandomHom.lean:1096}} \\
     \Cref{thm:downward-nonneg} & The downward operator preserves non-negativity & \lean{downward\_preserve\_semanticCone} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/FlagAlgebra/RandomHom.lean\#L1229}{\nolinkurl{FlagAlgebra/RandomHom.lean:1229}} \\
     \Cref{thm:downward-nonneg} & The same in the $H$-free order used by certificates & \lean{downward\_forbidLEWith\_nonneg} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/Forbid/Basic.lean\#L1505}{\nolinkurl{Forbid/Basic.lean:1505}} \\
-    \Cref{sec:lowerbounds} & Cauchy--Schwarz for the downward operator & \lean{Cauchy\_Schwarz\_inequality\_unit} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/FlagAlgebra/RandomHom.lean\#L1430}{\nolinkurl{FlagAlgebra/RandomHom.lean:1430}} \\
+    \Cref{sec:lowerbounds} & Cauchy--Schwarz for the downward operator & \lean{Cauchy\_Schwarz\_inequality} \newline \lean{Cauchy\_Schwarz\_inequality\_unit} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/FlagAlgebra/RandomHom.lean\#L1419}{\nolinkurl{FlagAlgebra/RandomHom.lean:1419}} \newline \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/FlagAlgebra/RandomHom.lean\#L1430}{\nolinkurl{FlagAlgebra/RandomHom.lean:1430}} \\
     \Cref{sec:forbidden} & The Tur\'an density is a limit & \lean{tendsto\_generalizedTuranDensity} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/Turan/GeneralizedTuran.lean\#L253}{\nolinkurl{Turan/GeneralizedTuran.lean:253}} \\
     \Cref{lem:semantic-bound} & A semantic inequality bounds the Tur\'an density & \lean{generalizedTuranDensity\_le\_of\_forbidLE} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/Forbid/TuranDensity.lean\#L250}{\nolinkurl{Forbid/TuranDensity.lean:250}} \\
     \Cref{def:ensemble-semantic-order} & Ensemble semantic order & \lean{forbidLE} & \href{https://github.com/taeyool/lean-flag-algebras-release/blob/439d3e64e02ff044a5e8b2b01937f8d7f36c84b6/LeanFlagAlgebras/Forbid/Basic.lean\#L101}{\nolinkurl{Forbid/Basic.lean:101}} \\
@@ -3894,27 +3884,7 @@ Paper & Statement & Lean declaration & Location \\
 \begin{table}[ht]
 \centering
 \small
-\caption{SHA-256 digests of the seven certificate files in \texttt{LeanFlagAlgebras/Flagmatic/Certificates/} at \texttt{v1.0}.}
-\label{tab:certificates}
-\begin{tabular}{@{}lll@{}}
-\toprule
-Case & File & SHA-256 \\
-\midrule
-    Mantel & \texttt{Mantel\_cert.json} & \texttt{ea584c00dea499d33efd549f65b75124}\\[-2pt] & & \texttt{87dae1c735f14cedf1234a632b663503} \\
-    $P_3$, $K_3$-free & \texttt{K3freeP3\_cert.json} & \texttt{179fec624bf1ed973cdca0b42df44061}\\[-2pt] & & \texttt{3f5e4d97a9631e7aed3f1b9195c89a2c} \\
-    $C_4$, $K_3$-free & \texttt{K3freeC4\_cert.json} & \texttt{486739d957d520e3b18aad797cb07784}\\[-2pt] & & \texttt{c2a8928dd5f20e9a4ae4a9429b5f9b4d} \\
-    Edge, $K_4$-free & \texttt{K4freeEdge\_cert.json} & \texttt{1239f34c7b26640e7d505114982ac63a}\\[-2pt] & & \texttt{f84f437c5863872b4a4fb99f552e2b50} \\
-    Erd\H{o}s pentagon & \texttt{ErdosPentagon\_cert.json} & \texttt{03181a814ebab885488da531ca5864de}\\[-2pt] & & \texttt{78ed810259dffdc3e1d4c84b283e7356} \\
-    Edge, $K_5$-free & \texttt{K5freeEdge\_cert.json} & \texttt{82b5868dc48e3d1b49551581f1179320}\\[-2pt] & & \texttt{6cc0288fcca3a90060dab0abf703d774} \\
-    Edge, $C_5$-free & \texttt{C5freeEdge\_cert.json} & \texttt{b17c79704b72479a0721bb9e377854e6}\\[-2pt] & & \texttt{fc4f74cd354b68825447cc84f1177465} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[ht]
-\centering
-\small
-\caption{Size of the development at \texttt{v1.0}, by component: Lean files, lines, and source declarations (theorems and lemmas; definitions, abbreviations, instances, structures and classes). Declarations emitted by the generation commands are not counted here; see \Cref{tab:generated}.}
+\caption{Size of the development at \texttt{v1.0}, by component: Lean files, lines, and source declarations (theorems and lemmas; definitions, abbreviations, instances, structures and classes). Declarations emitted by the generation commands are not counted here.}
 \label{tab:size}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -3928,22 +3898,6 @@ Component & Files & Lines & Theorems & Definitions \\
     Meta-theory & 96 & 35,682 & 1,219 & 316 \\
 \midrule
     Total & 197 & 75,740 & 2,533 & 1,235 \\
-\bottomrule
-\end{tabular}
-\bigskip
-\caption{Source size of each certificate file and the number of constants it adds to the Lean environment (non-internal names), including everything the generation commands emit; the whole library adds 35,114.}
-\label{tab:generated}
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-File & Lines & Source declarations & Constants \\
-\midrule
-    \texttt{Mantel.lean} & 83 & 4 & 127 \\
-    \texttt{K3freeP3.lean} & 82 & 4 & 124 \\
-    \texttt{K3freeC4.lean} & 86 & 4 & 533 \\
-    \texttt{K4freeEdge.lean} & 88 & 4 & 852 \\
-    \texttt{ErdosPentagon.lean} & 90 & 4 & 3,894 \\
-    \texttt{K5freeEdge.lean} & 101 & 4 & 13,130 \\
-    \texttt{C5freeEdge.lean} & 108 & 4 & 10,565 \\
 \bottomrule
 \end{tabular}
 \end{table}

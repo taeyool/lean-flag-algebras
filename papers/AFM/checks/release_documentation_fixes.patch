@@ -1,0 +1,137 @@
+--- a/README.md
++++ b/README.md
+@@ -10,7 +10,7 @@
+ **Flagmatic-to-Lean pipeline** ([`LeanFlagAlgebras/Flagmatic/`](LeanFlagAlgebras/Flagmatic/README.md)):
+ a certificate-to-proof compiler, invoked as the elaboration-time tactic
+ **`flag_certificate`**, that turns SDP certificates produced by
+-[Flagmatic](https://github.com/jsliacan/flagmatic) into complete Lean proofs
++[Flagmatic](https://github.com/shanhaiying/flagmatic-1) into complete Lean proofs
+ of Turán-type density bounds, evaluated end-to-end on seven case studies.
+ The theorem statement is fixed in the source file; the certificate enters
+ only as untrusted hint data from which the proof is synthesized.
+@@ -84,10 +84,10 @@
+   `flag_certificate` metaprogram and the scaffolding script) are trusted for
+   soundness: every claim is carried by a proof term Lean checks. The anchor
+   for *translation fidelity* is the theorem statement fixed in the source
+-  file — the tactic can only close the goal that statement poses, so a
+-  mistranscribed target, forbidden graph, or bound surfaces as an
+-  elaboration failure. What remains to audit is the statement itself, by
+-  reading it in the source file.
++  file — the tactic can only close the goal that statement poses. A proof
++  that does not establish that goal is rejected. Whether the goal expresses
++  the intended target, forbidden graph, and bound must still be audited by
++  reading the statement in the source file.
+ - The meta-theory layer keeps its own per-theorem audit: see the MetaTheory
+   README sections
+   [Status & verification](LeanFlagAlgebras/MetaTheory/README.md#status--verification)
+@@ -157,7 +157,7 @@
+ `--native-decide` switches a file's finite computations to `native_decide`;
+ no committed case uses it. This needs only Python 3 (standard library). Producing *new* SDP
+ certificates additionally requires
+-[Flagmatic](https://github.com/jsliacan/flagmatic), which runs under
++[Flagmatic](https://github.com/shanhaiying/flagmatic-1), which runs under
+ [SageMath](https://www.sagemath.org/); the seven committed certificates are
+ Flagmatic's output as produced. See the
+ [Flagmatic README](LeanFlagAlgebras/Flagmatic/README.md) for the full
+@@ -180,7 +180,9 @@
+ 
+ ## Citation
+ 
+-<!-- Paper citation / arXiv link to be added before publication. -->
++Gyeongwon Jeong, Seonghun Park, Jihoon Hyun, Sang-il Oum, and Hongseok Yang.
++*Formalizing Flag Algebras in Lean* (2026).
++[arXiv:2607.23500](https://arxiv.org/abs/2607.23500).
+ 
+ ## License
+ 
+--- a/LeanFlagAlgebras/Flagmatic/README.md
++++ b/LeanFlagAlgebras/Flagmatic/README.md
+@@ -24,7 +24,7 @@
+   re-verifies everything.
+ - **Running `flagmatic_to_lean.py`**: Python 3, standard library only.
+ - **Producing new SDP certificates**:
+-  [Flagmatic](https://github.com/jsliacan/flagmatic), which runs under
++  [Flagmatic](https://github.com/shanhaiying/flagmatic-1), which runs under
+   [SageMath](https://www.sagemath.org/). The seven committed certificates are
+   Flagmatic's output as produced.
+ 
+@@ -49,9 +49,10 @@
+ tactic matches its flags against Lean's own canonical enumeration,
+ reconstructs each SDP block matrix `M = R·Q'·Rᵀ` together with an exact
+ rational `LDLᵀ` witness (re-checked in Lean by `psd_real_ldlt_terms`), and
+-synthesizes the complete proof of exactly the stated theorem — a
+-statement/certificate mismatch fails elaboration instead of proving an
+-unintended theorem. The variant `flag_certificate?` additionally offers the
++synthesizes a proof of the theorem stated in the source. Lean rejects a
++proof that does not establish that goal; checking that the goal expresses
++the intended mathematical claim remains a separate audit.
++The variant `flag_certificate?` additionally offers the
+ synthesized script as a one-click `Try this:` suggestion, so the explicit
+ proof (inline matrices, PSD checks, closing normalization) can be
+ materialized, audited, and checked independently of the certificate file.
+--- a/LeanFlagAlgebras/Flags/GeneratorOptions.lean
++++ b/LeanFlagAlgebras/Flags/GeneratorOptions.lean
+@@ -12,8 +12,8 @@
+ lemmas by `decide +kernel` instead of `native_decide`, so the generated flag
+ layer adds no compiled-evaluation axioms
+ (`Lean.ofReduceBool`/`Lean.trustCompiler`).  Kernel reduction is viable for
+-small enumerations (e.g. Mantel's `n ≤ 3`); leave `false` for larger ones
+-(e.g. the pentagon's `n = 5`). -/
++small enumerations (e.g. Mantel's `n ≤ 3`). The larger committed cases
++combine this option with the BitMask routes to keep each check manageable. -/
+ register_option flagGen.kernelDecide : Bool := {
+   defValue := false
+   descr := "flag generators: prove bridging lemmas by `decide +kernel` instead of `native_decide`"
+@@ -24,10 +24,11 @@
+ canonicalization sweeps** (`LeanFlagAlgebras.BitMask.*`) by kernel
+ computation — no `native_decide`, no extra axioms — instead of the
+ `native_decide` against the pruned generator. Currently supported for
+-**triangle forbids** (`completeSym2Graph 3`) at `n ∈ {5, 6, 7}`; the
+-user's file must import `LeanFlagAlgebras.BitMask.MaskBridge` (and
+-`….BitMask.Canon7` for `n = 7`). Unsupported combinations fall back to
+-the pruned route with a warning. -/
++**triangle forbids** (`completeSym2Graph 3`) at `n ∈ {5, 6, 7}` on the
++clique route (import `LeanFlagAlgebras.BitMask.MaskBridge`). The non-clique
++subgraph route supports `2 ≤ n ≤ 7` (import `….BitMask.SubHfree`). Both
++routes additionally need `….BitMask.Canon7` for `n = 7`. Unsupported
++combinations fall back to their direct route with a warning. -/
+ register_option flagGen.maskCompleteness : Bool := {
+   defValue := false
+   descr := "flag generators: prove forbid-free completeness via the kernel bitmask sweeps"
+@@ -37,11 +38,11 @@
+ value theorems through the **bitmask rooted-density bridges**
+ (`LeanFlagAlgebras.BitMask.RootedCount`) by kernel computation — no
+ `native_decide` — instead of the batched `native_decide`. Currently
+-supported for combinations `(k, patN) ∈ {(1,2), (1,3), (2,3), (2,4)}`
++supported for combinations `(k, patN) ∈ {(1,2), (1,3), (2,3), (2,4), (3,4)}`
+ with host size `≤ 7`; unsupported combinations fall back to the batch
+ route with a warning. Per-pair kernel evaluation re-enumerates the host
+-subset pairs, so this is intended for small hosts (Mantel-scale) until
+-the shared-pass batching lands. -/
++subset pairs; for larger hosts, use `flagGen.maskPairDensityShared`
++to share that pass. -/
+ register_option flagGen.maskPairDensity : Bool := {
+   defValue := false
+   descr := "pair-density generator: prove values via the kernel bitmask bridges"
+--- a/LeanFlagAlgebras/Flagmatic/C5freeEdge.lean
++++ b/LeanFlagAlgebras/Flagmatic/C5freeEdge.lean
+@@ -34,7 +34,7 @@
+ set_option flagGen.maskPairDensity true
+ set_option flagGen.maskPairDensityShared true
+ -- The flag-set completeness layers route through the BitMask
+--- canonicalization sweeps (triangle forbids at swept combinations).
++-- canonicalization sweeps at supported combinations.
+ set_option flagGen.maskCompleteness true
+ set_option flagGen.maskFlagSets true
+ -- The generation commands run large decision procedures during elaboration, and the
+--- a/LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py
++++ b/LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py
+@@ -1318,7 +1318,7 @@
+         if mask_flagsets:
+             option_lines += [
+                 "-- The flag-set completeness layers route through the BitMask",
+-                "-- canonicalization sweeps (triangle forbids at swept combinations).",
++                "-- canonicalization sweeps at supported combinations.",
+                 "set_option flagGen.maskCompleteness true",
+                 "set_option flagGen.maskFlagSets true",
+             ]

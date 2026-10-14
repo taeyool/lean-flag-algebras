@@ -99,6 +99,8 @@ elab "#count_generated " ids:ident+ : command => do
   flagDensity₁_eq_sym2FlagDensity₁ flagDensity₂_eq_sym2FlagDensity₂
   downwardNormalizingFactor_eq posSemidef_real_of_LDLt
   forbidLEWith_add_QuadraticForm flagDensity_permute downward_forbidLEWith_nonneg
+#axioms_of forbidLE QuotientNonneg EnsembleNonneg Sσ_subset_Qσ
+  C5_toFlagAlgebra_eq_certificate
 
 -- Generated-lemma counts for the "Lemmas" column of Appendix A.
 #count_generated Mantel K3freeP3 K3freeC4 K4freeEdge ErdosPentagon K5freeEdge C5freeEdge

@@ -1,0 +1,165 @@
+AFM / arXiv pre-submission audit — 2026-10-14
+
+Scope and conclusion
+--------------------
+Checked the AFM manuscript, its source bundle, bibliography, and the actual
+public release v1.0, rather than the stale sibling checkout or local .olean
+cache. Technical submission checks pass after the corrections below. The
+authors' manuscript drafting/review details remain unconfirmed; therefore
+this report does not certify compliance with AFM's human-authorship policy.
+The paper has not been uploaded during this audit. The subsequent commit/push
+request selects the remote acknowledgment wording while retaining the other
+manuscript changes.
+
+Policies checked
+----------------
+https://afm.episciences.org/page/instructions-for-authors
+https://afm.episciences.org/page/aims-and-scope
+https://afm.episciences.org/page/publishing-policies
+https://info.arxiv.org/help/submit_tex.html
+https://info.arxiv.org/help/prep.html
+https://info.arxiv.org/help/faq/texlive.html
+
+AFM requires an accessible formal artifact and explicit correspondence to
+the principal mathematical results. Table 4 provides specific code links.
+The mathematical introduction, representation lessons, reflection layer,
+and semantic meta-theory address the journal's scope. The nine virtues are
+review considerations, not nine independently mandatory deliverables.
+AFM permits the authors' preferred document class; its published directions
+state no page limit. SWH identifiers are invited for the accepted version.
+The existing arXiv v1 is CC-BY-4.0, and the artifact is Apache-2.0.
+
+AFM requires human-authored manuscripts and disclosure of AI tools/tasks,
+as well as all support including subsidized access to tools/software. The
+paper discloses its tools and known tasks; this audit added the specific
+Codex tasks actually performed here, then restored the original AI paragraph
+at the user's request. The user initially reported no additional support,
+then supplied H. Yang's KIAS funding acknowledgment. Individual Grant
+CG109601 at the Korea Institute for Advanced Study is now included alongside
+the existing NRF and IBS acknowledgments. At the user's commit/push request,
+the remote version combining these three grants in one sentence was selected
+instead of the local separate H. Yang sentence. Do not add an invented
+author review history. Originality, concurrent journal submission, and
+personal conflicts require author confirmation in the submission workflow;
+the plan records that TOPLAS returned the earlier submission.
+
+Artifact pin
+------------
+Repository: https://github.com/taeyool/lean-flag-algebras-release
+Release: v1.0
+Commit: 439d3e64e02ff044a5e8b2b01937f8d7f36c84b6
+Annotated tag: 599f924360e59565847c957d5f7562d88ef949d1
+Lean: 4.27.0
+Mathlib commit: a3a10db0e9d66acbebf76c5e6a135066525ac900
+SWH revision and release APIs both returned 200 and the expected targets.
+The full archive visit is dated 2026-10-03T14:56:39.852Z.
+
+Checks completed
+----------------
+* Table 4: 33 rows, 39 declarations. Regenerated against the public pin;
+  every file and declaration line exists. The final PDF contains 39 distinct
+  pinned code links. Added the general Cauchy–Schwarz declaration alongside
+  the unit specialization. This is a correspondence/source-link check,
+  not a new formal proof of all informal-to-formal equivalences.
+* Table 5: regenerated from the same pin: 197 Lean files, 75,740 lines,
+  2,533 theorem/lemma source declarations, 1,235 other source declarations.
+  These exclude generated declarations, as the caption states.
+* Static code scan: no sorry, admit, or axiom declarations in the 197
+  released Lean files after removing comments. This does not replace
+  dependency-based axiom checks or Lean compilation.
+* Name audit: 145 manuscript identifiers found in the library; no name
+  declared only in development or only in release. Remaining tokens include
+  local variables, generated names, commands, fields and marked sketches.
+* Seven certificate JSON files: bounds, host sizes, PSD block counts,
+  matrix dimensions, and canonical flag matching agree with Table 2 and
+  the importer. All seven inspect commands succeeded. Certificate files
+  are byte-identical to development. This is not new kernel verification.
+* References: the original 32 cited entries and 32 bibliography entries had no missing or
+  uncited entry. DOI/software metadata and relevant primary sources were
+  checked. Crossref failures for Razborov and the two LIPIcs papers were
+  resolved against publisher pages. Spiegel's title/date were verified
+  against his slides. The two Davey papers concern different formalizations;
+  their novelty claims do not contradict the classical pentagon claim.
+  Subsequently added Jeong, Park, Im, Lee and Yang's A New Upper Bound for
+  the Turan Density of the Tetrahedron (arXiv:2609.27495) to the intro's
+  tetrahedron-bound sentence. Title, authors and the flag-algebra upper-bound
+  claim were verified at https://arxiv.org/abs/2609.27495 (v2, 2 October 2026).
+  The current manuscript and bibliography contain 33 cited entries.
+* Labels: no duplicate or undefined labels. Main and standalone arXiv
+  builds each produce 47 pages with no errors or undefined references/
+  citations. The main log has no overfull boxes; underfull table cells are
+  cosmetic. All 47 final pages and the appendix tables were visually checked.
+* arXiv package: exactly paper_afm.tex and paper_afm.bbl; archive bytes match
+  the generated files, and the bbl matches the main build. Three standalone
+  pdfLaTeX passes succeed. The abstract is 1,829 characters (limit 1,920).
+  Metadata says 47 pages, 1 figure. The supplied bbl is supported by current
+  arXiv guidance; its documentation now accurately describes that behavior.
+* Python generators parse; git diff --check succeeds. The public
+  documentation patch passes git apply --check against v1.0.
+
+Correctness and documentation corrections (including subsequent reverts)
+----------------------------------------------------------------------
+The user subsequently requested restoration of six manuscript passages:
+the intro maximum definition, Section 5.2 matrix explanation, Section 5.3
+What Lean Checks, Section 8 blow-up explanation, Section 10 related-work
+description, and Use of AI Assistance. These now match the original wording.
+The findings below retain the audit history; items explicitly marked reverted
+are no longer changes in the manuscript.
+
+1. Lemma 2.6 still requires c >= 0, matching the Lean theorem. The added
+   convention defining an empty maximum as zero was reverted.
+2. Reverted: the blow-up proof sketch had been changed so that it no longer
+   said that growing clusters of a fixed base makes collisions disappear.
+   The base flag must be sufficiently large
+   relative to the fixed sample; its growth controls collision probability.
+3. Reverted in Sections 5.2 and 5.3: a mistranscribed intended theorem or
+   different reconstructed matrix need not cause elaboration failure:
+   it may still express a true theorem. The
+   revised text stated what Lean checks, and preserved the separate
+   need to audit the intended mathematical statement.
+4. Appendix B no longer claims saved axiom checks cover every Table 4
+   declaration. The saved v1.0 log has 44 checks but omits five mapped names:
+   forbidLE, QuotientNonneg, EnsembleNonneg, Sσ_subset_Qσ, and
+   C5_toFlagAlgebra_eq_certificate. AxCheck.lean now requests these too.
+5. Related-work wording was revised and then restored at the user's request.
+   Spiegel's corrected date remains in refs.bib. The cover letter's
+   finite-identity sentence was also restored at the user's request;
+   AFM_cover_letter.md now matches the original committed text.
+6. Earlier user-directed removals are preserved: long artifact identifiers
+   only in Appendix B, no certificate digest table, no per-certificate source
+   size table, and no separate Appendix B Scope paragraph.
+
+Public documentation follow-up
+------------------------------
+release_documentation_fixes.patch corrects the Flagmatic fork links, the
+overstatement about detecting mistranscription, the missing paper citation,
+and stale option/generator comments (including the C5 subgraph route).
+It changes documentation only. It is prepared but not applied or published
+to the public repository. Apply to a new documentation commit; do not move
+the archived v1.0 tag. Existing pinned paper links remain valid.
+
+Proof verification evidence and limits
+-------------------------------------
+No new full Lean build was performed. The public commit and saved
+axioms_v1.0.txt record the 2026-10-03 clean library build with Mathlib
+prebuilt: 157 minutes, 8,083 jobs, peak 43.3 GB, no errors. The saved checks
+for density and principal meta-theory theorems list only propext,
+Classical.choice, and Quot.sound. That file was preserved unchanged.
+
+The local development .olean cache predates the current sources. A
+diagnostic check there found missing later declarations and legacy native
+dependencies; it cannot verify or refute the pinned public release.
+The public source and development source differ in two files after ignoring
+comments/whitespace: legacy CompleteGraphFreeP4 and ErdosPentagon/FlagDef.
+The development legacy axioms are absent from the released source. Claims
+about the artifact apply to v1.0, not to arbitrary development modules.
+The expanded five-name axiom check has not yet run on a fresh release build.
+
+Remaining factual item
+----------------------
+Await the authors' account of what manuscript drafting Claude Code assisted
+with and how the authors reviewed mathematical claims, citations and the
+informal/formal correspondence. Use that account to finalize A5 accurately
+and assess the human-authorship requirement. The audit does not invent a
+review process, guarantee journal acceptance, or claim all mathematics has
+been independently re-proved.
