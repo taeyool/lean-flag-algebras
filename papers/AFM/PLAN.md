@@ -605,6 +605,36 @@ generated at `v1.0`); the inline references were dropped by decision.**
 
 ## 9. Bibliography
 
+**Done 2026-10-14.**
+- `refs.bib` now has the 32 cited entries; BibTeX reports no warnings and
+  nothing undefined.
+- Removed the 17 uncited entries: the TOPLAS-era PL/SAT/reflection
+  references, `ebner2017structured`, and the cap-set/PFR trio dropped in
+  `ef144080`.
+- Software entries are pinned to a commit with an access date:
+  - `sos` `fb7ae4176090` (`main` is two commits past `v0.2.4`);
+  - graphon `9f7be59fa754`.
+  - The Flagmatic entry is left as it was (see Open below).
+- DOIs and URLs were added after checking Crossref, arXiv and ams.org:
+  - Lovász book `10.1090/coll/060`;
+  - Chlipala `10.7551/mitpress/9153.001.0001`;
+  - arXiv URLs for the two Davey et al. papers (titles and authors match);
+  - the Notices PDF for Gonthier.
+- Open:
+  - Flagmatic citation (decision pending). The paper cites Flagmatic 2.0
+    (`jsliacan/flagmatic-2.0`), but the certificates were produced by
+    Flagmatic 3.0 (`jsliacan/flagmatic`, `setup.py` version 3.0). That repo
+    is the Python 3 port for Sage 9.x (commit `b91469e`, 2022-09-20;
+    HEAD `a6d348f45796`). Checked 2026-10-14:
+    - Flagmatic 2.0 is Python 2 only: `print` statements and `xrange`.
+    - Our certificate JSON shows Python 3 `json.dump(indent=4)` output: no
+      space after line-final commas, and keys in insertion order.
+    - Both versions have identical `write_certificate` and `describe`.
+    - The release README already links `jsliacan/flagmatic`.
+    - Proposed entry: Vaughan and Sliačan, "Flagmatic, version 3.0",
+      pinned to `a6d348f45796`. Not applied yet.
+  - A7 (Spiegel title).
+
 - Start from a copy of `papers/TOPLAS/refs.bib`.
 - Candidates for removal after the Related Work condensation, if no longer
   cited: pnueli1998translation, lammich2020unsat, tan2023cakelpr,
