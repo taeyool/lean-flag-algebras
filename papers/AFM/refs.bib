@@ -1,6 +1,11 @@
-%% Bibliography for the TOPLAS submission, converted on 2026-07-30 from the
-%% hand-written thebibliography block of the arXiv source (arXiv:2607.23500).
-%% Formatted for ACM-Reference-Format.bst.
+%% Bibliography of the AFM version (paper_afm.tex), style plainurl.
+%% Started 2026-07-30 from the thebibliography block of arXiv:2607.23500 v1 and
+%% extended for TOPLAS; entries were checked against dblp/Crossref/DROPS in the
+%% fact-checks of 2026-08-04 and 2026-08-12.
+%% 2026-10-14: entries no longer cited were removed; the sos and graphon
+%% entries were pinned to a commit with an access date; DOIs or URLs were
+%% added to lovasz2012large, chlipala2013cpdt, davey2026local, davey2026strong
+%% and gonthier2008fourcolour (checked against Crossref, arXiv and ams.org).
 
 @article{razborov2007flag,
   author  = {A. A. Razborov},
@@ -104,7 +109,6 @@
   doi       = {10.1007/978-3-031-16681-5_5}
 }
 
-%% Added 2026-08-04 (intro fact-check); details verified against dblp/Springer.
 @inproceedings{heule2024hexagon,
   author    = {M. J. H. Heule and M. Scheucher},
   title     = {{H}appy {E}nding: An empty hexagon in every set of 30 points},
@@ -131,37 +135,20 @@
   doi       = {10.4230/LIPIcs.ITP.2024.35}
 }
 
-@article{gowers2025marton,
-  author  = {W. T. Gowers and B. Green and F. Manners and T. Tao},
-  title   = {On a conjecture of {M}arton},
-  journal = {Annals of Mathematics},
-  volume  = {201},
-  number  = {2},
-  pages   = {515--549},
-  year    = {2025},
-  doi     = {10.4007/annals.2025.201.2.5}
-}
-
-@misc{pfr2023,
-  author = {A. Anderson and others},
-  title  = {Formalization of the polynomial {F}reiman--{R}uzsa conjecture of {M}arton},
-  year   = {2023},
-  note   = {Formalization project led by T. Tao, version 0.1.0},
-  url    = {https://teorth.github.io/pfr/}
-}
-
 @misc{vaughan2012flagmaticguide,
   author = {E. R. Vaughan},
   title  = {Flagmatic user's guide, version 1.5},
   year   = {2012},
-  note   = {Distributed with the Flagmatic software; archived copy of the distribution site at \url{https://web.archive.org/web/20160112235442/http://flagmatic.org/}}
+  note   = {Distributed with Flagmatic~1.5, accessed 14 October 2026},
+  url    = {https://lidicky.name/flagmatic/UsersGuide.pdf}
 }
 
-@misc{vaughan2013flagmatic,
-  author = {E. R. Vaughan},
-  title  = {Flagmatic 2.0},
-  year   = {2013},
-  note   = {Computer software. Community-maintained copy available at \url{https://github.com/jsliacan/flagmatic-2.0}, accessed August 2026}
+@misc{vaughan2020flagmatic,
+  author = {E. R. Vaughan and J. Slia{\v{c}}an},
+  title  = {Flagmatic, version 3.0},
+  year   = {2020},
+  note   = {Computer software, {P}ython~3 port for {S}age{M}ath~9 by Z.~Jiang, commit \texttt{3510ead67c03} (10 April 2020), accessed 14 October 2026},
+  url    = {https://github.com/shanhaiying/flagmatic-1}
 }
 
 @book{chlipala2013cpdt,
@@ -169,7 +156,8 @@
   title     = {Certified Programming with Dependent Types: A Pragmatic Introduction to the {C}oq Proof Assistant},
   publisher = {MIT Press},
   address   = {Cambridge, MA},
-  year      = {2013}
+  year      = {2013},
+  doi       = {10.7551/mitpress/9153.001.0001}
 }
 
 @inproceedings{cohen2013refinements,
@@ -202,19 +190,8 @@
   author = {K. Morrison},
   title  = {Harrison's sum-of-squares decision procedure for nonlinear real arithmetic in {L}ean 4},
   year   = {2026},
-  note   = {Computer software, accessed August 2026},
+  note   = {Computer software, commit \texttt{fb7ae4176090} (26 August 2026), accessed 14 October 2026},
   url    = {https://github.com/leanprover/sos}
-}
-
-@article{ebner2017structured,
-  author  = {G. Ebner and S. Ullrich and J. Roesch and J. Avigad and L. de Moura},
-  title   = {A metaprogramming framework for formal verification},
-  journal = {Proceedings of the ACM on Programming Languages},
-  volume  = {1},
-  number  = {ICFP},
-  pages   = {34:1--34:29},
-  year    = {2017},
-  doi     = {10.1145/3110278}
 }
 
 @book{lovasz2012large,
@@ -224,7 +201,8 @@
   volume    = {60},
   publisher = {American Mathematical Society},
   address   = {Providence, RI},
-  year      = {2012}
+  year      = {2012},
+  doi       = {10.1090/coll/060}
 }
 
 @article{lovasz2006limits,
@@ -242,7 +220,7 @@
   author = {C. Freer},
   title  = {Graphons in {L}ean 4},
   year   = {2026},
-  note   = {Computer software, accessed August 2026},
+  note   = {Computer software, commit \texttt{9f7be59fa754} (6 September 2026), accessed 14 October 2026},
   url    = {https://github.com/cameronfreer/graphon}
 }
 
@@ -250,14 +228,16 @@
   author = {E. Davey and E. Hurley and R. {de Joannis de Verclos} and R. J. Kang and J. Volec},
   title  = {Local flag algebras},
   year   = {2026},
-  note   = {arXiv:2607.12461}
+  note   = {arXiv:2607.12461},
+  url    = {https://arxiv.org/abs/2607.12461}
 }
 
 @misc{davey2026strong,
   author = {E. Davey and E. Hurley and R. {de Joannis de Verclos} and R. J. Kang and J. Volec},
   title  = {Strong edge-colouring via local flag algebras},
   year   = {2026},
-  note   = {arXiv:2607.17421}
+  note   = {arXiv:2607.17421},
+  url    = {https://arxiv.org/abs/2607.17421}
 }
 
 @misc{spiegel2026computational,
@@ -267,14 +247,6 @@
   note   = {Talk at the workshop \emph{Flags in the Mountains}, CSU Mountain Campus, June 2026. Slides at \url{https://christophspiegel.berlin/assets/slides/FlagsMountains_2026.pdf}}
 }
 
-%% ---- Added 2026-07-30 for the TOPLAS reframing (intro + related work). ----
-%% 2026-08-12 fact-check: tan2023cakelpr, roux2018validating, besson2006fast,
-%% and armand2011modular verified against dblp/Crossref (roux author list
-%% corrected: Sankaranarayanan, not Garoche); DOIs added.
-%% 2026-08-12: moura2021lean (LNCS 12699, pp. 625--635,
-%% DOI 10.1007/978-3-030-79876-5_37) verified against dblp/Crossref;
-%% no bibliographic TODOs remain.
-
 @article{gonthier2008fourcolour,
   author  = {G. Gonthier},
   title   = {Formal proof---the four-color theorem},
@@ -282,7 +254,8 @@
   volume  = {55},
   number  = {11},
   pages   = {1382--1393},
-  year    = {2008}
+  year    = {2008},
+  url     = {https://www.ams.org/notices/200811/tx081101382p.pdf}
 }
 
 @article{hales2017kepler,
@@ -293,92 +266,6 @@
   pages   = {e2},
   year    = {2017},
   doi     = {10.1017/fmp.2017.1}
-}
-
-@inproceedings{pnueli1998translation,
-  author    = {A. Pnueli and M. Siegel and E. Singerman},
-  title     = {Translation validation},
-  booktitle = {Tools and Algorithms for the Construction and Analysis of Systems (TACAS 1998)},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {1384},
-  pages     = {151--166},
-  publisher = {Springer},
-  address   = {Berlin, Heidelberg},
-  year      = {1998},
-  doi       = {10.1007/BFb0054170}
-}
-
-@inproceedings{armand2011modular,
-  author    = {M. Armand and G. Faure and B. Gr{\'e}goire and C. Keller and L. Th{\'e}ry and B. Werner},
-  title     = {A modular integration of {SAT}/{SMT} solvers to {C}oq through proof witnesses},
-  booktitle = {Certified Programs and Proofs (CPP 2011)},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {7086},
-  pages     = {135--150},
-  publisher = {Springer},
-  address   = {Berlin, Heidelberg},
-  year      = {2011},
-  doi       = {10.1007/978-3-642-25379-9_12}
-}
-
-%% Added 2026-08-04 (intro fact-check); details verified against dblp/Springer.
-@inproceedings{bohme2010z3,
-  author    = {S. B{\"o}hme and T. Weber},
-  title     = {Fast {LCF}-style proof reconstruction for {Z3}},
-  booktitle = {Interactive Theorem Proving (ITP 2010)},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {6172},
-  pages     = {179--194},
-  publisher = {Springer},
-  address   = {Berlin, Heidelberg},
-  year      = {2010},
-  doi       = {10.1007/978-3-642-14052-5_14}
-}
-
-@article{lammich2020unsat,
-  author  = {P. Lammich},
-  title   = {Efficient verified {(UN)SAT} certificate checking},
-  journal = {Journal of Automated Reasoning},
-  volume  = {64},
-  number  = {3},
-  pages   = {513--532},
-  year    = {2020},
-  doi     = {10.1007/s10817-019-09525-z}
-}
-
-@article{tan2023cakelpr,
-  author  = {Y. K. Tan and M. J. H. Heule and M. O. Myreen},
-  title   = {Verified propagation redundancy and compositional {UNSAT} checking in {C}ake{ML}},
-  journal = {International Journal on Software Tools for Technology Transfer},
-  volume  = {25},
-  number  = {2},
-  pages   = {167--184},
-  year    = {2023},
-  doi     = {10.1007/s10009-022-00690-y}
-}
-
-@inproceedings{besson2006fast,
-  author    = {F. Besson},
-  title     = {Fast reflexive arithmetic tactics: The linear case and beyond},
-  booktitle = {Types for Proofs and Programs (TYPES 2006)},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {4502},
-  pages     = {48--62},
-  publisher = {Springer},
-  address   = {Berlin, Heidelberg},
-  year      = {2007},
-  doi       = {10.1007/978-3-540-74464-1_4}
-}
-
-@article{roux2018validating,
-  author  = {P. Roux and Y.-L. Voronin and S. Sankaranarayanan},
-  title   = {Validating numerical semidefinite programming solvers for polynomial invariants},
-  journal = {Formal Methods in System Design},
-  volume  = {53},
-  number  = {2},
-  pages   = {286--312},
-  year    = {2018},
-  doi     = {10.1007/s10703-017-0302-y}
 }
 
 @inproceedings{moura2021lean,
@@ -394,76 +281,6 @@
   doi       = {10.1007/978-3-030-79876-5_37}
 }
 
-@article{ringer2019qed,
-  author  = {T. Ringer and K. Palmskog and I. Sergey and M. Gligoric and Z. Tatlock},
-  title   = {{QED} at large: {A} survey of engineering of formally verified software},
-  journal = {Foundations and Trends in Programming Languages},
-  volume  = {5},
-  number  = {2--3},
-  pages   = {102--281},
-  year    = {2019},
-  doi     = {10.1561/2500000045}
-}
-
-@article{ahman2026everest,
-  author  = {D. Ahman and K. Bhargavan and B. Bond and J. Bosamiya and C. Brzuska and A. Delignat-Lavaud and C. Fournet and A. Fromherz and S. Gibson and C. Hawblitzel and C. Hritcu and M. Kohlweiss and G. Mart{\'i}nez and H. Ni and B. Parno and J. Protzenko and T. Ramananandro and A. Rastogi and E. Rivas and N. Swamy and S. Zanella-B{\'e}guelin},
-  title   = {Project {E}verest: Perspectives from developing industrial-grade high-assurance software},
-  journal = {ACM Transactions on Programming Languages and Systems},
-  volume  = {48},
-  number  = {2},
-  pages   = {9:1--9:64},
-  year    = {2026},
-  doi     = {10.1145/3805702}
-}
-
-@inproceedings{gregoire2002compiled,
-  author    = {B. Gr{\'e}goire and X. Leroy},
-  title     = {A compiled implementation of strong reduction},
-  booktitle = {International Conference on Functional Programming (ICFP 2002)},
-  pages     = {235--246},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  year      = {2002},
-  doi       = {10.1145/581478.581501}
-}
-
-@inproceedings{boespflug2011full,
-  author    = {M. Boespflug and M. D{\'e}n{\`e}s and B. Gr{\'e}goire},
-  title     = {Full reduction at full throttle},
-  booktitle = {Certified Programs and Proofs (CPP 2011)},
-  series    = {Lecture Notes in Computer Science},
-  volume    = {7086},
-  pages     = {362--377},
-  publisher = {Springer},
-  address   = {Berlin, Heidelberg},
-  year      = {2011},
-  doi       = {10.1007/978-3-642-25379-9_26}
-}
-
-@article{mcconnell2011certifying,
-  author  = {R. M. McConnell and K. Mehlhorn and S. N{\"a}her and P. Schweitzer},
-  title   = {Certifying algorithms},
-  journal = {Computer Science Review},
-  volume  = {5},
-  number  = {2},
-  pages   = {119--161},
-  year    = {2011},
-  doi     = {10.1016/j.cosrev.2010.09.009}
-}
-
-@article{alkassar2014framework,
-  author  = {E. Alkassar and S. B{\"o}hme and K. Mehlhorn and C. Rizkallah},
-  title   = {A framework for the verification of certifying computations},
-  journal = {Journal of Automated Reasoning},
-  volume  = {52},
-  number  = {3},
-  pages   = {241--273},
-  year    = {2014},
-  doi     = {10.1007/s10817-013-9289-2}
-}
-
-%% ---- Added 2026-08-12 (related-work fact-check); verified against dblp/DROPS. ----
-
 @inproceedings{boutin1997reflection,
   author    = {S. Boutin},
   title     = {Using reflection to build efficient and certified decision procedures},
@@ -477,20 +294,6 @@
   doi       = {10.1007/BFb0014565}
 }
 
-@inproceedings{dahmen2019capset,
-  author    = {S. R. Dahmen and J. H{\"o}lzl and R. Y. Lewis},
-  title     = {Formalizing the solution to the cap set problem},
-  booktitle = {10th International Conference on Interactive Theorem Proving (ITP 2019)},
-  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
-  volume    = {141},
-  pages     = {15:1--15:19},
-  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
-  address   = {Dagstuhl, Germany},
-  year      = {2019},
-  doi       = {10.4230/LIPIcs.ITP.2019.15}
-}
-
-% Added for the AFM version (restored from the arXiv v1 bibliography).
 @article{razborov2008triangles,
   author  = {A. A. Razborov},
   title   = {On the minimal density of triangles in graphs},
@@ -501,6 +304,7 @@
   year    = {2008},
   doi     = {10.1017/S0963548308009085}
 }
+
 @article{razborov2010tetrahedron,
   author  = {A. A. Razborov},
   title   = {On 3-hypergraphs with forbidden 4-vertex configurations},
@@ -511,6 +315,7 @@
   year    = {2010},
   doi     = {10.1137/090747476}
 }
+
 @article{baber2012turan,
   author  = {R. Baber and J. Talbot},
   title   = {New {T}ur{\'a}n densities for 3-graphs},
@@ -521,6 +326,7 @@
   year    = {2012},
   doi     = {10.37236/2360}
 }
+
 @article{balogh2017rainbow,
   author  = {J. Balogh and P. Hu and B. Lidick{\'y} and F. Pfender and J. Volec and M. Young},
   title   = {Rainbow triangles in three-colored graphs},
@@ -530,6 +336,7 @@
   year    = {2017},
   doi     = {10.1016/j.jctb.2017.04.002}
 }
+
 @inproceedings{mathlib2020,
   author    = {{The mathlib Community}},
   title     = {The {L}ean mathematical library},

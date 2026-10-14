@@ -605,6 +605,48 @@ generated at `v1.0`); the inline references were dropped by decision.**
 
 ## 9. Bibliography
 
+**Done 2026-10-14.**
+- `refs.bib` now has the 32 cited entries; BibTeX reports no warnings and
+  nothing undefined.
+- Removed the 17 uncited entries: the TOPLAS-era PL/SAT/reflection
+  references, `ebner2017structured`, and the cap-set/PFR trio dropped in
+  `ef144080`.
+- Software entries are pinned to a commit with an access date:
+  - `sos` `fb7ae4176090` (`main` is two commits past `v0.2.4`);
+  - graphon `9f7be59fa754`.
+  - Flagmatic: resolved the same day (see below).
+- DOIs and URLs were added after checking Crossref, arXiv and ams.org:
+  - Lovász book `10.1090/coll/060`;
+  - Chlipala `10.7551/mitpress/9153.001.0001`;
+  - arXiv URLs for the two Davey et al. papers (titles and authors match);
+  - the Notices PDF for Gonthier.
+- Open:
+  - Flagmatic citation: **resolved 2026-10-14.**
+    - The certificates come from the WSL install: Flagmatic 3.0 (`setup.py`
+      version 3.0) in the `sage9` conda env (Python 3.10), built from
+      `shanhaiying/flagmatic-1` at `3510ead67c03` (Z. Jiang's Python 3 /
+      Sage 9 port, 2020-04-10). The per-case work folders are in
+      `~/flagmatic-work`. The pentagon files there date from 2026-05-27,
+      the same day as `ErdosPentagon_cert.json`.
+    - This is not `jsliacan/flagmatic` (`a6d348f45796`, Bartek's 2022 port),
+      as assumed earlier. The two repos share no git history, but their core
+      code differs by only a few lines, and `write_certificate` is identical.
+    - `vaughan2013flagmatic` (Flagmatic 2.0) is replaced by
+      `vaughan2020flagmatic`: Vaughan and Sliačan, "Flagmatic, version 3.0",
+      pinned to `3510ead67c03`, with Jiang's port credited in the note.
+    - The user's guide entry stays at version 1.5 (29 January 2012).
+      - Its Sec. 8 and Sec. 10.8 give Q = R Q' R^T with Q' positive definite.
+      - Its Sec. 9 gives the `--n` range: 3-8 for graphs, 4-7 for 3-graphs.
+      - The 2.0 guide shipped with the code says neither.
+      - The URL now points to the 1.5 PDF (lidicky.name). The old archive
+        link pointed to flagmatic.org, which was the 2.0 site.
+    - The three sentences that rely on the guide now say "Flagmatic 1.5":
+      Part 2 in Sec. 5.2, the scaling question in Sec. 9, and the
+      conclusion.
+      Version 3.0 has no 8/7-vertex limit (`MAX_NUMBER_OF_VERTICES = 35`).
+    - Still open: the release README links `jsliacan/flagmatic`.
+  - A7 (Spiegel title).
+
 - Start from a copy of `papers/TOPLAS/refs.bib`.
 - Candidates for removal after the Related Work condensation, if no longer
   cited: pnueli1998translation, lammich2020unsat, tan2023cakelpr,
@@ -728,18 +770,53 @@ generated at `v1.0`); the inline references were dropped by decision.**
    `v1.0`: no displayed name is declared in one repository but not the
    other. The paper is 48 pages, with the same two overfull boxes.
 6. [ ] **Audit items and bibliography.** Sections 8 and 9.
-7. [ ] **Final pass.**
-   - Terminology grep (Section 3.1).
-   - No em-dashes.
-   - No undefined references or citations, and no overfull boxes.
-   - Consistency with `papers/MetaTheory/paper.tex`.
+7. [x] **Final pass.** Done 2026-10-14 except the open item below.
+   - Terminology grep (Section 3.1). Every remaining hit is deliberate:
+     - `compil*`: Lean compilation times and `native_decide`;
+     - `trust`: kernel vs native evaluation;
+     - `metaprogram*`: Lean's framework and the AI paragraph.
+     No "compiler", "frontend", "translation fidelity" or "soundness"
+     framing is left.
+   - No em-dashes (none in prose).
+   - No undefined references or citations, and no overfull boxes. Fixed the
+     two remaining overfull boxes by rewording:
+     - `ConvergesTo s a` with normal spaces, and "with" instead of
+       "satisfying";
+     - "evaluation.  The function sym2LabeledGraphDensity_1 ...".
+     Four underfull boxes inside the generated declaration table are
+     cosmetic (long paths in narrow cells).
+   - Consistency with `papers/MetaTheory/paper.tex`. The terms "ensemble
+     semantics", $Q_\sigma$/$S_\sigma$, "root-plantable", "blow-up-closed"
+     and "support closure" agree.
+     - **Open:** the AFM paper says "standard semantics" (abstract, intro,
+       contributions) and "quotient order" (Sec. 8), while the companion
+       says "quotient semantics". Decide when the companion is posted and
+       cited.
    - Every declaration name in the text exists at the release commit.
-   - Page breaking. `article` uses `\raggedbottom`, and a break before a
-     `\paragraph` heading gets the `\@secpenalty` bonus, so pages can end
-     early with large gaps. Seen first on page 3 before "Organization". Try
-     `\@secpenalty=0` (or `\flushbottom`) and re-check the `\Needspace` calls
-     inherited from the acmsmall layout.
+     `name_audit.py` was re-run against `v1.0`: no name is declared in one
+     repository but not the other. The flagged `no_forbid` is a
+     tokenization artifact of `generate_flag_pair_density_theorems_no_forbid`,
+     which exists. All nine commands of the generation table exist at `v1.0`.
+   - Page breaking:
+     - Table 3 used to float into Appendix B. `placeins` and a
+       `\FloatBarrier` before Appendix B now keep it in Appendix A, and
+       its `[h]` became `[ht]`.
+     - Per-page fill was measured with a diagnostic copy. The remaining
+       short pages hold floats (pp. 4, 25, 30) or end at forced breaks.
+     - Setting `\@secpenalty=0` brought no improvement, so the default
+       stays. The page-3 gap before "Organization" no longer occurs.
+     - The paper is 48 pages.
 8. [ ] **Submission.**
-   - Release tag and SWHID.
-   - arXiv v2 of 2607.23500.
+   - Release tag and SWHID. **Done in phase 5 (`v1.0`).**
+   - arXiv v2 of 2607.23500. Source bundle ready (2026-10-14):
+     - `python papers/AFM/make_arxiv.py` writes `papers/AFM/arxiv/`:
+       `paper_afm_arxiv.tar.gz` (comment-stripped `paper_afm.tex` with
+       `\pdfoutput=1`, plus `paper_afm.bbl`), `arxiv_metadata.txt` (form
+       fields; the abstract in arXiv form is 1829 characters), and a
+       `latexmkrc` for local pdfLaTeX previews with BibTeX disabled.
+     - The script checks the bundle with a stand-alone build: 48 pages,
+       `.aux` identical to the main build, no TODO left.
+     - `arxiv/` is git-ignored output. Re-run the script after any text change.
+     - Not yet in the bundle: A5 and A7.
+     - The upload itself (Replace on arXiv) is the authors' step.
    - Episciences submission (PDF not inside a zip).

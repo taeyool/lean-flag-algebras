@@ -22,6 +22,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{placeins}
 \usepackage{microtype}
 \usepackage{fullpage}
 \usepackage{authblk}
@@ -242,7 +243,7 @@
 \author[1,4]{Seonghun Park\protect\footnotemark[1]}
 \author[1]{Jihoon Hyun}
 \author[2,3]{Sang-il Oum}
-\author[4]{Hongseok~Yang}
+\author[1,4]{Hongseok~Yang}
 \affil[1]{\small School of Computing, KAIST, Daejeon, Korea}
 \affil[2]{\small Discrete Mathematics Group, Institute for Basic Science (IBS), Daejeon, Korea}
 \affil[3]{\small Department of Mathematical Sciences, KAIST, Daejeon, Korea}
@@ -351,7 +352,7 @@ technique for such universal claims: it reduces the task of proving an
 asymptotic upper bound for an infinite class of graphs to checking finitely many
 algebraic conditions on small, partially labeled graphs, called
 \emph{flags}.  A semidefinite programming (SDP) solver, run through software
-such as Flagmatic~\cite{vaughan2013flagmatic}, proposes a finite package of
+such as Flagmatic~\cite{vaughan2020flagmatic}, proposes a finite package of
 data intended to satisfy these conditions, consisting of flags, rational
 matrices, and coefficients; we call this package a \emph{certificate}.  The
 flag algebra framework explains why a certificate that passes the checks establishes the desired bound for the whole class.
@@ -443,18 +444,17 @@ the paper, the Lean declaration that formalizes it.
 
 \paragraph{Organization.}
 \Cref{sec:background} reviews flag algebras and fixes notation.
-\Cref{sec:abstract} formalizes the theory, including the ensemble treatment of
-forbidden subgraphs, and \Cref{sec:reflection} makes its finite parts
-computable.  \Cref{sec:flagmatic} explains how a certificate proves a density
-bound and how Lean checks one, and reports the seven verified bounds.
-\Cref{sec:lowerbounds} proves the matching lower bounds that make the Mantel
-and Erd\H{o}s pentagon bounds exact, together with two inequalities of Goodman.
-\Cref{sec:obstacles} discusses the obstacles we met in representing this
-mathematics in Lean, and \Cref{sec:metatheory} compares the
-ensemble and standard semantics.  \Cref{sec:unsure} discusses design questions,
+\Cref{sec:abstract,sec:reflection} present the specification and reflection
+layers, respectively.  \Cref{sec:flagmatic} presents the certificate-checking
+tactic and the seven verified upper bounds.
+\Cref{sec:lowerbounds} proves matching lower bounds for Mantel's and the
+Erd\H{o}s pentagon theorems, and Goodman's inequalities.
+\Cref{sec:obstacles} discusses engineering obstacles, and
+\Cref{sec:metatheory} compares the ensemble and standard semantics.
+\Cref{sec:unsure} discusses open design questions,
 \Cref{sec:related} surveys related work, and \Cref{sec:conclusion} concludes.
-\Cref{sec:compile-times} reports compilation times, and \Cref{sec:artifact}
-describes the artifact.
+\Cref{sec:compile-times,sec:artifact} report compilation times and describe the
+artifact, respectively.
 
 \section{Background: Flag Algebras}
 \label{sec:background}
@@ -1585,8 +1585,8 @@ theorem flagSeq_limit_mem_positiveHom (s : FlagSeq (*@$\sigma$@*))
 theorem positiveHom_as_flagSeq_limit ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (fun F => (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*)) := ...
 \end{lstlisting}
-Part~(a) assumes \lean{ConvergesTo\,\,\,s\,\,\,a} and produces a positive
-homomorphism \(\phi\) satisfying
+Part~(a) assumes \lean{ConvergesTo s a} and produces a positive
+homomorphism \(\phi\) with
 \(\phi(\llbracket\lean{basisVector F}\rrbracket)=a(F)\) for every finite
 \(\sigma\)-flag \(F\).  Thus, the limiting density profile of every convergent
 \(\sigma\)-flag sequence is induced by a positive homomorphism.  Conversely,
@@ -2059,7 +2059,8 @@ cardinality cannot be isomorphic to \(F\), so it is rejected before the
 isomorphism search runs.
 
 Once the matching predicate is decidable, the density is ordinary finite
-evaluation: \lean{sym2LabeledGraphDensity}$_1$ filters the candidates by it,
+evaluation.  The function \lean{sym2LabeledGraphDensity}$_1$ filters the candidates by
+it,
 counts the survivors, and divides by the number of ways to choose the non-type
 vertices.  The multi-flag density \(\den{F_1,\ldots,F_t}{G}\) of
 \Cref{sec:formal-subflag-densities} follows the same pattern, with the
@@ -2424,7 +2425,7 @@ inequality into the Tur\'an-density bound.  A \emph{flag-algebra certificate}
 is a finite witness for this inequality: it specifies flags, rational
 matrices, and coefficients that purport to express the gap
 \(c\cdot\mathbf{1}-[F]\) as a sum of terms that are non-negative under the
-\(H\)-free condition.  Flagmatic~\cite{vaughan2013flagmatic} searches for such
+\(H\)-free condition.  Flagmatic~\cite{vaughan2020flagmatic} searches for such
 witnesses by semidefinite programming.
 
 Our concern is verification rather than search.  The theorem to be proved is
@@ -2570,9 +2571,10 @@ of \Cref{sec:reflection-adequacy} state all of them at the specification level.
 \paragraph{Certifying the matrices (Part~2).}
 For each SDP block, the certificate stores rational matrices $Q'_t$ and $R_t$
 with $M_t=R_tQ'_tR_t^\top$, where $R_t$ may be rectangular and $Q'_t$ is a
-smaller symmetric matrix.  As Flagmatic's user
-guide~\cite{vaughan2012flagmaticguide} explains, $Q'_t$ is chosen to be
-positive definite, which implies the positive semidefiniteness of $M_t$.
+smaller symmetric matrix.  The user's guide for
+Flagmatic~1.5~\cite{vaughan2012flagmaticguide}, which documents this
+certificate format, explains that $Q'_t$ is chosen to be positive definite,
+which implies the positive semidefiniteness of $M_t$.
 
 Our verification uses a different, equally elementary witness.  Every PSD
 obligation is discharged through one library lemma, based on an exact rational
@@ -3583,8 +3585,8 @@ increase, and so do the time and memory of kernel evaluation
 frontier; in the released development, the canonicalization sweep of
 \Cref{sec:reflection-bitmask} already covers all graphs on six vertices, one
 more than the seven certificates need.  Certificate generation faces the same combinatorial
-growth: the Flagmatic user guide documents support for bases of up to eight
-vertices for ordinary graphs and seven for
+growth: the user's guide for Flagmatic~1.5 documents support for bases of up
+to eight vertices for ordinary graphs and seven for
 3-graphs~\cite{vaughan2012flagmaticguide}.  Certificates of these sizes are
 the natural target for verification, whereas this paper reports certificates
 with hosts of at most five vertices; extending the evaluation to larger hosts
@@ -3631,7 +3633,7 @@ Lean~\cite{spiegel2026computational}, ongoing independent work aimed at
 carrying out flag-algebra inequality proofs automatically inside Lean.
 
 \paragraph{Computer-assisted flag-algebra arguments.}
-Flagmatic~\cite{vaughan2013flagmatic} automates the computation of exact and
+Flagmatic~\cite{vaughan2020flagmatic} automates the computation of exact and
 approximate flag-algebra bounds but does not produce proof-assistant proofs;
 Razborov's survey~\cite{razborov2013flag} organizes many early applications of
 the method.  The seven certificates verified here are Flagmatic's output as
@@ -3691,8 +3693,8 @@ always implies validity in the ensemble semantics, and the converse holds for
 all inequalities at a flag type exactly when the class is root-plantable there.
 
 Several directions remain for future work.  The most immediate is to verify
-larger certificates, up to the hosts on eight vertices that Flagmatic supports
-for graphs.  Another is to extend the development to
+larger certificates, up to hosts on eight vertices, the largest that
+Flagmatic~1.5 supported for graphs.  Another is to extend the development to
 further parts of Razborov's calculus, especially the differential structure
 developed in Section~4.3 of his original paper~\cite{razborov2007flag}, which
 would exercise the quotient-level semantics well beyond the certificate
@@ -3756,7 +3758,7 @@ process, taken as the maximum over the five runs.  The table reports the median 
 within $4.1\%$ of the median in every case (at most $0.6$\,s for the two
 smallest files) and within $1\%$ for the three largest.
 
-\begin{table}[h]
+\begin{table}[ht]
   \centering
   \caption{Lean compilation time (median and range of five runs) and peak
     memory (maximum over five runs) for the seven certificate files, all
@@ -3781,6 +3783,8 @@ smallest files) and within $1\%$ for the three largest.
   \end{tabular}
 \end{table}
 
+% Flush Table 3 so that it stays in Appendix A.
+\FloatBarrier
 \section{The Artifact}
 \label{sec:artifact}
 
